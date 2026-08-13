@@ -3,6 +3,9 @@ name: Deploy GitHub Pages
 on:
   push:
     branches: ["main"]
+    paths-ignore:
+      - 'morgenklar/**'
+      - '.github/workflows/**'
   workflow_dispatch:
 
 permissions:
