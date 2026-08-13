@@ -1,6 +1,6 @@
-<!doctype html><html lang="de"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover"><title>MorgenKlar V6</title></head><body><script>
+<!doctype html><html lang="de"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover"><title>MorgenKlar V6.3</title></head><body><script>
 fetch('./index.html?base=v5').then(r=>r.text()).then(html=>{
-  const scripts=['app1.js','app2.js','app3.js','app4.js','app5.js','app6a.js','app6b.js','app6c.js','app6d.js'].map(x=>'<scr'+'ipt src="./'+x+'?v=6.2"></scr'+'ipt>').join('');
+  const scripts=['app1.js','app2.js','app3.js','app4.js','app5.js','app6a.js','app6b.js','app6c.js','app6d.js','app6e.js'].map(x=>'<scr'+'ipt src="./'+x+'?v=6.3"></scr'+'ipt>').join('');
   html=html.replace(/<script src="\/app\.js"><\/script>/,scripts);
   html=html.replaceAll('href="/manifest.webmanifest"','href="./manifest.webmanifest"');
   document.open();document.write(html);document.close();
