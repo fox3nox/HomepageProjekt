@@ -1,0 +1,120 @@
+tems:center;justify-content:center;padding:6px;text-align:center;font-size:10px}.ttScanHead{min-height:38px;background:#f7f8fb;color:var(--muted);font-weight:850;position:sticky;top:0;z-index:1}.ttScanTime{justify-content:flex-start;background:#fafbfc;color:var(--muted);font-weight:850;line-height:1.25}.ttScanToggle{width:100%;height:42px;border:1px solid #e4e6ed;border-radius:10px;background:#f3f4f7;color:#858a96;font-size:10px;font-weight:850}.ttScanToggle.on{background:#e8f6f0;border-color:#bde5d4;color:#087451}.ttBlocks{display:grid;gap:8px;margin-top:12px}.ttBlock{display:grid;grid-template-columns:34px 1fr auto;gap:9px;align-items:center;border:1px solid var(--line);border-radius:14px;padding:9px;background:#fff}.ttBlock.off{opacity:.5}.ttBlockToggle{width:30px;height:30px;border:0;border-radius:9px;background:var(--good);color:#fff;font-weight:900}.ttBlock.off .ttBlockToggle{background:#d9dce3;color:#7c818b}.ttBlockMain b{font-size:12px;display:block}.ttBlockMain span{font-size:10px;color:var(--muted)}.ttBlockEdit{display:flex;gap:5px}.ttBlockEdit input{width:82px;border:1px solid var(--line);border-radius:9px;padding:7px;font-size:11px}.ttReplace{display:flex;gap:8px;align-items:flex-start;margin:12px 0;padding:11px;border-radius:13px;background:#fafbfc;border:1px solid var(--line);font-size:11px;color:var(--muted)}.ttReplace input{margin-top:2px}.ttRaw{margin-top:12px}.ttError{padding:10px 12px;border-radius:12px;background:var(--warn2);color:#845015;font-size:11px;line-height:1.45;margin-top:10px}
+@media(max-width:700px){.ttScanControls{grid-template-columns:1fr}.ttBlock{grid-template-columns:32px 1fr}.ttBlockEdit{grid-column:2;flex-wrap:wrap}.ttBlockEdit input{flex:1;min-width:95px}.ttScanGrid{min-width:560px}}
+</style>
+<script id="fc-tt-v8-script">
+(()=>{
+'use strict';
+const TT_BUILD='v8-timetable-first-2026-08-16';
+const TT_DAYS=['Montag','Dienstag','Mittwoch','Donnerstag','Freitag'];
+const TT_DEFAULT_TIMES=[['07:30','08:15'],['08:20','09:05'],['09:10','09:55'],['10:15','11:00'],['11:05','11:50'],['13:30','14:15'],['14:20','15:05'],['15:20','16:05']];
+let ttState=null;
+
+function ttNorm(s){return String(s||'').toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g,'').replace(/[^a-z0-9:.-]+/g,' ')}
+function ttTextScore(text){const t=ttNorm(text);let score=0;const days=['montag','dienstag','mittwoch','donnerstag','freitag'];score+=days.filter(d=>t.includes(d)).length; if(/stunden\s*plan|stundenplan/.test(t))score+=4;if(/schule|unterricht|klasse|lehrperson|ttg|sport|deutsch|math|franz/.test(t))score+=1;const ranges=(text.match(/\b(?:[01]?\d|2[0-3])[:.]\d{2}\s*[–—-]\s*(?:[01]?\d|2[0-3])[:.]\d{2}\b/g)||[]).length;if(ranges>=3)score+=2;if(ranges>=6)score+=2;return score}
+function ttExtractTimes(text){const out=[];const re=/\b([01]?\d|2[0-3])[:.]([0-5]\d)\s*[–—-]\s*([01]?\d|2[0-3])[:.]([0-5]\d)\b/g;let m;while((m=re.exec(text))){const a=`${String(Number(m[1])).padStart(2,'0')}:${m[2]}`,b=`${String(Number(m[3])).padStart(2,'0')}:${m[4]}`;if(!out.some(x=>x[0]===a&&x[1]===b))out.push([a,b])}out.sort((a,b)=>tmin(a[0])-tmin(b[0]));return out}
+function ttChooseTimes(text){const found=ttExtractTimes(text);if(found.length>=8)return{times:found.slice(0,8),source:'ocr'};if(found.length>=5){const morning=found.filter(x=>tmin(x[0])<12*60).slice(0,5),afternoon=found.filter(x=>tmin(x[0])>=12*60).slice(0,3);if(morning.length===5&&afternoon.length>=1){const merged=[...morning,...afternoon];while(merged.length<8)merged.push(TT_DEFAULT_TIMES[merged.length]);return{times:merged.slice(0,8),source:'mixed'}}}return{times:TT_DEFAULT_TIMES.map(x=>[...x]),source:'template'}}
+function ttPersonFromText(text){const t=ttNorm(text);const named=data.people.filter(p=>!/^kind\s*\d+$/i.test(p.name.trim()));const exact=named.find(p=>t.includes(ttNorm(p.name)));if(exact)return exact.id;return''}
+function ttSegments(values,threshold){const seg=[];let s=-1;for(let i=0;i<=values.length;i++){const on=i<values.length&&values[i]>threshold;if(on&&s<0)s=i;if(!on&&s>=0){seg.push([s,i-1]);s=-1}}return seg}
+function ttLongest(segs,minLen){return segs.filter(x=>x[1]-x[0]+1>=minLen).sort((a,b)=>(b[1]-b[0])-(a[1]-a[0]))}
+async function ttImageToCanvas(blob,maxW=820){let bmp=null,url='';try{if('createImageBitmap'in window)bmp=await createImageBitmap(blob)}catch{}let w,h,draw;if(bmp){w=bmp.width;h=bmp.height;draw=(ctx,W,H)=>ctx.drawImage(bmp,0,0,W,H)}else{url=URL.createObjectURL(blob);const im=new Image();await new Promise((res,rej)=>{im.onload=res;im.onerror=rej;im.src=url});w=im.naturalWidth;h=im.naturalHeight;draw=(ctx,W,H)=>ctx.drawImage(im,0,0,W,H)}const scale=Math.min(1,maxW/w),W=Math.max(1,Math.round(w*scale)),H=Math.max(1,Math.round(h*scale)),c=document.createElement('canvas');c.width=W;c.height=H;const ctx=c.getContext('2d',{willReadFrequently:true});draw(ctx,W,H);if(url)URL.revokeObjectURL(url);if(bmp&&bmp.close)bmp.close();return{canvas:c,ctx,w:W,h:H}}
+async function ttInspectColoredGrid(blob){
+  try{
+    const {ctx,w,h}=await ttImageToCanvas(blob);
+    const img=ctx.getImageData(0,0,w,h).data;
+    const xHist=new Uint16Array(w), yHist=new Uint16Array(h);
+    const x0=Math.floor(w*.10), x1=Math.floor(w*.92), y0=Math.floor(h*.20), y1=Math.floor(h*.72);
+    const mask=new Uint8Array(w*h);
+
+    for(let y=y0;y<y1;y++){
+      for(let x=x0;x<x1;x++){
+        const k=(y*w+x)*4;
+        const r=img[k]/255, g=img[k+1]/255, b=img[k+2]/255;
+        const max=Math.max(r,g,b), min=Math.min(r,g,b);
+        const sat=max>0?(max-min)/max:0;
+        const lum=(r+g+b)/3;
+        if(sat>.30&&lum<.88){
+          mask[y*w+x]=1;
+          xHist[x]++;
+          yHist[y]++;
+        }
+      }
+    }
+
+    const xs=ttLongest(ttSegments(xHist,Math.max(18,Math.floor(h*.03))),Math.floor(w*.32));
+    if(!xs.length)return{detected:false,reason:'Kein breites Farbraster gefunden'};
+    const xseg=xs[0];
+    const ys=ttLongest(ttSegments(yHist,Math.max(18,Math.floor(w*.055))),Math.floor(h*.025)).sort((a,b)=>a[0]-b[0]);
+
+    let pair=null;
+    outer:
+    for(let i=0;i<ys.length;i++){
+      for(let j=i+1;j<ys.length;j++){
+        const a=ys[i], b=ys[j], gap=b[0]-a[1];
+        if(gap>3&&gap<h*.08){
+          const ratio=(a[1]-a[0]+1)/(b[1]-b[0]+1);
+          if(ratio>.9&&ratio<2.6){
+            pair=[a,b];
+            break outer;
+          }
+        }
+      }
+    }
+    if(!pair)return{detected:false,reason:'Morgen-/Nachmittagsraster nicht sicher gefunden'};
+
+    const [morning,afternoon]=pair;
+    const xmin=xseg[0], xmax=xseg[1]+1;
+    const xEdges=Array.from({length:6},(_,i)=>xmin+(xmax-xmin)*i/5);
+    const rows=[];
+    for(const [seg,n] of [[morning,5],[afternoon,3]]){
+      for(let i=0;i<n;i++){
+        rows.push([
+          seg[0]+(seg[1]+1-seg[0])*i/n,
+          seg[0]+(seg[1]+1-seg[0])*(i+1)/n
+        ]);
+      }
+    }
+
+    const matrix=[], fractions=[];
+    for(const [ya0,yb0] of rows){
+      const row=[], fr=[];
+      for(let col=0;col<5;col++){
+        const xa0=xEdges[col], xb0=xEdges[col+1];
+        const mx=(xb0-xa0)*.07, my=(yb0-ya0)*.10;
+        const xa=Math.floor(xa0+mx), xb=Math.ceil(xb0-mx);
+        const ya=Math.floor(ya0+my), yb=Math.ceil(yb0-my);
+        let n=0,total=0;
+        for(let y=Math.max(0,ya);y<Math.min(h,yb);y+=2){
+          for(let x=Math.max(0,xa);x<Math.min(w,xb);x+=2){
+            total++;
+            n+=mask[y*w+x];
+          }
+        }
+        const f=total?n/total:0;
+        fr.push(f);
+        row.push(f>.17);
+      }
+      matrix.push(row);
+      fractions.push(fr);
+    }
+
+    const occupied=matrix.flat().filter(Boolean).length;
+    const dayCounts=Array.from({length:5},(_,c)=>matrix.reduce((n,r)=>n+(r[c]?1:0),0));
+    const strongCells=fractions.flat().filter(f=>f>.45).length;
+    const plausible=occupied>=12&&occupied<=38&&dayCounts.filter(Boolean).length>=4&&strongCells>=Math.max(10,occupied*.65);
+    const confidence=Math.min(99,Math.round(55+strongCells/40*34+(dayCounts.filter(Boolean).length/5)*10));
+    return {
+      detected:plausible,
+      matrix,
+      fractions,
+      occupied,
+      dayCounts,
+      confidence,
+      geometry:{xmin,xmax,morning,afternoon},
+      reason:plausible?'Farbiges 5-Tage-Raster erkannt':'Farbraster nicht eindeutig'
+    };
+  }catch(e){
+    return{detected:false,reason:e?.message||String(e)};
+  }
+}
+function ttBlocksFromMatrix(matrix,times){const blocks=[];for(let col=0;col<5;col++){let start=null;for(let r=0;r<=8;r++){const on=r<8&&!!matrix[r]?.[col];const forcedBreak=r===5;if(on&&start===null)start=r;if((!on||forcedBreak)&&start!==null){let end=r-1;if(forcedBreak&&on)end=4;if(end>=start)blocks.push({id:'tt'+uid(),day:col+1,title:'Schule',time:times[start][0],end:times[end][1],enabled:true,startRow:start,endRow:end});start=(forcedBreak&&on)?5:null}}}return blocks}
+function ttEnsureModal(){if($('#ttScanModal'))return;const el=document.createElement('div');el.className='modalBg';el.id='ttScanModal';el.innerHTML=`<div class="modal" style="max-width:920px"><div class="modalHead"><div><h3>Stundenplan erkannt</h3><div clas
