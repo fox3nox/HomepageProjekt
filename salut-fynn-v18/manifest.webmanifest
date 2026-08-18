@@ -1,0 +1,9 @@
+{
+  "name": "Salut! Französisch lernen",
+  "short_name": "Salut!",
+  "start_url": "./",
+  "display": "standalone",
+  "background_color": "#f7fbff",
+  "theme_color": "#2775ea",
+  "icons": [{"src":"icon-180.png","sizes":"180x180","type":"image/png"}]
+}
