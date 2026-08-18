@@ -1,0 +1,14 @@
+(()=>{
+"use strict";
+const PAPA_CLIPS=window.PAPA_CLIPS||[];
+let papaLast=-1,papaAudio=null,papaLastAt=0,papaWins=0,papaNext=2+Math.floor(Math.random()*3);
+function papaPick(){if(PAPA_CLIPS.length<2)return 0;let i;do{i=Math.floor(Math.random()*PAPA_CLIPS.length)}while(i===papaLast);return i}
+function papaBadge(){let el=document.getElementById('papaBadge');if(!el){el=document.createElement('div');el.id='papaBadge';el.textContent='💙 Nachricht von Papa';Object.assign(el.style,{position:'fixed',left:'50%',bottom:'calc(env(safe-area-inset-bottom) + 92px)',transform:'translateX(-50%) translateY(12px)',opacity:'0',zIndex:'99',background:'#17355f',color:'#fff',padding:'10px 14px',borderRadius:'999px',fontWeight:'800',fontSize:'13px',boxShadow:'0 10px 28px rgba(20,50,90,.24)',transition:'.2s',whiteSpace:'nowrap'});document.body.appendChild(el)}clearTimeout(el._t);requestAnimationFrame(()=>{el.style.opacity='1';el.style.transform='translateX(-50%) translateY(0)'});el._t=setTimeout(()=>{el.style.opacity='0';el.style.transform='translateX(-50%) translateY(12px)'},2200)}
+function playPapaMotivation(force=false){if(!PAPA_CLIPS.length)return false;const now=Date.now();if(!force&&now-papaLastAt<9000)return false;const i=papaPick();try{if(window.speechSynthesis)window.speechSynthesis.cancel();if(papaAudio){papaAudio.pause();papaAudio.currentTime=0}papaAudio=new Audio(PAPA_CLIPS[i]);papaAudio.preload='auto';papaAudio.volume=1;const p=papaAudio.play();if(p&&p.catch)p.catch(()=>{});papaLast=i;papaLastAt=now;papaBadge();return true}catch(e){console.warn('Papa-Audio konnte nicht abgespielt werden',e);return false}}
+function papaSuccess(){papaWins++;if(papaWins>=papaNext){if(playPapaMotivation(false)){papaWins=0;papaNext=2+Math.floor(Math.random()*3)}}}
+const oldRate=window.rate;if(typeof oldRate==='function')window.rate=function(v,btn){const out=oldRate.apply(this,arguments);if(v===2)papaSuccess();return out};
+const oldAnswer=window.answer;if(typeof oldAnswer==='function')window.answer=function(b,a,c){const ok=a===c,out=oldAnswer.apply(this,arguments);if(ok)papaSuccess();return out};
+const oldAnswerExam=window.answerExam;if(typeof oldAnswerExam==='function')window.answerExam=function(b,a,c){const ok=a===c,out=oldAnswerExam.apply(this,arguments);if(ok)papaSuccess();return out};
+const resultCard=document.querySelector('#result .resultCard');if(resultCard&&!resultCard.querySelector('.papaMotivationBtn')){const btn=document.createElement('button');btn.className='secondary papaMotivationBtn';btn.style.marginTop='9px';btn.textContent='💙 Nachricht von Papa';btn.onclick=()=>playPapaMotivation(true);const firstPrimary=resultCard.querySelector('.primary');if(firstPrimary)resultCard.insertBefore(btn,firstPrimary);else resultCard.appendChild(btn)}
+window.playPapaMotivation=playPapaMotivation;
+})();
