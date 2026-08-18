@@ -1,0 +1,79 @@
+<!doctype html>
+<html lang="de">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover,user-scalable=no" />
+<meta name="theme-color" content="#f7fbff" />
+<meta name="apple-mobile-web-app-capable" content="yes" />
+<meta name="apple-mobile-web-app-status-bar-style" content="default" />
+<meta name="apple-mobile-web-app-title" content="Salut!" />
+<link rel="manifest" href="manifest.webmanifest" />
+<title>Salut! – Französisch lernen</title>
+<link rel="stylesheet" href="../franzoesisch-lernen/styles.css" />
+</head>
+<body>
+<div class="app">
+  <section id="home" class="screen active">
+    <div class="header"><div class="brand"><div class="logo">🇫🇷</div><div><h1>Salut!</h1><div class="sub">Französisch ganz einfach · v1.1</div></div></div><button class="iconBtn" onclick="showScreen('manage')" aria-label="Wörter verwalten">⚙️</button></div>
+    <div class="hero"><div class="kid">👦🏻</div><div><h2>Bereit für 5 Minuten?</h2><p>Hören, anschauen, antworten – in kleinen Runden, damit die Wörter hängen bleiben.</p></div></div>
+    <div class="stats"><div class="stat"><strong id="statWords">8</strong><span>Wörter</span></div><div class="stat"><strong id="statKnown">0</strong><span>Sicher</span></div><div class="stat"><strong id="statStars">0 ⭐</strong><span>Sterne</span></div></div>
+    <h3 class="sectionTitle">Lernen</h3>
+    <div class="actionList">
+      <button class="action" onclick="startCards()"><span class="ico blue">📖</span><span><b>Wörter lernen</b><small>Karteikarten mit Aussprache</small></span><span class="chev">›</span></button>
+      <button class="action" onclick="startQuiz('listen')"><span class="ico green">🔊</span><span><b>Hören & verstehen</b><small>Französisch hören, Deutsch wählen</small></span><span class="chev">›</span></button>
+      <button class="action" onclick="startQuiz('de-fr')"><span class="ico violet">✏️</span><span><b>Mini-Quiz</b><small>Deutsch sehen, Französisch finden</small></span><span class="chev">›</span></button>
+    </div>
+    <h3 class="sectionTitle">Neue Wörter</h3>
+    <div class="actionList"><button class="action" onclick="showScreen('add')"><span class="ico amber">📷</span><span><b>Wörter fotografieren</b><small>Fotos erkennen, prüfen und speichern</small></span><span class="chev">›</span></button></div>
+  </section>
+
+  <section id="learn" class="screen">
+    <div class="topbar"><button class="back" onclick="showScreen('home')">‹</button><h2>Wörter lernen</h2><button class="iconBtn" onclick="speakCurrent()">🔊</button></div>
+    <div class="progressWrap"><div class="progress"><i id="learnProgress" style="width:0%"></i></div><span class="count" id="learnCount">1/8</span></div>
+    <div class="card"><div class="unit" id="cardUnit">Unité 1 · Bonjour</div><div class="emoji" id="cardEmoji">👋</div><div class="word" id="cardFr">bonjour</div><div class="translation" id="cardDe">guten Tag</div><button class="speak" onclick="speakCurrent()" aria-label="Französisch vorlesen">🔊</button></div>
+    <div class="prompt" id="learnPrompt">Tippe zuerst auf „Lösung zeigen“.</div>
+    <div id="revealWrap"><button class="primary" onclick="revealCard()">Lösung zeigen</button></div>
+    <div id="ratingWrap" class="answerGrid" style="display:none"><button class="answer good" onclick="rateCard(2)">✓ Ja, ich weiss es</button><button class="answer mid" onclick="rateCard(1)">? Fast, aber noch nicht sicher</button><button class="answer bad" onclick="rateCard(0)">× Nein, noch nicht</button></div>
+  </section>
+
+  <section id="quiz" class="screen">
+    <div class="topbar"><button class="back" onclick="showScreen('home')">‹</button><h2 id="quizTitle">Mini-Quiz</h2></div>
+    <div class="progressWrap"><div class="progress"><i id="quizProgress" style="width:0%"></i></div><span class="count" id="quizCount">1/8</span></div>
+    <div class="panel quizPrompt"><div id="quizInstruction" class="sub">Welche Übersetzung passt?</div><div id="quizBig" class="big">bonjour</div><button id="quizSpeak" class="speak" onclick="speakQuiz()">🔊</button></div>
+    <div id="quizOptions" class="options" style="margin-top:12px"></div><div id="quizFeedback" class="feedback"></div>
+  </section>
+
+  <section id="add" class="screen">
+    <div class="topbar"><button class="back" onclick="showScreen('home')">‹</button><h2>Neue Wörter hinzufügen</h2></div>
+    <div class="panel">
+      <h3 style="margin:0 0 10px">📷 Schnellimport mit Fotos</h3>
+      <div class="hint">Lege die Karten wie auf deinen Fotos auf einen dunklen Tisch. Fotografiere zuerst die französischen Vorderseiten und danach die deutschen Rückseiten. Die App sucht jede Karte einzeln und verbindet Vorder- und Rückseite nach ihrer Position.</div>
+      <div class="two" style="margin-top:13px">
+        <div class="photoBox"><b>1. Französisch</b><img id="frontPreview" class="photoPreview" alt=""><label class="filePick" for="frontPhoto">📷 Foto aufnehmen / auswählen</label><input id="frontPhoto" class="fileInput" type="file" accept="image/*" capture="environment" onchange="previewPhoto(this,'frontPreview')"></div>
+        <div class="photoBox"><b>2. Deutsch</b><img id="backPreview" class="photoPreview" alt=""><label class="filePick" for="backPhoto">📷 Foto aufnehmen / auswählen</label><input id="backPhoto" class="fileInput" type="file" accept="image/*" capture="environment" onchange="previewPhoto(this,'backPreview')"></div>
+      </div>
+      <button id="ocrButton" class="primary" style="margin-top:12px" onclick="runOCR()">Karten automatisch erkennen</button>
+      <div id="ocrStatus" class="ocrStatus"></div>
+      <div id="scanMeta" class="scanMeta"></div>
+      <div id="candidatePairs" class="candidates"></div>
+      <div id="candidateTools" class="candidateTools" style="display:none"><button class="secondary" onclick="addCandidateRow()">+ Zeile</button><button class="secondary" onclick="swapCandidateColumns()">↔ Seiten tauschen</button></div>
+      <button id="saveCandidates" class="primary" style="display:none;margin-top:12px" onclick="saveCandidatePairs()">Geprüfte Wörter speichern</button>
+    </div>
+    <h3 class="sectionTitle">Oder einzeln eintragen</h3>
+    <div class="panel"><div class="field"><label>Französisch</label><input id="manualFr" placeholder="z. B. merci"></div><div class="field"><label>Deutsch</label><input id="manualDe" placeholder="z. B. danke"></div><button class="primary" onclick="addManual()">Wort speichern</button></div>
+  </section>
+
+  <section id="manage" class="screen">
+    <div class="topbar"><button class="back" onclick="showScreen('home')">‹</button><h2>Meine Wörter</h2></div>
+    <div id="wordList" class="wordList"></div>
+    <div class="panel" style="margin-top:16px"><button class="secondary" onclick="resetProgress()">Lernfortschritt zurücksetzen</button><button class="danger" style="margin-top:10px" onclick="restoreStarter()">Nur die 8 Startwörter wiederherstellen</button></div>
+  </section>
+</div>
+
+<nav class="bottom"><button class="nav active" data-nav="home" onclick="showScreen('home')"><span class="nicon">⌂</span><span>Start</span></button><button class="nav" data-nav="learn" onclick="startCards()"><span class="nicon">▣</span><span>Lernen</span></button><button class="nav" data-nav="manage" onclick="showScreen('manage')"><span class="nicon">▤</span><span>Wörter</span></button></nav>
+<div id="toast" class="toast"></div>
+<script src="https://cdn.jsdelivr.net/npm/tesseract.js@5/dist/tesseract.min.js"></script>
+<script src="../franzoesisch-lernen/core.js"></script>
+<script src="../franzoesisch-lernen/ocr.js"></script>
+</body>
+</html>
