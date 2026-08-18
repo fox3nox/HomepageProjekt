@@ -1,0 +1,11 @@
+{
+  "name":"Salut! – Französisch lernen",
+  "short_name":"Salut!",
+  "start_url":"./",
+  "scope":"./",
+  "display":"standalone",
+  "background_color":"#f7fbff",
+  "theme_color":"#f7fbff",
+  "lang":"de",
+  "icons":[{"src":"../franzoesisch-lernen/icon.svg","sizes":"any","type":"image/svg+xml","purpose":"any maskable"}]
+}
