@@ -1,13 +1,13 @@
 <!doctype html><html lang="de"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Salut!</title></head><body><script>
 (async()=>{
   try{
-    const r=await fetch('../salut-fynn-v18/index.html?v=20-'+Date.now(),{cache:'no-store'});
+    const r=await fetch('../salut-fynn-v18/index.html?v=20c-'+Date.now(),{cache:'no-store'});
     if(!r.ok)throw new Error('App konnte nicht geladen werden');
     let h=await r.text();
     h=h.replace('Französisch ganz einfach · v1.8','Französisch ganz einfach · v2.0');
-    h=h.replace('href="icon-180.png"','href="../salut-fynn-v18/icon-180.png?v=20"');
-    h=h.replace('href="manifest.webmanifest"','href="../salut-fynn-v18/manifest.webmanifest?v=20"');
-    h=h.replace('<script src="motivation-inline.js?v=18"><\/script>','<script src="../salut-fynn-v20/motivation-v20.js?v=20"><\/script>');
+    h=h.replace('href="icon-180.png"','href="../salut-fynn-v18/icon-180.png?v=20c"');
+    h=h.replace('href="manifest.webmanifest"','href="../salut-fynn-v18/manifest.webmanifest?v=20c"');
+    h=h.replace('<script src="motivation-inline.js?v=18"><\/script>','<script src="../salut-fynn-v20/motivation-v20.js?v=20c"><\/script>');
     document.open();document.write(h);document.close();
   }catch(e){
     document.body.innerHTML='<main style="font-family:-apple-system;padding:28px;color:#17355f"><h2>Salut!</h2><p>Die App konnte gerade nicht geladen werden. Bitte die Seite neu laden.</p></main>';
