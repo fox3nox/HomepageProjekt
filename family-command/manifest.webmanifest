@@ -1,0 +1,10 @@
+{
+  "name": "Family Command",
+  "short_name": "Family",
+  "start_url": "./",
+  "scope": "./",
+  "display": "standalone",
+  "background_color": "#f5f7fb",
+  "theme_color": "#111827",
+  "description": "Stundenpläne, Termine und Morgen-Check für die Familie."
+}
