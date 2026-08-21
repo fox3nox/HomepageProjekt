@@ -21,7 +21,7 @@
           <div class="mark">FC</div>
           <div><h1>Family Command</h1><p>Alles Wichtige, bevor der Tag losgeht.</p></div>
         </div>
-        <button class="iconbtn" id="quickAdd" aria-label="Termin hinzufügen">＋</button>
+        <button class="iconbtn" id="quickAdd" aria-label="Schnell hinzufügen">＋</button>
       </div>
     </header>
 
@@ -97,7 +97,7 @@
       document.getElementById('quickAdd').style.display='none';
       return;
     }
-    const src='https://lmrvapstojcecljjdgds.supabase.co/functions/v1/family-command-private-app?key='+encodeURIComponent(key)+'&v=20260821-13';
+    const src='https://lmrvapstojcecljjdgds.supabase.co/functions/v1/family-command-private-app?key='+encodeURIComponent(key)+'&v=20260821-14';
     document.write('<script src="'+src+'"><\/script>');
     document.write('<script src="./push-v2.js?v=20260821-1"><\/script>');
     document.write('<script src="./fixes.js?v=20260820-5"><\/script>');
