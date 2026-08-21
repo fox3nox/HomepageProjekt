@@ -23,6 +23,27 @@
     try{if(document.getElementById('today')?.classList.contains('active')&&typeof renderToday==='function')renderToday()}catch(e){}
   },60000);
 
+  /* Collapse bursts of identical state-sync requests caused by layered historical render/save wrappers. */
+  try{
+    if(typeof window.syncPush==='function'&&!window.__fcSyncPushDeduped){
+      window.__fcSyncPushDeduped=true;
+      const rawSync=window.syncPush.bind(window);
+      let timer=null,pending=null,waiters=[];
+      const wrapped=function(){
+        if(pending)return pending;
+        if(timer)clearTimeout(timer);
+        const promise=new Promise((resolve,reject)=>{waiters.push({resolve,reject});timer=setTimeout(async()=>{
+          timer=null;
+          try{pending=Promise.resolve(rawSync());const result=await pending;const ws=waiters.splice(0);ws.forEach(w=>w.resolve(result))}
+          catch(err){const ws=waiters.splice(0);ws.forEach(w=>w.reject(err))}
+          finally{pending=null}
+        },120)});
+        return promise;
+      };
+      window.syncPush=wrapped;try{syncPush=wrapped}catch(e){}
+    }
+  }catch(e){console.error('fc_sync_dedupe',e)}
+
   /* pro-ui is loaded after the secure transport layer and defines its own opener;
      restore the authenticated opener as the final authority. */
   try{window.fcSecureTransportRefresh?.()}catch(e){}
@@ -30,5 +51,5 @@
   /* Prompt an installed Home-Screen app to pick up the hardened service worker. */
   try{navigator.serviceWorker?.getRegistration('./').then(r=>r?.update()).catch(()=>{})}catch(e){}
 
-  window.__fcRuntimeHealth={legacyPushDisabled:true,unifiedTodayTimer:true,secureDocumentOpener:true,installedAt:new Date().toISOString()};
+  window.__fcRuntimeHealth={legacyPushDisabled:true,unifiedTodayTimer:true,syncPushDeduped:true,secureDocumentOpener:true,installedAt:new Date().toISOString()};
 })();
