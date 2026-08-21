@@ -8,7 +8,7 @@
   <meta name="apple-mobile-web-app-status-bar-style" content="default">
   <meta name="apple-mobile-web-app-title" content="Family Command">
   <title>Family Command</title>
-  <link rel="manifest" href="./manifest.webmanifest?v=20260821-2">
+  <link rel="manifest" href="./manifest.webmanifest?v=20260821-audit2">
   <link rel="icon" href="./icon.svg" type="image/svg+xml">
   <link rel="apple-touch-icon" href="./icon.svg">
   <link rel="stylesheet" href="./styles.css?v=20260820-2">
@@ -65,25 +65,48 @@
   <script src="https://cdn.jsdelivr.net/npm/jspdf@2.5.2/dist/jspdf.umd.min.js"></script>
   <script>
   (()=>{
-    const STORE='fc-private-access-v1';
-    const COOKIE='fc_private_access';
+    const STORE='fc-private-access-v1',COOKIE='fc_private_access';
+    const PRIVATE_APP='https://lmrvapstojcecljjdgds.supabase.co/functions/v1/family-command-private-app';
     const params=new URLSearchParams(location.search);
-    function readCookie(name){const prefix=name+'=';const part=document.cookie.split(';').map(x=>x.trim()).find(x=>x.startsWith(prefix));return part?decodeURIComponent(part.slice(prefix.length)):'';}
-    function saveAccess(value){try{localStorage.setItem(STORE,value)}catch(e){}document.cookie=COOKIE+'='+encodeURIComponent(value)+'; Max-Age=31536000; Path=/HomepageProjekt/family-command/; Secure; SameSite=Strict';}
+    function readCookie(name){const prefix=name+'=';const part=document.cookie.split(';').map(x=>x.trim()).find(x=>x.startsWith(prefix));return part?decodeURIComponent(part.slice(prefix.length)):''}
+    function saveAccess(value){try{localStorage.setItem(STORE,value)}catch(e){}document.cookie=COOKIE+'='+encodeURIComponent(value)+'; Max-Age=31536000; Path=/HomepageProjekt/family-command/; Secure; SameSite=Strict'}
+    function fatal(message){
+      document.querySelector('.content').innerHTML='<section class="screen active"><div class="hero"><div class="eyebrow">Family Command</div><h2>App konnte nicht vollständig geladen werden.</h2><p>'+String(message||'Bitte die App einmal vollständig schließen und neu öffnen.')+'</p></div></section>';
+      document.querySelector('.bottomnav').style.display='none';document.getElementById('quickAdd').style.display='none';
+    }
     let key=params.get('access')||readCookie(COOKIE)||'';if(!key){try{key=localStorage.getItem(STORE)||''}catch(e){}}
-    if(params.get('access')){saveAccess(key);params.delete('access');const clean=location.pathname+(params.toString()?'?'+params.toString():'')+location.hash;history.replaceState(null,'',clean);}else if(key){saveAccess(key);}
-    if(!key){document.querySelector('.content').innerHTML='<section class="screen active"><div class="hero"><div class="eyebrow">Family Command</div><h2>Privater Zugang erforderlich.</h2><p>Öffne deinen persönlichen Family-Command-Link einmal in Safari und füge die Seite danach erneut zum Home-Bildschirm hinzu.</p></div></section>';document.querySelector('.bottomnav').style.display='none';document.getElementById('quickAdd').style.display='none';return;}
-    const src='https://lmrvapstojcecljjdgds.supabase.co/functions/v1/family-command-private-app?key='+encodeURIComponent(key)+'&v=20260821-19';
-    document.write('<script src="'+src+'"><\/script>');
-    document.write('<script src="./push-v2.js?v=20260821-1"><\/script>');
-    document.write('<script src="./fixes.js?v=20260821-6"><\/script>');
-    document.write('<script src="./pro-ui.js?v=20260821-1"><\/script>');
-    document.write('<script src="./balanced-ui.js?v=20260821-1"><\/script>');
-    document.write('<script src="./layout-safety.js?v=20260821-1"><\/script>');
-    document.write('<script src="./family-ai.js?v=20260821-1"><\/script>');
-    document.write('<script src="./ai-budget-guard.js?v=20260821-1"><\/script>');
-    document.write('<script src="./pendencies.js?v=20260821-1"><\/script>');
-    document.write('<script src="./event-delete-fix.js?v=20260821-1"><\/script>');
+    if(params.get('access')){saveAccess(key);params.delete('access');const clean=location.pathname+(params.toString()?'?'+params.toString():'')+location.hash;history.replaceState(null,'',clean)}else if(key)saveAccess(key);
+    if(!key){fatal('Privater Zugang erforderlich. Öffne deinen persönlichen Family-Command-Link einmal in Safari.');return}
+
+    /* Block retired first-generation push calls even while the private bundle boots. */
+    const browserFetch=window.fetch.bind(window);
+    window.fetch=function(input,init){
+      try{const u=typeof input==='string'?input:(input instanceof Request?input.url:'');if(u.includes('/functions/v1/family-command-app/push/'))return Promise.resolve(new Response(JSON.stringify({ok:true,skipped:true}),{status:200,headers:{'content-type':'application/json'}}))}catch(e){}
+      return browserFetch(input,init);
+    };
+
+    function loadScript(src){return new Promise((resolve,reject)=>{const s=document.createElement('script');s.src=src;s.onload=()=>resolve();s.onerror=()=>reject(new Error('Datei konnte nicht geladen werden: '+src));document.body.appendChild(s)})}
+    function injectPrivate(code){const s=document.createElement('script');s.textContent=code+'\n//# sourceURL=family-command-private-app.js';document.body.appendChild(s)}
+
+    async function boot(){
+      const r=await browserFetch(PRIVATE_APP+'?v=20260821-audit2',{cache:'no-store',headers:{'x-fc-access':key}});
+      if(!r.ok)throw new Error('Privater App-Kern nicht erreichbar ('+r.status+').');
+      injectPrivate(await r.text());
+      if(typeof window.fcEventFilter==='undefined')window.fcEventFilter='all';
+
+      /* Order matters: secure transport first, deletion before pro-ui, health guard last. */
+      await loadScript('./ai-budget-guard.js?v=20260821-audit2');
+      await loadScript('./push-v2.js?v=20260821-audit2');
+      await loadScript('./event-delete-fix.js?v=20260821-audit2');
+      await loadScript('./pro-ui.js?v=20260821-audit2');
+      await loadScript('./balanced-ui.js?v=20260821-audit2');
+      await loadScript('./layout-safety.js?v=20260821-audit2');
+      await loadScript('./family-ai.js?v=20260821-audit2');
+      await loadScript('./pendencies.js?v=20260821-audit2');
+      await loadScript('./runtime-health.js?v=20260821-audit2');
+      document.documentElement.dataset.fcBoot='audit2-ok';
+    }
+    boot().catch(e=>{console.error('family_command_boot',e);fatal(e?.message)});
   })();
   </script>
 </body>
