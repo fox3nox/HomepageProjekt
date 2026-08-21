@@ -50,18 +50,22 @@
     box.classList.toggle('blocked',rem<=0);
   }
 
-  window.fcOpenOriginal=async function(id){
-    const k=accessKey();if(!k){try{toast('Privater Zugang fehlt')}catch(e){}return}
-    const popup=window.open('about:blank','_blank');
-    try{
-      const r=await nativeFetch(DOC+'/file?id='+encodeURIComponent(id)+'&json=1',{cache:'no-store',headers:{'x-fc-access':k}}),j=await r.json().catch(()=>({}));
-      if(!r.ok||!j.url)throw new Error(j.error||'Dokument konnte nicht geöffnet werden');
-      if(popup)popup.location.replace(j.url);else location.assign(j.url);
-    }catch(e){
-      try{popup?.close()}catch(_){}
-      try{toast('Dokument konnte nicht geöffnet werden')}catch(_){}
-    }
-  };
+  function installOriginalOpener(){
+    window.fcOpenOriginal=async function(id){
+      const k=accessKey();if(!k){try{toast('Privater Zugang fehlt')}catch(e){}return}
+      const popup=window.open('about:blank','_blank');
+      try{
+        const r=await nativeFetch(DOC+'/file?id='+encodeURIComponent(id)+'&json=1',{cache:'no-store',headers:{'x-fc-access':k}}),j=await r.json().catch(()=>({}));
+        if(!r.ok||!j.url)throw new Error(j.error||'Dokument konnte nicht geöffnet werden');
+        if(popup)popup.location.replace(j.url);else location.assign(j.url);
+      }catch(e){
+        try{popup?.close()}catch(_){}
+        try{toast('Dokument konnte nicht geöffnet werden')}catch(_){}
+      }
+    };
+  }
+  installOriginalOpener();
+  window.fcSecureTransportRefresh=installOriginalOpener;
 
   const style=document.createElement('style');style.textContent='.fc-ai-budget{margin:0 18px 10px;padding:9px 12px;border:1px solid #dce3ec;border-radius:12px;background:#f7f9fc;color:#526071;font-size:12px;font-weight:700}.fc-ai-budget.blocked{background:#fff1f2;border-color:#fecdd3;color:#9f1239}';document.head.appendChild(style);
   new MutationObserver(()=>decorate()).observe(document.documentElement,{childList:true,subtree:true});
