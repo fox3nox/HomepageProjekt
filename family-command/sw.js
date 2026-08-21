@@ -1,4 +1,4 @@
-const CACHE='family-command-v5';
+const CACHE='family-command-v6';
 const CORE=['./','./index.html','./styles.css','./manifest.webmanifest','./icon.svg'];
 
 self.addEventListener('install',e=>{
@@ -6,7 +6,7 @@ self.addEventListener('install',e=>{
   self.skipWaiting();
 });
 self.addEventListener('activate',e=>{
-  e.waitUntil(caches.keys().then(keys=>Promise.all(keys.filter(k=>k!==CACHE).map(k=>caches.delete(k)))));
+  e.waitUntil(caches.keys().then(keys=>Promise.all(keys.filter(k=>k.startsWith('family-command-')&&k!==CACHE).map(k=>caches.delete(k)))));
   self.clients.claim();
 });
 self.addEventListener('fetch',e=>{
