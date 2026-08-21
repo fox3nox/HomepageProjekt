@@ -73,7 +73,7 @@
     let key=params.get('access')||readCookie(COOKIE)||'';if(!key){try{key=localStorage.getItem(STORE)||''}catch(e){}}
     if(params.get('access')){saveAccess(key);params.delete('access');const clean=location.pathname+(params.toString()?'?'+params.toString():'')+location.hash;history.replaceState(null,'',clean);}else if(key){saveAccess(key);}
     if(!key){document.querySelector('.content').innerHTML='<section class="screen active"><div class="hero"><div class="eyebrow">Family Command</div><h2>Privater Zugang erforderlich.</h2><p>Öffne deinen persönlichen Family-Command-Link einmal in Safari und füge die Seite danach erneut zum Home-Bildschirm hinzu.</p></div></section>';document.querySelector('.bottomnav').style.display='none';document.getElementById('quickAdd').style.display='none';return;}
-    const src='https://lmrvapstojcecljjdgds.supabase.co/functions/v1/family-command-private-app?key='+encodeURIComponent(key)+'&v=20260821-16';
+    const src='https://lmrvapstojcecljjdgds.supabase.co/functions/v1/family-command-private-app?key='+encodeURIComponent(key)+'&v=20260821-17';
     document.write('<script src="'+src+'"><\/script>');
     document.write('<script src="./push-v2.js?v=20260821-1"><\/script>');
     document.write('<script src="./fixes.js?v=20260821-6"><\/script>');
