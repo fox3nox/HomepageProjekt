@@ -8,7 +8,7 @@
   <meta name="apple-mobile-web-app-status-bar-style" content="default">
   <meta name="apple-mobile-web-app-title" content="Family Command">
   <title>Family Command</title>
-  <link rel="manifest" href="./manifest.webmanifest?v=20260821-1">
+  <link rel="manifest" href="./manifest.webmanifest?v=20260821-2">
   <link rel="icon" href="./icon.svg" type="image/svg+xml">
   <link rel="apple-touch-icon" href="./icon.svg">
   <link rel="stylesheet" href="./styles.css?v=20260820-2">
@@ -65,27 +65,41 @@
   <script>
   (()=>{
     const STORE='fc-private-access-v1';
+    const COOKIE='fc_private_access';
     const params=new URLSearchParams(location.search);
-    const standalone=matchMedia('(display-mode: standalone)').matches||navigator.standalone===true;
-    let key=params.get('access')||localStorage.getItem(STORE)||'';
-    if(params.get('access')){
-      localStorage.setItem(STORE,key);
-      // In Safari lassen wir den persönlichen Zugang im URL, damit iOS ihn
-      // beim Hinzufügen zum Home-Bildschirm als Startadresse übernimmt.
-      // Erst innerhalb der installierten App wird der sichtbare URL bereinigt.
-      if(standalone){
-        params.delete('access');
-        const clean=location.pathname+(params.toString()?'?'+params.toString():'')+location.hash;
-        history.replaceState(null,'',clean);
-      }
+
+    function readCookie(name){
+      const prefix=name+'=';
+      const part=document.cookie.split(';').map(x=>x.trim()).find(x=>x.startsWith(prefix));
+      return part?decodeURIComponent(part.slice(prefix.length)):'';
     }
+    function saveAccess(value){
+      try{localStorage.setItem(STORE,value)}catch(e){}
+      document.cookie=COOKIE+'='+encodeURIComponent(value)+'; Max-Age=31536000; Path=/HomepageProjekt/family-command/; Secure; SameSite=Strict';
+    }
+
+    let key=params.get('access')||readCookie(COOKIE)||'';
+    if(!key){try{key=localStorage.getItem(STORE)||''}catch(e){}}
+
+    if(params.get('access')){
+      saveAccess(key);
+      // Der Cookie wird von aktuellem iOS beim Hinzufügen als Home-Screen-Web-App
+      // in die neue App übernommen. Der Zugangsschlüssel muss danach nicht im URL bleiben.
+      params.delete('access');
+      const clean=location.pathname+(params.toString()?'?'+params.toString():'')+location.hash;
+      history.replaceState(null,'',clean);
+    } else if(key) {
+      // Falls der Schlüssel aus localStorage kam, zusätzlich den Cookie nachziehen.
+      saveAccess(key);
+    }
+
     if(!key){
-      document.querySelector('.content').innerHTML='<section class="screen active"><div class="hero"><div class="eyebrow">Family Command</div><h2>Privater Zugang erforderlich.</h2><p>Öffne deinen persönlichen Family-Command-Link einmal auf diesem Gerät.</p></div></section>';
+      document.querySelector('.content').innerHTML='<section class="screen active"><div class="hero"><div class="eyebrow">Family Command</div><h2>Privater Zugang erforderlich.</h2><p>Öffne deinen persönlichen Family-Command-Link einmal in Safari und füge die Seite danach erneut zum Home-Bildschirm hinzu.</p></div></section>';
       document.querySelector('.bottomnav').style.display='none';
       document.getElementById('quickAdd').style.display='none';
       return;
     }
-    const src='https://lmrvapstojcecljjdgds.supabase.co/functions/v1/family-command-private-app?key='+encodeURIComponent(key)+'&v=20260821-1';
+    const src='https://lmrvapstojcecljjdgds.supabase.co/functions/v1/family-command-private-app?key='+encodeURIComponent(key)+'&v=20260821-3';
     document.write('<script src="'+src+'"><\/script>');
     document.write('<script src="./push-v2.js?v=20260820-5"><\/script>');
     document.write('<script src="./fixes.js?v=20260820-5"><\/script>');
