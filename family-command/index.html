@@ -8,7 +8,7 @@
   <meta name="apple-mobile-web-app-status-bar-style" content="default">
   <meta name="apple-mobile-web-app-title" content="Family Command">
   <title>Family Command</title>
-  <link rel="manifest" href="./manifest.webmanifest?v=20260821-audit2">
+  <link rel="manifest" href="./manifest.webmanifest?v=20260821-delete2">
   <link rel="icon" href="./icon.svg" type="image/svg+xml">
   <link rel="apple-touch-icon" href="./icon.svg">
   <link rel="stylesheet" href="./styles.css?v=20260820-2">
@@ -78,7 +78,6 @@
     if(params.get('access')){saveAccess(key);params.delete('access');const clean=location.pathname+(params.toString()?'?'+params.toString():'')+location.hash;history.replaceState(null,'',clean)}else if(key)saveAccess(key);
     if(!key){fatal('Privater Zugang erforderlich. Öffne deinen persönlichen Family-Command-Link einmal in Safari.');return}
 
-    /* Block retired first-generation push calls even while the private bundle boots. */
     const browserFetch=window.fetch.bind(window);
     window.fetch=function(input,init){
       try{const u=typeof input==='string'?input:(input instanceof Request?input.url:'');if(u.includes('/functions/v1/family-command-app/push/'))return Promise.resolve(new Response(JSON.stringify({ok:true,skipped:true}),{status:200,headers:{'content-type':'application/json'}}))}catch(e){}
@@ -89,22 +88,22 @@
     function injectPrivate(code){const s=document.createElement('script');s.textContent=code+'\n//# sourceURL=family-command-private-app.js';document.body.appendChild(s)}
 
     async function boot(){
-      const r=await browserFetch(PRIVATE_APP+'?v=20260821-audit2',{cache:'no-store',headers:{'x-fc-access':key}});
+      const r=await browserFetch(PRIVATE_APP+'?v=20260821-delete2',{cache:'no-store',headers:{'x-fc-access':key}});
       if(!r.ok)throw new Error('Privater App-Kern nicht erreichbar ('+r.status+').');
       injectPrivate(await r.text());
       if(typeof window.fcEventFilter==='undefined')window.fcEventFilter='all';
 
-      /* Order matters: secure transport first, deletion before pro-ui, health guard last. */
-      await loadScript('./ai-budget-guard.js?v=20260821-audit2');
-      await loadScript('./push-v2.js?v=20260821-audit2');
-      await loadScript('./event-delete-fix.js?v=20260821-audit2');
-      await loadScript('./pro-ui.js?v=20260821-audit2');
-      await loadScript('./balanced-ui.js?v=20260821-audit2');
-      await loadScript('./layout-safety.js?v=20260821-audit2');
-      await loadScript('./family-ai.js?v=20260821-audit2');
-      await loadScript('./pendencies.js?v=20260821-audit2');
-      await loadScript('./runtime-health.js?v=20260821-audit2');
-      document.documentElement.dataset.fcBoot='audit2-ok';
+      await loadScript('./ai-budget-guard.js?v=20260821-delete2');
+      await loadScript('./push-v2.js?v=20260821-delete2');
+      await loadScript('./pro-ui.js?v=20260821-delete2');
+      await loadScript('./balanced-ui.js?v=20260821-delete2');
+      await loadScript('./layout-safety.js?v=20260821-delete2');
+      await loadScript('./family-ai.js?v=20260821-delete2');
+      await loadScript('./pendencies.js?v=20260821-delete2');
+      await loadScript('./runtime-health.js?v=20260821-delete2');
+      /* Must be last so no historical wrapper can replace the delete handler. */
+      await loadScript('./event-delete-fix.js?v=20260821-delete2');
+      document.documentElement.dataset.fcBoot='delete2-ok';
     }
     boot().catch(e=>{console.error('family_command_boot',e);fatal(e?.message)});
   })();
