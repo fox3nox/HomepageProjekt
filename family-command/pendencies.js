@@ -13,13 +13,18 @@
     done:false,
     createdAt:'2026-08-21T19:14:00+02:00'
   };
-  if(!data.pendencies.some(x=>x.id===seed.id)){
-    data.pendencies.push(seed);
-    try{if(typeof save==='function')save()}catch(e){}
+  const SEED_MARK='fc-seeded-rebi-classphotos-v1';
+  let seedOnce=true;
+  try{seedOnce=localStorage.getItem(SEED_MARK)!=='1'}catch(e){}
+  if(seedOnce){
+    let changed=false;
+    if(!data.pendencies.some(x=>x.id===seed.id)){data.pendencies.push(seed);changed=true}
+    try{localStorage.setItem(SEED_MARK,'1')}catch(e){}
+    if(changed){try{if(typeof save==='function')save()}catch(e){}}
   }
 
   const escP=s=>String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
-  const money=x=>Number(x||0).toFixed(2).replace('.', '.');
+  const money=x=>Number(x||0).toFixed(2);
   const openItems=()=>data.pendencies.filter(x=>!x.done);
 
   window.fcTogglePendency=function(id,on){
