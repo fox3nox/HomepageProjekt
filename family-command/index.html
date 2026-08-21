@@ -3,7 +3,7 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
-  <meta name="theme-color" content="#111827">
+  <meta name="theme-color" content="#172033">
   <meta name="apple-mobile-web-app-capable" content="yes">
   <meta name="apple-mobile-web-app-status-bar-style" content="default">
   <meta name="apple-mobile-web-app-title" content="Family Command">
@@ -68,39 +68,16 @@
     const STORE='fc-private-access-v1';
     const COOKIE='fc_private_access';
     const params=new URLSearchParams(location.search);
-
-    function readCookie(name){
-      const prefix=name+'=';
-      const part=document.cookie.split(';').map(x=>x.trim()).find(x=>x.startsWith(prefix));
-      return part?decodeURIComponent(part.slice(prefix.length)):'';
-    }
-    function saveAccess(value){
-      try{localStorage.setItem(STORE,value)}catch(e){}
-      document.cookie=COOKIE+'='+encodeURIComponent(value)+'; Max-Age=31536000; Path=/HomepageProjekt/family-command/; Secure; SameSite=Strict';
-    }
-
-    let key=params.get('access')||readCookie(COOKIE)||'';
-    if(!key){try{key=localStorage.getItem(STORE)||''}catch(e){}}
-
-    if(params.get('access')){
-      saveAccess(key);
-      params.delete('access');
-      const clean=location.pathname+(params.toString()?'?'+params.toString():'')+location.hash;
-      history.replaceState(null,'',clean);
-    } else if(key) {
-      saveAccess(key);
-    }
-
-    if(!key){
-      document.querySelector('.content').innerHTML='<section class="screen active"><div class="hero"><div class="eyebrow">Family Command</div><h2>Privater Zugang erforderlich.</h2><p>Öffne deinen persönlichen Family-Command-Link einmal in Safari und füge die Seite danach erneut zum Home-Bildschirm hinzu.</p></div></section>';
-      document.querySelector('.bottomnav').style.display='none';
-      document.getElementById('quickAdd').style.display='none';
-      return;
-    }
-    const src='https://lmrvapstojcecljjdgds.supabase.co/functions/v1/family-command-private-app?key='+encodeURIComponent(key)+'&v=20260821-15';
+    function readCookie(name){const prefix=name+'=';const part=document.cookie.split(';').map(x=>x.trim()).find(x=>x.startsWith(prefix));return part?decodeURIComponent(part.slice(prefix.length)):'';}
+    function saveAccess(value){try{localStorage.setItem(STORE,value)}catch(e){}document.cookie=COOKIE+'='+encodeURIComponent(value)+'; Max-Age=31536000; Path=/HomepageProjekt/family-command/; Secure; SameSite=Strict';}
+    let key=params.get('access')||readCookie(COOKIE)||'';if(!key){try{key=localStorage.getItem(STORE)||''}catch(e){}}
+    if(params.get('access')){saveAccess(key);params.delete('access');const clean=location.pathname+(params.toString()?'?'+params.toString():'')+location.hash;history.replaceState(null,'',clean);}else if(key){saveAccess(key);}
+    if(!key){document.querySelector('.content').innerHTML='<section class="screen active"><div class="hero"><div class="eyebrow">Family Command</div><h2>Privater Zugang erforderlich.</h2><p>Öffne deinen persönlichen Family-Command-Link einmal in Safari und füge die Seite danach erneut zum Home-Bildschirm hinzu.</p></div></section>';document.querySelector('.bottomnav').style.display='none';document.getElementById('quickAdd').style.display='none';return;}
+    const src='https://lmrvapstojcecljjdgds.supabase.co/functions/v1/family-command-private-app?key='+encodeURIComponent(key)+'&v=20260821-16';
     document.write('<script src="'+src+'"><\/script>');
     document.write('<script src="./push-v2.js?v=20260821-1"><\/script>');
     document.write('<script src="./fixes.js?v=20260821-6"><\/script>');
+    document.write('<script src="./pro-ui.js?v=20260821-1"><\/script>');
   })();
   </script>
 </body>
