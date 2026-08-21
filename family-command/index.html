@@ -8,7 +8,7 @@
   <meta name="apple-mobile-web-app-status-bar-style" content="default">
   <meta name="apple-mobile-web-app-title" content="Family Command">
   <title>Family Command</title>
-  <link rel="manifest" href="./manifest.webmanifest?v=20260821-delete3">
+  <link rel="manifest" href="./manifest.webmanifest?v=20260821-delete4">
   <link rel="icon" href="./icon.svg" type="image/svg+xml">
   <link rel="apple-touch-icon" href="./icon.svg">
   <link rel="stylesheet" href="./styles.css?v=20260820-2">
@@ -88,21 +88,21 @@
     function injectPrivate(code){const s=document.createElement('script');s.textContent=code+'\n//# sourceURL=family-command-private-app.js';document.body.appendChild(s)}
 
     async function boot(){
-      const r=await browserFetch(PRIVATE_APP+'?v=20260821-delete3',{cache:'no-store',headers:{'x-fc-access':key}});
+      const r=await browserFetch(PRIVATE_APP+'?v=20260821-delete4',{cache:'no-store',headers:{'x-fc-access':key}});
       if(!r.ok)throw new Error('Privater App-Kern nicht erreichbar ('+r.status+').');
       injectPrivate(await r.text());
       if(typeof window.fcEventFilter==='undefined')window.fcEventFilter='all';
 
-      await loadScript('./ai-budget-guard.js?v=20260821-delete3');
-      await loadScript('./push-v2.js?v=20260821-delete3');
-      await loadScript('./pro-ui.js?v=20260821-delete3');
-      await loadScript('./balanced-ui.js?v=20260821-delete3');
-      await loadScript('./layout-safety.js?v=20260821-delete3');
-      await loadScript('./family-ai.js?v=20260821-delete3');
-      await loadScript('./pendencies.js?v=20260821-delete3');
-      await loadScript('./runtime-health.js?v=20260821-delete3');
-      await loadScript('./event-delete-fix.js?v=20260821-delete3');
-      document.documentElement.dataset.fcBoot='delete3-ok';
+      await loadScript('./ai-budget-guard.js?v=20260821-delete4');
+      await loadScript('./push-v2.js?v=20260821-delete4');
+      await loadScript('./pro-ui.js?v=20260821-delete4');
+      await loadScript('./balanced-ui.js?v=20260821-delete4');
+      await loadScript('./layout-safety.js?v=20260821-delete4');
+      await loadScript('./family-ai.js?v=20260821-delete4');
+      await loadScript('./pendencies.js?v=20260821-delete4');
+      await loadScript('./runtime-health.js?v=20260821-delete4');
+      await loadScript('./event-delete-fix.js?v=20260821-delete4');
+      document.documentElement.dataset.fcBoot='delete4-ok';
     }
     boot().catch(e=>{console.error('family_command_boot',e);fatal(e?.message)});
   })();
