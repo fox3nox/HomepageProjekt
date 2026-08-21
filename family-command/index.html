@@ -83,13 +83,10 @@
 
     if(params.get('access')){
       saveAccess(key);
-      // Der Cookie wird von aktuellem iOS beim Hinzufügen als Home-Screen-Web-App
-      // in die neue App übernommen. Der Zugangsschlüssel muss danach nicht im URL bleiben.
       params.delete('access');
       const clean=location.pathname+(params.toString()?'?'+params.toString():'')+location.hash;
       history.replaceState(null,'',clean);
     } else if(key) {
-      // Falls der Schlüssel aus localStorage kam, zusätzlich den Cookie nachziehen.
       saveAccess(key);
     }
 
@@ -99,9 +96,9 @@
       document.getElementById('quickAdd').style.display='none';
       return;
     }
-    const src='https://lmrvapstojcecljjdgds.supabase.co/functions/v1/family-command-private-app?key='+encodeURIComponent(key)+'&v=20260821-3';
+    const src='https://lmrvapstojcecljjdgds.supabase.co/functions/v1/family-command-private-app?key='+encodeURIComponent(key)+'&v=20260821-4';
     document.write('<script src="'+src+'"><\/script>');
-    document.write('<script src="./push-v2.js?v=20260820-5"><\/script>');
+    document.write('<script src="./push-v2.js?v=20260821-1"><\/script>');
     document.write('<script src="./fixes.js?v=20260820-5"><\/script>');
   })();
   </script>
