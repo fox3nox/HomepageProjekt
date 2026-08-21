@@ -1,4 +1,4 @@
-const FC2_BASE='https://lmrvapstojcecljjdgds.supabase.co/functions/v1/family-command-push2';
+const FC2_BASE='https://lmrvapstojcecljjdgds.supabase.co/functions/v1/family-command-push3';
 let FC2_PUBLIC=null;
 async function fc2PublicKey(){if(FC2_PUBLIC)return FC2_PUBLIC;const r=await fetch(FC2_BASE+'/key',{cache:'no-store'}),j=await r.json().catch(()=>({}));if(!r.ok||!j.publicKey)throw new Error(j.error||'Push-Schlüssel konnte nicht geladen werden');FC2_PUBLIC=j.publicKey;return FC2_PUBLIC}
 async function fc2Post(path,payload){const r=await fetch(FC2_BASE+path,{method:'POST',headers:{'content-type':'application/json'},body:JSON.stringify(payload)}),j=await r.json().catch(()=>({}));if(!r.ok)throw new Error(j.error||'HTTP '+r.status);return j}
