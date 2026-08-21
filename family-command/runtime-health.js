@@ -23,5 +23,12 @@
     try{if(document.getElementById('today')?.classList.contains('active')&&typeof renderToday==='function')renderToday()}catch(e){}
   },60000);
 
-  window.__fcRuntimeHealth={legacyPushDisabled:true,unifiedTodayTimer:true,installedAt:new Date().toISOString()};
+  /* pro-ui is loaded after the secure transport layer and defines its own opener;
+     restore the authenticated opener as the final authority. */
+  try{window.fcSecureTransportRefresh?.()}catch(e){}
+
+  /* Prompt an installed Home-Screen app to pick up the hardened service worker. */
+  try{navigator.serviceWorker?.getRegistration('./').then(r=>r?.update()).catch(()=>{})}catch(e){}
+
+  window.__fcRuntimeHealth={legacyPushDisabled:true,unifiedTodayTimer:true,secureDocumentOpener:true,installedAt:new Date().toISOString()};
 })();
