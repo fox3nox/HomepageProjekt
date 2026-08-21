@@ -62,6 +62,7 @@
   </div>
 
   <div class="toast" id="toast"></div>
+  <script src="https://cdn.jsdelivr.net/npm/jspdf@2.5.2/dist/jspdf.umd.min.js"></script>
   <script>
   (()=>{
     const STORE='fc-private-access-v1';
@@ -96,7 +97,7 @@
       document.getElementById('quickAdd').style.display='none';
       return;
     }
-    const src='https://lmrvapstojcecljjdgds.supabase.co/functions/v1/family-command-private-app?key='+encodeURIComponent(key)+'&v=20260821-5';
+    const src='https://lmrvapstojcecljjdgds.supabase.co/functions/v1/family-command-private-app?key='+encodeURIComponent(key)+'&v=20260821-6';
     document.write('<script src="'+src+'"><\/script>');
     document.write('<script src="./push-v2.js?v=20260821-1"><\/script>');
     document.write('<script src="./fixes.js?v=20260820-5"><\/script>');
