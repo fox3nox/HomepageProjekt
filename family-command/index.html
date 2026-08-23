@@ -9,10 +9,10 @@
   <meta name="apple-mobile-web-app-title" content="Family Command">
   <meta name="format-detection" content="telephone=no">
   <title>Family Command</title>
-  <link rel="manifest" href="./manifest.webmanifest?v=20260823-pro1">
+  <link rel="manifest" href="./manifest.webmanifest?v=20260823-pro2">
   <link rel="icon" href="./icon.svg" type="image/svg+xml">
   <link rel="apple-touch-icon" href="./icon.svg">
-  <link rel="stylesheet" href="./styles.css?v=20260823-pro1">
+  <link rel="stylesheet" href="./styles.css?v=20260823-pro2">
 </head>
 <body>
   <div class="app">
@@ -89,7 +89,7 @@
     function injectPrivate(code){const s=document.createElement('script');s.textContent=code+'\n//# sourceURL=family-command-private-app.js';document.body.appendChild(s)}
 
     async function boot(){
-      const v='20260823-pro1';
+      const v='20260823-pro2';
       const r=await browserFetch(PRIVATE_APP+'?v='+v,{cache:'no-store',headers:{'x-fc-access':key}});
       if(!r.ok)throw new Error('Privater App-Kern nicht erreichbar ('+r.status+').');
       injectPrivate(await r.text());
@@ -98,16 +98,19 @@
       await loadScript('./ai-budget-guard.js?v='+v);
       await loadScript('./push-v2.js?v='+v);
       await loadScript('./pro-ui.js?v='+v);
+      await loadScript('./runtime-health.js?v='+v);
       await loadScript('./family-ai.js?v='+v);
       await loadScript('./family-ai-original-links.js?v='+v);
       await loadScript('./pendencies.js?v='+v);
       await loadScript('./event-details.js?v='+v);
       await loadScript('./multi-link-ui.js?v='+v);
-      await loadScript('./runtime-health.js?v='+v);
       await loadScript('./event-delete-fix.js?v='+v);
       await loadScript('./events-controls-fix.js?v='+v);
       await loadScript('./professional-ui.js?v='+v);
-      document.documentElement.dataset.fcBoot='pro1-ok';
+
+      const hwIcon=document.querySelector('.navbtn[data-screen="homework"] .ico');
+      if(hwIcon){hwIcon.innerHTML='<svg viewBox="0 0 24 24" aria-hidden="true" style="width:20px;height:20px;fill:none;stroke:currentColor;stroke-width:1.8;stroke-linecap:round;stroke-linejoin:round"><rect x="5" y="4" width="14" height="17" rx="2"/><path d="M9 4.5V3h6v1.5M8.5 10.5l1.6 1.6 3-3M8.5 16h7"/></svg>';hwIcon.dataset.fcSvg='1'}
+      document.documentElement.dataset.fcBoot='pro2-ok';
       try{window.__fcProfessionalAudit?.()}catch(e){}
     }
     boot().catch(e=>{console.error('family_command_boot',e);fatal(e?.message)});
