@@ -1,42 +1,7 @@
-const CACHE='family-command-v8';
+const CACHE='family-command-v9';
 const CORE=['./','./index.html','./styles.css','./manifest.webmanifest','./icon.svg','./professional-ui.js','./family-ai-v2.js','./events-controls-fix.js','./event-delete-fix.js'];
-
-self.addEventListener('install',e=>{
-  e.waitUntil(caches.open(CACHE).then(c=>c.addAll(CORE)).catch(()=>{}));
-  self.skipWaiting();
-});
-self.addEventListener('activate',e=>{
-  e.waitUntil(caches.keys().then(keys=>Promise.all(keys.filter(k=>k.startsWith('family-command-')&&k!==CACHE).map(k=>caches.delete(k)))));
-  self.clients.claim();
-});
-self.addEventListener('fetch',e=>{
-  if(e.request.method!=='GET')return;
-  const u=new URL(e.request.url);
-  /* Never intercept or cache Supabase/private/cross-origin traffic. */
-  if(u.origin!==self.location.origin)return;
-
-  if(e.request.mode==='navigate'){
-    e.respondWith(fetch(e.request,{cache:'no-store'}).then(r=>{
-      if(r.ok)caches.open(CACHE).then(c=>c.put('./index.html',r.clone())).catch(()=>{});
-      return r;
-    }).catch(()=>caches.match('./index.html').then(r=>r||Response.error())));
-    return;
-  }
-
-  e.respondWith(fetch(e.request,{cache:'no-store'}).then(r=>{
-    if(r.ok&&r.type==='basic')caches.open(CACHE).then(c=>c.put(e.request,r.clone())).catch(()=>{});
-    return r;
-  }).catch(()=>caches.match(e.request,{ignoreSearch:true}).then(r=>r||new Response('',{status:504,statusText:'Offline'}))));
-});
-self.addEventListener('push',e=>{
-  let p={};try{p=e.data?e.data.json():{}}catch(_){p={body:e.data?e.data.text():''}}
-  e.waitUntil(self.registration.showNotification(p.title||'Family Command',{body:p.body||'',tag:p.tag||'family-command',data:{url:p.url||'./'}}));
-});
-self.addEventListener('notificationclick',e=>{
-  e.notification.close();
-  const target=new URL(e.notification.data?.url||'./',self.location.href).href;
-  e.waitUntil(clients.matchAll({type:'window',includeUncontrolled:true}).then(list=>{
-    for(const w of list){if('focus'in w){w.navigate(target);return w.focus()}}
-    return clients.openWindow(target);
-  }));
-});
+self.addEventListener('install',e=>{e.waitUntil(caches.open(CACHE).then(c=>c.addAll(CORE)).catch(()=>{}));self.skipWaiting()});
+self.addEventListener('activate',e=>{e.waitUntil(caches.keys().then(keys=>Promise.all(keys.filter(k=>k.startsWith('family-command-')&&k!==CACHE).map(k=>caches.delete(k)))));self.clients.claim()});
+self.addEventListener('fetch',e=>{if(e.request.method!=='GET')return;const u=new URL(e.request.url);if(u.origin!==self.location.origin)return;if(e.request.mode==='navigate'){e.respondWith(fetch(e.request,{cache:'no-store'}).then(r=>{if(r.ok)caches.open(CACHE).then(c=>c.put('./index.html',r.clone())).catch(()=>{});return r}).catch(()=>caches.match('./index.html').then(r=>r||Response.error())));return}e.respondWith(fetch(e.request,{cache:'no-store'}).then(r=>{if(r.ok&&r.type==='basic')caches.open(CACHE).then(c=>c.put(e.request,r.clone())).catch(()=>{});return r}).catch(()=>caches.match(e.request,{ignoreSearch:true}).then(r=>r||new Response('',{status:504,statusText:'Offline'}))))});
+self.addEventListener('push',e=>{let p={};try{p=e.data?e.data.json():{}}catch(_){p={body:e.data?e.data.text():''}}e.waitUntil(self.registration.showNotification(p.title||'Family Command',{body:p.body||'',tag:p.tag||'family-command',data:{url:p.url||'./'}}))});
+self.addEventListener('notificationclick',e=>{e.notification.close();const target=new URL(e.notification.data?.url||'./',self.location.href).href;e.waitUntil(clients.matchAll({type:'window',includeUncontrolled:true}).then(list=>{for(const w of list){if('focus'in w){w.navigate(target);return w.focus()}}return clients.openWindow(target)}))});
