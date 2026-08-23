@@ -1,6 +1,6 @@
-/* Family Command · Termine controls stable v4 · 2026-08-23 */
+/* Family Command · Termine controls stable v5 · 2026-08-23 */
 (()=>{
-  if(window.__fcEventsControlsV4)return;window.__fcEventsControlsV4=true;
+  if(window.__fcEventsControlsV5)return;window.__fcEventsControlsV5=true;
   const root=()=>document.getElementById('events');
   const filterIds=()=>['all',...(Array.isArray(data?.people)?data.people.map(p=>String(p.id)):[])];
   const normalizeFilter=value=>{const ids=filterIds(),v=String(value||'');return ids.includes(v)?v:'all'};
@@ -80,11 +80,26 @@
   try{
     if(typeof renderEvents==='function'){
       const base=renderEvents;
-      const stable=async function(filter){
-        const id=setFilter(typeof filter==='string'&&filter?filter:currentFilter());
-        const out=await Promise.resolve(base.call(this,id));bindControls();return out;
+      let rendering=false,desired=currentFilter(),rendered='';
+      let waiters=[];
+      const settle=(kind,value)=>{const ws=waiters.splice(0);ws.forEach(w=>w[kind](value))};
+      const drain=async()=>{
+        if(rendering)return;rendering=true;
+        try{
+          while(rendered!==desired){
+            const id=desired;setFilter(id);
+            await Promise.resolve(base.call(window,id));
+            rendered=id;bindControls();
+          }
+          settle('resolve');
+        }catch(err){settle('reject',err);throw err}
+        finally{rendering=false;if(rendered!==desired)queueMicrotask(()=>drain().catch(e=>console.error('fc_events_render',e)))}
       };
-      window.renderEvents=stable;try{renderEvents=stable}catch(e){}
+      const stable=function(filter){
+        desired=setFilter(typeof filter==='string'&&filter?filter:currentFilter());
+        return new Promise((resolve,reject)=>{waiters.push({resolve,reject});drain().catch(()=>{})});
+      };
+      stable.__fcBase=base;window.renderEvents=stable;try{renderEvents=stable}catch(e){}
     }
   }catch(e){console.error('fc_events_stable_wrap',e)}
 
@@ -110,7 +125,7 @@
     const filterTargets=filterButtons.map(filterForButton),monthTargets=monthButtons.map(monthForButton);
     const activeFilters=filterButtons.filter(b=>b.classList.contains('active')).length;
     window.__fcEventsAudit={
-      version:4,ok:filterButtons.length===ids.length&&filterTargets.every(x=>ids.includes(x))&&monthButtons.length===monthSections.length&&monthTargets.every(id=>!!id&&!!document.getElementById(id))&&activeFilters===1&&!duplicateEventIds.length&&!invalidEvents.length,
+      version:5,ok:filterButtons.length===ids.length&&filterTargets.every(x=>ids.includes(x))&&monthButtons.length===monthSections.length&&monthTargets.every(id=>!!id&&!!document.getElementById(id))&&activeFilters===1&&!duplicateEventIds.length&&!invalidEvents.length,
       filterButtons:filterButtons.length,expectedFilters:ids.length,filterTargets,activeFilters,monthButtons:monthButtons.length,monthSections:monthSections.length,monthTargets,
       duplicateDomIds:[...new Set(duplicateDomIds)],duplicateEventIds,invalidEventCount:invalidEvents.length,filter:currentFilter(),selectedMonth,checkedAt:new Date().toISOString()
     };
@@ -119,7 +134,7 @@
   let queued=false;
   const observer=new MutationObserver(()=>{if(queued)return;queued=true;queueMicrotask(()=>{queued=false;bindControls()})});
   try{observer.observe(root()||document.body,{childList:true,subtree:true})}catch(e){}
-  const style=document.createElement('style');style.id='fc-events-controls-v4-style';style.textContent=`
+  const style=document.createElement('style');style.id='fc-events-controls-v5-style';style.textContent=`
     #events .pro-filters,#events .pro-month-jump{position:relative!important;z-index:40!important;pointer-events:auto!important;isolation:isolate}
     #events .pro-filter,#events .pro-month-jump button{position:relative!important;z-index:41!important;pointer-events:auto!important;touch-action:manipulation!important;-webkit-tap-highlight-color:rgba(38,54,81,.10)!important;cursor:pointer!important;min-height:42px}
     #events .pro-filter:active,#events .pro-month-jump button:active{transform:scale(.97)}
