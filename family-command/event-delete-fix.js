@@ -1,7 +1,7 @@
-/* Family Command · reliable event deletion v4 · 2026-08-21 */
+/* Family Command · reliable event deletion v5 · 2026-08-23 */
 (()=>{
+  if(window.__fcEventDeleteV5)return;window.__fcEventDeleteV5=true;
   const TOMBSTONES='fc-deleted-events-v1';
-  const FORCED_DELETES=['oli-aquarium-sale-20260821-1700'];
   const MODAL_ID='fcDeleteConfirm';
   let lastTouch=0;
 
@@ -30,12 +30,12 @@
     document.getElementById(MODAL_ID)?.remove();
     const ev=eventById(sid),title=ev?.title||'diesen Termin';
     const m=document.createElement('div');m.id=MODAL_ID;m.className='fc-delete-confirm';
-    m.innerHTML='<div class="fc-delete-sheet" role="dialog" aria-modal="true"><h3>Termin löschen?</h3><p></p><div><button type="button" class="fc-delete-cancel">Abbrechen</button><button type="button" class="fc-delete-yes">Löschen</button></div></div>';
+    m.innerHTML='<div class="fc-delete-sheet" role="dialog" aria-modal="true" aria-labelledby="fcDeleteTitle"><h3 id="fcDeleteTitle">Termin löschen?</h3><p></p><div><button type="button" class="fc-delete-cancel">Abbrechen</button><button type="button" class="fc-delete-yes">Löschen</button></div></div>';
     m.querySelector('p').textContent='„'+title+'“ wird dauerhaft gelöscht.';
-    m.querySelector('.fc-delete-cancel').addEventListener('click',()=>m.remove(),{once:true});
-    m.querySelector('.fc-delete-yes').addEventListener('click',()=>finishDelete(sid,card),{once:true});
+    const cancel=m.querySelector('.fc-delete-cancel'),yes=m.querySelector('.fc-delete-yes');
+    cancel.addEventListener('click',()=>m.remove(),{once:true});yes.addEventListener('click',()=>finishDelete(sid,card),{once:true});
     m.addEventListener('click',e=>{if(e.target===m)m.remove()});
-    document.body.appendChild(m);
+    document.body.appendChild(m);setTimeout(()=>cancel.focus(),0);
   }
   function idFromInline(button){
     const attr=button?.getAttribute?.('onclick')||'',m=attr.match(/removeEvent\((.*)\)/);if(!m)return'';
@@ -44,20 +44,18 @@
   function inferId(button){
     const direct=button?.dataset?.fcDeleteEvent||idFromInline(button);if(direct)return String(direct);
     const card=button?.closest?.('.pro-event,.fc-month-event,.event-card,article');if(!card)return'';
-    const title=(card.querySelector('h3')?.textContent||'').trim();
-    const time=(card.querySelector('time')?.textContent||'').trim().slice(0,5);
+    const title=(card.querySelector('h3')?.textContent||'').trim(),time=(card.querySelector('time')?.textContent||'').trim().slice(0,5);
     const matches=(data?.events||[]).filter(e=>(!title||String(e.title||'').trim()===title)&&(!time||String(e.time||'')===time));
     return matches.length===1?String(matches[0].id):'';
   }
   function activate(button,e){
     const id=button.dataset.fcDeleteEvent||inferId(button);if(!id)return;
-    e?.preventDefault?.();e?.stopPropagation?.();e?.stopImmediatePropagation?.();
-    showConfirm(id,button.closest('.pro-event,.fc-month-event,.event-card,article'));
+    e?.preventDefault?.();e?.stopPropagation?.();e?.stopImmediatePropagation?.();showConfirm(id,button.closest('.pro-event,.fc-month-event,.event-card,article'));
   }
   function bindButton(button){
     if(!(button instanceof HTMLElement))return;
     const id=inferId(button);if(!id)return;
-    button.dataset.fcDeleteEvent=id;button.removeAttribute('onclick');button.type='button';button.classList.add('fc-event-delete-live');
+    button.dataset.fcDeleteEvent=id;button.removeAttribute('onclick');button.type='button';button.classList.add('fc-event-delete-live');button.setAttribute('aria-label','Termin löschen');
     if(button.dataset.fcDeleteBound==='1')return;button.dataset.fcDeleteBound='1';
     button.addEventListener('touchend',e=>{lastTouch=Date.now();activate(button,e)},{passive:false,capture:true});
     button.addEventListener('pointerup',e=>{if(e.pointerType==='touch')return;activate(button,e)},true);
@@ -65,47 +63,30 @@
   }
   function bindAll(){
     const root=document.getElementById('events');if(!root)return;
-    root.querySelectorAll('button').forEach(b=>{
-      const txt=(b.textContent||'').trim(),oc=String(b.getAttribute('onclick')||'');
-      if(txt==='Löschen'||b.dataset.fcDeleteEvent||oc.includes('removeEvent('))bindButton(b);
-    });
+    root.querySelectorAll('button').forEach(b=>{const txt=(b.textContent||'').trim(),oc=String(b.getAttribute('onclick')||'');if(txt==='Löschen'||b.dataset.fcDeleteEvent||oc.includes('removeEvent('))bindButton(b)});
   }
 
-  window.removeEvent=function(id){showConfirm(id,null);return true};
-  try{removeEvent=window.removeEvent}catch(e){}
+  window.removeEvent=function(id){showConfirm(id,null);return true};try{removeEvent=window.removeEvent}catch(e){}
   window.fcRestoreDeletedEvent=function(id){const s=loadDeleted();s.delete(String(id||''));saveDeleted(s)};
 
-  const style=document.createElement('style');style.id='fc-delete-v4-style';style.textContent=`
+  const style=document.createElement('style');style.id='fc-delete-v5-style';style.textContent=`
     #events .pro-event-actions,#events .fc-term-bottom{position:relative!important;z-index:20!important;pointer-events:auto!important}
     #events button.fc-event-delete-live{position:relative!important;z-index:30!important;pointer-events:auto!important;touch-action:manipulation!important;-webkit-tap-highlight-color:rgba(185,28,28,.12)!important;color:#a33b42!important;border:1px solid #e6b6ba!important;background:#fff7f7!important;cursor:pointer!important;min-width:70px!important;min-height:38px!important}
     #events .pro-event::before,#events .pro-event::after,#events .fc-month-event::before,#events .fc-month-event::after{pointer-events:none!important}
     .fc-delete-confirm{position:fixed;inset:0;z-index:99999;background:rgba(15,23,42,.42);display:flex;align-items:flex-end;justify-content:center;padding:14px 14px calc(14px + env(safe-area-inset-bottom));backdrop-filter:blur(4px);pointer-events:auto!important}
-    .fc-delete-sheet{width:min(100%,520px);background:#fff;border-radius:20px;padding:18px;box-shadow:0 18px 50px rgba(15,23,42,.22);pointer-events:auto!important}
-    .fc-delete-sheet h3{margin:0;color:#172033;font-size:19px}.fc-delete-sheet p{margin:7px 0 16px;color:#667085;font-size:13px;line-height:1.4}
-    .fc-delete-sheet>div{display:grid;grid-template-columns:1fr 1fr;gap:9px}.fc-delete-sheet button{min-height:46px;border-radius:12px;font-weight:850;font-size:14px;pointer-events:auto!important;touch-action:manipulation!important}
-    .fc-delete-cancel{background:#f5f7fa;border:1px solid #dce3ec;color:#455267}.fc-delete-yes{background:#b4232c;border:1px solid #b4232c;color:#fff}
+    .fc-delete-sheet{width:min(100%,520px);background:#fff;border-radius:20px;padding:18px;box-shadow:0 18px 50px rgba(15,23,42,.22);pointer-events:auto!important}.fc-delete-sheet h3{margin:0;color:#172033;font-size:19px}.fc-delete-sheet p{margin:7px 0 16px;color:#667085;font-size:13px;line-height:1.4}.fc-delete-sheet>div{display:grid;grid-template-columns:1fr 1fr;gap:9px}.fc-delete-sheet button{min-height:46px;border-radius:12px;font-weight:850;font-size:14px;pointer-events:auto!important;touch-action:manipulation!important}.fc-delete-cancel{background:#f5f7fa;border:1px solid #dce3ec;color:#455267}.fc-delete-yes{background:#b4232c;border:1px solid #b4232c;color:#fff}
   `;document.head.appendChild(style);
 
-  /* Bind again after every Termine render, not only through mutation timing. */
   try{
     if(typeof renderEvents==='function'&&!window.__fcDeleteRenderWrapped){
-      window.__fcDeleteRenderWrapped=true;
-      const base=renderEvents;
-      const wrapped=async function(...args){const out=await base.apply(this,args);bindAll();requestAnimationFrame(bindAll);return out};
-      window.renderEvents=wrapped;try{renderEvents=wrapped}catch(e){}
+      window.__fcDeleteRenderWrapped=true;const base=renderEvents;
+      const wrapped=async function(...args){const out=await base.apply(this,args);bindAll();requestAnimationFrame(bindAll);return out};window.renderEvents=wrapped;try{renderEvents=wrapped}catch(e){}
     }
   }catch(e){console.error('fc_delete_wrap_render',e)}
 
-  const observer=new MutationObserver(()=>queueMicrotask(bindAll));
-  try{observer.observe(document.getElementById('events')||document.body,{childList:true,subtree:true})}catch(e){}
-  document.addEventListener('touchstart',()=>{}, {passive:true});
-
-  function prune(){
-    if(!Array.isArray(data?.events))return false;const deleted=loadDeleted();if(!deleted.size)return false;
-    const before=data.events.length;data.events=data.events.filter(x=>!deleted.has(String(x.id)));return before!==data.events.length;
-  }
-  try{const deleted=loadDeleted();FORCED_DELETES.forEach(id=>deleted.add(id));saveDeleted(deleted)}catch(e){}
+  const observer=new MutationObserver(()=>queueMicrotask(bindAll));try{observer.observe(document.getElementById('events')||document.body,{childList:true,subtree:true})}catch(e){}
+  function prune(){if(!Array.isArray(data?.events))return false;const deleted=loadDeleted();if(!deleted.size)return false;const before=data.events.length;data.events=data.events.filter(x=>!deleted.has(String(x.id)));return before!==data.events.length}
   try{if(prune())persist()}catch(e){}
-  bindAll();setTimeout(bindAll,0);setTimeout(bindAll,250);setTimeout(bindAll,1000);
-  window.__fcDeleteHealth={version:4,directBinding:true,renderWrapped:true,customConfirm:true,tombstones:true};
+  bindAll();setTimeout(bindAll,0);setTimeout(bindAll,250);
+  window.__fcDeleteHealth={version:5,directBinding:true,renderWrapped:true,customConfirm:true,tombstones:true,hardcodedDeletes:false};
 })();
