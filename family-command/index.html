@@ -105,8 +105,8 @@
       await loadScript('./multi-link-ui.js?v=20260823-debug5');
       await loadScript('./runtime-health.js?v=20260823-debug5');
       await loadScript('./event-delete-fix.js?v=20260823-debug5');
-      await loadScript('./events-controls-fix.js?v=20260823-debug5');
-      document.documentElement.dataset.fcBoot='debug5-ok';
+      await loadScript('./events-controls-fix.js?v=20260823-debug6');
+      document.documentElement.dataset.fcBoot='debug6-ok';
     }
     boot().catch(e=>{console.error('family_command_boot',e);fatal(e?.message)});
   })();
