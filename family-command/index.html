@@ -3,15 +3,16 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
-  <meta name="theme-color" content="#263651">
+  <meta name="theme-color" content="#263f61">
   <meta name="apple-mobile-web-app-capable" content="yes">
   <meta name="apple-mobile-web-app-status-bar-style" content="default">
   <meta name="apple-mobile-web-app-title" content="Family Command">
+  <meta name="format-detection" content="telephone=no">
   <title>Family Command</title>
-  <link rel="manifest" href="./manifest.webmanifest?v=20260823-debug5">
+  <link rel="manifest" href="./manifest.webmanifest?v=20260823-pro1">
   <link rel="icon" href="./icon.svg" type="image/svg+xml">
   <link rel="apple-touch-icon" href="./icon.svg">
-  <link rel="stylesheet" href="./styles.css?v=20260820-2">
+  <link rel="stylesheet" href="./styles.css?v=20260823-pro1">
 </head>
 <body>
   <div class="app">
@@ -21,7 +22,7 @@
           <div class="mark">FC</div>
           <div><h1>Family Command</h1><p>Alles Wichtige, bevor der Tag losgeht.</p></div>
         </div>
-        <button class="iconbtn" id="quickAdd" aria-label="Schnell hinzufügen">＋</button>
+        <button type="button" class="iconbtn" id="quickAdd" aria-label="Schnell hinzufügen">＋</button>
       </div>
     </header>
 
@@ -33,35 +34,35 @@
       <section id="more" class="screen"></section>
     </main>
 
-    <nav class="bottomnav">
+    <nav class="bottomnav" aria-label="Hauptnavigation">
       <div class="bottomnav-in">
-        <button class="navbtn active" data-screen="today"><span class="ico">⌂</span><span>Heute</span></button>
-        <button class="navbtn" data-screen="week"><span class="ico">▦</span><span>Woche</span></button>
-        <button class="navbtn" data-screen="people"><span class="ico">●</span><span>Personen</span></button>
-        <button class="navbtn" data-screen="events"><span class="ico">◷</span><span>Termine</span></button>
-        <button class="navbtn" data-screen="more"><span class="ico">•••</span><span>Mehr</span></button>
+        <button type="button" class="navbtn active" data-screen="today"><span class="ico">⌂</span><span>Heute</span></button>
+        <button type="button" class="navbtn" data-screen="week"><span class="ico">▦</span><span>Woche</span></button>
+        <button type="button" class="navbtn" data-screen="people"><span class="ico">●</span><span>Personen</span></button>
+        <button type="button" class="navbtn" data-screen="events"><span class="ico">◷</span><span>Termine</span></button>
+        <button type="button" class="navbtn" data-screen="more"><span class="ico">•••</span><span>Mehr</span></button>
       </div>
     </nav>
   </div>
 
   <div class="modal" id="eventModal">
-    <div class="sheet">
-      <h3>Termin hinzufügen</h3>
+    <div class="sheet" role="dialog" aria-modal="true" aria-labelledby="eventModalTitle">
+      <h3 id="eventModalTitle">Termin hinzufügen</h3>
       <div class="fields">
-        <div class="field"><label>FÜR</label><select id="eventPerson"></select></div>
-        <div class="field"><label>TITEL</label><input id="eventTitle" placeholder="z. B. Arzttermin"></div>
+        <div class="field"><label for="eventPerson">FÜR</label><select id="eventPerson"></select></div>
+        <div class="field"><label for="eventTitle">TITEL</label><input id="eventTitle" autocomplete="off" placeholder="z. B. Arzttermin"></div>
         <div class="row2">
-          <div class="field"><label>DATUM</label><input id="eventDate" type="date"></div>
-          <div class="field"><label>ZEIT</label><input id="eventTime" type="time"></div>
+          <div class="field"><label for="eventDate">DATUM</label><input id="eventDate" type="date"></div>
+          <div class="field"><label for="eventTime">ZEIT</label><input id="eventTime" type="time"></div>
         </div>
-        <div class="field"><label>NOTIZ</label><textarea id="eventNote" placeholder="Ort, was mitnehmen, weitere Infos …"></textarea></div>
-        <button class="action" id="saveEvent">Speichern</button>
-        <button class="action light" id="closeEvent">Abbrechen</button>
+        <div class="field"><label for="eventNote">NOTIZ</label><textarea id="eventNote" placeholder="Ort, was mitnehmen, weitere Infos …"></textarea></div>
+        <button type="button" class="action" id="saveEvent">Speichern</button>
+        <button type="button" class="action light" id="closeEvent">Abbrechen</button>
       </div>
     </div>
   </div>
 
-  <div class="toast" id="toast"></div>
+  <div class="toast" id="toast" role="status" aria-live="polite" aria-atomic="true"></div>
   <script src="https://cdn.jsdelivr.net/npm/jspdf@2.5.2/dist/jspdf.umd.min.js"></script>
   <script>
   (()=>{
@@ -71,8 +72,8 @@
     function readCookie(name){const prefix=name+'=';const part=document.cookie.split(';').map(x=>x.trim()).find(x=>x.startsWith(prefix));return part?decodeURIComponent(part.slice(prefix.length)):''}
     function saveAccess(value){try{localStorage.setItem(STORE,value)}catch(e){}document.cookie=COOKIE+'='+encodeURIComponent(value)+'; Max-Age=31536000; Path=/HomepageProjekt/family-command/; Secure; SameSite=Strict'}
     function fatal(message){
-      document.querySelector('.content').innerHTML='<section class="screen active"><div class="hero"><div class="eyebrow">Family Command</div><h2>App konnte nicht vollständig geladen werden.</h2><p>'+String(message||'Bitte die App einmal vollständig schließen und neu öffnen.')+'</p></div></section>';
-      document.querySelector('.bottomnav').style.display='none';document.getElementById('quickAdd').style.display='none';
+      const root=document.querySelector('.content');if(root){root.textContent='';const section=document.createElement('section');section.className='screen active';section.innerHTML='<div class="hero"><div class="eyebrow">Family Command</div><h2>App konnte nicht vollständig geladen werden.</h2><p></p></div>';section.querySelector('p').textContent=String(message||'Bitte die App einmal vollständig schließen und neu öffnen.');root.appendChild(section)}
+      const nav=document.querySelector('.bottomnav'),add=document.getElementById('quickAdd');if(nav)nav.style.display='none';if(add)add.style.display='none';
     }
     let key=params.get('access')||readCookie(COOKIE)||'';if(!key){try{key=localStorage.getItem(STORE)||''}catch(e){}}
     if(params.get('access')){saveAccess(key);params.delete('access');const clean=location.pathname+(params.toString()?'?'+params.toString():'')+location.hash;history.replaceState(null,'',clean)}else if(key)saveAccess(key);
@@ -88,25 +89,26 @@
     function injectPrivate(code){const s=document.createElement('script');s.textContent=code+'\n//# sourceURL=family-command-private-app.js';document.body.appendChild(s)}
 
     async function boot(){
-      const r=await browserFetch(PRIVATE_APP+'?v=20260823-debug5',{cache:'no-store',headers:{'x-fc-access':key}});
+      const v='20260823-pro1';
+      const r=await browserFetch(PRIVATE_APP+'?v='+v,{cache:'no-store',headers:{'x-fc-access':key}});
       if(!r.ok)throw new Error('Privater App-Kern nicht erreichbar ('+r.status+').');
       injectPrivate(await r.text());
       if(typeof window.fcEventFilter==='undefined')window.fcEventFilter='all';
 
-      await loadScript('./ai-budget-guard.js?v=20260823-debug5');
-      await loadScript('./push-v2.js?v=20260823-debug5');
-      await loadScript('./pro-ui.js?v=20260823-debug5');
-      await loadScript('./balanced-ui.js?v=20260823-debug5');
-      await loadScript('./layout-safety.js?v=20260823-debug5');
-      await loadScript('./family-ai.js?v=20260823-debug5');
-      await loadScript('./family-ai-original-links.js?v=20260823-debug5');
-      await loadScript('./pendencies.js?v=20260823-debug5');
-      await loadScript('./event-details.js?v=20260823-debug5');
-      await loadScript('./multi-link-ui.js?v=20260823-debug5');
-      await loadScript('./runtime-health.js?v=20260823-debug5');
-      await loadScript('./event-delete-fix.js?v=20260823-debug5');
-      await loadScript('./events-controls-fix.js?v=20260823-debug6');
-      document.documentElement.dataset.fcBoot='debug6-ok';
+      await loadScript('./ai-budget-guard.js?v='+v);
+      await loadScript('./push-v2.js?v='+v);
+      await loadScript('./pro-ui.js?v='+v);
+      await loadScript('./family-ai.js?v='+v);
+      await loadScript('./family-ai-original-links.js?v='+v);
+      await loadScript('./pendencies.js?v='+v);
+      await loadScript('./event-details.js?v='+v);
+      await loadScript('./multi-link-ui.js?v='+v);
+      await loadScript('./runtime-health.js?v='+v);
+      await loadScript('./event-delete-fix.js?v='+v);
+      await loadScript('./events-controls-fix.js?v='+v);
+      await loadScript('./professional-ui.js?v='+v);
+      document.documentElement.dataset.fcBoot='pro1-ok';
+      try{window.__fcProfessionalAudit?.()}catch(e){}
     }
     boot().catch(e=>{console.error('family_command_boot',e);fatal(e?.message)});
   })();
