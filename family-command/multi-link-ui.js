@@ -15,7 +15,9 @@
     }catch(e){return r}
   };
   function dedupeDocs(){const root=document.getElementById('docList');if(!root)return;const seen=new Set();root.querySelectorAll('.pro-doc-row').forEach(row=>{const b=row.querySelector('[onclick*="fcOpenOriginal"]'),s=b?.getAttribute('onclick')||'',m=s.match(/fcOpenOriginal\((['"]?)(.*?)\1\)/),id=m?.[2]||'';if(id&&seen.has(id))row.remove();else if(id)seen.add(id)});}
-  try{if(typeof renderDocs==='function'){const old=renderDocs;const wrap=async function(...a){const x=await old.apply(this,a);dedupeDocs();return x};window.renderDocs=wrap;try{renderDocs=wrap}catch(e){}}}catch(e){}
-  const ob=new MutationObserver(()=>queueMicrotask(dedupeDocs));try{ob.observe(document.body,{subtree:true,childList:true})}catch(e){}
-  window.__fcMultiLinkHealth={version:1,expandedList:true,dedupeDocs:true};
+  function dedupePicker(){const root=document.getElementById('fcDocPicker');if(!root)return;const seen=new Set();root.querySelectorAll('.fc-picker-existing[data-doc]').forEach(button=>{const id=String(button.dataset.doc||'');if(id&&seen.has(id))button.remove();else if(id)seen.add(id)});}
+  function dedupeUi(){dedupeDocs();dedupePicker()}
+  try{if(typeof renderDocs==='function'){const old=renderDocs;const wrap=async function(...a){const x=await old.apply(this,a);dedupeUi();return x};window.renderDocs=wrap;try{renderDocs=wrap}catch(e){}}}catch(e){}
+  const ob=new MutationObserver(()=>queueMicrotask(dedupeUi));try{ob.observe(document.body,{subtree:true,childList:true})}catch(e){}
+  window.__fcMultiLinkHealth={version:2,expandedList:true,dedupeDocs:true,dedupePicker:true};
 })();
