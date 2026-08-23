@@ -1,5 +1,5 @@
-const CACHE='family-command-v6';
-const CORE=['./','./index.html','./styles.css','./manifest.webmanifest','./icon.svg'];
+const CACHE='family-command-v7';
+const CORE=['./','./index.html','./styles.css','./manifest.webmanifest','./icon.svg','./professional-ui.js'];
 
 self.addEventListener('install',e=>{
   e.waitUntil(caches.open(CACHE).then(c=>c.addAll(CORE)).catch(()=>{}));
