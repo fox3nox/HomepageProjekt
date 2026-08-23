@@ -1,4 +1,4 @@
-const CACHE='family-command-v9';
+const CACHE='family-command-v10';
 const CORE=['./','./index.html','./styles.css','./manifest.webmanifest','./icon.svg','./professional-ui.js','./family-ai-v2.js','./events-controls-fix.js','./event-delete-fix.js'];
 self.addEventListener('install',e=>{e.waitUntil(caches.open(CACHE).then(c=>c.addAll(CORE)).catch(()=>{}));self.skipWaiting()});
 self.addEventListener('activate',e=>{e.waitUntil(caches.keys().then(keys=>Promise.all(keys.filter(k=>k.startsWith('family-command-')&&k!==CACHE).map(k=>caches.delete(k)))));self.clients.claim()});
