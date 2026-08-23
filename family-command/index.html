@@ -3,16 +3,16 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
-  <meta name="theme-color" content="#263f61">
+  <meta name="theme-color" content="#07101d">
   <meta name="apple-mobile-web-app-capable" content="yes">
-  <meta name="apple-mobile-web-app-status-bar-style" content="default">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
   <meta name="apple-mobile-web-app-title" content="Family Command">
   <meta name="format-detection" content="telephone=no">
   <title>Family Command</title>
-  <link rel="manifest" href="./manifest.webmanifest?v=20260823-pro3">
+  <link rel="manifest" href="./manifest.webmanifest?v=20260823-pro4">
   <link rel="icon" href="./icon.svg" type="image/svg+xml">
   <link rel="apple-touch-icon" href="./icon.svg">
-  <link rel="stylesheet" href="./styles.css?v=20260823-pro3">
+  <link rel="stylesheet" href="./styles.css?v=20260823-pro4">
 </head>
 <body>
   <div class="app">
@@ -71,30 +71,18 @@
     const params=new URLSearchParams(location.search);
     function readCookie(name){const prefix=name+'=';const part=document.cookie.split(';').map(x=>x.trim()).find(x=>x.startsWith(prefix));return part?decodeURIComponent(part.slice(prefix.length)):''}
     function saveAccess(value){try{localStorage.setItem(STORE,value)}catch(e){}document.cookie=COOKIE+'='+encodeURIComponent(value)+'; Max-Age=31536000; Path=/HomepageProjekt/family-command/; Secure; SameSite=Strict'}
-    function fatal(message){
-      const root=document.querySelector('.content');if(root){root.textContent='';const section=document.createElement('section');section.className='screen active';section.innerHTML='<div class="hero"><div class="eyebrow">Family Command</div><h2>App konnte nicht vollständig geladen werden.</h2><p></p></div>';section.querySelector('p').textContent=String(message||'Bitte die App einmal vollständig schließen und neu öffnen.');root.appendChild(section)}
-      const nav=document.querySelector('.bottomnav'),add=document.getElementById('quickAdd');if(nav)nav.style.display='none';if(add)add.style.display='none';
-    }
+    function fatal(message){const root=document.querySelector('.content');if(root){root.textContent='';const section=document.createElement('section');section.className='screen active';section.innerHTML='<div class="hero"><h2>App konnte nicht vollständig geladen werden.</h2><p></p></div>';section.querySelector('p').textContent=String(message||'Bitte die App einmal vollständig schließen und neu öffnen.');root.appendChild(section)}const nav=document.querySelector('.bottomnav'),add=document.getElementById('quickAdd');if(nav)nav.style.display='none';if(add)add.style.display='none'}
     let key=params.get('access')||readCookie(COOKIE)||'';if(!key){try{key=localStorage.getItem(STORE)||''}catch(e){}}
     if(params.get('access')){saveAccess(key);params.delete('access');const clean=location.pathname+(params.toString()?'?'+params.toString():'')+location.hash;history.replaceState(null,'',clean)}else if(key)saveAccess(key);
     if(!key){fatal('Privater Zugang erforderlich. Öffne deinen persönlichen Family-Command-Link einmal in Safari.');return}
-
     const browserFetch=window.fetch.bind(window);
-    window.fetch=function(input,init){
-      try{const u=typeof input==='string'?input:(input instanceof Request?input.url:'');if(u.includes('/functions/v1/family-command-app/push/'))return Promise.resolve(new Response(JSON.stringify({ok:true,skipped:true}),{status:200,headers:{'content-type':'application/json'}}))}catch(e){}
-      return browserFetch(input,init);
-    };
-
+    window.fetch=function(input,init){try{const u=typeof input==='string'?input:(input instanceof Request?input.url:'');if(u.includes('/functions/v1/family-command-app/push/'))return Promise.resolve(new Response(JSON.stringify({ok:true,skipped:true}),{status:200,headers:{'content-type':'application/json'}}))}catch(e){}return browserFetch(input,init)};
     function loadScript(src){return new Promise((resolve,reject)=>{const s=document.createElement('script');s.src=src;s.onload=()=>resolve();s.onerror=()=>reject(new Error('Datei konnte nicht geladen werden: '+src));document.body.appendChild(s)})}
     function injectPrivate(code){const s=document.createElement('script');s.textContent=code+'\n//# sourceURL=family-command-private-app.js';document.body.appendChild(s)}
-
     async function boot(){
-      const v='20260823-pro3';
-      const r=await browserFetch(PRIVATE_APP+'?v='+v,{cache:'no-store',headers:{'x-fc-access':key}});
-      if(!r.ok)throw new Error('Privater App-Kern nicht erreichbar ('+r.status+').');
-      injectPrivate(await r.text());
-      if(typeof window.fcEventFilter==='undefined')window.fcEventFilter='all';
-
+      const v='20260823-pro4';
+      const r=await browserFetch(PRIVATE_APP+'?v='+v,{cache:'no-store',headers:{'x-fc-access':key}});if(!r.ok)throw new Error('Privater App-Kern nicht erreichbar ('+r.status+').');
+      injectPrivate(await r.text());if(typeof window.fcEventFilter==='undefined')window.fcEventFilter='all';
       await loadScript('./ai-budget-guard.js?v='+v);
       await loadScript('./push-v2.js?v='+v);
       await loadScript('./pro-ui.js?v='+v);
@@ -107,11 +95,8 @@
       await loadScript('./event-delete-fix.js?v='+v);
       await loadScript('./events-controls-fix.js?v='+v);
       await loadScript('./professional-ui.js?v='+v);
-
-      const hwIcon=document.querySelector('.navbtn[data-screen="homework"] .ico');
-      if(hwIcon){hwIcon.innerHTML='<svg viewBox="0 0 24 24" aria-hidden="true" style="width:20px;height:20px;fill:none;stroke:currentColor;stroke-width:1.8;stroke-linecap:round;stroke-linejoin:round"><rect x="5" y="4" width="14" height="17" rx="2"/><path d="M9 4.5V3h6v1.5M8.5 10.5l1.6 1.6 3-3M8.5 16h7"/></svg>';hwIcon.dataset.fcSvg='1'}
-      document.documentElement.dataset.fcBoot='pro3-ok';
-      try{window.__fcProfessionalAudit?.()}catch(e){}
+      document.documentElement.dataset.fcBoot='pro4-ok';
+      try{window.__fcPremiumAudit?.()}catch(e){}
     }
     boot().catch(e=>{console.error('family_command_boot',e);fatal(e?.message)});
   })();
