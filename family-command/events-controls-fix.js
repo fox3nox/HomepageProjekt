@@ -1,11 +1,11 @@
-/* Family Command · Termine controls stable v3 · 2026-08-23 */
+/* Family Command · Termine controls stable v4 · 2026-08-23 */
 (()=>{
-  if(window.__fcEventsControlsV3)return;window.__fcEventsControlsV3=true;
+  if(window.__fcEventsControlsV4)return;window.__fcEventsControlsV4=true;
   const root=()=>document.getElementById('events');
   const filterIds=()=>['all',...(Array.isArray(data?.people)?data.people.map(p=>String(p.id)):[])];
   const normalizeFilter=value=>{const ids=filterIds(),v=String(value||'');return ids.includes(v)?v:'all'};
   const currentFilter=()=>normalizeFilter(typeof window.fcEventFilter==='string'?window.fcEventFilter:'all');
-  const escH=s=>String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+  const escH=s=>String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot',"'":'&#39;'}[c]));
   const dateH=s=>{try{return new Intl.DateTimeFormat('de-CH',{day:'2-digit',month:'2-digit',year:'numeric'}).format(new Date(String(s)+'T12:00:00'))}catch(e){return String(s||'')}};
   let selectedMonth='';
 
@@ -23,8 +23,11 @@
     const p=(data?.people||[]).find(x=>String(x.name||'').trim()===txt);return p?String(p.id):'';
   }
   function monthForButton(button){
-    const direct=String(button?.dataset?.fcMonthTarget||'');if(direct)return direct;
-    return inlineArg(button,'fcProJumpMonth');
+    const direct=String(button?.dataset?.fcMonthTarget||'');if(direct&&document.getElementById(direct))return direct;
+    const fromInline=inlineArg(button,'fcProJumpMonth');if(fromInline&&document.getElementById(fromInline))return fromInline;
+    const r=root();if(!r)return'';
+    const buttons=[...r.querySelectorAll('.pro-month-jump button')],sections=[...r.querySelectorAll('.pro-month')],i=buttons.indexOf(button);
+    return i>=0?String(sections[i]?.id||''):'';
   }
   function eventById(id){return (data?.events||[]).find(e=>String(e.id)===String(id))||null}
   function rsvpStatus(e){
@@ -107,7 +110,7 @@
     const filterTargets=filterButtons.map(filterForButton),monthTargets=monthButtons.map(monthForButton);
     const activeFilters=filterButtons.filter(b=>b.classList.contains('active')).length;
     window.__fcEventsAudit={
-      version:3,ok:filterButtons.length===ids.length&&filterTargets.every(x=>ids.includes(x))&&monthButtons.length===monthSections.length&&monthTargets.every(id=>!!id&&!!document.getElementById(id))&&activeFilters===1&&!duplicateEventIds.length&&!invalidEvents.length,
+      version:4,ok:filterButtons.length===ids.length&&filterTargets.every(x=>ids.includes(x))&&monthButtons.length===monthSections.length&&monthTargets.every(id=>!!id&&!!document.getElementById(id))&&activeFilters===1&&!duplicateEventIds.length&&!invalidEvents.length,
       filterButtons:filterButtons.length,expectedFilters:ids.length,filterTargets,activeFilters,monthButtons:monthButtons.length,monthSections:monthSections.length,monthTargets,
       duplicateDomIds:[...new Set(duplicateDomIds)],duplicateEventIds,invalidEventCount:invalidEvents.length,filter:currentFilter(),selectedMonth,checkedAt:new Date().toISOString()
     };
@@ -116,7 +119,7 @@
   let queued=false;
   const observer=new MutationObserver(()=>{if(queued)return;queued=true;queueMicrotask(()=>{queued=false;bindControls()})});
   try{observer.observe(root()||document.body,{childList:true,subtree:true})}catch(e){}
-  const style=document.createElement('style');style.id='fc-events-controls-v3-style';style.textContent=`
+  const style=document.createElement('style');style.id='fc-events-controls-v4-style';style.textContent=`
     #events .pro-filters,#events .pro-month-jump{position:relative!important;z-index:40!important;pointer-events:auto!important;isolation:isolate}
     #events .pro-filter,#events .pro-month-jump button{position:relative!important;z-index:41!important;pointer-events:auto!important;touch-action:manipulation!important;-webkit-tap-highlight-color:rgba(38,54,81,.10)!important;cursor:pointer!important;min-height:42px}
     #events .pro-filter:active,#events .pro-month-jump button:active{transform:scale(.97)}
