@@ -1,5 +1,5 @@
-const CACHE='family-command-v7';
-const CORE=['./','./index.html','./styles.css','./manifest.webmanifest','./icon.svg','./professional-ui.js'];
+const CACHE='family-command-v8';
+const CORE=['./','./index.html','./styles.css','./manifest.webmanifest','./icon.svg','./professional-ui.js','./family-ai-v2.js','./events-controls-fix.js','./event-delete-fix.js'];
 
 self.addEventListener('install',e=>{
   e.waitUntil(caches.open(CACHE).then(c=>c.addAll(CORE)).catch(()=>{}));
@@ -26,7 +26,7 @@ self.addEventListener('fetch',e=>{
   e.respondWith(fetch(e.request,{cache:'no-store'}).then(r=>{
     if(r.ok&&r.type==='basic')caches.open(CACHE).then(c=>c.put(e.request,r.clone())).catch(()=>{});
     return r;
-  }).catch(()=>caches.match(e.request).then(r=>r||new Response('',{status:504,statusText:'Offline'}))));
+  }).catch(()=>caches.match(e.request,{ignoreSearch:true}).then(r=>r||new Response('',{status:504,statusText:'Offline'}))));
 });
 self.addEventListener('push',e=>{
   let p={};try{p=e.data?e.data.json():{}}catch(_){p={body:e.data?e.data.text():''}}
