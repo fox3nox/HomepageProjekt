@@ -17,10 +17,13 @@
   function addRsvpCards(){
     const r=root();if(!r)return;
     r.querySelectorAll('.pro-event[data-event-id]').forEach(card=>{
-      const e=eventById(card.dataset.eventId);if(!e||e.rsvpRequired!==true)return;
-      card.querySelector('.fc-rsvp-box')?.remove();
+      const e=eventById(card.dataset.eventId),existing=card.querySelector('.fc-rsvp-box');
+      if(!e||e.rsvpRequired!==true){existing?.remove();return}
       const done=String(e.rsvpStatus||'offen')!=='offen';
-      const box=document.createElement('div');box.className='fc-rsvp-box '+(done?'done':'open');box.dataset.rsvpId=String(e.id);
+      const sig=[String(e.id),String(e.rsvpStatus||'offen'),String(e.rsvpDate||''),String(e.rsvpFor||'')].join('|');
+      if(existing?.dataset.rsvpSig===sig)return;
+      existing?.remove();
+      const box=document.createElement('div');box.className='fc-rsvp-box '+(done?'done':'open');box.dataset.rsvpId=String(e.id);box.dataset.rsvpSig=sig;
       box.innerHTML='<div class="fc-rsvp-copy"><b>'+(done?'Rückmeldung erledigt':'Rückmeldung nötig')+'</b><span>'+escH(rsvpStatus(e))+'</span></div><div class="fc-rsvp-actions">'+(done?'<button type="button" data-rsvp-action="offen">Ändern</button>':'<button type="button" class="primary" data-rsvp-action="angemeldet">Angemeldet</button><button type="button" data-rsvp-action="abgemeldet">Abgemeldet</button>')+'</div>';
       const body=card.querySelector('.pro-event-body')||card;body.appendChild(box);
     });
@@ -82,7 +85,7 @@
 
   const onControl=e=>{
     const r=root();if(!r||!r.contains(e.target))return;
-    const f=e.target.closest?.('.pro-filter[data-fc-person-filter],.pro-filter[data-fc-person-filter]');
+    const f=e.target.closest?.('.pro-filter[data-fc-person-filter]');
     if(f){e.preventDefault();e.stopPropagation();const id=f.dataset.fcPersonFilter||'all';window.fcEventFilter=id;desired=id;Promise.resolve(window.renderEvents(id));return}
     const m=e.target.closest?.('.pro-month-jump button');
     if(m){e.preventDefault();e.stopPropagation();jumpToMonth(m)}
@@ -102,7 +105,10 @@
     };
   }
 
-  const observer=new MutationObserver(()=>queueMicrotask(bindControls));
+  let queued=false;
+  const observer=new MutationObserver(()=>{
+    if(queued)return;queued=true;queueMicrotask(()=>{queued=false;bindControls()});
+  });
   try{observer.observe(root()||document.body,{childList:true,subtree:true})}catch(e){}
   const style=document.createElement('style');style.id='fc-events-controls-v2-style';style.textContent=`
     #events .pro-filters,#events .pro-month-jump{position:relative!important;z-index:40!important;pointer-events:auto!important;isolation:isolate}
