@@ -1,14 +1,12 @@
 {
-  "id": "./",
-  "name": "Family Command",
-  "short_name": "Family",
-  "start_url": "./",
-  "scope": "./",
-  "display": "standalone",
-  "background_color": "#f3f6fa",
-  "theme_color": "#263651",
-  "description": "Stundenpläne, Termine und Morgen-Check für die Familie.",
-  "icons": [
-    {"src":"./icon.svg","sizes":"any","type":"image/svg+xml","purpose":"any maskable"}
-  ]
+  "id":"./",
+  "name":"Family Command",
+  "short_name":"Family",
+  "start_url":"./",
+  "scope":"./",
+  "display":"standalone",
+  "background_color":"#07101d",
+  "theme_color":"#07101d",
+  "description":"Stundenpläne, Termine, Aufgaben, Dokumente und Erinnerungen für die Familie.",
+  "icons":[{"src":"./icon.svg","sizes":"any","type":"image/svg+xml","purpose":"any maskable"}]
 }
