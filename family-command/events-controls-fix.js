@@ -5,7 +5,7 @@
   const filterIds=()=>['all',...(Array.isArray(data?.people)?data.people.map(p=>String(p.id)):[])];
   const normalizeFilter=value=>{const ids=filterIds(),v=String(value||'');return ids.includes(v)?v:'all'};
   const currentFilter=()=>normalizeFilter(typeof window.fcEventFilter==='string'?window.fcEventFilter:'all');
-  const escH=s=>String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot',"'":'&#39;'}[c]));
+  const escH=s=>String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
   const dateH=s=>{try{return new Intl.DateTimeFormat('de-CH',{day:'2-digit',month:'2-digit',year:'numeric'}).format(new Date(String(s)+'T12:00:00'))}catch(e){return String(s||'')}};
   let selectedMonth='';
 
