@@ -14,6 +14,16 @@
   <link rel="apple-touch-icon" href="./icon.svg">
   <link rel="stylesheet" href="./styles.css?v=20260824-pro6">
   <link rel="stylesheet" href="./screen-redesign-v6.css?v=20260824-pro6">
+  <style>
+    .v6-today-title.v6-page-head{display:block!important;color:#fff!important;font-size:31px!important;line-height:1.05!important;font-weight:820!important;letter-spacing:-.045em!important}
+    #eventModal{background:rgba(0,5,13,.72)!important;backdrop-filter:blur(10px)!important;-webkit-backdrop-filter:blur(10px)!important;padding:10px!important;align-items:flex-end!important;justify-content:center!important}
+    #eventModal .sheet{width:min(100%,460px)!important;max-height:91dvh!important;overflow:auto!important;background:#0d1928!important;border:1px solid #1d3047!important;color:#fff!important;border-radius:22px!important;padding:16px!important;box-shadow:0 24px 70px rgba(0,0,0,.48)!important;margin-bottom:max(3px,env(safe-area-inset-bottom,0px))!important}
+    #eventModal .sheet h3{margin:0 0 14px!important;color:#fff!important;font-size:20px!important;letter-spacing:-.025em!important}
+    #eventModal .field label{display:block!important;margin:0 0 5px!important;color:#7e8fa7!important;font-size:9px!important;font-weight:850!important;letter-spacing:.09em!important}
+    #eventModal .field input,#eventModal .field select,#eventModal .field textarea{width:100%!important;min-height:44px!important;border:1px solid #1d3047!important;background:#091522!important;color:#f2f5f9!important;border-radius:12px!important;padding:10px 11px!important;font-size:13px!important}
+    #eventModal .field textarea{min-height:84px!important}.row2{gap:8px!important}
+    #eventModal .action{min-height:44px!important;border-radius:12px!important;font-size:13px!important;font-weight:780!important}#eventModal #saveEvent{background:linear-gradient(145deg,#625cff,#4d7dff)!important;color:#fff!important}#eventModal #closeEvent{background:#132133!important;color:#cbd5e2!important;border:1px solid #1d3047!important}
+  </style>
 </head>
 <body>
   <div class="app">
@@ -93,6 +103,7 @@
       await loadScript('./events-controls-fix.js?v='+v);
       await loadScript('./professional-ui.js?v='+v);
       await loadScript('./screen-redesign-v6.js?v='+v);
+      window.v6EditSchedule=function(pid){try{if(typeof fc4OpenEdit==='function')return fc4OpenEdit(pid,window.selectedWeekDay||todayISO())}catch(e){};try{toast('Zeitbearbeitung konnte nicht geöffnet werden')}catch(e){}};
       document.documentElement.dataset.fcBoot='pro6-ok';
       try{window.__fcScreenRedesignAudit?.()}catch(e){}
     }
