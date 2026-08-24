@@ -2,6 +2,8 @@ name: Family Command relevance check
 on:
   push:
     branches: [family-command-pro65-relevance]
+  pull_request:
+    branches: [main]
 jobs:
   check:
     runs-on: ubuntu-latest
