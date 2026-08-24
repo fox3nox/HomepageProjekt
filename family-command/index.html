@@ -9,11 +9,11 @@
   <meta name="apple-mobile-web-app-title" content="Family Command">
   <meta name="format-detection" content="telephone=no">
   <title>Family Command</title>
-  <link rel="manifest" href="./manifest.webmanifest?v=20260824-pro69">
+  <link rel="manifest" href="./manifest.webmanifest?v=20260824-pro610">
   <link rel="icon" href="./icon.svg" type="image/svg+xml">
   <link rel="apple-touch-icon" href="./icon.svg">
-  <link rel="stylesheet" href="./styles.css?v=20260824-pro69">
-  <link rel="stylesheet" href="./screen-redesign-v6.css?v=20260824-pro69">
+  <link rel="stylesheet" href="./styles.css?v=20260824-pro610">
+  <link rel="stylesheet" href="./screen-redesign-v6.css?v=20260824-pro610">
   <style>
     .v6-today-title{display:block!important;margin:4px 0 0!important;color:#fff!important;font-size:31px!important;line-height:1.05!important;font-weight:820!important;letter-spacing:-.045em!important}
     .v6-person-checks{display:grid;grid-template-columns:1fr 1fr;gap:7px}.v6-person-check{min-height:42px;display:flex;align-items:center;gap:8px;border:1px solid #1d3047;background:#091522;border-radius:12px;padding:8px 10px;color:#dbe4ef}.v6-person-check input{width:18px!important;height:18px!important;min-height:0!important;accent-color:#665cff}.v6-person-check b{font-size:12px}.v6-person-check .v6-dot{flex:none}
@@ -91,7 +91,7 @@
     function loadScript(src){return new Promise((resolve,reject)=>{const s=document.createElement('script');s.src=src;s.onload=()=>resolve();s.onerror=()=>reject(new Error('Datei konnte nicht geladen werden: '+src));document.body.appendChild(s)})}
     function injectPrivate(code){const s=document.createElement('script');s.textContent=code+'\n//# sourceURL=family-command-private-app.js';document.body.appendChild(s)}
     async function boot(){
-      const v='20260824-pro69';
+      const v='20260824-pro610';
       const r=await browserFetch(PRIVATE_APP+'?v='+v,{cache:'no-store',headers:{'x-fc-access':key}});if(!r.ok)throw new Error('Privater App-Kern nicht erreichbar ('+r.status+').');
       injectPrivate(await r.text());if(typeof window.fcEventFilter==='undefined')window.fcEventFilter='all';
       await loadScript('./ai-budget-guard.js?v='+v);
@@ -113,11 +113,12 @@
       await loadScript('./nav-six-fix.js?v='+v);
       await loadScript('./daily-checklist.js?v='+v);
       await loadScript('./print-planner-v2.js?v='+v);
+      await loadScript('./week-overview-v2.js?v='+v);
       await loadScript('./homework-originals.js?v='+v);
       await loadScript('./backup-manager.js?v='+v);
       await loadScript('./app-selftest-v6.js?v='+v);
       await loadScript('./smoke-tests.js?v='+v);
-      document.documentElement.dataset.fcBoot='pro6.9-ok';
+      document.documentElement.dataset.fcBoot='pro6.10-ok';
       try{window.__fcScreenRedesignAudit?.();window.__fcSixNav?.ensure?.();window.__fcDailyChecklist?.render?.();window.fcRunSelfTest?.()}catch(e){}
     }
     boot().catch(e=>{console.error('family_command_boot',e);fatal(e?.message)});
