@@ -9,12 +9,13 @@
   <meta name="apple-mobile-web-app-title" content="Family Command">
   <meta name="format-detection" content="telephone=no">
   <title>Family Command</title>
-  <link rel="manifest" href="./manifest.webmanifest?v=20260824-pro611">
+  <link rel="manifest" href="./manifest.webmanifest?v=20260824-pro612">
   <link rel="icon" href="./icon.svg" type="image/svg+xml">
   <link rel="apple-touch-icon" href="./icon.svg">
-  <link rel="stylesheet" href="./styles.css?v=20260824-pro611">
-  <link rel="stylesheet" href="./screen-redesign-v6.css?v=20260824-pro611">
+  <link rel="stylesheet" href="./styles.css?v=20260824-pro612">
+  <link rel="stylesheet" href="./screen-redesign-v6.css?v=20260824-pro612">
   <style>
+    html:not([data-fc-ready="1"]) .content{visibility:hidden!important}
     .v6-today-title{display:block!important;margin:4px 0 0!important;color:#fff!important;font-size:31px!important;line-height:1.05!important;font-weight:820!important;letter-spacing:-.045em!important}
     .v6-person-checks{display:grid;grid-template-columns:1fr 1fr;gap:7px}.v6-person-check{min-height:42px;display:flex;align-items:center;gap:8px;border:1px solid #1d3047;background:#091522;border-radius:12px;padding:8px 10px;color:#dbe4ef}.v6-person-check input{width:18px!important;height:18px!important;min-height:0!important;accent-color:#665cff}.v6-person-check b{font-size:12px}.v6-person-check .v6-dot{flex:none}
     #eventModal{background:rgba(0,5,13,.72)!important;backdrop-filter:blur(10px)!important;-webkit-backdrop-filter:blur(10px)!important;padding:10px!important;align-items:flex-end!important;justify-content:center!important}
@@ -82,7 +83,7 @@
     const params=new URLSearchParams(location.search);
     function readCookie(name){const prefix=name+'=';const part=document.cookie.split(';').map(x=>x.trim()).find(x=>x.startsWith(prefix));return part?decodeURIComponent(part.slice(prefix.length)):''}
     function saveAccess(value){try{localStorage.setItem(STORE,value)}catch(e){}document.cookie=COOKIE+'='+encodeURIComponent(value)+'; Max-Age=31536000; Path=/HomepageProjekt/family-command/; Secure; SameSite=Strict'}
-    function fatal(message){const root=document.querySelector('.content');if(root){root.textContent='';const section=document.createElement('section');section.className='screen active';section.innerHTML='<div class="hero"><h2>App konnte nicht vollständig geladen werden.</h2><p></p></div>';section.querySelector('p').textContent=String(message||'Bitte die App einmal vollständig schließen und neu öffnen.');root.appendChild(section)}const nav=document.querySelector('.bottomnav'),add=document.getElementById('quickAdd');if(nav)nav.style.display='none';if(add)add.style.display='none'}
+    function fatal(message){document.documentElement.dataset.fcReady='1';const root=document.querySelector('.content');if(root){root.textContent='';const section=document.createElement('section');section.className='screen active';section.innerHTML='<div class="hero"><h2>App konnte nicht vollständig geladen werden.</h2><p></p></div>';section.querySelector('p').textContent=String(message||'Bitte die App einmal vollständig schließen und neu öffnen.');root.appendChild(section)}const nav=document.querySelector('.bottomnav'),add=document.getElementById('quickAdd');if(nav)nav.style.display='none';if(add)add.style.display='none'}
     let key=params.get('access')||readCookie(COOKIE)||'';if(!key){try{key=localStorage.getItem(STORE)||''}catch(e){}}
     if(params.get('access')){saveAccess(key);params.delete('access');const clean=location.pathname+(params.toString()?'?'+params.toString():'')+location.hash;history.replaceState(null,'',clean)}else if(key)saveAccess(key);
     if(!key){fatal('Privater Zugang erforderlich. Öffne deinen persönlichen Family-Command-Link einmal in Safari.');return}
@@ -91,7 +92,7 @@
     function loadScript(src){return new Promise((resolve,reject)=>{const s=document.createElement('script');s.src=src;s.onload=()=>resolve();s.onerror=()=>reject(new Error('Datei konnte nicht geladen werden: '+src));document.body.appendChild(s)})}
     function injectPrivate(code){const s=document.createElement('script');s.textContent=code+'\n//# sourceURL=family-command-private-app.js';document.body.appendChild(s)}
     async function boot(){
-      const v='20260824-pro611';
+      const v='20260824-pro612';
       const r=await browserFetch(PRIVATE_APP+'?v='+v,{cache:'no-store',headers:{'x-fc-access':key}});if(!r.ok)throw new Error('Privater App-Kern nicht erreichbar ('+r.status+').');
       injectPrivate(await r.text());if(typeof window.fcEventFilter==='undefined')window.fcEventFilter='all';
       await loadScript('./ai-budget-guard.js?v='+v);
@@ -118,10 +119,14 @@
       await loadScript('./week-overview-v2.js?v='+v);
       await loadScript('./homework-originals.js?v='+v);
       await loadScript('./backup-manager.js?v='+v);
+      await loadScript('./today-addons-stabilizer.js?v='+v);
       await loadScript('./app-selftest-v6.js?v='+v);
-      await loadScript('./smoke-tests.js?v='+v);
-      document.documentElement.dataset.fcBoot='pro6.11-ok';
+      document.documentElement.dataset.fcBoot='pro6.12-ok';
       try{window.__fcScreenRedesignAudit?.();window.__fcSixNav?.ensure?.();window.__fcDailyChecklist?.render?.();window.__fcTodo?.render?.();window.fcRunSelfTest?.()}catch(e){}
+      requestAnimationFrame(()=>requestAnimationFrame(()=>{
+        document.documentElement.dataset.fcReady='1';
+        try{window.__fcTodayAddonsStabilizer?.repair?.()}catch(e){}
+      }));
     }
     boot().catch(e=>{console.error('family_command_boot',e);fatal(e?.message)});
   })();
