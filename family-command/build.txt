@@ -1,3 +1,3 @@
 Family Command personal build
-2026-08-24 pro6.7
+2026-08-24 pro6.8
 private family workspace
