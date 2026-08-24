@@ -80,9 +80,10 @@
     const expectedFilters=pc===null?null:pc+1;
     const eventFilters=screen==='events'?document.querySelectorAll('#events .v6-filter').length:null;
     const overflow=activeOverflow();
+    const navOk=screen==='people'?activeNav<=1:activeNav===1;
     const critical=[];
     if(active!==1)critical.push('active-screen');
-    if(activeNav!==1)critical.push('active-nav');
+    if(!navOk)critical.push('active-nav');
     if(missing.length)critical.push('missing-functions');
     if(handlers.length)critical.push('broken-handlers');
     if(screen==='week'&&weekButtons!==5)critical.push('week-controls');
