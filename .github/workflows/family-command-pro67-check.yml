@@ -21,7 +21,9 @@ jobs:
           node --check family-command/tomorrow-screen.js
           node --check family-command/nav-six-fix.js
           node --check family-command/daily-checklist.js
+          node --check family-command/todo-list.js
           node --check family-command/print-planner-v2.js
+          node --check family-command/todo-print-addon.js
           node --check family-command/week-overview-v2.js
           node --check family-command/app-selftest-v6.js
           node --check family-command/smoke-tests.js
@@ -31,9 +33,13 @@ jobs:
           grep -q "nav-six-fix.js" family-command/sw.js
           grep -q "tomorrow-screen.js" family-command/sw.js
           grep -q "daily-checklist.js" family-command/sw.js
+          grep -q "todo-list.js" family-command/sw.js
           grep -q "print-planner-v2.js" family-command/sw.js
+          grep -q "todo-print-addon.js" family-command/sw.js
           grep -q "week-overview-v2.js" family-command/sw.js
-          grep -q "family-command-v20" family-command/sw.js
-          grep -q "pro6.10" family-command/build.txt
+          grep -q "family-command-v21" family-command/sw.js
+          grep -q "pro6.11" family-command/build.txt
+          grep -q "todo-list.js" family-command/index.html
+          grep -q "todo-print-addon.js" family-command/index.html
           grep -q "data-screen=\\\"tomorrow\\\"" family-command/nav-six-fix.js
           grep -q "repeat(6" family-command/nav-six-fix.js
