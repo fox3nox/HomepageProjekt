@@ -1,4 +1,4 @@
-/* Family Command · read-only runtime self-test v6.8 · 2026-08-24 */
+/* Family Command · read-only runtime self-test v6.9 · 2026-08-24 */
 (()=>{
   if(window.__fcSelfTestInstalled)return;window.__fcSelfTestInstalled=true;
   const state={runs:0,last:null,recentRuntimeErrors:[]};let timer=0;
@@ -17,20 +17,20 @@
   function activeOverflow(){const el=document.querySelector('.screen.active');return el?el.scrollWidth>el.clientWidth+3:false}
   function loadSixNav(){
     if(window.__fcSixNavInstalled||document.querySelector('script[data-fc-six-nav]')){try{window.__fcSixNav?.ensure?.()}catch(e){}return}
-    const s=document.createElement('script');s.dataset.fcSixNav='1';s.src='./nav-six-fix.js?v=20260824-pro68';s.onload=()=>{try{window.__fcSixNav?.ensure?.()}catch(e){}scheduleTest()};s.onerror=()=>console.error('fc_six_nav_load');document.body.appendChild(s);
+    const s=document.createElement('script');s.dataset.fcSixNav='1';s.src='./nav-six-fix.js?v=20260824-pro69';s.onload=()=>{try{window.__fcSixNav?.ensure?.()}catch(e){}scheduleTest()};s.onerror=()=>console.error('fc_six_nav_load');document.body.appendChild(s);
   }
   function loadTomorrowScreen(){
     if(window.__fcTomorrowScreenInstalled||document.querySelector('script[data-fc-tomorrow-screen]')){loadSixNav();return}
-    const s=document.createElement('script');s.dataset.fcTomorrowScreen='1';s.src='./tomorrow-screen.js?v=20260824-pro68';s.onload=()=>{loadSixNav();scheduleTest()};s.onerror=()=>console.error('fc_tomorrow_screen_load');document.body.appendChild(s);
+    const s=document.createElement('script');s.dataset.fcTomorrowScreen='1';s.src='./tomorrow-screen.js?v=20260824-pro69';s.onload=()=>{loadSixNav();scheduleTest()};s.onerror=()=>console.error('fc_tomorrow_screen_load');document.body.appendChild(s);
   }
 
   function run(){
     const active=document.querySelectorAll('.screen.active').length,activeNav=document.querySelectorAll('.navbtn.active').length,missing=missingFunctions(),dup=duplicateIds(),handlers=brokenInlineHandlers(),screen=document.querySelector('.screen.active')?.id||'';
     const weekButtons=screen==='week'?document.querySelectorAll('#week .v6-day').length:null,pc=screen==='events'?peopleCount():null,expectedFilters=pc===null?null:pc+1,eventFilters=screen==='events'?document.querySelectorAll('#events .v6-filter').length:null,overflow=activeOverflow(),navOk=screen==='people'?activeNav<=1:activeNav===1,critical=[];
-    const todayRelevance=!!window.__fcTodayRelevanceInstalled,tomorrowPreview=!!window.__fcTomorrowPreviewInstalled,tomorrowScreen=!!window.__fcTomorrowScreenInstalled,sixNav=!!window.__fcSixNavInstalled&&!!document.querySelector('.navbtn[data-screen="tomorrow"]');
-    if(active!==1)critical.push('active-screen');if(!navOk)critical.push('active-nav');if(missing.length)critical.push('missing-functions');if(handlers.length)critical.push('broken-handlers');if(screen==='week'&&weekButtons!==5)critical.push('week-controls');if(screen==='events'&&expectedFilters!==null&&eventFilters!==expectedFilters)critical.push('event-filters');if(overflow)critical.push('horizontal-overflow');if(!todayRelevance)critical.push('today-relevance');if(!tomorrowPreview)critical.push('tomorrow-preview');if(!sixNav)critical.push('six-nav');
+    const todayRelevance=!!window.__fcTodayRelevanceInstalled,tomorrowPreview=!!window.__fcTomorrowPreviewInstalled,tomorrowScreen=!!window.__fcTomorrowScreenInstalled,sixNav=!!window.__fcSixNavInstalled&&!!document.querySelector('.navbtn[data-screen="tomorrow"]'),dailyChecklist=!!window.__fcDailyChecklistInstalled&&!!window.__fcDailyChecklist,printPlanner=!!window.__fcPrintPlannerV2Installed&&typeof window.fcPrintDay==='function'&&typeof window.fcPrintWeek==='function';
+    if(active!==1)critical.push('active-screen');if(!navOk)critical.push('active-nav');if(missing.length)critical.push('missing-functions');if(handlers.length)critical.push('broken-handlers');if(screen==='week'&&weekButtons!==5)critical.push('week-controls');if(screen==='events'&&expectedFilters!==null&&eventFilters!==expectedFilters)critical.push('event-filters');if(overflow)critical.push('horizontal-overflow');if(!todayRelevance)critical.push('today-relevance');if(!tomorrowPreview)critical.push('tomorrow-preview');if(!sixNav)critical.push('six-nav');if(!dailyChecklist)critical.push('daily-checklist');if(!printPlanner)critical.push('print-planner');
     if(window.__fcSmokeTest&&window.__fcSmokeTest.ok===false)critical.push('smoke-tests');
-    const report={version:'6.8',readOnly:true,ok:critical.length===0,screen,activeScreens:active,activeNav,missingFunctions:missing,duplicateIds:dup,brokenHandlers:handlers,weekButtons,eventFilters,expectedFilters,horizontalOverflow:overflow,runtimeErrorCount:state.recentRuntimeErrors.length,smokeTest:window.__fcSmokeTest?{ok:window.__fcSmokeTest.ok,tests:window.__fcSmokeTest.tests}:null,todayRelevance,tomorrowPreview,tomorrowScreen,sixNav,critical,checkedAt:new Date().toISOString()};
+    const report={version:'6.9',readOnly:true,ok:critical.length===0,screen,activeScreens:active,activeNav,missingFunctions:missing,duplicateIds:dup,brokenHandlers:handlers,weekButtons,eventFilters,expectedFilters,horizontalOverflow:overflow,runtimeErrorCount:state.recentRuntimeErrors.length,smokeTest:window.__fcSmokeTest?{ok:window.__fcSmokeTest.ok,tests:window.__fcSmokeTest.tests}:null,todayRelevance,tomorrowPreview,tomorrowScreen,sixNav,dailyChecklist,printPlanner,critical,checkedAt:new Date().toISOString()};
     state.runs++;state.last=report;window.__fcAppSelfTest=report;document.documentElement.dataset.fcHealth=report.ok?'ok':'warn';if(!report.ok)console.warn('Family Command self-test',report);return report;
   }
   function scheduleTest(){clearTimeout(timer);timer=setTimeout(run,120)}
