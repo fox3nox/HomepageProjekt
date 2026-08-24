@@ -1,0 +1,19 @@
+name: Family Command pro6.7 check
+on:
+  pull_request:
+    branches: [main]
+jobs:
+  check:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: JavaScript syntax
+        run: |
+          node --check family-command/tomorrow-screen.js
+          node --check family-command/app-selftest-v6.js
+          node --check family-command/sw.js
+      - name: PWA wiring
+        run: |
+          grep -q "tomorrow-screen.js" family-command/sw.js
+          grep -q "family-command-v17" family-command/sw.js
+          grep -q "pro6.7" family-command/build.txt
