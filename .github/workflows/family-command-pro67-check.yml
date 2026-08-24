@@ -20,13 +20,17 @@ jobs:
           node --check family-command/tomorrow-preview.js
           node --check family-command/tomorrow-screen.js
           node --check family-command/nav-six-fix.js
+          node --check family-command/daily-checklist.js
+          node --check family-command/print-planner-v2.js
           node --check family-command/app-selftest-v6.js
           node --check family-command/sw.js
       - name: Navigation and PWA wiring
         run: |
           grep -q "nav-six-fix.js" family-command/sw.js
           grep -q "tomorrow-screen.js" family-command/sw.js
-          grep -q "family-command-v18" family-command/sw.js
-          grep -q "pro6.8" family-command/build.txt
+          grep -q "daily-checklist.js" family-command/sw.js
+          grep -q "print-planner-v2.js" family-command/sw.js
+          grep -q "family-command-v19" family-command/sw.js
+          grep -q "pro6.9" family-command/build.txt
           grep -q "data-screen=\\\"tomorrow\\\"" family-command/nav-six-fix.js
           grep -q "repeat(6" family-command/nav-six-fix.js
