@@ -2,9 +2,11 @@
 (()=>{
   if(window.__fcSmokeTestsInstalled)return;window.__fcSmokeTestsInstalled=true;
   const sleep=ms=>new Promise(r=>setTimeout(r,ms));
-  const report={version:1,ok:false,tests:[],startedAt:null,finishedAt:null};
+  const report={version:2,ok:false,tests:[],startedAt:null,finishedAt:null};
   function add(name,ok,detail=''){report.tests.push({name,ok:!!ok,detail:String(detail||'')})}
   function getGlobal(name,fallback=null){try{return window[name]??eval(name)}catch(e){return fallback}}
+  function weekButtons(){const modern=[...document.querySelectorAll('#week .fc-w-dayhead')];return modern.length?modern:[...document.querySelectorAll('#week .v6-day')]}
+  function activeWeekButton(){return document.querySelector('#week .fc-w-dayhead.active,#week .v6-day.active')}
 
   async function run(){
     if(report.running)return report;report.running=true;report.startedAt=new Date().toISOString();report.tests=[];
@@ -15,8 +17,8 @@
 
       if(typeof window.renderWeek==='function'){
         await Promise.resolve(window.renderWeek());await sleep(30);
-        const buttons=[...document.querySelectorAll('#week .v6-day')];add('week-five-days',buttons.length===5,String(buttons.length));
-        if(buttons.length>=2){const target=buttons[1],label=(target.textContent||'').trim();target.click();await sleep(40);const active=document.querySelector('#week .v6-day.active');add('week-day-switch',active===target||String(active?.textContent||'').trim()===label,String(active?.textContent||''));}
+        const buttons=weekButtons();add('week-five-days',buttons.length===5,String(buttons.length));
+        if(buttons.length>=2){const target=buttons[1],label=(target.textContent||'').trim();target.click();await sleep(40);const active=activeWeekButton();add('week-day-switch',active===target||String(active?.textContent||'').trim()===label,String(active?.textContent||''));}
       }else add('week-five-days',false,'renderWeek missing');
 
       if(typeof window.renderEvents==='function'){
@@ -30,6 +32,9 @@
         await Promise.resolve(window.renderMore());await sleep(30);add('more-renders',!!document.querySelector('#more .v6-page,#more .settings-stack,#more .fc-backup-card'),'more screen');
       }
 
+      add('daily-checklist-loaded',!!window.__fcDailyChecklistInstalled,'daily checklist');
+      add('print-planner-loaded',!!window.__fcPrintPlannerV2Installed&&typeof window.fcPrintDay==='function'&&typeof window.fcPrintWeek==='function','print planner');
+      add('week-overview-loaded',!!window.__fcWeekOverviewV2Installed,'week overview');
       const dup=[...document.querySelectorAll('[id]')].map(x=>x.id).filter((id,i,a)=>id&&a.indexOf(id)!==i);add('no-duplicate-ids',dup.length===0,[...new Set(dup)].join(','));
       const activeOverflow=()=>{const s=document.querySelector('.screen.active');return s?s.scrollWidth>s.clientWidth+3:false};add('no-active-horizontal-overflow',!activeOverflow(),activeOverflow()?'overflow':'');
     }catch(e){add('smoke-runner',false,e instanceof Error?e.message:String(e))}
