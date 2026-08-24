@@ -5,6 +5,31 @@
   const state={runs:0,last:null,recentRuntimeErrors:[]};
   let timer=0;
 
+  function applyDataMigrations(){
+    const FLAG='fc-migration-social-20261027-v1';
+    try{if(localStorage.getItem(FLAG)==='done')return false}catch(e){}
+    try{
+      if(typeof data==='undefined'||!Array.isArray(data?.events))return false;
+      let event=data.events.find(e=>String(e.id)==='oli-social')||data.events.find(e=>String(e.date)==='2026-10-26'&&String(e.time||'')==='14:00'&&/sozial/i.test(String(e.title||'')));
+      if(!event){event={id:'oli-social',personIds:['oli']};data.events.push(event)}
+      event.id='oli-social';
+      event.personIds=['oli'];
+      event.title='Termin Sozialabteilung Herzogenbuchsee';
+      event.date='2026-10-27';
+      event.time='10:00';
+      event.end='';
+      event.endDate='';
+      event.note='Termin zur Klärung der Finanzierung der Kinderbetreuung an Samstagen ab 01.01.2027. Sozialabteilung Herzogenbuchsee. Frau Kuert, Sozialarbeiterin von Frau Hager, nimmt ebenfalls teil. Ersetzt den Termin vom 26.10.2026 um 14:00 Uhr.';
+      try{if(typeof save==='function')save()}catch(e){}
+      try{if(typeof syncPush==='function')syncPush()}catch(e){}
+      try{localStorage.setItem(FLAG,'done')}catch(e){}
+      try{if(document.getElementById('today')?.classList.contains('active')&&typeof renderToday==='function')renderToday()}catch(e){}
+      try{if(document.getElementById('week')?.classList.contains('active')&&typeof renderWeek==='function')renderWeek()}catch(e){}
+      try{if(document.getElementById('events')?.classList.contains('active')&&typeof renderEvents==='function')renderEvents(window.fcEventFilter||'all')}catch(e){}
+      return true;
+    }catch(e){console.error('fc_data_migration_social_20261027',e);return false}
+  }
+
   function connectionBadge(){
     let badge=document.getElementById('fcConnectionBadge');
     if(badge)return badge;
@@ -117,6 +142,7 @@
   }catch(e){}
 
   window.fcRunSelfTest=run;
+  applyDataMigrations();
   updateConnection();
   requestAnimationFrame(()=>{updateConnection();run()});
 })();
