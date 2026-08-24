@@ -58,6 +58,10 @@
     return names.filter(name=>typeof window[name]!=='function');
   }
 
+  function peopleCount(){
+    try{return typeof data!=='undefined'&&Array.isArray(data?.people)?data.people.length:null}catch(e){return null}
+  }
+
   function activeOverflow(){
     const el=document.querySelector('.screen.active');
     if(!el)return false;
@@ -72,8 +76,10 @@
     const handlers=brokenInlineHandlers();
     const screen=document.querySelector('.screen.active')?.id||'';
     const weekButtons=screen==='week'?document.querySelectorAll('#week .v6-day').length:null;
-    const expectedFilters=screen==='events'?(Array.isArray(window.data?.people)?window.data.people.length+1:null):null;
+    const pc=screen==='events'?peopleCount():null;
+    const expectedFilters=pc===null?null:pc+1;
     const eventFilters=screen==='events'?document.querySelectorAll('#events .v6-filter').length:null;
+    const overflow=activeOverflow();
     const critical=[];
     if(active!==1)critical.push('active-screen');
     if(activeNav!==1)critical.push('active-nav');
@@ -81,8 +87,8 @@
     if(handlers.length)critical.push('broken-handlers');
     if(screen==='week'&&weekButtons!==5)critical.push('week-controls');
     if(screen==='events'&&expectedFilters!==null&&eventFilters!==expectedFilters)critical.push('event-filters');
-    if(activeOverflow())critical.push('horizontal-overflow');
-    const report={version:'6.2',ok:critical.length===0,screen,activeScreens:active,activeNav,missingFunctions:missing,duplicateIds:dup,brokenHandlers:handlers,weekButtons,eventFilters,expectedFilters,horizontalOverflow:activeOverflow(),runtimeErrorCount:state.recentRuntimeErrors.length,critical,checkedAt:new Date().toISOString()};
+    if(overflow)critical.push('horizontal-overflow');
+    const report={version:'6.2',ok:critical.length===0,screen,activeScreens:active,activeNav,missingFunctions:missing,duplicateIds:dup,brokenHandlers:handlers,weekButtons,eventFilters,expectedFilters,horizontalOverflow:overflow,runtimeErrorCount:state.recentRuntimeErrors.length,critical,checkedAt:new Date().toISOString()};
     state.runs++;state.last=report;window.__fcAppSelfTest=report;
     document.documentElement.dataset.fcHealth=report.ok?'ok':'warn';
     if(!report.ok)console.warn('Family Command self-test',report);
