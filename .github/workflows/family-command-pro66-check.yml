@@ -1,5 +1,7 @@
 name: Family Command pro6.6 check
 on:
+  pull_request:
+    branches: [main]
   push:
     branches: [family-command-pro65-relevance]
 jobs:
