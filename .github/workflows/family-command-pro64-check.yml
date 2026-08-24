@@ -2,6 +2,8 @@ name: Family Command pro6.4 check
 on:
   push:
     branches: [family-command-stability-pro64]
+  pull_request:
+    branches: [main]
 jobs:
   check:
     runs-on: ubuntu-latest
