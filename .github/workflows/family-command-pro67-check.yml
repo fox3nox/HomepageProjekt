@@ -1,7 +1,14 @@
-name: Family Command pro6.7 check
+name: Family Command sanity check
 on:
+  push:
+    branches: [main]
+    paths:
+      - 'family-command/**'
+      - '.github/workflows/family-command-pro67-check.yml'
   pull_request:
     branches: [main]
+    paths:
+      - 'family-command/**'
 jobs:
   check:
     runs-on: ubuntu-latest
@@ -9,11 +16,17 @@ jobs:
       - uses: actions/checkout@v4
       - name: JavaScript syntax
         run: |
+          node --check family-command/today-relevance.js
+          node --check family-command/tomorrow-preview.js
           node --check family-command/tomorrow-screen.js
+          node --check family-command/nav-six-fix.js
           node --check family-command/app-selftest-v6.js
           node --check family-command/sw.js
-      - name: PWA wiring
+      - name: Navigation and PWA wiring
         run: |
+          grep -q "nav-six-fix.js" family-command/sw.js
           grep -q "tomorrow-screen.js" family-command/sw.js
-          grep -q "family-command-v17" family-command/sw.js
-          grep -q "pro6.7" family-command/build.txt
+          grep -q "family-command-v18" family-command/sw.js
+          grep -q "pro6.8" family-command/build.txt
+          grep -q "data-screen=\\\"tomorrow\\\"" family-command/nav-six-fix.js
+          grep -q "repeat(6" family-command/nav-six-fix.js
