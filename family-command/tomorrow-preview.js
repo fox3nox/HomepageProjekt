@@ -27,39 +27,48 @@
     if(pm?.depart&&pm.depart!==first.depart)parts.push(`${pm.depart} wieder los`);
     return parts.join(' · ')||null;
   }
+  function pickupEnabled(pid,day){
+    try{const rules=JSON.parse(localStorage.getItem('fc-pickup-rules-v1')||'{}');return rules[String(pid)+'|'+day]===true}catch(e){return false}
+  }
+  function minusMinutes(t,n){const m=String(t||'').match(/^(\d{1,2}):(\d{2})$/);if(!m)return'';let v=Number(m[1])*60+Number(m[2])-n;if(v<0)v+=1440;return String(Math.floor(v/60)).padStart(2,'0')+':'+String(v%60).padStart(2,'0')}
+  function pickupSummary(pid,date){
+    const day=new Date(String(date)+'T12:00:00').getDay();if(!pickupEnabled(pid,day)||holiday(pid,date))return null;
+    const slots=[...schedule(pid,day)].filter(s=>s.end).sort((a,b)=>String(a.end).localeCompare(String(b.end)));const last=slots[slots.length-1];if(!last?.end)return null;
+    const leave=minusMinutes(last.end,10);return leave?`${leave} los zum Abholen`:`Abholen um ${last.end}`;
+  }
 
   function tomorrowData(){
     const date=addDays(today(),1),day=new Date(date+'T12:00:00').getDay();
     const hw=(Array.isArray(data?.homework)?data.homework:[]).filter(h=>!h.done&&String(h.dueDate)===date).sort((a,b)=>String(a.personId).localeCompare(String(b.personId)));
     const ev=eventsAt(date).filter(e=>!String(e.title||'').toLowerCase().includes('ferien')).sort((a,b)=>String(a.time||'99:99').localeCompare(String(b.time||'99:99')));
-    const kids=childPeople().map(p=>({p,pack:packFor(p.id,day),depart:departureSummary(p.id,date),holiday:holiday(p.id,date)})).filter(x=>x.pack.length||x.depart||x.holiday);
+    const kids=childPeople().map(p=>({p,pack:packFor(p.id,day),depart:departureSummary(p.id,date),pickup:pickupSummary(p.id,date),holiday:holiday(p.id,date)})).filter(x=>x.pack.length||x.depart||x.pickup||x.holiday);
     return{date,hw,ev,kids};
   }
 
   function eventRow(e){
-    const names=(e.personIds||[]).map(id=>personBy(id)?.name).filter(Boolean).join(' · ');
-    return `<div class="fc-tom-row"><span class="fc-tom-kind">TERMIN</span><div><b>${esc(e.time||'Ganztägig')} · ${esc(e.title||'Termin')}</b>${names?`<small>${esc(names)}</small>`:''}</div></div>`;
+    const names=(e.personIds||[]).map(id=>personBy(id)?.name).filter(Boolean).join(' · '),note=String(e.note||'').trim(),meta=[names,note.length>140?note.slice(0,137)+'…':note].filter(Boolean).join(' · ');
+    return `<div class="fc-tom-row"><span class="fc-tom-kind">TERMIN</span><div><b>${esc(e.time||'Ganztägig')} · ${esc(e.title||'Termin')}</b>${meta?`<small>${esc(meta)}</small>`:''}</div></div>`;
   }
   function homeworkRow(h){
     const p=personBy(h.personId),title=(h.subject?h.subject+' · ':'')+(h.title||'Hausaufgabe');
     return `<div class="fc-tom-row"><span class="fc-tom-kind">AUFGABE</span><div><b>${esc(title)}</b><small>${esc(p?.name||'')} · bis morgen erledigen</small></div></div>`;
   }
   function kidRow(x){
-    const meta=[];if(x.depart)meta.push(x.depart);if(x.holiday)meta.push(x.holiday.title||'Ferien');
+    const meta=[];if(x.depart)meta.push(x.depart);if(x.pickup)meta.push(x.pickup);if(x.holiday)meta.push(x.holiday.title||'Ferien');
     return `<div class="fc-tom-kid"><div class="fc-tom-kid-head"><b>${esc(x.p.name)}</b>${meta.length?`<span>${esc(meta.join(' · '))}</span>`:''}</div>${x.pack.length?`<div class="fc-tom-chips">${x.pack.map(i=>`<span>${esc(i)}</span>`).join('')}</div>`:'<small>Keine besonderen Sachen zum Vorbereiten.</small>'}</div>`;
   }
 
   function renderPreview(){
     const root=document.getElementById('today');if(!root)return;
     root.querySelector('.fc-tomorrow-section')?.remove();
-    const info=tomorrowData(),has=info.hw.length||info.ev.length||info.kids.some(x=>x.pack.length||x.depart);
+    const info=tomorrowData(),has=info.hw.length||info.ev.length||info.kids.some(x=>x.pack.length||x.depart||x.pickup);
     if(!has)return;
     const sec=document.createElement('section');sec.className='v6-section fc-tomorrow-section';
     const content=[];
     if(info.ev.length)content.push(`<div class="fc-tom-group"><h3>Termine</h3>${info.ev.map(eventRow).join('')}</div>`);
     if(info.hw.length)content.push(`<div class="fc-tom-group"><h3>Bis morgen erledigen</h3>${info.hw.map(homeworkRow).join('')}</div>`);
-    const usefulKids=info.kids.filter(x=>x.pack.length||x.depart);
-    if(usefulKids.length)content.push(`<div class="fc-tom-group"><h3>Vorbereiten & los</h3>${usefulKids.map(kidRow).join('')}</div>`);
+    const usefulKids=info.kids.filter(x=>x.pack.length||x.depart||x.pickup);
+    if(usefulKids.length)content.push(`<div class="fc-tom-group"><h3>Vorbereiten & Zeiten</h3>${usefulKids.map(kidRow).join('')}</div>`);
     sec.innerHTML=`<div class="v6-section-head"><div><h2>Morgen vorbereiten</h2><span>${esc(fmtDate(info.date))}</span></div><button type="button" onclick="openScreen('week');setTimeout(()=>{try{v6SelectWeekDay('${esc(info.date)}')}catch(e){}},0)">Morgen ansehen</button></div><div class="v6-card fc-tom-card">${content.join('')}</div>`;
     const pendSections=[...root.querySelectorAll('.v6-section')];
     const pend=pendSections.find(s=>/^Pendenzen$/i.test(s.querySelector('.v6-section-head h2')?.textContent||''));
@@ -68,7 +77,7 @@
   }
 
   function ensureStyle(){if(document.getElementById('fc-tomorrow-style'))return;const s=document.createElement('style');s.id='fc-tomorrow-style';s.textContent=`
-    .fc-tomorrow-section>.v6-section-head>div{min-width:0}.fc-tomorrow-section>.v6-section-head>div>span{display:block;margin-top:2px;color:#71839a;font-size:9px}.fc-tom-card{padding:4px 13px!important}.fc-tom-group{padding:11px 0;border-bottom:1px solid #17283b}.fc-tom-group:last-child{border-bottom:0}.fc-tom-group>h3{margin:0 0 7px;color:#7e8fa7;font-size:9px;font-weight:850;letter-spacing:.08em;text-transform:uppercase}.fc-tom-row{display:grid;grid-template-columns:52px 1fr;gap:9px;align-items:start;padding:6px 0}.fc-tom-kind{padding-top:2px;color:#8dafff;font-size:8px;font-weight:900;letter-spacing:.05em}.fc-tom-row b{display:block;color:#eef3f9;font-size:11px;line-height:1.35}.fc-tom-row small{display:block;margin-top:2px;color:#74869c;font-size:9px;line-height:1.35}.fc-tom-kid{padding:7px 0}.fc-tom-kid+.fc-tom-kid{border-top:1px solid #142438}.fc-tom-kid-head{display:flex;align-items:center;justify-content:space-between;gap:10px}.fc-tom-kid-head b{color:#eef3f9;font-size:11px}.fc-tom-kid-head>span{color:#91a3ba;font-size:9px;text-align:right}.fc-tom-chips{display:flex;flex-wrap:wrap;gap:5px;margin-top:6px}.fc-tom-chips span{padding:5px 7px;border:1px solid #263a52;border-radius:999px;background:#091522;color:#b8c7d8;font-size:9px;font-weight:700}.fc-tom-kid>small{display:block;margin-top:4px;color:#74869c;font-size:9px}
+    .fc-tomorrow-section>.v6-section-head>div{min-width:0}.fc-tomorrow-section>.v6-section-head>div>span{display:block;margin-top:2px;color:#71839a;font-size:9px}.fc-tom-card{padding:4px 13px!important}.fc-tom-group{padding:11px 0;border-bottom:1px solid #17283b}.fc-tom-group:last-child{border-bottom:0}.fc-tom-group>h3{margin:0 0 7px;color:#7e8fa7;font-size:9px;font-weight:850;letter-spacing:.08em;text-transform:uppercase}.fc-tom-row{display:grid;grid-template-columns:52px 1fr;gap:9px;align-items:start;padding:6px 0}.fc-tom-kind{padding-top:2px;color:#8dafff;font-size:8px;font-weight:900;letter-spacing:.05em}.fc-tom-row b{display:block;color:#eef3f9;font-size:11px;line-height:1.35}.fc-tom-row small{display:block;margin-top:2px;color:#74869c;font-size:9px;line-height:1.35}.fc-tom-kid{padding:7px 0}.fc-tom-kid+.fc-tom-kid{border-top:1px solid #142438}.fc-tom-kid-head{display:flex;align-items:flex-start;justify-content:space-between;gap:10px}.fc-tom-kid-head b{color:#eef3f9;font-size:11px}.fc-tom-kid-head>span{max-width:70%;color:#91a3ba;font-size:9px;line-height:1.35;text-align:right}.fc-tom-chips{display:flex;flex-wrap:wrap;gap:5px;margin-top:6px}.fc-tom-chips span{padding:5px 7px;border:1px solid #263a52;border-radius:999px;background:#091522;color:#b8c7d8;font-size:9px;font-weight:700}.fc-tom-kid>small{display:block;margin-top:4px;color:#74869c;font-size:9px}
   `;document.head.appendChild(s)}
 
   ensureStyle();
