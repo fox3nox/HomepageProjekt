@@ -44,64 +44,12 @@
     }
   }catch(e){console.error('fc_sync_dedupe',e)}
 
-  /* Pro6 uses compact generated markup. The first Pro6 build JSON-stringified dynamic
-     ids directly into double-quoted HTML event attributes. Safari then parses e.g.
-     onclick="v6SelectWeekDay("2026-08-18")" into two attributes and the control
-     becomes inert. Repair this parser split centrally for onclick/onchange so every
-     affected Pro6 control is fixed, not only week days and person filters. */
-  try{
-    const HANDLERS=['onclick','onchange'];
-    const repairElement=el=>{
-      if(!el?.getAttribute)return 0;
-      let fixed=0;
-      for(const handler of HANDLERS){
-        const prefix=String(el.getAttribute(handler)||'').trim();
-        if(!prefix||!prefix.endsWith('('))continue;
-        const extras=[...el.attributes].filter(a=>a.name!==handler&&a.value===''&&a.name.includes('"')&&a.name.endsWith('"'));
-        for(const extra of extras){
-          const i=extra.name.indexOf('"');
-          if(i<=0)continue;
-          const raw=extra.name.slice(0,i),tail=extra.name.slice(i+1,-1);
-          if(!tail.endsWith(')'))continue;
-          const safe=raw.replace(/\\/g,'\\\\').replace(/"/g,'\\"');
-          el.setAttribute(handler,prefix+'"'+safe+'"'+tail);
-          el.removeAttribute(extra.name);
-          fixed++;
-          break;
-        }
-      }
-      return fixed;
-    };
-    const repairTree=root=>{
-      let n=0;
-      if(root?.nodeType===1)n+=repairElement(root);
-      const scope=root?.querySelectorAll?root:document;
-      scope.querySelectorAll?.('[onclick],[onchange]').forEach(el=>{n+=repairElement(el)});
-      if(n){window.__fcInteractionRepairCount=(window.__fcInteractionRepairCount||0)+n}
-      return n;
-    };
-    window.fcRepairPro6Interactions=repairTree;
-    repairTree(document);
-    if(!window.__fcInteractionRepairObserver){
-      let queued=false;
-      const ob=new MutationObserver(records=>{
-        if(queued)return;queued=true;
-        queueMicrotask(()=>{
-          queued=false;
-          for(const r of records)for(const n of r.addedNodes)repairTree(n);
-        });
-      });
-      ob.observe(document.documentElement||document.body,{childList:true,subtree:true});
-      window.__fcInteractionRepairObserver=ob;
-    }
-  }catch(e){console.error('fc_interaction_repair',e)}
-
   /* pro-ui is loaded after the secure transport layer and defines its own opener;
      restore the authenticated opener as the final authority. */
   try{window.fcSecureTransportRefresh?.()}catch(e){}
 
-  /* Prompt an installed Home-Screen app to pick up the hardened service worker. */
+  /* Prompt an installed Home-Screen app to pick up the current service worker. */
   try{navigator.serviceWorker?.getRegistration('./').then(r=>r?.update()).catch(()=>{})}catch(e){}
 
-  window.__fcRuntimeHealth={legacyPushDisabled:true,unifiedTodayTimer:true,syncPushDeduped:true,secureDocumentOpener:true,interactionRepair:true,installedAt:new Date().toISOString()};
+  window.__fcRuntimeHealth={legacyPushDisabled:true,unifiedTodayTimer:true,syncPushDeduped:true,secureDocumentOpener:true,interactionRepair:false,installedAt:new Date().toISOString()};
 })();
