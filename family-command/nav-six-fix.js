@@ -8,9 +8,10 @@
   };
 
   function setButton(btn,id,label,icon){
-    if(!btn)return null;btn.type='button';btn.classList.add('navbtn');btn.dataset.screen=id;btn.setAttribute('aria-label',label);
-    let ico=btn.querySelector('.ico');if(!ico){ico=document.createElement('span');ico.className='ico';btn.prepend(ico)}ico.innerHTML=icon;ico.dataset.fcV3='1';
-    let lab=[...btn.querySelectorAll(':scope > span')].find(x=>!x.classList.contains('ico'));if(!lab){lab=document.createElement('span');btn.appendChild(lab)}lab.textContent=label;return btn;
+    if(!btn)return null;
+    if(btn.type!=='button')btn.type='button';if(!btn.classList.contains('navbtn'))btn.classList.add('navbtn');if(btn.dataset.screen!==id)btn.dataset.screen=id;if(btn.getAttribute('aria-label')!==label)btn.setAttribute('aria-label',label);
+    let ico=btn.querySelector('.ico');if(!ico){ico=document.createElement('span');ico.className='ico';btn.prepend(ico)}if(ico.dataset.fcSixIcon!==id){ico.innerHTML=icon;ico.dataset.fcSixIcon=id;ico.dataset.fcV3='1'}
+    let lab=[...btn.querySelectorAll(':scope > span')].find(x=>!x.classList.contains('ico'));if(!lab){lab=document.createElement('span');btn.appendChild(lab)}if(lab.textContent!==label)lab.textContent=label;return btn;
   }
 
   function ensure(){
@@ -27,8 +28,7 @@
       if(today?.nextSibling)nav.insertBefore(tom,today.nextSibling);else if(today)nav.appendChild(tom);else nav.prepend(tom);
     }else setButton(tom,'tomorrow','Morgen',ICONS.tomorrow);
 
-    nav.dataset.fcSixNav='1';
-    document.documentElement.dataset.fcSixNav='1';
+    if(nav.dataset.fcSixNav!=='1')nav.dataset.fcSixNav='1';if(document.documentElement.dataset.fcSixNav!=='1')document.documentElement.dataset.fcSixNav='1';
     return true;
   }
 
@@ -50,5 +50,5 @@
   document.addEventListener('click',openTomorrow,true);
   try{const nav=document.querySelector('.bottomnav-in');if(nav){let t=0;new MutationObserver(()=>{clearTimeout(t);t=setTimeout(ensure,30)}).observe(nav,{childList:true,subtree:true,attributes:true,attributeFilter:['data-screen']})}}catch(e){}
   requestAnimationFrame(ensure);setTimeout(ensure,250);setTimeout(ensure,1000);
-  window.__fcSixNav={version:1,ensure};
+  window.__fcSixNav={version:2,ensure};
 })();
