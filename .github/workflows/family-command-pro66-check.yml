@@ -1,0 +1,23 @@
+name: Family Command pro6.6 check
+on:
+  push:
+    branches: [family-command-pro65-relevance]
+jobs:
+  check:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: JavaScript syntax
+        run: |
+          node --check family-command/today-relevance.js
+          node --check family-command/tomorrow-preview.js
+          node --check family-command/app-selftest-v6.js
+          node --check family-command/sw.js
+      - name: Boot and cache wiring
+        run: |
+          grep -q "today-relevance.js" family-command/index.html
+          grep -q "tomorrow-preview.js" family-command/index.html
+          grep -q "pro6.6-ok" family-command/index.html
+          grep -q "today-relevance.js" family-command/sw.js
+          grep -q "tomorrow-preview.js" family-command/sw.js
+          grep -q "family-command-v16" family-command/sw.js
