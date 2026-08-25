@@ -1,1 +1,0 @@
-pro6.15 clean boot candidate
