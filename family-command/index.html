@@ -9,11 +9,11 @@
   <meta name="apple-mobile-web-app-title" content="Family Command">
   <meta name="format-detection" content="telephone=no">
   <title>Family Command</title>
-  <link rel="manifest" href="./manifest.webmanifest?v=20260824-pro612">
+  <link rel="manifest" href="./manifest.webmanifest?v=20260825-pro615">
   <link rel="icon" href="./icon.svg" type="image/svg+xml">
   <link rel="apple-touch-icon" href="./icon.svg">
-  <link rel="stylesheet" href="./styles.css?v=20260824-pro612">
-  <link rel="stylesheet" href="./screen-redesign-v6.css?v=20260824-pro612">
+  <link rel="stylesheet" href="./styles.css?v=20260825-pro615">
+  <link rel="stylesheet" href="./screen-redesign-v6.css?v=20260825-pro615">
   <style>
     html:not([data-fc-ready="1"]) .content{visibility:hidden!important}
     .v6-today-title{display:block!important;margin:4px 0 0!important;color:#fff!important;font-size:31px!important;line-height:1.05!important;font-weight:820!important;letter-spacing:-.045em!important}
@@ -89,10 +89,23 @@
     if(!key){fatal('Privater Zugang erforderlich. Öffne deinen persönlichen Family-Command-Link einmal in Safari.');return}
     const browserFetch=window.fetch.bind(window);
     window.fetch=function(input,init){try{const u=typeof input==='string'?input:(input instanceof Request?input.url:'');if(u.includes('/functions/v1/family-command-app/push/'))return Promise.resolve(new Response(JSON.stringify({ok:true,skipped:true}),{status:200,headers:{'content-type':'application/json'}}))}catch(e){}return browserFetch(input,init)};
-    function loadScript(src){return new Promise((resolve,reject)=>{const s=document.createElement('script');s.src=src;s.onload=()=>resolve();s.onerror=()=>reject(new Error('Datei konnte nicht geladen werden: '+src));document.body.appendChild(s)})}
+    const wait=ms=>new Promise(r=>setTimeout(r,ms));
+    async function loadScript(src){
+      let last='';
+      for(let attempt=0;attempt<3;attempt++){
+        try{
+          const sep=src.includes('?')?'&':'?';
+          const r=await browserFetch(src+sep+'fc_retry='+Date.now()+'_'+attempt,{cache:'no-store'});
+          if(!r.ok)throw new Error('HTTP '+r.status);
+          const code=await r.text();
+          const s=document.createElement('script');s.textContent=code+'\n//# sourceURL='+src.split('?')[0];document.body.appendChild(s);return;
+        }catch(e){last=e?.message||String(e);if(attempt<2)await wait(250*(attempt+1))}
+      }
+      throw new Error('Datei konnte nicht geladen werden: '+src+(last?' ('+last+')':''));
+    }
     function injectPrivate(code){const s=document.createElement('script');s.textContent=code+'\n//# sourceURL=family-command-private-app.js';document.body.appendChild(s)}
     async function boot(){
-      const v='20260824-pro612';
+      const v='20260825-pro615';
       const r=await browserFetch(PRIVATE_APP+'?v='+v,{cache:'no-store',headers:{'x-fc-access':key}});if(!r.ok)throw new Error('Privater App-Kern nicht erreichbar ('+r.status+').');
       injectPrivate(await r.text());if(typeof window.fcEventFilter==='undefined')window.fcEventFilter='all';
       await loadScript('./ai-budget-guard.js?v='+v);
@@ -120,9 +133,10 @@
       await loadScript('./homework-originals.js?v='+v);
       await loadScript('./backup-manager.js?v='+v);
       await loadScript('./today-addons-stabilizer.js?v='+v);
+      await loadScript('./events-visibility-fix.js?v='+v);
       await loadScript('./app-selftest-v6.js?v='+v);
-      document.documentElement.dataset.fcBoot='pro6.12-ok';
-      try{window.__fcScreenRedesignAudit?.();window.__fcSixNav?.ensure?.();window.__fcDailyChecklist?.render?.();window.__fcTodo?.render?.();window.fcRunSelfTest?.()}catch(e){}
+      document.documentElement.dataset.fcBoot='pro6.15-ok';
+      try{window.__fcScreenRedesignAudit?.();window.__fcSixNav?.ensure?.();window.__fcDailyChecklist?.render?.();window.__fcTodo?.render?.();window.__fcEventsVisibility?.render?.();window.fcRunSelfTest?.()}catch(e){}
       requestAnimationFrame(()=>requestAnimationFrame(()=>{
         document.documentElement.dataset.fcReady='1';
         try{window.__fcTodayAddonsStabilizer?.repair?.()}catch(e){}
