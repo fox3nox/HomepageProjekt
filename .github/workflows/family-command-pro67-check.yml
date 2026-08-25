@@ -28,6 +28,7 @@ jobs:
           node --check family-command/week-overview-v2.js
           node --check family-command/today-addons-stabilizer.js
           node --check family-command/events-visibility-fix.js
+          node --check family-command/pinboard-dashboard.js
           node --check family-command/app-selftest-v6.js
           node --check family-command/smoke-tests.js
           node --check family-command/sw.js
@@ -42,9 +43,10 @@ jobs:
           grep -q "week-overview-v2.js" family-command/sw.js
           grep -q "today-addons-stabilizer.js" family-command/sw.js
           grep -q "events-visibility-fix.js" family-command/sw.js
+          grep -q "pinboard-dashboard.js" family-command/sw.js
           grep -q "event-details.js" family-command/sw.js
-          grep -q "family-command-v26" family-command/sw.js
-          grep -q "pro6.15" family-command/build.txt
+          grep -q "family-command-v27" family-command/sw.js
+          grep -q "pro6.17" family-command/build.txt
           grep -q "20260825-pro615" family-command/index.html
           grep -q "events-visibility-fix.js" family-command/index.html
           grep -q "fc_retry" family-command/index.html
@@ -57,6 +59,9 @@ jobs:
           grep -q "groupedNext" family-command/today-addons-stabilizer.js
           grep -q "personIds" family-command/events-visibility-fix.js
           grep -q "Kommende Termine" family-command/events-visibility-fix.js
+          grep -q "loadPinboard" family-command/app-selftest-v6.js
+          grep -q "DEINE PINNWAND" family-command/pinboard-dashboard.js
+          grep -q "NÄCHSTE 7 TAGE" family-command/pinboard-dashboard.js
       - name: Eliyah Tuesday regression
         run: |
           grep -q "eliyahTuesday" family-command/app-data-rules.js
