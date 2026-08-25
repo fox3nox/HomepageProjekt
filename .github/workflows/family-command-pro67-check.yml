@@ -39,11 +39,13 @@ jobs:
           grep -q "todo-print-addon.js" family-command/sw.js
           grep -q "week-overview-v2.js" family-command/sw.js
           grep -q "today-addons-stabilizer.js" family-command/sw.js
-          grep -q "family-command-v22" family-command/sw.js
-          grep -q "pro6.12" family-command/build.txt
+          grep -q "family-command-v23" family-command/sw.js
+          grep -q "pro6.13" family-command/build.txt
           grep -q "today-addons-stabilizer.js" family-command/index.html
           grep -q "data-fc-ready" family-command/index.html
           ! grep -q "loadScript('./smoke-tests.js" family-command/index.html
           ! grep -q "'./smoke-tests.js'" family-command/sw.js
           grep -q "data-screen=\\\"tomorrow\\\"" family-command/nav-six-fix.js
           grep -q "repeat(6" family-command/nav-six-fix.js
+          grep -q "groupedNext" family-command/today-addons-stabilizer.js
+          grep -q "fcGroupCount" family-command/today-addons-stabilizer.js
