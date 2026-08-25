@@ -1,4 +1,4 @@
-const CACHE='family-command-v24';
+const CACHE='family-command-v25';
 const CORE=['./','./index.html','./styles.css','./screen-redesign-v6.css','./ai-budget-guard.js','./push-v2.js','./pro-ui.js','./runtime-health.js','./family-ai-v2.js','./family-ai-original-links.js','./pendencies.js','./event-details.js','./multi-link-ui.js','./event-delete-fix.js','./professional-ui.js','./screen-redesign-v6.js','./app-data-rules.js','./today-relevance.js','./tomorrow-preview.js','./tomorrow-screen.js','./nav-six-fix.js','./daily-checklist.js','./todo-list.js','./print-planner-v2.js','./todo-print-addon.js','./week-overview-v2.js','./homework-originals.js','./backup-manager.js','./today-addons-stabilizer.js','./events-visibility-fix.js','./app-selftest-v6.js','./manifest.webmanifest','./icon.svg'];
 self.addEventListener('install',e=>{e.waitUntil(caches.open(CACHE).then(c=>c.addAll(CORE)).catch(()=>{}));self.skipWaiting()});
 self.addEventListener('activate',e=>{e.waitUntil(caches.keys().then(keys=>Promise.all(keys.filter(k=>k.startsWith('family-command-')&&k!==CACHE).map(k=>caches.delete(k)))));self.clients.claim()});
