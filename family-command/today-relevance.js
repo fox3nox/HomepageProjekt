@@ -1,4 +1,4 @@
-/* Family Command · Today shows only what is still relevant · 2026-08-24 */
+/* Family Command · Today shows only what is still relevant · 2026-08-25 */
 (()=>{
   if(window.__fcTodayRelevanceInstalled)return;window.__fcTodayRelevanceInstalled=true;
 
@@ -39,7 +39,7 @@
       sub=rel.slot?.note||'Von zuhause los.';
     }else{
       main=`Beginnt um ${fmt(rel.start)}${rel.end!==null?' · bis '+fmt(rel.end):''}`;
-      sub=rel.slot?.note||'Die Losgehzeit ist bereits vorbei.';
+      sub=rel.slot?.note||(rel.depart===null?'Losgehzeit ist nicht hinterlegt.':'Die Losgehzeit ist bereits vorbei.');
     }
     card.classList.add('fc-today-relevant-kid');
     card.innerHTML=`<div class="v6-kid-head"><span class="v6-dot" style="--person:${esc(c)}"></span><b>${esc(p.name)}</b><span class="v6-chip">${rel.state==='active'?'Läuft':'Als Nächstes'}</span></div><div class="fc-today-next"><strong>${esc(main)}</strong>${sub?`<span>${esc(sub)}</span>`:''}</div>`;
@@ -102,5 +102,5 @@
     try{renderToday=window.renderToday}catch(e){}
   }
   requestAnimationFrame(()=>{try{if(document.getElementById('today')?.classList.contains('active')&&typeof renderToday==='function')renderToday();else apply()}catch(e){console.error('fc_today_relevance_init',e)}});
-  window.__fcTodayRelevance={version:1,apply};
+  window.__fcTodayRelevance={version:2,apply};
 })();
