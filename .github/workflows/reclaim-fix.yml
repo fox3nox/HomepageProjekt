@@ -1,0 +1,42 @@
+name: RECLAIM targeted fix
+
+on:
+  push:
+    branches: ["main"]
+    paths:
+      - 'reclaim-fix-trigger.txt'
+
+permissions:
+  contents: write
+
+jobs:
+  patch:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Patch tested RECLAIM fixes
+        shell: python
+        run: |
+          from pathlib import Path
+          p = Path('reclaim/index.html')
+          s = p.read_text(encoding='utf-8')
+          replacements = [
+            ("function calcDeadline(p){const base=p.basis==='purchase'?p.purchaseDate:p.receivedDate||p.purchaseDate;return addDays(base,p.returnDays)}", "function calcDeadline(p){if(p.returnDays==null||p.returnDays==='')return null;const base=p.basis==='purchase'?p.purchaseDate:p.receivedDate||p.purchaseDate;return addDays(base,p.returnDays)}"),
+            ("const lines=text.split(/\\n+/).map(x=>x.trim()).filter(x=>x.length>3&&x.length<100);let product=lines.find(x=>!/(bestell|rechnung|liefer|danke|gesamt|chf|fr\\.|zalando|ikea|brack|mediamarkt|galaxus|digitec)/i.test(x))||'';return{merchant,price,date,orderNo:orderM?orderM[1]:'',product}}", "const lines=text.split(/\\n+/).map(x=>x.trim()).filter(x=>x.length>3&&x.length<100);let product=lines.find(x=>!/(bestell|rechnung|liefer|danke|gesamt|summe|total|bezahlt|datum|chf|fr\\.|zalando|ikea|brack|mediamarkt|galaxus|digitec)/i.test(x)&&!/^\\d{1,2}[.\\/-]\\d{1,2}[.\\/-]20\\d{2}$/.test(x)&&!/^[0-9'’.,]+$/.test(x))||'';return{merchant,price,date,orderNo:orderM?orderM[1]:'',product}}"),
+            ("function cardHTML(p){const r=RULES[p.merchant]||RULES.custom;const st=stateOf(p);let badge='';let cls='neutral';if(st==='open'){const d=diffDays(calcDeadline(p));if(d<0){badge='abgelaufen';cls='danger'}else if(d===0){badge='heute letzter Tag';cls='danger'}else{badge=`noch ${d} Tag${d===1?'':'e'}`;cls=d<=5?'danger':d<=10?'warn':''}}else badge=STATUS[st];return`<article class=\"purchase\" data-id=\"${p.id}\">", "function cardHTML(p){const r=RULES[p.merchant]||RULES.custom;const st=stateOf(p);let badge='';let cls='neutral';if(st==='open'){const d=diffDays(calcDeadline(p));if(d==null){badge='Frist prüfen';cls='neutral'}else if(d<0){badge='abgelaufen';cls='danger'}else if(d===0){badge='heute letzter Tag';cls='danger'}else{badge=`noch ${d} Tag${d===1?'':'e'}`;cls=d<=5?'danger':d<=10?'warn':''}}else badge=STATUS[st];return`<article class=\"purchase\" data-id=\"${p.id}\">"),
+            ("function applyRule(){const r=RULES[$('#merchant').value]||RULES.custom;if(r.days!=null)$('#returnDays').value=r.days;$('#basis').value=r.basis||'received';$('#ruleHint').textContent=r.verified?`${r.name}: ${r.note} Zuletzt geprüft ${r.verified}.`:'Keine verifizierte Regel – bestätigte Frist selbst eintragen.'}", "function applyRule(){const r=RULES[$('#merchant').value]||RULES.custom;if(r.days!=null)$('#returnDays').value=r.days;else $('#returnDays').value='';$('#basis').value=r.basis||'received';$('#ruleHint').textContent=r.verified?`${r.name}: ${r.note} Zuletzt geprüft ${r.verified}.`:'Keine verifizierte Regel – bestätigte Frist selbst eintragen.'}"),
+            ("returnDays:Number($('#returnDays').value)||0,basis:$('#basis').value,status:'open'", "returnDays:$('#returnDays').value.trim()===''?null:Number($('#returnDays').value),basis:$('#basis').value,status:'open'"),
+            ("<div><b>Rückgabe starten</b><p>${st==='open'?(d>=0?`Noch ${d} Tag${d===1?'':'e'} · Frist ${fmt(deadline)}`:'Frist vorbei'):fmt(p.returnStarted)}</p></div>", "<div><b>Rückgabe starten</b><p>${st==='open'?(d==null?'Rückgabefrist prüfen und nachtragen.':(d>=0?`Noch ${d} Tag${d===1?'':'e'} · Frist ${fmt(deadline)}`:'Frist vorbei')):fmt(p.returnStarted)}</p></div>")
+          ]
+          for old, new in replacements:
+              if old not in s:
+                  raise SystemExit('Expected source fragment not found: ' + old[:100])
+              s = s.replace(old, new, 1)
+          p.write_text(s, encoding='utf-8')
+      - name: Commit fix
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add reclaim/index.html
+          git commit -m "Fix RECLAIM parsing and unknown deadlines"
+          git push
