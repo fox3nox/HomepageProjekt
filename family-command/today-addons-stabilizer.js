@@ -80,6 +80,10 @@
     if(queued||document.documentElement.dataset.fcReady!=='1')return;
     queued=true;requestAnimationFrame(repair);
   }
+  function loadEventsVisibility(){
+    if(window.__fcEventsVisibilityInstalled||document.querySelector('script[data-fc-events-visibility]'))return;
+    const s=document.createElement('script');s.dataset.fcEventsVisibility='1';s.src='./events-visibility-fix.js?v=20260825-pro614';s.onerror=()=>console.error('fc_events_visibility_load');document.body.appendChild(s);
+  }
   for(const id of ['today','tomorrow']){
     const root=document.getElementById(id);if(!root)continue;
     new MutationObserver(scheduleRepair).observe(root,{childList:true,subtree:true});
@@ -89,6 +93,7 @@
     const wrapped=function(...args){const out=raw.apply(this,args);setTimeout(scheduleRepair,0);return out};
     wrapped.__fcAddonStable=true;window.openScreen=wrapped;try{openScreen=wrapped}catch(e){}
   }
+  loadEventsVisibility();
   const timer=setInterval(()=>{try{applyGroupedFocus()}catch(e){}},30000);
-  window.__fcTodayAddonsStabilizer={version:2,repair,schedule:scheduleRepair,applyGroupedFocus,groupedNext,timer};
+  window.__fcTodayAddonsStabilizer={version:3,repair,schedule:scheduleRepair,applyGroupedFocus,groupedNext,loadEventsVisibility,timer};
 })();
