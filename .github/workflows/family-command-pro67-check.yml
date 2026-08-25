@@ -41,15 +41,18 @@ jobs:
           grep -q "week-overview-v2.js" family-command/sw.js
           grep -q "today-addons-stabilizer.js" family-command/sw.js
           grep -q "events-visibility-fix.js" family-command/sw.js
-          grep -q "family-command-v24" family-command/sw.js
-          grep -q "pro6.14" family-command/build.txt
-          grep -q "today-addons-stabilizer.js" family-command/index.html
+          grep -q "event-details.js" family-command/sw.js
+          grep -q "family-command-v25" family-command/sw.js
+          grep -q "pro6.15" family-command/build.txt
+          grep -q "20260825-pro615" family-command/index.html
+          grep -q "events-visibility-fix.js" family-command/index.html
+          grep -q "fc_retry" family-command/index.html
+          grep -q "pro6.15-ok" family-command/index.html
           grep -q "data-fc-ready" family-command/index.html
           ! grep -q "loadScript('./smoke-tests.js" family-command/index.html
           ! grep -q "'./smoke-tests.js'" family-command/sw.js
           grep -q "data-screen=\\\"tomorrow\\\"" family-command/nav-six-fix.js
           grep -q "repeat(6" family-command/nav-six-fix.js
           grep -q "groupedNext" family-command/today-addons-stabilizer.js
-          grep -q "events-visibility-fix.js" family-command/today-addons-stabilizer.js
           grep -q "personIds" family-command/events-visibility-fix.js
           grep -q "Kommende Termine" family-command/events-visibility-fix.js
