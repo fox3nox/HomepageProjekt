@@ -26,6 +26,7 @@ jobs:
           node --check family-command/todo-print-addon.js
           node --check family-command/week-overview-v2.js
           node --check family-command/today-addons-stabilizer.js
+          node --check family-command/events-visibility-fix.js
           node --check family-command/app-selftest-v6.js
           node --check family-command/smoke-tests.js
           node --check family-command/sw.js
@@ -39,8 +40,9 @@ jobs:
           grep -q "todo-print-addon.js" family-command/sw.js
           grep -q "week-overview-v2.js" family-command/sw.js
           grep -q "today-addons-stabilizer.js" family-command/sw.js
-          grep -q "family-command-v23" family-command/sw.js
-          grep -q "pro6.13" family-command/build.txt
+          grep -q "events-visibility-fix.js" family-command/sw.js
+          grep -q "family-command-v24" family-command/sw.js
+          grep -q "pro6.14" family-command/build.txt
           grep -q "today-addons-stabilizer.js" family-command/index.html
           grep -q "data-fc-ready" family-command/index.html
           ! grep -q "loadScript('./smoke-tests.js" family-command/index.html
@@ -48,4 +50,6 @@ jobs:
           grep -q "data-screen=\\\"tomorrow\\\"" family-command/nav-six-fix.js
           grep -q "repeat(6" family-command/nav-six-fix.js
           grep -q "groupedNext" family-command/today-addons-stabilizer.js
-          grep -q "fcGroupCount" family-command/today-addons-stabilizer.js
+          grep -q "events-visibility-fix.js" family-command/today-addons-stabilizer.js
+          grep -q "personIds" family-command/events-visibility-fix.js
+          grep -q "Kommende Termine" family-command/events-visibility-fix.js
