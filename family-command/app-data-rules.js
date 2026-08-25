@@ -1,4 +1,4 @@
-/* Family Command · persistent family data rules · 2026-08-24 */
+/* Family Command · persistent family data rules · 2026-08-25 */
 (()=>{
   if(window.__fcDataRulesInstalled)return;window.__fcDataRulesInstalled=true;
 
@@ -26,6 +26,8 @@
         const days=data.schedules?.[pid]||{};
         for(const slots of Object.values(days))for(const slot of (Array.isArray(slots)?slots:[]))if(String(slot.start||'')>='12:00'&&slot.depart!=='13:00'){slot.depart='13:00';changed=true}
       }
+      const eliyahTuesday=data.schedules?.eliyah?.[2]?.[0];
+      if(eliyahTuesday&&String(eliyahTuesday.start||'')==='13:25'&&eliyahTuesday.depart!=='13:15'){eliyahTuesday.depart='13:15';changed=true}
       for(const day of [1,3]){
         const slot=data.schedules?.eliyah?.[day]?.[0];if(!slot)continue;const wanted='Tagesschule holt Eliyah nach dem Kindergarten ab';
         if(slot.note!==wanted){slot.note=wanted;changed=true}if(!/Tagesschule/i.test(String(slot.label||''))){slot.label=(slot.label||'Kindergarten')+' · Tagesschule';changed=true}
@@ -34,7 +36,7 @@
 
       if(typeof pushSnapshot==='function'&&!window.__fcSchedulePushWrapped){
         window.__fcSchedulePushWrapped=true;const raw=pushSnapshot;
-        const wrapped=function(){const s=raw();for(const r of (Array.isArray(s?.rules)?s.rules:[])){if((r.personId==='jayden'||r.personId==='fynn')&&String(r.start||'')==='13:30')r.time='13:00';if(r.personId==='eliyah'&&(Number(r.day)===1||Number(r.day)===3))r.note='Tagesschule holt Eliyah nach dem Kindergarten ab'}if(Array.isArray(s?.tasks))s.tasks=s.tasks.filter(t=>!(String(t?.id||'').startsWith('pickup-eliyah-')&&dayOf(t.date)===3));return s};
+        const wrapped=function(){const s=raw();for(const r of (Array.isArray(s?.rules)?s.rules:[])){if((r.personId==='jayden'||r.personId==='fynn')&&String(r.start||'')==='13:30')r.time='13:00';if(r.personId==='eliyah'&&Number(r.day)===2&&String(r.start||'')==='13:25')r.time='13:15';if(r.personId==='eliyah'&&(Number(r.day)===1||Number(r.day)===3))r.note='Tagesschule holt Eliyah nach dem Kindergarten ab'}if(Array.isArray(s?.tasks))s.tasks=s.tasks.filter(t=>!(String(t?.id||'').startsWith('pickup-eliyah-')&&dayOf(t.date)===3));return s};
         window.pushSnapshot=wrapped;try{pushSnapshot=wrapped}catch(e){}changed=true;
       }
       if(changed)saveAndSync();return changed;
@@ -65,5 +67,5 @@
   }
 
   const changedSocial=applySocialMigration(),changedSchedule=applyFamilyScheduleRules();installScheduleUIPatches();
-  window.__fcDataRulesHealth={version:1,socialMigration:changedSocial,scheduleRules:changedSchedule,installedAt:new Date().toISOString()};
+  window.__fcDataRulesHealth={version:2,socialMigration:changedSocial,scheduleRules:changedSchedule,installedAt:new Date().toISOString()};
 })();
