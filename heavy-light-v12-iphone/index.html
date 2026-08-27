@@ -1,0 +1,44 @@
+<!doctype html>
+<html lang="de">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no,viewport-fit=cover">
+<meta name="theme-color" content="#05070c">
+<title>HEAVY / LIGHT V12 — iPhone</title>
+<style>
+*{box-sizing:border-box;-webkit-tap-highlight-color:transparent}html,body{margin:0;width:100%;height:100%;overflow:hidden;background:#05070c;touch-action:none;overscroll-behavior:none}body{position:fixed;inset:0}#shell{position:fixed;inset:0;background:#05070c;overflow:hidden}#stage{position:absolute;left:50%;top:50%;transform:translate(-50%,-50%);overflow:hidden;background:#05070c;box-shadow:0 0 0 1px rgba(255,255,255,.04)}iframe{position:absolute;inset:0;width:100%;height:100%;border:0;background:#05070c;display:block}#rotate{display:none;position:absolute;inset:0;z-index:5;place-items:center;text-align:center;padding:36px;color:#fff;background:#05070c;font-family:-apple-system,BlinkMacSystemFont,"SF Pro Display","Segoe UI",sans-serif}#rotate b{display:block;font-size:24px}#rotate span{display:block;margin-top:8px;color:#8491a7}body.portrait #rotate{display:grid}
+</style>
+</head>
+<body>
+<div id="shell"><div id="stage"><iframe id="game" src="../heavy-light-v12/" allow="autoplay" scrolling="no"></iframe></div><div id="rotate"><div><b>iPhone drehen</b><span>Querformat für HEAVY / LIGHT.</span></div></div></div>
+<script>
+(()=>{
+ const stage=document.getElementById('stage');
+ const frame=document.getElementById('game');
+ const ASPECT=16/9;
+ let lastW=0,lastH=0;
+ function viewport(){
+   const vv=window.visualViewport;
+   return {w:Math.max(1,Math.round(vv?vv.width:window.innerWidth)),h:Math.max(1,Math.round(vv?vv.height:window.innerHeight))};
+ }
+ function layout(){
+   const {w,h}=viewport();
+   document.body.classList.toggle('portrait',h>w);
+   const safeW=Math.max(1,w-2);
+   const safeH=Math.max(1,h-2);
+   let sw=safeW,sh=Math.round(sw/ASPECT);
+   if(sh>safeH){sh=safeH;sw=Math.round(sh*ASPECT)}
+   if(sw!==lastW||sh!==lastH){
+     stage.style.width=sw+'px';stage.style.height=sh+'px';
+     lastW=sw;lastH=sh;
+   }
+ }
+ addEventListener('resize',layout,{passive:true});
+ addEventListener('orientationchange',()=>{layout();setTimeout(layout,80);setTimeout(layout,300)},{passive:true});
+ if(window.visualViewport){visualViewport.addEventListener('resize',layout,{passive:true});visualViewport.addEventListener('scroll',layout,{passive:true})}
+ frame.addEventListener('load',()=>{layout();setTimeout(layout,50);setTimeout(layout,250)});
+ layout();requestAnimationFrame(layout);
+})();
+</script>
+</body>
+</html>
