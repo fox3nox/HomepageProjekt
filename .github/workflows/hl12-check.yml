@@ -99,7 +99,7 @@ jobs:
             const jumps=[
               {x:B(3),lead:130},{x:B(5),lead:120},{x:B(16),lead:120},{x:B(18),lead:120},
               {x:B(22),lead:120},{x:B(30.3),lead:135},{x:B(32),lead:120},{x:B(45),lead:120},
-              {x:B(52),lead:65,type:'pit'},{x:B(12),lead:65,type:'pit'},{x:B(28),lead:65,type:'pit'},{x:B(39),lead:65,type:'pit'}
+              {x:B(52),lead:65},{x:B(12),lead:65},{x:B(28),lead:65},{x:B(39),lead:65}
             ].sort((a,b)=>a.x-b.x);
             let lastJump=-999;
             window.__hl12bot=setInterval(()=>{
@@ -114,10 +114,10 @@ jobs:
               }
             },6);
           });
-          await page.waitForFunction(()=>window.__HL12__.state().mode==='result',{timeout:30000});
+          await page.waitForTimeout(26000);
           const end=await page.evaluate(()=>window.__HL12__.state());
-          if(end.attempt!==1) throw new Error('track required retry; attempt='+end.attempt+' x='+end.x);
           if(errors.length) throw new Error(errors.join('\n'));
+          if(end.mode!=='result'||end.attempt!==1) throw new Error('TRACK_STATE '+JSON.stringify(end));
           await page.screenshot({path:'hl12-track-complete.png'});
           await browser.close();
           console.log(JSON.stringify({ok:true,time:end.time,score:end.score,attempt:end.attempt,x:end.x}));
