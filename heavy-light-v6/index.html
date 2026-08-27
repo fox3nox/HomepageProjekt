@@ -1,0 +1,44 @@
+<!doctype html>
+<html lang="de">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no,viewport-fit=cover" />
+<meta name="theme-color" content="#05070d" />
+<meta name="apple-mobile-web-app-capable" content="yes" />
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+<title>HEAVY / LIGHT — Flow Circuit</title>
+<link rel="stylesheet" href="styles.css?v=6" />
+</head>
+<body>
+<main id="app">
+  <canvas id="game" aria-label="Heavy Light Spiel"></canvas>
+  <header id="hud" class="hidden">
+    <div class="hudPanel brandPanel"><div class="brand"><b>HEAVY</b><span>/</span><strong>LIGHT</strong></div><small class="tag" id="runTag">FLOW CIRCUIT · 01</small></div>
+    <div class="hudPanel progressPanel"><div class="sector"><span id="sector">CORE RUN</span><span id="distance">0%</span></div><div class="progress"><div id="progressFill"></div></div><div class="flowTrack"><div id="flowFill"></div><span>FLOW</span></div></div>
+    <div class="hudPanel statsPanel"><div class="stat"><small>SCORE</small><b id="liveScore">0</b></div><div class="stat accent"><small>COMBO</small><b id="combo">×0</b></div><button id="restart" aria-label="Neu starten">↻</button></div>
+  </header>
+  <div id="modeBadge" class="mode light hidden"><span class="dot"></span><div><b>LIGHT</b><small>LOSLASSEN</small></div></div>
+  <div id="overclock" class="overclock hidden"><span>OVERCLOCK</span><b id="overclockTime">5.0</b></div>
+  <section id="menu" class="overlay menuOverlay">
+    <div class="menuShell">
+      <div class="hero">
+        <div class="eyebrow">FLOW CIRCUIT · V6</div>
+        <div class="logoRow"><div class="orbPair"><i class="heavyOrb"></i><i class="lightOrb"></i></div><div><h1><b>HEAVY</b><span>/</span><strong>LIGHT</strong></h1><p>Ein Finger. Zwei Zustände. Drei Runs.</p></div></div>
+        <div class="controlStrip"><div><i class="heavyOrb"></i><span><b>HALTEN</b><small>schwer · fällt · zerbricht</small></span></div><div><i class="lightOrb"></i><span><b>LOSLASSEN</b><small>leicht · schwebt · phaset</small></span></div></div>
+        <div class="flowExplain"><span class="miniFlow"></span><div><b>FLOW AUFLADEN</b><small>Perfekte Aktionen füllen die Leiste. Voll = 5 Sekunden OVERCLOCK mit mehr Tempo und ×2 Punkten.</small></div></div>
+      </div>
+      <div class="runs" id="runCards">
+        <button class="runCard active" data-run="0"><span class="num">01</span><div><b>CORE</b><small>Lesen · reagieren · Flow lernen</small></div><span class="record" id="record0">NEU</span></button>
+        <button class="runCard" data-run="1"><span class="num">02</span><div><b>VECTOR</b><small>Phase-Gates · Bumper · Timing</small></div><span class="record" id="record1">NEU</span></button>
+        <button class="runCard" data-run="2"><span class="num">03</span><div><b>APEX</b><small>Kurze Wechsel · Crusher · Druck</small></div><span class="record" id="record2">NEU</span></button>
+        <button id="play">RUN 01 STARTEN</button>
+      </div>
+    </div>
+  </section>
+  <section id="result" class="overlay hidden"><div class="resultCard"><div class="eyebrow" id="resultRun">CORE · COMPLETE</div><div class="rank" id="rank">S</div><div><h2 id="resultTitle">PERFEKTER FLOW!</h2><div class="stars" id="stars">★★★</div></div><div class="score" id="score">0</div><div class="resultGrid"><div><small>ZEIT</small><b id="timeStat">0.0s</b></div><div><small>BEST COMBO</small><b id="comboStat">×0</b></div><div><small>FLUX</small><b id="fluxStat">0/0</b></div><div><small>OVERCLOCK</small><b id="overclockStat">0×</b></div></div><p id="resultText">Perfekte Wechsel halten deinen Flow am Leben.</p><div class="resultActions"><button id="menuBtn" class="secondary">RUNS</button><button id="again">NOCHMAL</button><button id="next">NÄCHSTER RUN</button></div></div></section>
+  <div id="rotate" class="rotate hidden"><div>↻<b>iPhone quer drehen</b><span>HEAVY / LIGHT ist für Querformat gebaut.</span></div></div>
+</main>
+<script src="engine.js?v=6"></script>
+<script src="render.js?v=6"></script>
+</body>
+</html>
