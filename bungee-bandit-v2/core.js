@@ -18,10 +18,16 @@ export function circleRect(p,r,g){
 export function calcLaunch(player,pointer){
   const dx=player.x-pointer.x, dy=player.y-pointer.y;
   const raw=Math.hypot(dx,dy);
-  const mag=Math.min(260,raw);
-  if(mag<28) return null;
-  const s=3.45;
-  return {vx:(dx/raw)*mag*s, vy:(dy/raw)*mag*s, power:mag};
+  if(raw<18) return null;
+
+  // Mobile slingshot assist: the player starts close to the lower-left edge,
+  // so a physical finger cannot travel as far downward as a mouse can.
+  // Amplify the finger pull while preserving its exact direction.
+  const PULL_GAIN=1.9;
+  const MAX_POWER=430;
+  const SPEED=3.0;
+  const power=Math.min(MAX_POWER,raw*PULL_GAIN);
+  return {vx:(dx/raw)*power*SPEED, vy:(dy/raw)*power*SPEED, power};
 }
 export function starsFor(seconds,shots,par){
   if(seconds<=par && shots<=3) return 3;
