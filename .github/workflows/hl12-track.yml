@@ -36,8 +36,8 @@ jobs:
             const impacts=[B(8),B(26),B(41),B(54)];
             const phases=[B(10),B(24),B(35),B(48)];
             const jumps=[
-              {x:B(3),lead:135},{x:B(5),lead:100},{x:B(16),lead:100},{x:B(18),lead:125},
-              {x:B(22),lead:130},{x:B(30.3),lead:145},{x:B(32),lead:100},{x:B(45),lead:100},
+              {x:B(3),lead:135},{x:B(5),lead:100},{x:B(18),lead:125},
+              {x:B(22),lead:130},{x:B(30.3),lead:145},{x:B(32.5),lead:110},{x:B(45),lead:100},
               {x:B(12),lead:80},{x:B(28),lead:80},{x:B(39),lead:80},{x:B(52),lead:80}
             ].sort((a,b)=>a.x-b.x);
             let lastJump=-999,lastState=api.state();
