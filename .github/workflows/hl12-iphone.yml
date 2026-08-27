@@ -1,0 +1,60 @@
+name: HEAVY LIGHT V12 iPhone
+on:
+  push:
+    paths:
+      - 'heavy-light-v12/**'
+      - 'heavy-light-v12-iphone/**'
+      - '.github/workflows/hl12-iphone.yml'
+  workflow_dispatch:
+jobs:
+  iphone:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: Install browser
+        run: |
+          npm init -y >/dev/null 2>&1
+          npm install playwright@1.55.0 >/dev/null 2>&1
+          npx playwright install --with-deps chromium >/dev/null
+      - name: Test start and dynamic Safari viewport
+        run: |
+          python3 -m http.server 8000 >/tmp/server.log 2>&1 &
+          cat > iphone.mjs <<'JS'
+          import { chromium } from 'playwright';
+          const browser=await chromium.launch({headless:true});
+          const page=await browser.newPage({viewport:{width:932,height:430},isMobile:true,hasTouch:true,deviceScaleFactor:3});
+          const errors=[];
+          page.on('pageerror',e=>errors.push('page:'+e.message));
+          page.on('console',m=>{if(m.type()==='error')errors.push('console:'+m.text())});
+          await page.goto('http://127.0.0.1:8000/heavy-light-v12-iphone/',{waitUntil:'load'});
+          const frame=page.frameLocator('#game');
+          await frame.locator('#start').click();
+          await page.waitForTimeout(350);
+          const state1=await frame.locator('body').evaluate(()=>window.__HL12__.state());
+          if(state1.mode!=='run')throw new Error('GAME_NOT_RUNNING '+JSON.stringify(state1));
+          async function verify(label){
+            const box=await page.locator('#stage').boundingBox();
+            const vp=page.viewportSize();
+            if(!box)throw new Error(label+' NO_STAGE');
+            const cx=box.x+box.width/2,cy=box.y+box.height/2;
+            if(Math.abs(cx-vp.width/2)>3||Math.abs(cy-vp.height/2)>3)throw new Error(label+' NOT_CENTERED '+JSON.stringify({box,vp}));
+            if(box.x<-2||box.y<-2||box.x+box.width>vp.width+2||box.y+box.height>vp.height+2)throw new Error(label+' CLIPPED '+JSON.stringify({box,vp}));
+          }
+          await verify('INITIAL');
+          await page.setViewportSize({width:844,height:390});
+          await page.waitForTimeout(300);
+          await verify('SAFARI_COMPACT');
+          const state2=await frame.locator('body').evaluate(()=>window.__HL12__.state());
+          if(state2.mode!=='run')throw new Error('GAME_STOPPED_AFTER_RESIZE '+JSON.stringify(state2));
+          await page.setViewportSize({width:932,height:430});
+          await page.waitForTimeout(300);
+          await verify('RESTORED');
+          if(errors.length)throw new Error(errors.join('\n'));
+          await page.screenshot({path:'hl12-iphone-pass.png'});
+          console.log('IPHONE_VIEWPORT_PASS',JSON.stringify({state1,state2}));
+          await browser.close();
+          JS
+          node iphone.mjs
