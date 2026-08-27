@@ -1,0 +1,29 @@
+name: HEAVY LIGHT V12 Check
+on:
+  push:
+    paths:
+      - 'heavy-light-v12/**'
+      - '.github/workflows/hl12-check.yml'
+  workflow_dispatch:
+jobs:
+  check:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: Extract inline game script
+        run: |
+          python3 - <<'PY'
+          from pathlib import Path
+          import re
+          s=Path('heavy-light-v12/index.html').read_text()
+          scripts=re.findall(r'<script>([\s\S]*?)</script>',s)
+          assert scripts, 'No inline game script found'
+          Path('/tmp/hl12.js').write_text('\n'.join(scripts))
+          PY
+      - name: Check JavaScript syntax
+        run: node --check /tmp/hl12.js
+      - name: Check required game hooks
+        run: grep -q '__HL12__' heavy-light-v12/index.html && grep -q 'pointerdown' heavy-light-v12/index.html && grep -q 'FIX=1/120' heavy-light-v12/index.html
