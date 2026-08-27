@@ -1,4 +1,4 @@
-/* Family Command · persistent family data rules · 2026-08-25 */
+/* Family Command · persistent family data rules · 2026-08-27 */
 (()=>{
   if(window.__fcDataRulesInstalled)return;window.__fcDataRulesInstalled=true;
 
@@ -17,6 +17,18 @@
       event.note='Termin zur Klärung der Finanzierung der Kinderbetreuung an Samstagen ab 01.01.2027. Sozialabteilung Herzogenbuchsee. Frau Kuert, Sozialarbeiterin von Frau Hager, nimmt ebenfalls teil. Ersetzt den Termin vom 26.10.2026 um 14:00 Uhr.';
       saveAndSync();try{localStorage.setItem(FLAG,'done')}catch(e){}return true;
     }catch(e){console.error('fc_data_migration_social_20261027',e);return false}
+  }
+
+  function applyTanjaCoffeeMigration(){
+    const FLAG='fc-migration-tanja-coffee-20260828-v1';try{if(localStorage.getItem(FLAG)==='done')return false}catch(e){}
+    try{
+      if(typeof data==='undefined'||!Array.isArray(data?.events))return false;
+      let event=data.events.find(e=>String(e.id)==='oli-tanja-coffee-20260828');
+      if(!event){event={id:'oli-tanja-coffee-20260828',personIds:['oli']};data.events.push(event)}
+      event.id='oli-tanja-coffee-20260828';event.personIds=['oli'];event.title='Kaffee bei Tanja';event.date='2026-08-28';event.time='08:20';event.end='';event.endDate='';event.reminderLead=0;
+      event.note='Nach Eliyah in den Kindergarten gebracht. Danach bist du bei Tanja auf einen Kaffee eingeladen.';
+      saveAndSync();try{localStorage.setItem(FLAG,'done')}catch(e){}return true;
+    }catch(e){console.error('fc_data_migration_tanja_coffee_20260828',e);return false}
   }
 
   function applyFamilyScheduleRules(){
@@ -66,6 +78,6 @@
     try{if(document.getElementById('today')?.classList.contains('active'))window.renderToday()}catch(e){}try{if(document.getElementById('week')?.classList.contains('active'))window.renderWeek()}catch(e){}
   }
 
-  const changedSocial=applySocialMigration(),changedSchedule=applyFamilyScheduleRules();installScheduleUIPatches();
-  window.__fcDataRulesHealth={version:2,socialMigration:changedSocial,scheduleRules:changedSchedule,installedAt:new Date().toISOString()};
+  const changedSocial=applySocialMigration(),changedTanja=applyTanjaCoffeeMigration(),changedSchedule=applyFamilyScheduleRules();installScheduleUIPatches();
+  window.__fcDataRulesHealth={version:3,socialMigration:changedSocial,tanjaCoffeeMigration:changedTanja,scheduleRules:changedSchedule,installedAt:new Date().toISOString()};
 })();
