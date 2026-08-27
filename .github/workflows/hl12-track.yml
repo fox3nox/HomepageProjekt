@@ -1,0 +1,73 @@
+name: HEAVY LIGHT V12 Track
+on:
+  push:
+    paths:
+      - 'heavy-light-v12/**'
+      - '.github/workflows/hl12-track.yml'
+  workflow_dispatch:
+jobs:
+  track:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: Install browser
+        run: |
+          npm init -y >/dev/null 2>&1
+          npm install playwright@1.55.0 >/dev/null 2>&1
+          npx playwright install --with-deps chromium >/dev/null
+      - name: Validate FRACTURE in first attempt
+        run: |
+          python3 -m http.server 8000 >/tmp/server.log 2>&1 &
+          cat > track.mjs <<'JS'
+          import { chromium } from 'playwright';
+          const browser=await chromium.launch({headless:true});
+          const page=await browser.newPage({viewport:{width:932,height:430},isMobile:true,hasTouch:true});
+          const errors=[];
+          page.on('pageerror',e=>errors.push('page:'+e.message));
+          page.on('console',m=>{if(m.type()==='error')errors.push('console:'+m.text())});
+          await page.goto('http://127.0.0.1:8000/heavy-light-v12/',{waitUntil:'load'});
+          await page.waitForFunction(()=>window.__HL12__);
+          await page.click('#start');
+          await page.evaluate(()=>{
+            const api=window.__HL12__,BPX=605*60/158,B=n=>300+n*BPX;
+            const impacts=[B(8),B(26),B(41),B(54)];
+            const phases=[B(10),B(24),B(35),B(48)];
+            const jumps=[
+              {x:B(3),lead:135},{x:B(5),lead:125},{x:B(16),lead:125},{x:B(18),lead:125},
+              {x:B(22),lead:130},{x:B(30.3),lead:145},{x:B(32),lead:125},{x:B(45),lead:125},
+              {x:B(12),lead:80},{x:B(28),lead:80},{x:B(39),lead:80},{x:B(52),lead:80}
+            ].sort((a,b)=>a.x-b.x);
+            let lastJump=-999,lastState=api.state();
+            window.__trackFail=null;
+            window.__hl12bot=setInterval(()=>{
+              const s=api.state();
+              if(s.attempt>1){window.__trackFail=lastState;clearInterval(window.__hl12bot);return;}
+              lastState=s;
+              if(s.mode!=='run')return;
+              const x=s.x;
+              const wall=impacts.find(v=>x>v-185&&x<v+78);
+              if(wall){api.setHeavy(true);return;}
+              const phase=phases.find(v=>x>v-175&&x<v+110);
+              if(phase){api.setHeavy(false);return;}
+              if(s.ground){
+                const h=jumps.find(v=>x>v.x-v.lead&&x<v.x-15&&Math.abs(v.x-lastJump)>70);
+                if(h){
+                  if(s.heavy)api.setHeavy(false); else {api.setHeavy(true);api.setHeavy(false)}
+                  lastJump=h.x;return;
+                }
+              }
+            },5);
+          });
+          await page.waitForFunction(()=>window.__HL12__.state().mode==='result'||window.__trackFail,{timeout:30000});
+          const out=await page.evaluate(()=>({state:window.__HL12__.state(),fail:window.__trackFail}));
+          if(errors.length) throw new Error(errors.join('\n'));
+          if(out.fail) throw new Error('FIRST_CRASH '+JSON.stringify(out.fail));
+          if(out.state.attempt!==1) throw new Error('NOT_FIRST_ATTEMPT '+JSON.stringify(out.state));
+          await page.screenshot({path:'hl12-track-pass.png'});
+          console.log('TRACK_PASS '+JSON.stringify(out.state));
+          await browser.close();
+          JS
+          node track.mjs
