@@ -1,0 +1,52 @@
+<!doctype html>
+<html lang="de">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no,viewport-fit=cover" />
+  <meta name="theme-color" content="#080d17" />
+  <meta name="apple-mobile-web-app-capable" content="yes" />
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+  <title>Bungee Bandit — iPhone Alpha</title>
+  <link rel="stylesheet" href="styles.css" />
+</head>
+<body>
+  <main id="shell" aria-label="Bungee Bandit Spiel">
+    <canvas id="game" width="1280" height="720" aria-label="Bungee Bandit Spielfeld"></canvas>
+
+    <header id="hud">
+      <div class="brand"><span class="mask">●</span><strong>BUNGEE</strong> <b>BANDIT</b></div>
+      <div class="mission"><small id="jobName">JOB 1 · MUSEUM</small><strong id="missionText">💎 BEUTE 0 / 3</strong></div>
+      <button id="restart" aria-label="Level neu starten">↻</button>
+    </header>
+
+    <div id="goalBanner" class="goal-banner hidden">⬅ ZURÜCK ZUM VAN!</div>
+    <div id="toast" class="toast" aria-live="polite"></div>
+
+    <section id="intro" class="overlay intro">
+      <div class="intro-card">
+        <div class="title-lockup"><span class="thief-icon">🥷</span><div><h1>BUNGEE <b>BANDIT</b></h1><p>Ein Finger. Rein. Beute. Raus.</p></div></div>
+        <div class="how-grid">
+          <div><span class="step">1</span><strong>BERÜHREN</strong><small>Tippe den Dieb an.</small></div>
+          <div><span class="step">2</span><strong>ZURÜCKZIEHEN</strong><small>Wie bei einer Schleuder.</small></div>
+          <div><span class="step">3</span><strong>LOSLASSEN</strong><small>Flieg durch die Beute.</small></div>
+        </div>
+        <div class="objective"><span>🎯</span><div><strong>ZIEL</strong><p>Sammle die leuchtenden Edelsteine und lande danach wieder beim roten Flucht-Van.</p></div></div>
+        <button id="play">SPIELEN</button>
+      </div>
+    </section>
+
+    <section id="result" class="overlay hidden">
+      <div class="result-card">
+        <span id="resultKicker">SAUBERER JOB</span>
+        <h2 id="resultTitle">GESCHAFFT!</h2>
+        <div id="stars" class="stars">★★★</div>
+        <div class="result-stats"><div><small>ZEIT</small><b id="timeStat">0.0s</b></div><div><small>SCHÜSSE</small><b id="shotStat">0</b></div><div><small>BEUTE</small><b id="lootStat">0/0</b></div></div>
+        <button id="next">NÄCHSTER JOB</button>
+      </div>
+    </section>
+
+    <section id="rotate" class="rotate hidden"><div>↻<strong>iPhone quer drehen</strong><span>Das Spiel ist für Querformat gebaut.</span></div></section>
+  </main>
+  <script type="module" src="game.js"></script>
+</body>
+</html>
