@@ -61,15 +61,13 @@ jobs:
           await page.waitForTimeout(70);
           s=await page.evaluate(()=>window.__HL12__.state());
           if(s.heavy) throw new Error('pointerup did not return LIGHT');
-          if(!(s.vy<0&&s.y<578)) throw new Error('release did not create jump');
+          if(!(s.vy<0&&s.y<578&&!s.ground)) throw new Error('release did not create deterministic ground jump');
           await page.dispatchEvent('#game','pointerdown',{pointerType:'touch',isPrimary:true});
-          await page.waitForTimeout(25);
           const slam=await page.evaluate(()=>window.__HL12__.state());
-          if(slam.vy<300) throw new Error('HEAVY slam not decisive enough');
+          if(!slam.heavy||slam.ground||slam.vy<700) throw new Error('HEAVY slam not immediate/decisive in air');
           await page.dispatchEvent('#game','pointerup',{pointerType:'touch',isPrimary:true});
-          await page.waitForTimeout(25);
-          const release=await page.evaluate(()=>window.__HL12__.state());
-          if(release.vy<-500) throw new Error('air release created unwanted double jump');
+          const airRelease=await page.evaluate(()=>window.__HL12__.state());
+          if(airRelease.heavy||airRelease.ground||airRelease.vy<0) throw new Error('air release created unwanted second jump');
           await page.reload({waitUntil:'load'});
           await page.waitForFunction(()=>window.__HL12__);
           await page.click('#start');
@@ -79,6 +77,6 @@ jobs:
           if(errors.length) throw new Error(errors.join('\n'));
           await page.screenshot({path:'hl12-smoke.png'});
           await browser.close();
-          console.log(JSON.stringify({ok:true,attempt:retry.attempt}));
+          console.log(JSON.stringify({ok:true,attempt:retry.attempt,airReleaseVy:airRelease.vy}));
           JS
           node smoke.mjs
