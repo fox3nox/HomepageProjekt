@@ -1,0 +1,50 @@
+<!doctype html>
+<html lang="de">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no,viewport-fit=cover">
+<meta name="theme-color" content="#020409">
+<title>HEAVY / LIGHT — V12 iPhone</title>
+<style>
+*{box-sizing:border-box;-webkit-tap-highlight-color:transparent}html,body{margin:0;width:100%;height:100%;overflow:hidden;background:#020409;touch-action:none;overscroll-behavior:none}body{position:fixed;inset:0}#shell{position:fixed;inset:0;overflow:hidden;background:#020409}#stage{position:absolute;left:0;top:0;width:1280px;height:720px;transform-origin:0 0;will-change:transform;contain:layout paint size}iframe{display:block;width:1280px;height:720px;border:0;background:#05070c;overflow:hidden}#rotate{display:none;position:fixed;inset:0;z-index:50;background:#020409;color:#f7fbff;place-items:center;text-align:center;padding:32px;font-family:-apple-system,BlinkMacSystemFont,"SF Pro Display","Segoe UI",sans-serif}#rotate b{display:block;font-size:24px}#rotate span{display:block;margin-top:8px;color:#8090a8;font-size:14px}@media(orientation:portrait){#rotate{display:grid}}
+</style>
+</head>
+<body>
+<div id="shell"><div id="stage"><iframe id="gameFrame" src="./index.html" title="HEAVY / LIGHT V12" allow="autoplay"></iframe></div></div>
+<div id="rotate"><div><b>iPhone drehen</b><span>Das Spiel ist für Querformat optimiert.</span></div></div>
+<script>
+(()=>{
+  const W=1280,H=720,stage=document.getElementById('stage'),frame=document.getElementById('gameFrame');
+  let locked=false,last={w:0,h:0,x:0,y:0,s:1};
+  const viewport=()=>{
+    const vv=window.visualViewport;
+    return {w:Math.max(1,vv?.width||document.documentElement.clientWidth||innerWidth),h:Math.max(1,vv?.height||document.documentElement.clientHeight||innerHeight),x:vv?.offsetLeft||0,y:vv?.offsetTop||0};
+  };
+  function fit(force=false){
+    if(locked&&!force)return;
+    const v=viewport(),pad=6,s=Math.min((v.w-pad*2)/W,(v.h-pad*2)/H),x=v.x+(v.w-W*s)/2,y=v.y+(v.h-H*s)/2;
+    last={w:v.w,h:v.h,x,y,s};
+    stage.style.transform=`translate3d(${x}px,${y}px,0) scale(${s})`;
+  }
+  function freeze(){fit(true);locked=true}
+  function unfreeze(){locked=false;requestAnimationFrame(()=>fit(true))}
+  function wire(){
+    try{
+      const d=frame.contentDocument;
+      d?.getElementById('start')?.addEventListener('pointerdown',freeze,{passive:true});
+      d?.getElementById('retry')?.addEventListener('pointerdown',freeze,{passive:true});
+      d?.getElementById('back')?.addEventListener('pointerdown',unfreeze,{passive:true});
+    }catch(e){}
+  }
+  frame.addEventListener('load',()=>{wire();fit(true)});
+  window.addEventListener('orientationchange',()=>{locked=false;setTimeout(()=>fit(true),120);setTimeout(()=>fit(true),420)},{passive:true});
+  window.addEventListener('resize',()=>fit(false),{passive:true});
+  window.visualViewport?.addEventListener('resize',()=>fit(false),{passive:true});
+  window.visualViewport?.addEventListener('scroll',()=>fit(false),{passive:true});
+  document.addEventListener('visibilitychange',()=>{if(!document.hidden&&!locked)setTimeout(()=>fit(true),80)});
+  fit(true);setTimeout(()=>fit(true),80);setTimeout(()=>fit(true),320);
+  window.__HL12_IPHONE__={fit,freeze,unfreeze,state:()=>({locked,...last,frameW:frame.contentWindow?.innerWidth,frameH:frame.contentWindow?.innerHeight})};
+})();
+</script>
+</body>
+</html>
