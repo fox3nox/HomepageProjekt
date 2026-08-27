@@ -10,17 +10,18 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
-      - name: Widen unfair double-spike timing windows
+      - name: Refine pad and recovery sequences
         run: |
           python3 - <<'PY'
           from pathlib import Path
           p=Path('heavy-light-v12/index.html')
           s=p.read_text()
           changes={
-            "{t:'spike',x:B(6),w:58}":"{t:'spike',x:B(5.7),w:58}",
-            "{t:'spike',x:B(17),w:58}":"{t:'spike',x:B(16.7),w:58}",
-            "{t:'spike',x:B(33),w:58}":"{t:'spike',x:B(32.7),w:58}",
-            "{t:'spike',x:B(46),w:58}":"{t:'spike',x:B(45.7),w:58}",
+            "{t:'spike',x:B(16),w:58}":"{t:'spike',x:B(15),w:58}",
+            "{t:'spike',x:B(16.7),w:58}":"{t:'spike',x:B(15.65),w:58}",
+            "{t:'spike',x:B(32),w:58}":"{t:'spike',x:B(32.5),w:58}",
+            "{t:'spike',x:B(32.7),w:58}":"{t:'spike',x:B(33.2),w:58}",
+            "{t:'pad',x:B(50),w:92},":"",
           }
           for old,new in changes.items():
             if old not in s:
@@ -33,5 +34,5 @@ jobs:
           git config user.name 'github-actions[bot]'
           git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
           git add heavy-light-v12/index.html
-          git commit -m 'Tune V12 obstacle spacing for fair timing windows'
+          git commit -m 'Refine V12 pad and recovery sequences'
           git push
