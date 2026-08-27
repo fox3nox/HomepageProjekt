@@ -39,7 +39,7 @@ jobs:
       - name: Run iPhone landscape gameplay smoke test
         run: |
           python3 -m http.server 8000 >/tmp/hl12-server.log 2>&1 &
-          cat > /tmp/smoke.mjs <<'JS'
+          cat > smoke.mjs <<'JS'
           import { chromium } from 'playwright';
           const browser=await chromium.launch({headless:true});
           const page=await browser.newPage({viewport:{width:932,height:430},isMobile:true,hasTouch:true});
@@ -77,8 +77,8 @@ jobs:
           const retry=await page.evaluate(()=>window.__HL12__.state());
           if(retry.attempt<2) throw new Error('crash/retry loop did not advance attempt');
           if(errors.length) throw new Error(errors.join('\n'));
-          await page.screenshot({path:'/tmp/hl12.png'});
+          await page.screenshot({path:'hl12-smoke.png'});
           await browser.close();
           console.log(JSON.stringify({ok:true,attempt:retry.attempt}));
           JS
-          node /tmp/smoke.mjs
+          node smoke.mjs
