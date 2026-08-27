@@ -1,0 +1,107 @@
+<!doctype html>
+<html lang="de">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no,viewport-fit=cover" />
+<meta name="theme-color" content="#03050b" />
+<meta name="apple-mobile-web-app-capable" content="yes" />
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+<title>HEAVY / LIGHT — Pulse Circuit X</title>
+<link rel="stylesheet" href="styles.css?v=10" />
+</head>
+<body>
+<main id="app">
+  <canvas id="game" aria-label="HEAVY / LIGHT"></canvas>
+
+  <header id="hud" class="hidden">
+    <div class="hudPanel brandPanel">
+      <div class="brand"><b>HEAVY</b><span>/</span><strong>LIGHT</strong></div>
+      <small class="tag" id="runTag">PULSE CIRCUIT X · 01</small>
+    </div>
+
+    <div class="hudPanel progressPanel">
+      <div class="sector"><span id="sector">CORE RUN</span><span id="distance">0%</span></div>
+      <div class="progress"><div id="progressFill"></div></div>
+      <div class="flowTrack"><div id="flowFill"></div><span>FLOW</span></div>
+    </div>
+
+    <div class="hudPanel statsPanel">
+      <div class="stat"><small>SCORE</small><b id="liveScore">0</b></div>
+      <div class="stat accent"><small>COMBO</small><b id="combo">×0</b></div>
+      <div class="stat attemptStat"><small>TRY</small><b id="attempt">1</b></div>
+      <button id="restart" aria-label="Neu starten">↻</button>
+    </div>
+  </header>
+
+  <div id="modeBadge" class="mode light hidden">
+    <span class="dot"></span>
+    <div><b>LIGHT</b><small>LOSLASSEN</small></div>
+  </div>
+
+  <div id="overclock" class="overclock hidden"><span>OVERDRIVE</span><b id="overclockTime">5.0</b></div>
+  <div id="beatFlash" class="beatFlash"></div>
+
+  <section id="menu" class="overlay menuOverlay">
+    <div class="menuShell">
+      <div class="hero">
+        <div class="logoRow">
+          <div class="heroCore" aria-hidden="true">
+            <i class="coreOrbit o1"></i><i class="coreOrbit o2"></i>
+            <i class="heavyOrb"></i><i class="lightOrb"></i>
+          </div>
+          <div class="heroCopy">
+            <h1><b>HEAVY</b><span>/</span><strong>LIGHT</strong></h1>
+            <p>One-touch precision runner. Zwei Zustände. Ein Flow.</p>
+          </div>
+        </div>
+
+        <div class="controlStrip">
+          <div class="heavyControl"><i class="heavyOrb"></i><span><b>HALTEN</b><small>Drop · Smash · Stabilisieren</small></span></div>
+          <div class="lightControl"><i class="lightOrb"></i><span><b>LOSLASSEN</b><small>Jump · Phase · Float</small></span></div>
+        </div>
+
+        <div class="flowExplain">
+          <span class="miniFlow"></span>
+          <div><b>IM TAKT WECHSELN</b><small>SYNC lädt FLOW. 100 % startet OVERDRIVE: schneller, stärker, ×2 Punkte.</small></div>
+        </div>
+      </div>
+
+      <div class="runs" id="runCards">
+        <div class="runHeader"><span>TRACKS</span><small>3 HANDGEBAUTE RHYTHMUS-RUNS</small></div>
+        <button class="runCard active" data-run="0"><span class="num">01</span><div><b>CORE</b><small>144 BPM · Precision Surge</small></div><span class="record" id="record0">NEU</span></button>
+        <button class="runCard" data-run="1"><span class="num">02</span><div><b>VECTOR</b><small>162 BPM · React & Flow</small></div><span class="record" id="record1">NEU</span></button>
+        <button class="runCard" data-run="2"><span class="num">03</span><div><b>APEX</b><small>176 BPM · Hyperline Mastery</small></div><span class="record" id="record2">NEU</span></button>
+        <button id="play">RUN 01 STARTEN</button>
+      </div>
+    </div>
+  </section>
+
+  <section id="result" class="overlay hidden">
+    <div class="resultCard">
+      <div class="rank" id="rank">S</div>
+      <div class="resultHead">
+        <small id="resultRun">CORE · COMPLETE</small>
+        <h2 id="resultTitle">PERFEKTER FLOW!</h2>
+        <div class="stars" id="stars">★★★</div>
+      </div>
+      <div class="score" id="score">0</div>
+      <div class="resultGrid">
+        <div><small>ZEIT</small><b id="timeStat">0.0s</b></div>
+        <div><small>COMBO</small><b id="comboStat">×0</b></div>
+        <div><small>FLUX</small><b id="fluxStat">0/0</b></div>
+        <div><small>OVERDRIVE</small><b id="overclockStat">0×</b></div>
+      </div>
+      <p id="resultText">Perfekte Aktionen halten deinen Flow am Leben.</p>
+      <div class="resultActions"><button id="menuBtn" class="secondary">TRACKS</button><button id="again">RETRY</button><button id="next">NÄCHSTER RUN</button></div>
+    </div>
+  </section>
+
+  <div id="rotate" class="rotate hidden"><div><div class="rotateIcon">↻</div><b>iPhone quer drehen</b><span>HEAVY / LIGHT ist für Querformat optimiert.</span></div></div>
+</main>
+<script src="engine-a.js?v=10"></script>
+<script src="engine-b.js?v=10"></script>
+<script src="render-a.js?v=10"></script>
+<script src="render-b.js?v=10"></script>
+<script src="render-c.js?v=10"></script>
+</body>
+</html>
