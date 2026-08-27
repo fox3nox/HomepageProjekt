@@ -3,41 +3,60 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no,viewport-fit=cover">
-<meta name="theme-color" content="#05070c">
+<meta name="theme-color" content="#020409">
 <title>HEAVY / LIGHT V12 — iPhone</title>
 <style>
-*{box-sizing:border-box;-webkit-tap-highlight-color:transparent}html,body{margin:0;width:100%;height:100%;overflow:hidden;background:#05070c;touch-action:none;overscroll-behavior:none}body{position:fixed;inset:0}#shell{position:fixed;inset:0;background:#05070c;overflow:hidden}#stage{position:absolute;left:50%;top:50%;transform:translate(-50%,-50%);overflow:hidden;background:#05070c;box-shadow:0 0 0 1px rgba(255,255,255,.04)}iframe{position:absolute;inset:0;width:100%;height:100%;border:0;background:#05070c;display:block}#rotate{display:none;position:absolute;inset:0;z-index:5;place-items:center;text-align:center;padding:36px;color:#fff;background:#05070c;font-family:-apple-system,BlinkMacSystemFont,"SF Pro Display","Segoe UI",sans-serif}#rotate b{display:block;font-size:24px}#rotate span{display:block;margin-top:8px;color:#8491a7}body.portrait #rotate{display:grid}
+*{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+html,body{margin:0;width:100%;height:100%;overflow:hidden;background:#020409;touch-action:none;overscroll-behavior:none}
+body{position:fixed;inset:0}
+#shell{position:fixed;inset:0;overflow:hidden;background:#020409}
+#stage{position:absolute;left:0;top:0;width:1280px;height:720px;transform-origin:0 0;will-change:transform;contain:layout paint size;background:#05070c;box-shadow:0 0 0 1px rgba(255,255,255,.035)}
+iframe{display:block;width:1280px;height:720px;border:0;background:#05070c;overflow:hidden}
+#rotate{display:none;position:fixed;z-index:20;inset:0;place-items:center;text-align:center;padding:36px;color:#fff;background:#020409;font-family:-apple-system,BlinkMacSystemFont,"SF Pro Display","Segoe UI",sans-serif}
+#rotate b{display:block;font-size:24px}#rotate span{display:block;margin-top:8px;color:#8491a7}
+@media(orientation:portrait){#rotate{display:grid}}
 </style>
 </head>
 <body>
-<div id="shell"><div id="stage"><iframe id="game" src="../heavy-light-v12/" allow="autoplay" scrolling="no"></iframe></div><div id="rotate"><div><b>iPhone drehen</b><span>Querformat für HEAVY / LIGHT.</span></div></div></div>
+<div id="shell">
+  <div id="stage"><iframe id="game" src="../heavy-light-v12/" width="1280" height="720" allow="autoplay" scrolling="no"></iframe></div>
+</div>
+<div id="rotate"><div><b>iPhone drehen</b><span>Querformat für HEAVY / LIGHT.</span></div></div>
 <script>
 (()=>{
- const stage=document.getElementById('stage');
- const frame=document.getElementById('game');
- const ASPECT=16/9;
- let lastW=0,lastH=0;
- function viewport(){
-   const vv=window.visualViewport;
-   return {w:Math.max(1,Math.round(vv?vv.width:window.innerWidth)),h:Math.max(1,Math.round(vv?vv.height:window.innerHeight))};
- }
- function layout(){
-   const {w,h}=viewport();
-   document.body.classList.toggle('portrait',h>w);
-   const safeW=Math.max(1,w-2);
-   const safeH=Math.max(1,h-2);
-   let sw=safeW,sh=Math.round(sw/ASPECT);
-   if(sh>safeH){sh=safeH;sw=Math.round(sh*ASPECT)}
-   if(sw!==lastW||sh!==lastH){
-     stage.style.width=sw+'px';stage.style.height=sh+'px';
-     lastW=sw;lastH=sh;
-   }
- }
- addEventListener('resize',layout,{passive:true});
- addEventListener('orientationchange',()=>{layout();setTimeout(layout,80);setTimeout(layout,300)},{passive:true});
- if(window.visualViewport){visualViewport.addEventListener('resize',layout,{passive:true});visualViewport.addEventListener('scroll',layout,{passive:true})}
- frame.addEventListener('load',()=>{layout();setTimeout(layout,50);setTimeout(layout,250)});
- layout();requestAnimationFrame(layout);
+  const GAME_W=1280,GAME_H=720,PAD=6;
+  const stage=document.getElementById('stage');
+  const frame=document.getElementById('game');
+  let raf=0,lastKey='';
+  function viewport(){
+    const vv=window.visualViewport;
+    return {
+      w:Math.max(1,vv?.width||document.documentElement.clientWidth||innerWidth),
+      h:Math.max(1,vv?.height||document.documentElement.clientHeight||innerHeight),
+      x:vv?.offsetLeft||0,
+      y:vv?.offsetTop||0
+    };
+  }
+  function layout(){
+    raf=0;
+    const v=viewport();
+    const s=Math.max(.1,Math.min((v.w-PAD*2)/GAME_W,(v.h-PAD*2)/GAME_H));
+    const x=v.x+(v.w-GAME_W*s)/2;
+    const y=v.y+(v.h-GAME_H*s)/2;
+    const key=[v.w.toFixed(2),v.h.toFixed(2),v.x.toFixed(2),v.y.toFixed(2),s.toFixed(5)].join('|');
+    if(key===lastKey)return;
+    lastKey=key;
+    stage.style.transform=`translate3d(${x}px,${y}px,0) scale(${s})`;
+  }
+  function schedule(){if(!raf)raf=requestAnimationFrame(layout)}
+  addEventListener('resize',schedule,{passive:true});
+  addEventListener('orientationchange',()=>{schedule();setTimeout(schedule,120);setTimeout(schedule,420)},{passive:true});
+  if(window.visualViewport){visualViewport.addEventListener('resize',schedule,{passive:true});visualViewport.addEventListener('scroll',schedule,{passive:true})}
+  frame.addEventListener('load',()=>{schedule();setTimeout(schedule,80);setTimeout(schedule,260)});
+  schedule();setTimeout(schedule,60);setTimeout(schedule,260);
+  window.__HL12_IPHONE__={
+    state:()=>{const v=viewport(),r=stage.getBoundingClientRect();return {viewport:v,stage:{x:r.x,y:r.y,w:r.width,h:r.height},frameW:frame.contentWindow?.innerWidth||0,frameH:frame.contentWindow?.innerHeight||0}}
+  };
 })();
 </script>
 </body>
