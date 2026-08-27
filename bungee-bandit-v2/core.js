@@ -16,18 +16,18 @@ export function circleRect(p,r,g){
   return {nx:dx/d,ny:dy/d,pen:r-d};
 }
 export function calcLaunch(player,pointer){
-  const dx=player.x-pointer.x, dy=player.y-pointer.y;
+  // Direct-swipe aiming: move the finger in the SAME direction you want to fly.
+  // The speed curve is deliberately generous for iPhone landscape play so the
+  // top of the level is reachable with a comfortable thumb swipe.
+  const dx=pointer.x-player.x, dy=pointer.y-player.y;
   const raw=Math.hypot(dx,dy);
-  if(raw<18) return null;
-
-  // Mobile slingshot assist: the player starts close to the lower-left edge,
-  // so a physical finger cannot travel as far downward as a mouse can.
-  // Amplify the finger pull while preserving its exact direction.
-  const PULL_GAIN=1.9;
-  const MAX_POWER=430;
-  const SPEED=3.0;
-  const power=Math.min(MAX_POWER,raw*PULL_GAIN);
-  return {vx:(dx/raw)*power*SPEED, vy:(dy/raw)*power*SPEED, power};
+  const DEAD_ZONE=24;
+  const MAX_SWIPE=360;
+  if(raw<DEAD_ZONE) return null;
+  const used=Math.min(MAX_SWIPE,raw);
+  const t=clamp((used-DEAD_ZONE)/(MAX_SWIPE-DEAD_ZONE),0,1);
+  const speed=520+t*820;
+  return {vx:(dx/raw)*speed, vy:(dy/raw)*speed, power:t};
 }
 export function starsFor(seconds,shots,par){
   if(seconds<=par && shots<=3) return 3;
