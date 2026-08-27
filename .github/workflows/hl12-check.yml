@@ -75,8 +75,51 @@ jobs:
           const retry=await page.evaluate(()=>window.__HL12__.state());
           if(retry.attempt<2) throw new Error('crash/retry loop did not advance attempt');
           if(errors.length) throw new Error(errors.join('\n'));
-          await page.screenshot({path:'hl12-smoke.png'});
           await browser.close();
           console.log(JSON.stringify({ok:true,attempt:retry.attempt,airReleaseVy:airRelease.vy}));
           JS
           node smoke.mjs
+      - name: Complete FRACTURE track with deterministic controller
+        run: |
+          python3 -m http.server 8001 >/tmp/hl12-track-server.log 2>&1 &
+          cat > track.mjs <<'JS'
+          import { chromium } from 'playwright';
+          const browser=await chromium.launch({headless:true});
+          const page=await browser.newPage({viewport:{width:932,height:430},isMobile:true,hasTouch:true});
+          const errors=[];
+          page.on('pageerror',e=>errors.push('page:'+e.message));
+          page.on('console',m=>{if(m.type()==='error')errors.push('console:'+m.text())});
+          await page.goto('http://127.0.0.1:8001/heavy-light-v12/',{waitUntil:'load'});
+          await page.waitForFunction(()=>window.__HL12__);
+          await page.click('#start');
+          await page.evaluate(()=>{
+            const api=window.__HL12__,BPX=605*60/158,B=n=>300+n*BPX;
+            const impacts=[B(8),B(26),B(41),B(54)];
+            const phases=[B(10),B(24),B(35),B(48)];
+            const jumps=[
+              {x:B(3),lead:130},{x:B(5),lead:120},{x:B(16),lead:120},{x:B(18),lead:120},
+              {x:B(22),lead:120},{x:B(30.3),lead:135},{x:B(32),lead:120},{x:B(45),lead:120},
+              {x:B(52),lead:65,type:'pit'},{x:B(12),lead:65,type:'pit'},{x:B(28),lead:65,type:'pit'},{x:B(39),lead:65,type:'pit'}
+            ].sort((a,b)=>a.x-b.x);
+            let lastJump=-999;
+            window.__hl12bot=setInterval(()=>{
+              const s=api.state();if(s.mode!=='run')return;const x=s.x;
+              const wall=impacts.find(v=>x>v-175&&x<v+82);
+              if(wall){api.setHeavy(true);return;}
+              const phase=phases.find(v=>x>v-165&&x<v+105);
+              if(phase){api.setHeavy(false);return;}
+              if(s.ground){
+                const h=jumps.find(v=>x>v.x-v.lead&&x<v.x-18&&Math.abs(v.x-lastJump)>70);
+                if(h){if(s.heavy)api.setHeavy(false);else{api.setHeavy(true);api.setHeavy(false)}lastJump=h.x;return;}
+              }
+            },6);
+          });
+          await page.waitForFunction(()=>window.__HL12__.state().mode==='result',{timeout:30000});
+          const end=await page.evaluate(()=>window.__HL12__.state());
+          if(end.attempt!==1) throw new Error('track required retry; attempt='+end.attempt+' x='+end.x);
+          if(errors.length) throw new Error(errors.join('\n'));
+          await page.screenshot({path:'hl12-track-complete.png'});
+          await browser.close();
+          console.log(JSON.stringify({ok:true,time:end.time,score:end.score,attempt:end.attempt,x:end.x}));
+          JS
+          node track.mjs
