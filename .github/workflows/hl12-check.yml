@@ -23,7 +23,62 @@ jobs:
           assert scripts, 'No inline game script found'
           Path('/tmp/hl12.js').write_text('\n'.join(scripts))
           PY
-      - name: Check JavaScript syntax
-        run: node --check /tmp/hl12.js
-      - name: Check required game hooks
-        run: grep -q '__HL12__' heavy-light-v12/index.html && grep -q 'pointerdown' heavy-light-v12/index.html && grep -q 'FIX=1/120' heavy-light-v12/index.html
+      - name: Check JavaScript syntax and fixed hitbox hooks
+        run: |
+          node --check /tmp/hl12.js
+          grep -q '__HL12__' heavy-light-v12/index.html
+          grep -q 'pointerdown' heavy-light-v12/index.html
+          grep -q 'FIX=1/120' heavy-light-v12/index.html
+          grep -q 'HALF=22' heavy-light-v12/index.html
+          grep -q 'Math.round(p.angle/(Math.PI/2))' heavy-light-v12/index.html
+      - name: Install Playwright Chromium
+        run: |
+          npm init -y >/dev/null 2>&1
+          npm install playwright@1.55.0 >/dev/null 2>&1
+          npx playwright install --with-deps chromium >/dev/null
+      - name: Run iPhone landscape gameplay smoke test
+        run: |
+          python3 -m http.server 8000 >/tmp/hl12-server.log 2>&1 &
+          cat > /tmp/smoke.mjs <<'JS'
+          import { chromium } from 'playwright';
+          const browser=await chromium.launch({headless:true});
+          const page=await browser.newPage({viewport:{width:932,height:430},isMobile:true,hasTouch:true});
+          const errors=[];
+          page.on('pageerror',e=>errors.push('page:'+e.message));
+          page.on('console',m=>{if(m.type()==='error')errors.push('console:'+m.text())});
+          await page.goto('http://127.0.0.1:8000/heavy-light-v12/',{waitUntil:'load'});
+          await page.waitForFunction(()=>window.__HL12__);
+          if(!(await page.locator('#menu').isVisible())) throw new Error('menu not visible');
+          await page.click('#start');
+          await page.waitForTimeout(60);
+          let s=await page.evaluate(()=>window.__HL12__.state());
+          if(s.mode!=='run') throw new Error('run did not start');
+          await page.dispatchEvent('#game','pointerdown',{pointerType:'touch',isPrimary:true});
+          await page.waitForTimeout(20);
+          s=await page.evaluate(()=>window.__HL12__.state());
+          if(!s.heavy) throw new Error('pointerdown did not enter HEAVY');
+          await page.dispatchEvent('#game','pointerup',{pointerType:'touch',isPrimary:true});
+          await page.waitForTimeout(70);
+          s=await page.evaluate(()=>window.__HL12__.state());
+          if(s.heavy) throw new Error('pointerup did not return LIGHT');
+          if(!(s.vy<0&&s.y<578)) throw new Error('release did not create jump');
+          await page.dispatchEvent('#game','pointerdown',{pointerType:'touch',isPrimary:true});
+          await page.waitForTimeout(25);
+          const slam=await page.evaluate(()=>window.__HL12__.state());
+          if(slam.vy<300) throw new Error('HEAVY slam not decisive enough');
+          await page.dispatchEvent('#game','pointerup',{pointerType:'touch',isPrimary:true});
+          await page.waitForTimeout(25);
+          const release=await page.evaluate(()=>window.__HL12__.state());
+          if(release.vy<-500) throw new Error('air release created unwanted double jump');
+          await page.reload({waitUntil:'load'});
+          await page.waitForFunction(()=>window.__HL12__);
+          await page.click('#start');
+          await page.waitForTimeout(2300);
+          const retry=await page.evaluate(()=>window.__HL12__.state());
+          if(retry.attempt<2) throw new Error('crash/retry loop did not advance attempt');
+          if(errors.length) throw new Error(errors.join('\n'));
+          await page.screenshot({path:'/tmp/hl12.png'});
+          await browser.close();
+          console.log(JSON.stringify({ok:true,attempt:retry.attempt}));
+          JS
+          node /tmp/smoke.mjs
