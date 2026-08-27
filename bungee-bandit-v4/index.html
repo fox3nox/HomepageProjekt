@@ -1,0 +1,92 @@
+<!doctype html>
+<html lang="de">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no,viewport-fit=cover" />
+<meta name="theme-color" content="#050914" />
+<meta name="apple-mobile-web-app-capable" content="yes" />
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+<title>Bungee Bandit V4</title>
+<link rel="stylesheet" href="styles.css?v=4.0.0" />
+</head>
+<body>
+<div id="app">
+<svg id="world" viewBox="0 0 1280 720" preserveAspectRatio="xMidYMid meet" role="img" aria-label="Bungee Bandit Spielfeld">
+  <defs>
+    <linearGradient id="bgGrad" x1="0" x2="0" y1="0" y2="1"><stop offset="0" stop-color="#11253d"/><stop offset="1" stop-color="#07101d"/></linearGradient>
+    <linearGradient id="floorGrad" x1="0" x2="1"><stop offset="0" stop-color="#0a1421"/><stop offset="1" stop-color="#101b29"/></linearGradient>
+    <linearGradient id="vanGrad" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#ff5d68"/><stop offset="1" stop-color="#a62537"/></linearGradient>
+    <linearGradient id="gemGrad" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#fff4a6"/><stop offset=".43" stop-color="#ffd14f"/><stop offset="1" stop-color="#ff9826"/></linearGradient>
+    <linearGradient id="thiefBody" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#34435c"/><stop offset="1" stop-color="#121a29"/></linearGradient>
+    <radialGradient id="bumperGrad"><stop offset="0" stop-color="#fff7b0"/><stop offset=".27" stop-color="#ffd05a"/><stop offset="1" stop-color="#ad620b"/></radialGradient>
+    <filter id="gemGlow" x="-100%" y="-100%" width="300%" height="300%"><feGaussianBlur stdDeviation="9" result="b"/><feMerge><feMergeNode in="b"/><feMergeNode in="SourceGraphic"/></feMerge></filter>
+    <filter id="cyanGlow" x="-100%" y="-100%" width="300%" height="300%"><feGaussianBlur stdDeviation="7" result="b"/><feMerge><feMergeNode in="b"/><feMergeNode in="SourceGraphic"/></feMerge></filter>
+    <filter id="softShadow" x="-80%" y="-80%" width="260%" height="260%"><feDropShadow dx="0" dy="9" stdDeviation="8" flood-opacity=".35"/></filter>
+  </defs>
+  <rect width="1280" height="720" fill="url(#bgGrad)"/>
+  <g opacity=".18" id="architecture">
+    <rect x="260" y="112" width="115" height="155" rx="4" fill="#6fa2c9"/>
+    <rect x="415" y="84" width="146" height="183" rx="4" fill="#5e8cb1"/>
+    <rect x="605" y="130" width="118" height="137" rx="4" fill="#5b87aa"/>
+    <rect x="770" y="96" width="162" height="171" rx="4" fill="#648faf"/>
+    <rect x="974" y="116" width="128" height="151" rx="4" fill="#5f89a9"/>
+    <g fill="#c8e6fa" opacity=".5">
+      <rect x="282" y="136" width="22" height="17"/><rect x="319" y="136" width="22" height="17"/><rect x="282" y="174" width="22" height="17"/><rect x="319" y="174" width="22" height="17"/>
+      <rect x="441" y="110" width="25" height="18"/><rect x="485" y="110" width="25" height="18"/><rect x="441" y="152" width="25" height="18"/><rect x="485" y="152" width="25" height="18"/>
+      <rect x="799" y="120" width="26" height="18"/><rect x="846" y="120" width="26" height="18"/><rect x="799" y="164" width="26" height="18"/><rect x="846" y="164" width="26" height="18"/>
+    </g>
+  </g>
+  <rect x="0" y="602" width="1280" height="118" fill="url(#floorGrad)"/>
+  <g opacity=".12" stroke="#b7d8ee" stroke-width="2"><path d="M0 602 L1280 602"/><path d="M80 602 l45 118 M210 602 l45 118 M340 602 l45 118 M470 602 l45 118 M600 602 l45 118 M730 602 l45 118 M860 602 l45 118 M990 602 l45 118 M1120 602 l45 118"/></g>
+  <g id="van" filter="url(#softShadow)">
+    <rect x="46" y="486" width="180" height="119" rx="28" fill="url(#vanGrad)"/>
+    <rect x="67" y="531" width="139" height="47" rx="11" fill="#9d2533" opacity=".85"/>
+    <path d="M72 518 h74 l-13-25 H88z" fill="#19273b"/><path d="M153 493 h39 l12 25 h-51z" fill="#22364f"/>
+    <circle cx="87" cy="605" r="22" fill="#0b0f17"/><circle cx="184" cy="605" r="22" fill="#0b0f17"/>
+    <circle cx="87" cy="605" r="9" fill="#46556a"/><circle cx="184" cy="605" r="9" fill="#46556a"/>
+    <rect x="84" y="551" width="106" height="18" rx="9" fill="#ff7a83" opacity=".25"/>
+    <text x="136" y="569" text-anchor="middle" fill="#fff" font-size="14" font-weight="900" letter-spacing="2">ESCAPE</text>
+  </g>
+  <circle id="returnZone" cx="230" cy="542" r="75" fill="none" stroke="#42e59b" stroke-width="4" stroke-dasharray="10 10" opacity=".25"/>
+  <path id="rope" d="M154 548 Q180 565 230 542" fill="none" stroke="#4fe3ff" stroke-width="5" stroke-linecap="round" opacity=".78"/>
+  <g id="glassLayer"></g><g id="laserLayer"></g><g id="bumperLayer"></g><g id="lootLayer"></g>
+  <path id="trajectory" d="" fill="none" stroke="#7cf1ff" stroke-width="4" stroke-linecap="round" stroke-dasharray="5 13" filter="url(#cyanGlow)" opacity="0"/>
+  <g id="aimArrow" opacity="0" filter="url(#cyanGlow)"><line x1="0" y1="0" x2="90" y2="0" stroke="#5ee9ff" stroke-width="5" stroke-linecap="round"/><path d="M90 0 l-17 -10 v20z" fill="#5ee9ff"/></g>
+  <g id="player" filter="url(#softShadow)">
+    <circle cx="0" cy="0" r="28" fill="url(#thiefBody)" stroke="#71839e" stroke-width="3"/>
+    <circle cx="0" cy="-15" r="15" fill="#d9ae8b"/>
+    <path d="M-16 -22 Q0 -35 16 -22 L15 -15 H-15z" fill="#111827"/>
+    <rect x="-16" y="-21" width="32" height="10" rx="4" fill="#121827"/>
+    <ellipse cx="-6" cy="-16" rx="3.8" ry="3" fill="#fff"/><ellipse cx="7" cy="-16" rx="3.8" ry="3" fill="#fff"/><circle cx="-5" cy="-16" r="1.7" fill="#10151f"/><circle cx="8" cy="-16" r="1.7" fill="#10151f"/>
+    <path d="M-8 7 l-12 24 M8 7 l14 23" stroke="#25334a" stroke-width="9" stroke-linecap="round"/>
+    <path d="M-16 2 q-8 6 -11 14 M16 2 q10 2 16 11" stroke="#25334a" stroke-width="8" stroke-linecap="round"/>
+    <g transform="translate(25,5)"><ellipse cx="0" cy="0" rx="13" ry="15" fill="#ba8421"/><path d="M-6 -10 q6 -8 12 0" fill="none" stroke="#f2c15a" stroke-width="3"/><text x="0" y="5" text-anchor="middle" fill="#ffd867" font-size="14" font-weight="900">$</text></g>
+  </g>
+  <g id="particles"></g>
+</svg>
+
+<header id="topbar">
+  <div class="wordmark"><div class="mark"><svg viewBox="0 0 24 24" fill="none"><path d="M4 17c4-7 12-7 16 0" stroke="#4fe3ff" stroke-width="2.2" stroke-linecap="round"/><path d="M7 8h10l-1 7H8L7 8Z" fill="#ffc84a"/><path d="M9 8V6a3 3 0 0 1 6 0v2" stroke="#ffc84a" stroke-width="2"/></svg></div><strong>BUNGEE <span>BANDIT</span></strong></div>
+  <div class="mission"><small id="jobLabel">JOB 1 · MUSEUM</small><b id="goalLabel">Sammle alle Edelsteine</b></div>
+  <div class="stats"><div class="stat"><small>BEUTE</small><b id="lootStat">0 / 3</b></div><div class="stat"><small>SCHÜSSE</small><b id="shotStat">0</b></div><button id="restart" aria-label="Level neu starten">↻</button></div>
+</header>
+<div id="hint"><strong>Finger auf den Banditen</strong> → in Flugrichtung wischen → loslassen</div>
+<div id="toast"></div>
+
+<section id="intro" class="overlay">
+  <div class="panel">
+    <span class="version">CONTROL V4 · DIREKTER SWIPE</span>
+    <div class="hero">
+      <div><h1>Du zielst.<br><span>Du fliegst.</span></h1><p>Keine umgedrehte Schleudersteuerung mehr. Dein Finger zeigt genau dorthin, wohin der Bandit fliegt. Die gepunktete Linie ist die echte berechnete Flugbahn.</p></div>
+      <div class="control-demo"><div class="demo-bandit"></div><div class="demo-arrow"></div><div class="demo-gem"></div><div class="demo-label">WISCH IN ZIELRICHTUNG</div></div>
+    </div>
+    <div class="rules"><div class="rule"><i>1</i><b>BERÜHREN</b><span>Finger auf den Banditen legen.</span></div><div class="rule"><i>2</i><b>WISCHEN</b><span>Direkt auf das Ziel zu ziehen.</span></div><div class="rule"><i>3</i><b>LOSLASSEN</b><span>Die Vorschau wird zum echten Flug.</span></div></div>
+    <button id="play" class="primary">JOB STARTEN</button>
+  </div>
+</section>
+<section id="result" class="overlay hidden"><div class="panel result"><span class="version">JOB ERLEDIGT</span><h2 id="resultTitle">SAUBER!</h2><div id="stars" class="stars">★★★</div><div class="summary"><div><small>SCHÜSSE</small><b id="resultShots">0</b></div><div><small>BEUTE</small><b id="resultLoot">3/3</b></div></div><button id="next" class="primary">NÄCHSTER JOB</button></div></section>
+<section id="rotate" class="hidden"><div class="rotate-inner"><div class="rotate-icon">↻</div><strong>iPhone quer drehen</strong><span>V4 ist für Querformat optimiert.</span></div></section>
+</div>
+<script src="game.js?v=4.0.0"></script>
+</body>
+</html>
