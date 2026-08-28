@@ -3,6 +3,8 @@ on:
   push:
     paths:
       - 'heavy-light-v12-iphone/**'
+      - 'heavy-light-v12/index.html'
+      - 'heavy-light-v12/iphone.html'
       - '.github/workflows/hl12-iphone.yml'
   workflow_dispatch:
 jobs:
@@ -18,7 +20,7 @@ jobs:
           npm init -y >/dev/null 2>&1
           npm install playwright@1.55.0 >/dev/null 2>&1
           npx playwright install --with-deps chromium >/dev/null
-      - name: Verify fixed inner game viewport across Safari-style resize
+      - name: Verify locked 1280x720 game surface across Safari-style resize
         run: |
           python3 -m http.server 8000 >/tmp/server.log 2>&1 &
           cat > iphone.mjs <<'JS'
@@ -29,30 +31,43 @@ jobs:
           page.on('pageerror',e=>errors.push('page:'+e.message));
           page.on('console',m=>{if(m.type()==='error')errors.push('console:'+m.text())});
           await page.goto('http://127.0.0.1:8000/heavy-light-v12-iphone/',{waitUntil:'load'});
-          await page.waitForFunction(()=>window.__HL12_IPHONE__?.state().frameW===1280&&window.__HL12_IPHONE__?.state().frameH===720);
+          await page.waitForFunction(()=>{
+            const s=window.__HL12_IPHONE__?.state?.();
+            return s?.ready&&s?.inner?.game&&s.inner.appW===1280&&s.inner.appH===720&&s.inner.canvasCssW===1280&&s.inner.canvasCssH===720;
+          });
           const frame=page.frameLocator('#game');
           await frame.locator('#start').click();
-          await page.waitForTimeout(250);
-          async function verify(label){
-            const outer=await page.evaluate(()=>window.__HL12_IPHONE__.state());
-            const inner=await frame.locator('body').evaluate(()=>({w:innerWidth,h:innerHeight,state:window.__HL12__.state()}));
-            if(inner.w!==1280||inner.h!==720)throw new Error(label+' INNER_VIEWPORT_CHANGED '+JSON.stringify(inner));
-            if(inner.state.mode!=='run')throw new Error(label+' GAME_NOT_RUNNING '+JSON.stringify(inner.state));
-            const {viewport:v,stage:r}=outer;
-            const cx=r.x+r.w/2,cy=r.y+r.h/2;
-            if(Math.abs(cx-(v.x+v.w/2))>3||Math.abs(cy-(v.y+v.h/2))>3)throw new Error(label+' STAGE_NOT_CENTERED '+JSON.stringify(outer));
-            if(r.w>v.w+2||r.h>v.h+2)throw new Error(label+' STAGE_CLIPPED '+JSON.stringify(outer));
-            return {outer,inner};
+          await page.waitForFunction(()=>window.__HL12_IPHONE__?.state?.().inner?.game?.mode==='run');
+          await page.waitForTimeout(180);
+
+          const close=(a,b,t=2)=>Math.abs(a-b)<=t;
+          async function snapshot(label){
+            const s=await page.evaluate(()=>window.__HL12_IPHONE__.state());
+            if(!s.ready)throw new Error(label+' NOT_READY '+JSON.stringify(s));
+            if(s.inner.appW!==1280||s.inner.appH!==720)throw new Error(label+' APP_REFLOWED '+JSON.stringify(s.inner));
+            if(s.inner.canvasCssW!==1280||s.inner.canvasCssH!==720)throw new Error(label+' CANVAS_CSS_REFLOWED '+JSON.stringify(s.inner));
+            if(s.inner.canvasW!==2560||s.inner.canvasH!==1440)throw new Error(label+' CANVAS_BUFFER_CHANGED '+JSON.stringify(s.inner));
+            if(s.inner.game?.mode!=='run')throw new Error(label+' GAME_NOT_RUNNING '+JSON.stringify(s.inner.game));
+            return s;
           }
-          const initial=await verify('INITIAL');
+
+          const initial=await snapshot('INITIAL');
+          if(!initial.locked)throw new Error('RUN_NOT_LOCKED '+JSON.stringify(initial));
+          const anchor=initial.stage;
+
           await page.setViewportSize({width:844,height:390});
           await page.waitForTimeout(260);
-          const compact=await verify('SAFARI_COMPACT');
+          const compact=await snapshot('SAFARI_COMPACT');
+          if(!compact.locked)throw new Error('COMPACT_UNLOCKED');
+          if(!close(compact.stage.x,anchor.x)||!close(compact.stage.y,anchor.y)||!close(compact.stage.w,anchor.w)||!close(compact.stage.h,anchor.h))throw new Error('STAGE_JUMPED_COMPACT '+JSON.stringify({anchor,stage:compact.stage}));
+
           await page.setViewportSize({width:932,height:430});
           await page.waitForTimeout(260);
-          const restored=await verify('RESTORED');
+          const restored=await snapshot('RESTORED');
+          if(!close(restored.stage.x,anchor.x)||!close(restored.stage.y,anchor.y)||!close(restored.stage.w,anchor.w)||!close(restored.stage.h,anchor.h))throw new Error('STAGE_JUMPED_RESTORED '+JSON.stringify({anchor,stage:restored.stage}));
+
           if(errors.length)throw new Error(errors.join('\n'));
-          console.log('IPHONE_VIEWPORT_PASS '+JSON.stringify({initial,compact,restored}));
+          console.log('IPHONE_FIXED_SURFACE_PASS '+JSON.stringify({initial,compact,restored}));
           await page.screenshot({path:'hl12-iphone-pass.png'});
           await browser.close();
           JS
