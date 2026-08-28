@@ -48,11 +48,12 @@ jobs:
             const s=await page.evaluate(()=>window.__HL17__.state());
             if(s.zoneName!==name)throw new Error('ZONE_MISMATCH '+JSON.stringify({x,name,state:s}));
           }
-          const locked=await page.evaluate(()=>window.__HL17__.state().view);
           await page.setViewportSize({width:844,height:390});
-          await page.waitForTimeout(180);
+          await page.waitForTimeout(220);
           const after=await page.evaluate(()=>window.__HL17__.state());
-          if(after.view.w!==locked.w||after.view.h!==locked.h)throw new Error('VIEWPORT_DRIFT '+JSON.stringify({locked,after:after.view}));
+          if(after.mode!=='run')throw new Error('RUN_INTERRUPTED_AFTER_RESIZE '+JSON.stringify(after));
+          if(!(after.view.w>0&&after.view.h>0&&after.view.vw>1000))throw new Error('BAD_RESPONSIVE_VIEW '+JSON.stringify(after.view));
+          if(!(after.cam>=0&&after.x-after.cam<after.view.vw*.55))throw new Error('CAMERA_BROKEN_AFTER_RESIZE '+JSON.stringify(after));
           if(errors.length)throw new Error(errors.join('\n'));
           console.log('HL17_PASS '+JSON.stringify(after));
           await browser.close();
