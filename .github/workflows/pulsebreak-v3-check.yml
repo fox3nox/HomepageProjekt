@@ -97,8 +97,9 @@ jobs:
             assert(!boot.bootError,'boot error panel is visible');
             assert(boot.physics.pass,'physics self-test failed: '+JSON.stringify(boot.physics));
             near(boot.physics.normalSpeedBlocksPerSecond,10.385991096496582,.00001,'normal speed');
-            near(boot.physics.normalJump.apexBlocks,2.1333,.02,'normal cube apex');
-            near(boot.physics.heldJump.apexBlocks,2.233,.02,'held cube apex');
+            near(boot.physics.normalJump.apexBlocks,2.1333,.0002,'normal cube apex');
+            near(boot.physics.repeatJump.apexBlocks,2.2330,.0002,'held repeat cube apex');
+            near(boot.physics.yellowOrb.apexBlocks,2.3833,.0002,'yellow orb apex');
 
             const canvasBox=await page.locator('#game canvas').boundingBox();
             assert(canvasBox,'canvas has no bounds');
@@ -159,7 +160,7 @@ jobs:
             await page.screenshot({path:`pulsebreak-${browserName}-playing.png`,fullPage:true});
             if(failed.length)throw new Error('failed requests:\n'+failed.join('\n'));
             if(errors.length)throw new Error(errors.join('\n'));
-            console.log('PULSEBREAK MOBILE QA PASS',JSON.stringify({browserName,expectedBuild,before,jump,modes,wave,ball,afterDeath,view}));
+            console.log('PULSEBREAK MOBILE QA PASS',JSON.stringify({browserName,expectedBuild,before,jump,modes,wave,ball,afterDeath,view,physics:boot.physics}));
             await browser.close();
           })().catch(e=>{console.error('QA_FAILURE',e);process.exit(1)});
           NODE
