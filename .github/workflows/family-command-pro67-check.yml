@@ -61,6 +61,18 @@ jobs:
           grep -q "async function navigation" family-command/sw.js
           grep -q "13:15" family-command/app-data-rules.js
           grep -q "Tagesschule holt Eliyah" family-command/app-data-rules.js
+      - name: Validate PWA icon files
+        run: |
+          python3 - <<'PY'
+          import struct
+          def png_size(path):
+              with open(path,'rb') as f: data=f.read(24)
+              assert data[:8] == b'\x89PNG\r\n\x1a\n', path+' is not a PNG'
+              return struct.unpack('>II',data[16:24])
+          assert png_size('family-command/apple-touch-icon.png') == (180,180)
+          assert png_size('family-command/icon-192.png') == (192,192)
+          print('PWA icons valid')
+          PY
       - name: Install Playwright WebKit
         run: |
           npm install --no-save --package-lock=false playwright@1.57.0
