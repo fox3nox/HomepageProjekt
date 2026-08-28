@@ -1,4 +1,4 @@
-/* Family Command · dedicated Tomorrow tab · 2026-08-24 */
+/* Family Command · dedicated Tomorrow tab · V8.5.1 · 2026-08-28 */
 (()=>{
   if(window.__fcTomorrowScreenInstalled)return;window.__fcTomorrowScreenInstalled=true;
 
@@ -25,15 +25,23 @@
     return root;
   }
   function showTomorrow(){
+    if(window.__fcManagedBoot&&window.__fcV8Shell?.open){window.__fcV8Shell.open('tomorrow');return}
     const root=ensureShell(),btn=document.querySelector('.navbtn[data-screen="tomorrow"]');if(!root)return;
     document.querySelectorAll('.screen').forEach(x=>x.classList.remove('active'));document.querySelectorAll('.navbtn').forEach(x=>x.classList.remove('active'));
-    root.classList.add('active');btn?.classList.add('active');renderTomorrow();window.scrollTo({top:0,behavior:'smooth'});
+    root.classList.add('active');btn?.classList.add('active');
+    if(typeof window.renderTomorrow==='function')window.renderTomorrow();else renderTomorrow();
+    window.scrollTo({top:0,behavior:'smooth'});
   }
 
   function unique(items){return [...new Set(items.map(x=>String(x||'').trim()).filter(Boolean))]}
   function packFor(pid,day){const rows=reminders(day).filter(r=>String(r.personId)===String(pid));return unique(rows.flatMap(r=>Array.isArray(r.items)?r.items:[]))}
   function pickupEnabled(pid,day){try{const rules=JSON.parse(localStorage.getItem('fc-pickup-rules-v1')||'{}');return rules[String(pid)+'|'+day]===true}catch(e){return false}}
   function minusMinutes(t,n){const m=String(t||'').match(/^(\d{1,2}):(\d{2})$/);if(!m)return'';let v=Number(m[1])*60+Number(m[2])-n;if(v<0)v+=1440;return String(Math.floor(v/60)).padStart(2,'0')+':'+String(v%60).padStart(2,'0')}
+  function todosForTomorrow(date){
+    try{if(window.__fcTodo?.rowsFor)return window.__fcTodo.rowsFor(date,{includeOverdue:false,includeDone:false})}catch(e){}
+    try{if(window.__fcChatCommandSync?.getTodosFor)return window.__fcChatCommandSync.getTodosFor(date,{includeOverdue:false,includeDone:false})}catch(e){}
+    try{return (Array.isArray(data?.todos)?data.todos:[]).filter(t=>!t.archived&&!t.done&&String(t.date)===String(date))}catch(e){return[]}
+  }
   function schoolState(p,date){
     const day=new Date(date+'T12:00:00').getDay(),h=holiday(p.id,date),slots=h?[]:[...schedule(p.id,day)].sort((a,b)=>String(a.start||'99:99').localeCompare(String(b.start||'99:99'))),pack=h?[]:packFor(p.id,day);
     if(h)return{p,h,slots:[],pack,depart:'',start:'',end:'',pm:[],pickup:''};
@@ -63,9 +71,12 @@
     const date=tomorrow(),states=childPeople().map(p=>schoolState(p,date));
     const ev=eventsAt(date).filter(e=>!String(e.title||'').toLowerCase().includes('ferien')).sort((a,b)=>String(a.time||'99:99').localeCompare(String(b.time||'99:99')));
     const hw=(Array.isArray(data?.homework)?data.homework:[]).filter(h=>!h.done&&String(h.dueDate)===date).sort((a,b)=>String(a.personId).localeCompare(String(b.personId)));
-    const prepCount=states.reduce((n,s)=>n+s.pack.length+(s.pickup?1:0),0)+ev.length+hw.length;
-    root.innerHTML=`<div class="v6-page fc-tomorrow-page"><div class="v6-page-head"><div><p class="fc-tomorrow-kicker">${esc(fmtLong(date))}</p><h1>Morgen</h1><p>${prepCount?`${prepCount} Punkte zum Vorbereiten oder Beachten`:'Für morgen ist nichts Besonderes offen.'}</p></div><button type="button" class="v6-primary-btn" onclick="openScreen('week');setTimeout(()=>{try{v6SelectWeekDay(${q(date)})}catch(e){}},0)">In Woche</button></div><section class="v6-section"><div class="v6-section-head"><h2>Kinder morgen</h2><span>Los · Beginn · Fertig</span></div><div class="v6-kids">${states.map(kidCard).join('')}</div></section>${ev.length?`<section class="v6-section"><div class="v6-section-head"><h2>Termine morgen</h2><button type="button" onclick="openScreen('events')">Alle Termine</button></div><div class="v6-card v6-simple-list">${ev.map(eventRow).join('')}</div></section>`:''}${hw.length?`<section class="v6-section"><div class="v6-section-head"><h2>Bis morgen erledigen</h2><button type="button" onclick="v6OpenHomework()">Alle Aufgaben</button></div><div class="v6-card">${hw.map(homeworkRow).join('')}</div></section>`:''}${!ev.length&&!hw.length&&!states.some(s=>s.pack.length||s.pickup)?'<div class="v6-empty fc-tomorrow-empty">Für morgen ist aktuell nichts zusätzlich vorzubereiten.</div>':''}</div>`;
-    document.documentElement.dataset.fcTomorrowScreen='1';
+    const todos=todosForTomorrow(date);
+    const prepCount=todos.length+states.reduce((n,s)=>n+s.pack.length+(s.pickup?1:0),0)+ev.length+hw.length;
+    const prepLabel=prepCount===1?'1 Punkt zum Vorbereiten oder Beachten':prepCount?`${prepCount} Punkte zum Vorbereiten oder Beachten`:'Für morgen ist nichts Besonderes offen.';
+    root.innerHTML=`<div class="v6-page fc-tomorrow-page"><div class="v6-page-head"><div><p class="fc-tomorrow-kicker">${esc(fmtLong(date))}</p><h1>Morgen</h1><p>${esc(prepLabel)}</p></div><button type="button" class="v6-primary-btn" onclick="openScreen('week');setTimeout(()=>{try{v6SelectWeekDay(${q(date)})}catch(e){}},0)">In Woche</button></div><section class="v6-section"><div class="v6-section-head"><h2>Kinder morgen</h2><span>Los · Beginn · Fertig</span></div><div class="v6-kids">${states.map(kidCard).join('')}</div></section>${ev.length?`<section class="v6-section"><div class="v6-section-head"><h2>Termine morgen</h2><button type="button" onclick="openScreen('events')">Alle Termine</button></div><div class="v6-card v6-simple-list">${ev.map(eventRow).join('')}</div></section>`:''}${hw.length?`<section class="v6-section"><div class="v6-section-head"><h2>Bis morgen erledigen</h2><button type="button" onclick="v6OpenHomework()">Alle Aufgaben</button></div><div class="v6-card">${hw.map(homeworkRow).join('')}</div></section>`:''}${!todos.length&&!ev.length&&!hw.length&&!states.some(s=>s.pack.length||s.pickup)?'<div class="v6-empty fc-tomorrow-empty">Für morgen ist aktuell nichts zusätzlich vorzubereiten.</div>':''}</div>`;
+    document.documentElement.dataset.fcTomorrowTodos=String(todos.length);
+    document.documentElement.dataset.fcTomorrowScreen='3';
   }
 
   function ensureStyle(){if(document.getElementById('fc-tomorrow-screen-style'))return;const s=document.createElement('style');s.id='fc-tomorrow-screen-style';s.textContent=`
@@ -76,13 +87,13 @@
   window.renderTomorrow=renderTomorrow;window.fcOpenTomorrow=showTomorrow;
   try{renderTomorrow=window.renderTomorrow}catch(e){}
 
-  if(typeof window.openScreen==='function'&&!window.__fcTomorrowOpenScreenWrapped){
+  if(!window.__fcManagedBoot&&typeof window.openScreen==='function'&&!window.__fcTomorrowOpenScreenWrapped){
     window.__fcTomorrowOpenScreenWrapped=true;const raw=window.openScreen;
     window.openScreen=function(id,...args){if(String(id)==='tomorrow'){showTomorrow();return}return raw.call(this,id,...args)};
     try{openScreen=window.openScreen}catch(e){}
   }
 
-  document.addEventListener('click',e=>{const b=e.target?.closest?.('.navbtn[data-screen="tomorrow"]');if(!b)return;e.preventDefault();e.stopPropagation();e.stopImmediatePropagation();showTomorrow()},true);
-  requestAnimationFrame(()=>{if(document.getElementById('tomorrow')?.classList.contains('active'))renderTomorrow()});
-  window.__fcTomorrowScreen={version:2,render:renderTomorrow,open:showTomorrow};
+  if(!window.__fcManagedBoot)document.addEventListener('click',e=>{const b=e.target?.closest?.('.navbtn[data-screen="tomorrow"]');if(!b)return;e.preventDefault();e.stopPropagation();e.stopImmediatePropagation();showTomorrow()},true);
+  requestAnimationFrame(()=>{if(document.getElementById('tomorrow')?.classList.contains('active'))showTomorrow()});
+  window.__fcTomorrowScreen={version:3,render:renderTomorrow,open:showTomorrow,todos:todosForTomorrow,managedBoot:!!window.__fcManagedBoot};
 })();
