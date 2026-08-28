@@ -24,3 +24,4 @@
   window.__fcV8Shell={version:'8.2-stable',open,ensureNav,post,install,render};
   install();
 })();
+(()=>{if(window.__fcChatCommandLoader)return;window.__fcChatCommandLoader=true;const s=document.createElement('script');s.src='./chat-command-sync.js?v=20260828-chat1';s.async=true;s.onerror=()=>console.error('fc_chat_command_loader');document.body.appendChild(s)})();
