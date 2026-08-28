@@ -1,6 +1,17 @@
 const BPM = 140;
 const BEAT = 60 / BPM;
+
+// PULSEBREAK physics calibration layer.
+// Geometry is measured in our own pixels, but the ratios mirror documented
+// Geometry Dash 2.2 behaviour: 30 source units per grid block, 240 physics Hz,
+// measured speed portal values and reconstructed normal-cube gravity/jump values.
 const BLOCK = 42;
+const GD_COORDS_PER_BLOCK = 30;
+const GD_BASE_FPS = 60;
+const GD_NORMAL_Y_START = 11.1800318;
+const GD_NORMAL_GRAVITY = 0.958199024;
+const GD_TERMINAL_Y = 15;
+
 const SPEEDS = {
   slow: 8.371978759765625 * BLOCK,
   normal: 10.385991096496582 * BLOCK,
@@ -9,6 +20,18 @@ const SPEEDS = {
   extreme: 19.19999122619629 * BLOCK
 };
 const BASE_SPEED = SPEEDS.normal;
+const CUBE_JUMP_SPEED = (GD_NORMAL_Y_START * GD_BASE_FPS / GD_COORDS_PER_BLOCK) * BLOCK;
+const CUBE_GRAVITY = (GD_NORMAL_GRAVITY * GD_BASE_FPS * GD_BASE_FPS / GD_COORDS_PER_BLOCK) * BLOCK;
+const CUBE_HELD_GRAVITY_MULT = 0.95375; // reproduces the documented slightly higher sustained jump
+const BALL_GRAVITY = CUBE_GRAVITY * 0.6;
+const TERMINAL_SPEED = (GD_TERMINAL_Y * GD_BASE_FPS / GD_COORDS_PER_BLOCK) * BLOCK;
+const WAVE_VERTICAL_MULT = 1.0; // normal wave: vertical speed equals horizontal speed => 45 degrees
+const CUBE_BODY = BLOCK;
+const WAVE_BODY = BLOCK / 3;
+const CUBE_SOLID_BODY = BLOCK / 3;
+const JUMP_BUFFER = 0.085;
+const YELLOW_ORB_SPEED = CUBE_JUMP_SPEED * 1.20;
+
 const BEAT_DIST = BASE_SPEED * BEAT;
 const WORLD_H = 720;
 const START_X = 320;
@@ -90,8 +113,8 @@ function buildLevel(){
 
   solids.push(rect(X(56),0,X(78)-X(56),90,'ceiling'));
   solids.push(rect(X(56),630,X(78)-X(56),90,'ground'));
-  [59,65,71].forEach(b=>solids.push(rect(X(b),390,85,240,'pillar')));
-  [62,68,74].forEach(b=>solids.push(rect(X(b),90,85,240,'pillar')));
+  [59,65,71].forEach(b=>solids.push(rect(X(b),390,85,240,'pillar'));
+  [62,68,74].forEach(b=>solids.push(rect(X(b),90,85,240,'pillar'));
   sp(60.4,586,2,.3); sp(63.4,90,2,.3,true); sp(69.4,586,2,.3); sp(72.4,90,2,.3,true);
   portals.push(portal(78,MODES.CUBE,110,500));
 
