@@ -20,7 +20,6 @@ jobs:
           node --check family-command/today-relevance.js
           node --check family-command/tomorrow-preview.js
           node --check family-command/tomorrow-screen.js
-          node --check family-command/nav-six-fix.js
           node --check family-command/daily-checklist.js
           node --check family-command/todo-list.js
           node --check family-command/print-planner-v2.js
@@ -29,13 +28,12 @@ jobs:
           node --check family-command/today-addons-stabilizer.js
           node --check family-command/events-visibility-fix.js
           node --check family-command/app-selftest-v6.js
-          node --check family-command/v7-ui.js
+          node --check family-command/v8-shell.js
           node --check family-command/v8-ui.js
           node --check family-command/smoke-tests.js
           node --check family-command/sw.js
-      - name: Navigation and PWA wiring
+      - name: Native V8 architecture and PWA wiring
         run: |
-          grep -q "nav-six-fix.js" family-command/sw.js
           grep -q "tomorrow-screen.js" family-command/sw.js
           grep -q "daily-checklist.js" family-command/sw.js
           grep -q "todo-list.js" family-command/sw.js
@@ -45,31 +43,40 @@ jobs:
           grep -q "today-addons-stabilizer.js" family-command/sw.js
           grep -q "events-visibility-fix.js" family-command/sw.js
           grep -q "event-details.js" family-command/sw.js
-          grep -q "v7-ui.js" family-command/sw.js
-          grep -q "v7-ui.css" family-command/sw.js
+          grep -q "v8-shell.js" family-command/sw.js
+          grep -q "v8-foundation.css" family-command/sw.js
           grep -q "v8-ui.js" family-command/sw.js
           grep -q "v8-ui.css" family-command/sw.js
           grep -q "v8-overrides.css" family-command/sw.js
-          grep -q "family-command-v28" family-command/sw.js
-          grep -q "v8.0" family-command/build.txt
-          grep -q "20260828-v800" family-command/index.html
+          grep -q "family-command-v29" family-command/sw.js
+          grep -q "v8.1-native" family-command/build.txt
+          grep -q "20260828-v810" family-command/index.html
           grep -q "events-visibility-fix.js" family-command/index.html
-          grep -q "v7-ui.js" family-command/index.html
+          grep -q "v8-shell.js" family-command/index.html
+          grep -q "v8-foundation.css" family-command/index.html
           grep -q "v8-ui.js" family-command/index.html
           grep -q "v8-ui.css" family-command/index.html
           grep -q "v8-overrides.css" family-command/index.html
           grep -q "fc_retry" family-command/index.html
-          grep -q "v8.0-ok" family-command/index.html
+          grep -q "v8.1-native-ok" family-command/index.html
+          grep -q "data-fc-v8-native" family-command/index.html
           grep -q "data-fc-ready" family-command/index.html
+          ! grep -q "screen-redesign-v6.css" family-command/index.html
+          ! grep -q "v7-ui.css" family-command/index.html
+          ! grep -q "loadScript('./v7-ui.js" family-command/index.html
+          ! grep -q "loadScript('./nav-six-fix.js" family-command/index.html
+          ! grep -q "'./v7-ui.js'" family-command/sw.js
+          ! grep -q "'./nav-six-fix.js'" family-command/sw.js
+          ! grep -q "'./screen-redesign-v6.css'" family-command/sw.js
+          ! grep -q "'./v7-ui.css'" family-command/sw.js
           ! grep -q "loadScript('./smoke-tests.js" family-command/index.html
           ! grep -q "'./smoke-tests.js'" family-command/sw.js
-          grep -q "data-screen=\\\"tomorrow\\\"" family-command/nav-six-fix.js
-          grep -q "repeat(6" family-command/nav-six-fix.js
+          grep -q "data-screen=\"events\"" family-command/v8-shell.js
+          grep -q "data-screen=\"homework\"" family-command/v8-shell.js
+          grep -q "v8-calendar-tabs" family-command/v8-shell.js
           grep -q "groupedNext" family-command/today-addons-stabilizer.js
           grep -q "personIds" family-command/events-visibility-fix.js
           grep -q "Kommende Termine" family-command/events-visibility-fix.js
-          grep -q "data-fc-v7" family-command/v7-ui.css
-          grep -q "Kalender" family-command/v7-ui.js
           grep -q "data-fc-v8" family-command/v8-ui.css
           grep -q "v8-hide-empty-todo" family-command/v8-ui.js
           grep -q "Alles erledigt" family-command/v8-ui.js
