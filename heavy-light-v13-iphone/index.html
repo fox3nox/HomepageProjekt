@@ -1,0 +1,111 @@
+<!doctype html>
+<html lang="de">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no,viewport-fit=cover">
+<meta name="theme-color" content="#020409">
+<title>HEAVY / LIGHT V13 — iPhone</title>
+<style>
+*{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+html,body{margin:0;width:100%;height:100%;overflow:hidden;background:#020409;touch-action:none;overscroll-behavior:none}
+body{position:fixed;inset:0}
+#shell{position:fixed;inset:0;overflow:hidden;background:#020409}
+#game{position:absolute;left:0;top:0;width:100%;height:100%;display:block;border:0;background:#05070c}
+#rotate{display:none;position:fixed;z-index:50;inset:0;place-items:center;text-align:center;padding:36px;color:#fff;background:#020409;font-family:-apple-system,BlinkMacSystemFont,"SF Pro Display","Segoe UI",sans-serif}
+#rotate b{display:block;font-size:24px}#rotate span{display:block;margin-top:8px;color:#8491a7}
+@media(orientation:portrait){#rotate{display:grid}}
+</style>
+</head>
+<body>
+<div id="shell"><iframe id="game" title="HEAVY / LIGHT V13" allow="autoplay" scrolling="no"></iframe></div>
+<div id="rotate"><div><b>iPhone drehen</b><span>Querformat für HEAVY / LIGHT.</span></div></div>
+<script>
+(()=>{
+  'use strict';
+  const GAME_URL='../heavy-light-v12/index.html';
+  const frame=document.getElementById('game');
+  let locked=false,ready=false,raf=0,last={w:0,h:0,x:0,y:0};
+
+  function viewport(){
+    const vv=window.visualViewport;
+    return {
+      w:Math.max(1,Math.round(vv?.width||document.documentElement.clientWidth||innerWidth)),
+      h:Math.max(1,Math.round(vv?.height||document.documentElement.clientHeight||innerHeight)),
+      x:Math.round(vv?.offsetLeft||0),
+      y:Math.round(vv?.offsetTop||0)
+    };
+  }
+
+  function fit(force=false){
+    raf=0;
+    if(locked&&!force)return;
+    const v=viewport();
+    if(!force&&v.w===last.w&&v.h===last.h&&v.x===last.x&&v.y===last.y)return;
+    last=v;
+    frame.style.left=v.x+'px';
+    frame.style.top=v.y+'px';
+    frame.style.width=v.w+'px';
+    frame.style.height=v.h+'px';
+  }
+  function schedule(force=false){if(locked&&!force)return;if(!raf)raf=requestAnimationFrame(()=>fit(force))}
+  function freeze(){fit(true);locked=true}
+  function unfreeze(){locked=false;schedule(true)}
+
+  function patchGame(html){
+    const cameraNeedle="camY=lerp(cam,clamp((p.y-430)*.08,-18,26),.09)";
+    const cameraFixed="camY=lerp(camY,clamp((p.y-430)*.08,-18,26),.09)";
+    const resetNeedle="dead=shake=punch=flash=pulse=hit=0;palette=0;input=false;releaseBuffer=0;coyote=.08;particles=[];rings=[];trails=[];shards=[];hud()";
+    const resetFixed="dead=shake=punch=flash=pulse=hit=0;palette=0;input=false;releaseBuffer=0;coyote=.08;cam=0;camY=0;zoom=1;particles=[];rings=[];trails=[];shards=[];hud()";
+    const stateNeedle="state:()=>({mode,time,score,combo,attempt,x:p.x,y:p.y,vy:p.vy,heavy:p.heavy,ground:p.ground,palette,pulse})";
+    const stateFixed="state:()=>({mode,time,score,combo,attempt,x:p.x,y:p.y,vy:p.vy,heavy:p.heavy,ground:p.ground,palette,pulse,cam,camY,zoom,vw,sc,innerW:innerWidth,innerH:innerHeight})";
+    if(!html.includes(cameraNeedle))throw new Error('camera hook missing');
+    if(!html.includes(resetNeedle))throw new Error('reset hook missing');
+    if(!html.includes(stateNeedle))throw new Error('state hook missing');
+    html=html.replace(cameraNeedle,cameraFixed).replace(resetNeedle,resetFixed).replace(stateNeedle,stateFixed);
+    html=html.replace('<title>HEAVY / LIGHT — FRACTURE</title>','<title>HEAVY / LIGHT — FRACTURE V13</title>');
+    return html;
+  }
+
+  async function load(){
+    try{
+      const r=await fetch(GAME_URL+'?v13='+Date.now(),{cache:'no-store'});
+      if(!r.ok)throw new Error('HTTP '+r.status);
+      frame.srcdoc=patchGame(await r.text());
+    }catch(e){
+      console.error('V13 bootstrap failed',e);
+      frame.src=GAME_URL+'?v13-fallback='+Date.now();
+    }
+  }
+
+  function wire(){
+    ready=true;
+    try{
+      const d=frame.contentDocument;
+      d?.getElementById('start')?.addEventListener('pointerdown',freeze,{passive:true});
+      d?.getElementById('retry')?.addEventListener('pointerdown',freeze,{passive:true});
+      d?.getElementById('back')?.addEventListener('pointerdown',unfreeze,{passive:true});
+    }catch(e){}
+    schedule(true);
+  }
+
+  frame.addEventListener('load',wire);
+  addEventListener('resize',()=>schedule(false),{passive:true});
+  addEventListener('orientationchange',()=>{locked=false;schedule(true);setTimeout(()=>schedule(true),120);setTimeout(()=>schedule(true),420)},{passive:true});
+  visualViewport?.addEventListener('resize',()=>schedule(false),{passive:true});
+  visualViewport?.addEventListener('scroll',()=>schedule(false),{passive:true});
+  document.addEventListener('visibilitychange',()=>{if(!document.hidden&&!locked)setTimeout(()=>schedule(true),80)});
+
+  fit(true);load();
+
+  window.__HL13__={
+    freeze,unfreeze,fit:()=>fit(true),
+    state:()=>{
+      const r=frame.getBoundingClientRect();let game=null;
+      try{game=frame.contentWindow?.__HL12__?.state?.()||null}catch(e){}
+      return {ready,locked,viewport:viewport(),frame:{x:r.x,y:r.y,w:r.width,h:r.height},game};
+    }
+  };
+})();
+</script>
+</body>
+</html>
