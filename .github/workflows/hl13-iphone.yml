@@ -1,0 +1,60 @@
+name: HEAVY LIGHT V13 iPhone
+on:
+  push:
+    paths:
+      - 'heavy-light-v13-iphone/**'
+      - 'heavy-light-v12/index.html'
+      - '.github/workflows/hl13-iphone.yml'
+  workflow_dispatch:
+jobs:
+  iphone:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: Install browser
+        run: |
+          npm init -y >/dev/null 2>&1
+          npm install playwright@1.55.0 >/dev/null 2>&1
+          npx playwright install --with-deps chromium >/dev/null
+      - name: Verify fullscreen adaptive viewport and stable camera
+        run: |
+          python3 -m http.server 8000 >/tmp/server.log 2>&1 &
+          cat > iphone-v13.mjs <<'JS'
+          import { chromium } from 'playwright';
+          const browser=await chromium.launch({headless:true});
+          const page=await browser.newPage({viewport:{width:932,height:430},isMobile:true,hasTouch:true,deviceScaleFactor:3});
+          const errors=[];
+          page.on('pageerror',e=>errors.push('page:'+e.message));
+          page.on('console',m=>{if(m.type()==='error')errors.push('console:'+m.text())});
+          await page.goto('http://127.0.0.1:8000/heavy-light-v13-iphone/',{waitUntil:'load'});
+          await page.waitForFunction(()=>window.__HL13__?.state?.().ready&&window.__HL13__?.state?.().game);
+          const frame=page.frameLocator('#game');
+          const initial=await page.evaluate(()=>window.__HL13__.state());
+          const close=(a,b,t=2)=>Math.abs(a-b)<=t;
+          if(!close(initial.frame.w,initial.viewport.w)||!close(initial.frame.h,initial.viewport.h))throw new Error('FRAME_NOT_FULLSCREEN '+JSON.stringify(initial));
+          if(initial.game.innerW!==Math.round(initial.frame.w)||initial.game.innerH!==Math.round(initial.frame.h))throw new Error('INNER_VIEWPORT_MISMATCH '+JSON.stringify(initial));
+          if(initial.game.vw<=1280)throw new Error('WORLD_NOT_ADAPTIVE_WIDE '+JSON.stringify(initial.game));
+
+          await frame.locator('#start').click();
+          await page.waitForFunction(()=>window.__HL13__.state().game?.mode==='run');
+          await page.waitForTimeout(900);
+          const run1=await page.evaluate(()=>window.__HL13__.state());
+          if(!run1.locked)throw new Error('RUN_NOT_LOCKED '+JSON.stringify(run1));
+          if(Math.abs(run1.game.camY)>30)throw new Error('CAMERA_VERTICAL_DRIFT '+JSON.stringify(run1.game));
+          const anchor=run1.frame;
+
+          await page.setViewportSize({width:844,height:390});
+          await page.waitForTimeout(250);
+          const compact=await page.evaluate(()=>window.__HL13__.state());
+          if(!close(compact.frame.x,anchor.x)||!close(compact.frame.y,anchor.y)||!close(compact.frame.w,anchor.w)||!close(compact.frame.h,anchor.h))throw new Error('FRAME_JUMPED_DURING_RUN '+JSON.stringify({anchor,compact:compact.frame}));
+          if(Math.abs(compact.game.camY)>30)throw new Error('CAMERA_DRIFT_AFTER_RESIZE '+JSON.stringify(compact.game));
+
+          if(errors.length)throw new Error(errors.join('\n'));
+          console.log('HL13_IPHONE_PASS '+JSON.stringify({initial,run1,compact}));
+          await page.screenshot({path:'hl13-iphone-pass.png',fullPage:true});
+          await browser.close();
+          JS
+          node iphone-v13.mjs
