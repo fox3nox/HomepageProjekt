@@ -31,9 +31,10 @@ jobs:
           node --check family-command/e2e/ui.spec.mjs
       - name: V9 architecture regression
         run: |
-          grep -q "20260828-v900" family-command/index.html
+          grep -q "20260828-v901" family-command/index.html
           grep -q "v9-clean-ok" family-command/index.html
           grep -q "window.__fcV9Boot=true" family-command/index.html
+          grep -q "executePrivate" family-command/index.html
           grep -q "v9-app.js" family-command/index.html
           grep -q "v9-data.js" family-command/index.html
           grep -q "family-command-v40" family-command/sw.js
