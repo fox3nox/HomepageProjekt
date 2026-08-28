@@ -7,10 +7,10 @@
   <meta name="apple-mobile-web-app-capable" content="yes" />
   <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
   <meta name="mobile-web-app-capable" content="yes" />
-  <meta name="pulsebreak-build" content="v38" />
+  <meta name="pulsebreak-build" content="v39" />
   <title>PULSEBREAK 3.0 — Crystal Rise</title>
   <link rel="manifest" href="./manifest.webmanifest" />
-  <link rel="stylesheet" href="./styles.css?v=38" />
+  <link rel="stylesheet" href="./styles.css?v=39" />
 </head>
 <body>
   <main id="app">
@@ -49,11 +49,12 @@
     (async()=>{
       const load=(src)=>new Promise((resolve,reject)=>{const s=document.createElement('script');s.src=src;s.onload=resolve;s.onerror=reject;document.head.appendChild(s)});
       if(!window.Phaser) await load('https://cdnjs.cloudflare.com/ajax/libs/phaser/3.90.0/phaser.min.js');
-      await load('./level.js?v=38');
-      await load('./art.js?v=38');
-      await load('./play.js?v=38');
-      await load('./gd-physics.js?v=38');
-      if('serviceWorker' in navigator) navigator.serviceWorker.register('./sw.js?v=38').catch(()=>{});
+      await load('./level.js?v=39');
+      await load('./art.js?v=39');
+      await load('./play.js?v=39');
+      await load('./mobile-input.js?v=39');
+      await load('./gd-physics.js?v=39');
+      if('serviceWorker' in navigator) navigator.serviceWorker.register('./sw.js?v=39').catch(()=>{});
     })().catch((error)=>{console.error('[PULSEBREAK] boot failed',error);const el=document.querySelector('#boot-error');if(el)el.classList.add('visible')});
   </script>
 </body>
