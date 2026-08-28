@@ -7,7 +7,7 @@ const START_X = 320;
 const LEVEL_X0 = 500;
 const END_BEAT = 108;
 const END_X = LEVEL_X0 + END_BEAT * BEAT_DIST;
-const FIXED = 1 / 120;
+const FIXED = 1 / 240;
 const MODES = { CUBE: 'cube', WAVE: 'wave', BALL: 'ball' };
 const X = (beat) => LEVEL_X0 + beat * BEAT_DIST;
 
@@ -82,8 +82,8 @@ function buildLevel(){
 
   solids.push(rect(X(56),0,X(78)-X(56),90,'ceiling'));
   solids.push(rect(X(56),630,X(78)-X(56),90,'ground'));
-  [59,65,71].forEach(b=>solids.push(rect(X(b),390,85,240,'pillar'));
-  [62,68,74].forEach(b=>solids.push(rect(X(b),90,85,240,'pillar'));
+  [59,65,71].forEach(b=>solids.push(rect(X(b),390,85,240,'pillar')));
+  [62,68,74].forEach(b=>solids.push(rect(X(b),90,85,240,'pillar')));
   sp(60.4,586,2,.3); sp(63.4,90,2,.3,true); sp(69.4,586,2,.3); sp(72.4,90,2,.3,true);
   portals.push(portal(78,MODES.CUBE,110,500,430));
 
