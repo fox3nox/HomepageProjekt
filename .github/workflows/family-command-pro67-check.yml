@@ -72,7 +72,7 @@ jobs:
         run: |
           grep -q "todosForTomorrow" family-command/tomorrow-screen.js
           grep -q "prepCount=todos.length" family-command/tomorrow-screen.js
-          grep -q "window.__fcV8Shell?.open('tomorrow')" family-command/tomorrow-screen.js
+          grep -q "window.__fcV8Shell.open('tomorrow')" family-command/tomorrow-screen.js
           grep -q "if(!window.__fcManagedBoot)document.addEventListener" family-command/tomorrow-screen.js
           grep -q "dataset.fcTomorrowTodos" family-command/tomorrow-screen.js
           grep -q "wrap('renderTomorrow')" family-command/todo-list.js
