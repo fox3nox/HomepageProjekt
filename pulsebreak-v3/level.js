@@ -2,9 +2,8 @@ const BPM = 140;
 const BEAT = 60 / BPM;
 
 // PULSEBREAK physics calibration layer.
-// Geometry is measured in our own pixels, but the ratios mirror documented
-// Geometry Dash 2.2 behaviour: 30 source units per grid block, 240 physics Hz,
-// measured speed portal values and reconstructed normal-cube gravity/jump values.
+// Geometry is measured in our own pixels, but ratios/targets follow measured
+// Geometry Dash 2.2 behaviour while all code, levels and presentation stay original.
 const BLOCK = 42;
 const GD_COORDS_PER_BLOCK = 30;
 const GD_BASE_FPS = 60;
@@ -20,17 +19,22 @@ const SPEEDS = {
   extreme: 19.19999122619629 * BLOCK
 };
 const BASE_SPEED = SPEEDS.normal;
-const CUBE_JUMP_SPEED = (GD_NORMAL_Y_START * GD_BASE_FPS / GD_COORDS_PER_BLOCK) * BLOCK;
 const CUBE_GRAVITY = (GD_NORMAL_GRAVITY * GD_BASE_FPS * GD_BASE_FPS / GD_COORDS_PER_BLOCK) * BLOCK;
-const CUBE_HELD_GRAVITY_MULT = 0.95375;
-const BALL_GRAVITY = CUBE_GRAVITY * 0.6;
 const TERMINAL_SPEED = (GD_TERMINAL_Y * GD_BASE_FPS / GD_COORDS_PER_BLOCK) * BLOCK;
+
+// These impulses are solved against our deterministic 240 Hz integrator so the
+// resulting measured apex matches the public gameplay measurements, not merely
+// an approximate continuous-motion equation.
+const CUBE_JUMP_SPEED = 940.3421748657386;        // 2.1333 blocks
+const CUBE_REPEAT_JUMP_SPEED = 961.8395421385526; // 2.2330 blocks on held repeat after landing
+const YELLOW_ORB_SPEED = 993.3333447428565;       // 2.3833 blocks
+
+const BALL_GRAVITY = CUBE_GRAVITY * 0.6;
 const WAVE_VERTICAL_MULT = 1.0;
 const CUBE_BODY = BLOCK;
 const WAVE_BODY = BLOCK / 3;
 const CUBE_SOLID_BODY = BLOCK / 3;
 const JUMP_BUFFER = 0.085;
-const YELLOW_ORB_SPEED = CUBE_JUMP_SPEED * 1.20;
 
 const BEAT_DIST = BASE_SPEED * BEAT;
 const WORLD_H = 720;
