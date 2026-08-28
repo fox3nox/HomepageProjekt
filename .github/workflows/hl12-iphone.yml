@@ -20,7 +20,7 @@ jobs:
           npm init -y >/dev/null 2>&1
           npm install playwright@1.55.0 >/dev/null 2>&1
           npx playwright install --with-deps chromium >/dev/null
-      - name: Verify locked 1280x720 game surface across Safari-style resize
+      - name: Verify camera fix and locked iPhone render surface
         run: |
           python3 -m http.server 8000 >/tmp/server.log 2>&1 &
           cat > iphone.mjs <<'JS'
@@ -30,10 +30,10 @@ jobs:
           const errors=[];
           page.on('pageerror',e=>errors.push('page:'+e.message));
           page.on('console',m=>{if(m.type()==='error')errors.push('console:'+m.text())});
-          await page.goto('http://127.0.0.1:8000/heavy-light-v12-iphone/',{waitUntil:'load'});
+          await page.goto('http://127.0.0.1:8000/heavy-light-v12-iphone/?ci=camfix',{waitUntil:'load'});
           await page.waitForFunction(()=>{
             const s=window.__HL12_IPHONE__?.state?.();
-            return s?.ready&&s?.inner?.game&&s.inner.appW===1280&&s.inner.appH===720&&s.inner.canvasCssW===1280&&s.inner.canvasCssH===720;
+            return s?.ready&&s?.inner?.game&&s.inner.cameraFix===true&&s.inner.appW===1280&&s.inner.appH===720&&s.inner.canvasCssW===1280&&s.inner.canvasCssH===720;
           });
           const frame=page.frameLocator('#game');
           await frame.locator('#start').click();
@@ -44,6 +44,7 @@ jobs:
           async function snapshot(label){
             const s=await page.evaluate(()=>window.__HL12_IPHONE__.state());
             if(!s.ready)throw new Error(label+' NOT_READY '+JSON.stringify(s));
+            if(!s.inner.cameraFix)throw new Error(label+' CAMERA_FIX_MISSING '+JSON.stringify(s.inner));
             if(s.inner.appW!==1280||s.inner.appH!==720)throw new Error(label+' APP_REFLOWED '+JSON.stringify(s.inner));
             if(s.inner.canvasCssW!==1280||s.inner.canvasCssH!==720)throw new Error(label+' CANVAS_CSS_REFLOWED '+JSON.stringify(s.inner));
             if(s.inner.canvasW!==2560||s.inner.canvasH!==1440)throw new Error(label+' CANVAS_BUFFER_CHANGED '+JSON.stringify(s.inner));
@@ -67,8 +68,8 @@ jobs:
           if(!close(restored.stage.x,anchor.x)||!close(restored.stage.y,anchor.y)||!close(restored.stage.w,anchor.w)||!close(restored.stage.h,anchor.h))throw new Error('STAGE_JUMPED_RESTORED '+JSON.stringify({anchor,stage:restored.stage}));
 
           if(errors.length)throw new Error(errors.join('\n'));
-          console.log('IPHONE_FIXED_SURFACE_PASS '+JSON.stringify({initial,compact,restored}));
-          await page.screenshot({path:'hl12-iphone-pass.png'});
+          console.log('IPHONE_CAMERA_FIX_PASS '+JSON.stringify({initial,compact,restored}));
+          await page.screenshot({path:'hl12-iphone-camera-fix-pass.png'});
           await browser.close();
           JS
           node iphone.mjs
