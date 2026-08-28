@@ -7,7 +7,6 @@
   const originalOpen=typeof window.openScreen==='function'?window.openScreen:null;
   const raw={today:typeof window.renderToday==='function'?window.renderToday:null,tomorrow:typeof window.renderTomorrow==='function'?window.renderTomorrow:null,week:typeof window.renderWeek==='function'?window.renderWeek:null,events:typeof window.renderEvents==='function'?window.renderEvents:null,homework:typeof window.renderHomeworkScreen==='function'?window.renderHomeworkScreen:null,more:typeof window.renderMore==='function'?window.renderMore:null,people:typeof window.renderPeople==='function'?window.renderPeople:null};
   const dirty=new Set(IDS),rendering=new Set();
-
   function ensureScreens(){const main=document.querySelector('.content');if(!main)return;for(const id of IDS){if(document.getElementById(id))continue;const s=document.createElement('section');s.id=id;s.className='screen';main.appendChild(s)}}
   function navMarkup(){return `<button type="button" class="navbtn" data-screen="today"><span class="ico">${svg.today}</span><span>Heute</span></button><button type="button" class="navbtn" data-screen="tomorrow"><span class="ico">${svg.tomorrow}</span><span>Morgen</span></button><button type="button" class="navbtn" data-screen="events"><span class="ico">${svg.calendar}</span><span>Kalender</span></button><button type="button" class="navbtn" data-screen="homework"><span class="ico">${svg.tasks}</span><span>Aufgaben</span></button><button type="button" class="navbtn" data-screen="more"><span class="ico">${svg.more}</span><span>Mehr</span></button>`}
   const parent=id=>id==='week'?'events':id==='people'?'more':id;
@@ -22,11 +21,10 @@
   function invalidate(ids){if(Array.isArray(ids)&&ids.length)ids.forEach(id=>dirty.add(String(id)));else IDS.forEach(id=>dirty.add(id))}
   function fresh(id){const root=document.getElementById(id);return !!root&&root.children.length>0&&!dirty.has(id)}
   function finish(id){dirty.delete(id);requestAnimationFrame(()=>post(id))}
-  function render(id,...args){if(rendering.has(id)||fresh(id))return;const fn=raw[id];if(typeof fn!=='function'){dirty.delete(id);post(id);return}rendering.add(id);let out;try{out=invoke(fn,args)}catch(e){rendering.delete(id);throw e}if(out&&typeof out.then==='function')return out.finally(()=>{rendering.delete(id);finish(id)});rendering.delete(id);finish(id);return out}
+  function render(id,...args){if(rendering.has(id)||fresh(id))return;const fn=raw[id];if(typeof fn!=='function'){dirty.delete(id);post(id);return}rendering.add(id);const out=invoke(fn,args);if(out&&typeof out.then==='function')return out.finally(()=>{rendering.delete(id);finish(id)});rendering.delete(id);finish(id);return out}
   function open(id){ensureScreens();if(!IDS.includes(id)&&originalOpen)return invoke(originalOpen,[id]);showOnly(id);if(id==='people'&&!raw.people&&originalOpen)invoke(originalOpen,['people']);else render(id);try{window.scrollTo({top:0,behavior:'auto'})}catch(e){window.scrollTo(0,0)}}
   function forced(id){return(...a)=>{dirty.add(id);return render(id,...a)}}
   function installWrappers(){if(raw.today){window.renderToday=forced('today');try{renderToday=window.renderToday}catch(e){}}if(raw.tomorrow){window.renderTomorrow=forced('tomorrow');try{renderTomorrow=window.renderTomorrow}catch(e){}}if(raw.week){window.renderWeek=forced('week');try{renderWeek=window.renderWeek}catch(e){}}if(raw.events){window.renderEvents=forced('events');try{renderEvents=window.renderEvents}catch(e){}}if(raw.homework){window.renderHomeworkScreen=forced('homework');try{renderHomeworkScreen=window.renderHomeworkScreen}catch(e){}}if(raw.more){window.renderMore=forced('more');try{renderMore=window.renderMore}catch(e){}}window.v6OpenHomework=()=>open('homework')}
-  function install(){ensureScreens();ensureNav();installWrappers();window.openScreen=open;try{openScreen=open}catch(e){};const active=document.querySelector('.screen.active')?.id||'today';dirty.add(active);render(active)}
-  window.__fcV8Shell={version:'8.5-audit',open,render,post,invalidate,isFresh:fresh,dirty:()=>[...dirty],ensureNav};
-  install();
+  function install(){ensureScreens();ensureNav();installWrappers();window.openScreen=open;try{openScreen=open}catch(e){};const active=document.querySelector('.screen.active')?.id||'today',root=document.getElementById(active);if(root?.children.length){dirty.delete(active);post(active)}else render(active)}
+  window.__fcV8Shell={version:'8.5-audit',open,render,post,invalidate,isFresh:fresh,dirty:()=>[...dirty],ensureNav};install();
 })();
