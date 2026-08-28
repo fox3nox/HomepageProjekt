@@ -7,10 +7,10 @@
   <meta name="apple-mobile-web-app-capable" content="yes" />
   <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
   <meta name="mobile-web-app-capable" content="yes" />
-  <meta name="pulsebreak-build" content="v37" />
+  <meta name="pulsebreak-build" content="v38" />
   <title>PULSEBREAK 3.0 — Crystal Rise</title>
   <link rel="manifest" href="./manifest.webmanifest" />
-  <link rel="stylesheet" href="./styles.css?v=37" />
+  <link rel="stylesheet" href="./styles.css?v=38" />
 </head>
 <body>
   <main id="app">
@@ -19,7 +19,7 @@
       <div class="logo">PULSEBREAK <b>3.0</b></div>
       <p class="eyeline">CRYSTAL RISE · 140 BPM · 240 TPS</p>
       <h1>Rhythm. React.<br>Break the pulse.</h1>
-      <p class="desc">Cube → Wave → Ball → Cube. Die Kernphysik ist jetzt auf präzises 240-TPS-One-Touch-Gameplay kalibriert.</p>
+      <p class="desc">Cube → Wave → Ball → Cube. Die Kernphysik läuft deterministisch mit gemessenen One-Touch-Bewegungswerten.</p>
       <button id="start-btn">SPIEL STARTEN</button>
       <div class="hint">TIPPEN = AKTION · WAVE = HALTEN/LOSLASSEN · QUERFORMAT</div>
     </section>
@@ -49,11 +49,11 @@
     (async()=>{
       const load=(src)=>new Promise((resolve,reject)=>{const s=document.createElement('script');s.src=src;s.onload=resolve;s.onerror=reject;document.head.appendChild(s)});
       if(!window.Phaser) await load('https://cdnjs.cloudflare.com/ajax/libs/phaser/3.90.0/phaser.min.js');
-      await load('./level.js?v=37');
-      await load('./art.js?v=37');
-      await load('./play.js?v=37');
-      await load('./gd-physics.js?v=37');
-      if('serviceWorker' in navigator) navigator.serviceWorker.register('./sw.js?v=37').catch(()=>{});
+      await load('./level.js?v=38');
+      await load('./art.js?v=38');
+      await load('./play.js?v=38');
+      await load('./gd-physics.js?v=38');
+      if('serviceWorker' in navigator) navigator.serviceWorker.register('./sw.js?v=38').catch(()=>{});
     })().catch((error)=>{console.error('[PULSEBREAK] boot failed',error);const el=document.querySelector('#boot-error');if(el)el.classList.add('visible')});
   </script>
 </body>
