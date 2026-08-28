@@ -1,5 +1,5 @@
-const CACHE='pulsebreak-crystal-v33';
-const CORE=['./','./index.html','./styles.css?v=33','./level.js?v=33','./art.js?v=33','./play.js?v=33'];
+const CACHE='pulsebreak-crystal-v34';
+const CORE=['./','./index.html','./styles.css?v=34','./level.js?v=34','./art.js?v=34','./play.js?v=34'];
 self.addEventListener('install',e=>{self.skipWaiting();e.waitUntil(caches.open(CACHE).then(c=>c.addAll(CORE)).catch(()=>{}))});
 self.addEventListener('activate',e=>{e.waitUntil(caches.keys().then(keys=>Promise.all(keys.filter(k=>k!==CACHE).map(k=>caches.delete(k)))).then(()=>self.clients.claim()))});
 self.addEventListener('fetch',e=>{if(e.request.method!=='GET')return;e.respondWith(fetch(e.request).then(r=>{const c=r.clone();caches.open(CACHE).then(cache=>cache.put(e.request,c)).catch(()=>{});return r}).catch(()=>caches.match(e.request))) });
