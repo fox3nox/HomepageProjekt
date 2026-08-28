@@ -3,8 +3,13 @@ name: Pulsebreak V3 iPhone Check
 on:
   push:
     paths:
+      - 'pulsebreak-v3/**'
       - '.github/workflows/pulsebreak-v3-check.yml'
   workflow_dispatch:
+
+concurrency:
+  group: pulsebreak-v3-live-qa
+  cancel-in-progress: true
 
 permissions:
   contents: read
@@ -12,12 +17,18 @@ permissions:
 jobs:
   iphone-smoke:
     runs-on: ubuntu-latest
-    timeout-minutes: 10
+    timeout-minutes: 12
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-node@v4
         with:
           node-version: '22'
+      - name: Syntax check local game scripts
+        run: |
+          node --check pulsebreak-v3/level.js
+          node --check pulsebreak-v3/art.js
+          node --check pulsebreak-v3/play.js
+          node --check pulsebreak-v3/gd-physics.js
       - name: Install Playwright
         run: |
           npm init -y >/dev/null 2>&1
@@ -28,64 +39,156 @@ jobs:
           node <<'NODE'
           const { chromium } = require('playwright');
           const assert = require('assert');
+          const near=(a,b,t,msg)=>assert(Math.abs(a-b)<=t,`${msg}: got ${a}, expected ${b} ±${t}`);
           (async()=>{
             const browser = await chromium.launch({headless:true});
-            const context = await browser.newContext({viewport:{width:852,height:393},deviceScaleFactor:2,isMobile:true,hasTouch:true,serviceWorkers:'block'});
+            const context = await browser.newContext({
+              viewport:{width:852,height:393},
+              deviceScaleFactor:2,
+              isMobile:true,
+              hasTouch:true,
+              serviceWorkers:'block'
+            });
             const page = await context.newPage();
             const errors=[]; const failed=[]; const responses=[];
             page.on('pageerror', e=>{errors.push('pageerror: '+e.message); console.log('PAGEERROR',e.message)});
             page.on('console', m=>{console.log('BROWSER',m.type(),m.text()); if(m.type()==='error') errors.push('console: '+m.text())});
             page.on('requestfailed', r=>{failed.push(r.url()+' :: '+r.failure()?.errorText);console.log('REQUESTFAILED',failed.at(-1))});
             page.on('response', r=>{if(/phaser|pulsebreak-v3/.test(r.url())) responses.push(r.status()+' '+r.url())});
-            const url='https://fox3nox.github.io/HomepageProjekt/pulsebreak-v3/?qa='+Date.now();
-            const response=await page.goto(url,{waitUntil:'networkidle',timeout:45000});
-            assert(response && response.ok(), 'live page did not return 2xx');
-            await page.waitForTimeout(3500);
+
+            const base='https://fox3nox.github.io/HomepageProjekt/pulsebreak-v3/';
+            let liveBuild=''; let response=null;
+            for(let i=0;i<18;i++){
+              response=await page.goto(base+'?qa='+Date.now(),{waitUntil:'networkidle',timeout:45000});
+              assert(response && response.ok(), 'live page did not return 2xx');
+              liveBuild=await page.locator('meta[name="pulsebreak-build"]').getAttribute('content').catch(()=>null) || '';
+              console.log('LIVE_BUILD',liveBuild,'attempt',i+1);
+              if(liveBuild==='v36') break;
+              await page.waitForTimeout(5000);
+            }
+            assert.strictEqual(liveBuild,'v36','GitHub Pages never served v36');
+            await page.waitForFunction(()=>window.Phaser && window.pulsebreakScene && window.PULSEBREAK_PHYSICS && window.pulsebreakScene.__gdPhysicsPatched===true,{timeout:30000});
+            await page.waitForTimeout(500);
+
             const boot=await page.evaluate(()=>({
               phaser:typeof window.Phaser,
               scene:!!window.pulsebreakScene,
-              art:typeof ART,
-              level:typeof LEVEL,
+              physics:window.PULSEBREAK_PHYSICS?.version,
+              patched:window.pulsebreakScene?.__gdPhysicsPatched===true,
               scripts:[...document.scripts].map(s=>s.src||'[inline]'),
               bootError:document.querySelector('#boot-error')?.classList.contains('visible'),
-              bodyText:document.body.innerText.slice(0,500),
               canvas:!!document.querySelector('#game canvas')
             }));
             console.log('BOOT_STATE',JSON.stringify(boot));
             console.log('RESPONSES',responses.join('\n'));
             console.log('FAILED',failed.join('\n'));
-            console.log('ERRORS_SO_FAR',errors.join('\n'));
-            await page.screenshot({path:'pulsebreak-v3-iphone.png',fullPage:true});
-            assert(boot.phaser==='object' && boot.scene, 'Phaser scene did not boot: '+JSON.stringify(boot));
+            assert(boot.phaser==='object' && boot.scene && boot.patched, 'scene/physics did not boot: '+JSON.stringify(boot));
+            assert(!boot.bootError, 'boot error panel became visible');
+            assert(boot.canvas,'canvas missing');
+
+            const metrics=await page.evaluate(()=>PULSEBREAK_PHYSICS.selfTest());
+            console.log('PHYSICS_METRICS',JSON.stringify(metrics));
+            near(metrics.fixedHz,240,.0001,'physics Hz');
+            near(metrics.normalSpeedBlocksPerSecond,10.385991096496582,.00001,'normal speed');
+            near(metrics.normalApexBlocks,2.1333,.0005,'normal cube apex');
+            near(metrics.heldApexBlocks,2.233,.0005,'held-repeat cube apex');
+            near(metrics.yellowOrbApexBlocks,2.3833,.0005,'yellow orb apex');
+            near(metrics.waveSlope,1,.0001,'wave slope');
+
+            const viewport=await page.evaluate(()=>{
+              const s=pulsebreakScene, z=s.cameras.main.zoom, w=s.scale.width, h=s.scale.height;
+              return {
+                w,h,z,bgX:s.bg.x,bgY:s.bg.y,
+                expectedX:-(w*.5)*(1/z-1),expectedY:-(h*.5)*(1/z-1),
+                canvasW:document.querySelector('#game canvas')?.getBoundingClientRect().width,
+                canvasH:document.querySelector('#game canvas')?.getBoundingClientRect().height
+              };
+            });
+            console.log('VIEWPORT',JSON.stringify(viewport));
+            near(viewport.canvasW,852,1,'canvas width');
+            near(viewport.canvasH,393,1,'canvas height');
+            near(viewport.bgX,viewport.expectedX,1,'background X compensation');
+            near(viewport.bgY,viewport.expectedY,1,'background Y compensation');
+
+            await page.screenshot({path:'pulsebreak-v36-iphone-start.png',fullPage:true});
             assert(await page.locator('#start-btn').isVisible(), 'start button not visible');
             await page.locator('#start-btn').click();
             await page.waitForFunction(()=>window.pulsebreakScene?.started===true,{timeout:5000});
-            await page.waitForTimeout(650);
-            const before=await page.evaluate(()=>({x:pulsebreakScene.player.x,y:pulsebreakScene.player.y,w:pulsebreakScene.player.w,h:pulsebreakScene.player.h,attempt:pulsebreakScene.attempt}));
+            await page.waitForTimeout(280);
+
+            const before=await page.evaluate(()=>({
+              x:pulsebreakScene.player.x,y:pulsebreakScene.player.y,
+              w:pulsebreakScene.player.w,h:pulsebreakScene.player.h,
+              vx:pulsebreakScene.player.vx,attempt:pulsebreakScene.attempt
+            }));
             assert(before.x>320, 'auto-run did not move player');
             assert(before.w===42 && before.h===42, 'AABB size changed');
+            near(before.vx,10.385991096496582*42,.01,'runtime normal speed');
             const rotationLeak=await page.evaluate(()=>('rotation' in pulsebreakScene.player)||('angle' in pulsebreakScene.player));
             assert(!rotationLeak, 'visual rotation leaked into physics body');
+
             await page.touchscreen.tap(426,250);
-            await page.waitForTimeout(80);
-            const vy=await page.evaluate(()=>pulsebreakScene.player.vy);
-            assert(vy<0, 'tap did not trigger cube jump');
-            const modes=await page.evaluate(()=>{
-              const s=pulsebreakScene;s.setPaused(true);const result=[];
-              for(const v of s.portalVisual){const po=v.data;s.player.x=po.x+2;s.player.y=po.y+Math.min(120,po.h/2);s.checkPortals();result.push(s.player.mode)}
+            await page.waitForTimeout(30);
+            const jump=await page.evaluate(()=>({vy:pulsebreakScene.player.vy,held:pulsebreakScene.actionHeld,buffer:pulsebreakScene.jumpBuffer}));
+            assert(jump.vy<0, 'tap did not trigger cube jump');
+
+            const modePhysics=await page.evaluate(()=>{
+              const s=pulsebreakScene, dt=PULSEBREAK_PHYSICS.fixedDt, base=PULSEBREAK_PHYSICS.speeds.normal;
+              s.setPaused(true);
+              const result={};
+
+              s.player.mode='wave'; s.player.x=340; s.player.y=300; s.player.vx=base; s.player.vy=0; s.actionHeld=true;
+              s.pausedRun=false; s.fixedStep(dt); s.pausedRun=true;
+              result.waveUpRatio=Math.abs(s.player.vy/s.player.vx);
+              s.player.x=340; s.player.y=300; s.player.vx=base; s.player.vy=0; s.actionHeld=false;
+              s.pausedRun=false; s.fixedStep(dt); s.pausedRun=true;
+              result.waveDownRatio=Math.abs(s.player.vy/s.player.vx);
+
+              s.player.mode='ball'; s.player.x=340; s.player.y=300; s.player.vx=base; s.player.vy=0; s.player.gravity=1; s.player.onGround=false; s.actionHeld=false; s.ballFlipBuffer=0;
+              s.actionPress();
+              result.ballGravityAfterAirPress=s.player.gravity;
+              s.pausedRun=false; s.fixedStep(dt); s.pausedRun=true;
+              result.ballGravityAfterAirStep=s.player.gravity;
+
+              s.player.mode='ball'; s.player.x=340; s.player.y=558; s.player.vx=base; s.player.vy=0; s.player.gravity=1; s.player.onGround=true; s.actionHeld=false; s.ballFlipBuffer=0;
+              s.actionPress();
+              s.pausedRun=false; s.fixedStep(dt); s.pausedRun=true;
+              result.ballGravityAfterSurfacePress=s.player.gravity;
+
+              s.resetPlayer(false);
+              s.setPaused(true);
+              LEVEL.portals.forEach(p=>p.used=false);
+              result.modes=[]; result.portalSpeeds=[];
+              for(const v of s.portalVisual){
+                const po=v.data;
+                s.player.x=po.x+2;
+                s.player.y=po.y+Math.min(120,po.h/2);
+                s.checkPortals();
+                result.modes.push(s.player.mode);
+                result.portalSpeeds.push(s.player.vx);
+              }
               return result;
             });
-            assert.deepStrictEqual(modes,['wave','ball','cube'],'portal mode sequence failed');
-            const attemptBefore=await page.evaluate(()=>pulsebreakScene.attempt);
-            await page.evaluate(()=>{pulsebreakScene.setPaused(false);pulsebreakScene.kill()});
+            console.log('MODE_PHYSICS',JSON.stringify(modePhysics));
+            near(modePhysics.waveUpRatio,1,.0001,'wave upward slope');
+            near(modePhysics.waveDownRatio,1,.0001,'wave downward slope');
+            assert.strictEqual(modePhysics.ballGravityAfterAirPress,1,'ball flipped immediately in air');
+            assert.strictEqual(modePhysics.ballGravityAfterAirStep,1,'ball flipped gravity while airborne');
+            assert.strictEqual(modePhysics.ballGravityAfterSurfacePress,-1,'ball did not flip gravity on surface');
+            assert.deepStrictEqual(modePhysics.modes,['wave','ball','cube'],'portal mode sequence failed');
+            modePhysics.portalSpeeds.forEach((v,i)=>near(v,10.385991096496582*42,.01,'portal changed speed at index '+i));
+
+            const attemptBefore=await page.evaluate(()=>{pulsebreakScene.setPaused(false);return pulsebreakScene.attempt});
+            await page.evaluate(()=>pulsebreakScene.kill());
             await page.waitForTimeout(650);
             const afterDeath=await page.evaluate(()=>({attempt:pulsebreakScene.attempt,dead:pulsebreakScene.dead,visible:pulsebreakScene.playerSprite.visible,mode:pulsebreakScene.player.mode,x:pulsebreakScene.player.x}));
             assert(afterDeath.attempt===attemptBefore+1,'death did not increment attempt');
             assert(!afterDeath.dead && afterDeath.visible,'respawn did not recover');
             assert(afterDeath.mode==='cube' && afterDeath.x>=320,'respawn state invalid');
-            await page.screenshot({path:'pulsebreak-v3-iphone-playing.png',fullPage:true});
+
+            await page.screenshot({path:'pulsebreak-v36-iphone-playing.png',fullPage:true});
             if(errors.length) throw new Error(errors.join('\n'));
-            console.log('PULSEBREAK LIVE IPHONE CHECK: PASS',JSON.stringify({before,modes,afterDeath}));
+            console.log('PULSEBREAK V36 LIVE IPHONE CHECK: PASS',JSON.stringify({before,metrics,viewport,modePhysics,afterDeath}));
             await browser.close();
           })().catch(e=>{console.error('QA_FAILURE',e);process.exit(1)});
           NODE
@@ -93,7 +196,7 @@ jobs:
         if: always()
         uses: actions/upload-artifact@v4
         with:
-          name: pulsebreak-v3-iphone
-          path: pulsebreak-v3-iphone*.png
+          name: pulsebreak-v36-iphone
+          path: pulsebreak-v36-iphone*.png
           if-no-files-found: ignore
           retention-days: 1
