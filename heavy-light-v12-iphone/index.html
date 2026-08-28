@@ -63,8 +63,19 @@ iframe{display:block;width:1280px;height:720px;border:0;background:#05070c;overf
   function patchGame(html){
     const resizeNeedle="let dpr=1,sc=1,vw=W;function resize(){dpr=Math.min(2,devicePixelRatio||1);cv.width=Math.floor(innerWidth*dpr);cv.height=Math.floor(innerHeight*dpr);sc=cv.height/H;vw=cv.width/sc}addEventListener('resize',resize,{passive:true});resize();";
     const resizeFixed="let dpr=1,sc=1,vw=W;function resize(){dpr=Math.min(2,devicePixelRatio||1);cv.width=Math.floor(W*dpr);cv.height=Math.floor(H*dpr);sc=dpr;vw=W}resize();";
+    const cameraNeedle="camY=lerp(cam,clamp((p.y-430)*.08,-18,26),.09)";
+    const cameraFixed="camY=lerp(camY,clamp((p.y-430)*.08,-18,26),.09)";
+    const resetNeedle="dead=shake=punch=flash=pulse=hit=0;palette=0;input=false;releaseBuffer=0;coyote=.08;particles=[];rings=[];trails=[];shards=[];hud()";
+    const resetFixed="dead=shake=punch=flash=pulse=hit=0;palette=0;input=false;releaseBuffer=0;coyote=.08;cam=0;camY=0;zoom=1;particles=[];rings=[];trails=[];shards=[];hud()";
+
     if(!html.includes(resizeNeedle))throw new Error('V12 resize hook not found');
+    if(!html.includes(cameraNeedle))throw new Error('V12 camera hook not found');
+    if(!html.includes(resetNeedle))throw new Error('V12 reset hook not found');
+
     html=html.replace(resizeNeedle,resizeFixed);
+    html=html.replace(cameraNeedle,cameraFixed);
+    html=html.replace(resetNeedle,resetFixed);
+
     const fixedCss=`<style id="hl12-fixed-iphone">
 html,body,#app{width:1280px!important;height:720px!important;min-width:1280px!important;min-height:720px!important;max-width:1280px!important;max-height:720px!important}
 html{overflow:hidden!important}
@@ -82,7 +93,7 @@ h1{font-size:92px!important}.tagline{margin:17px 0 22px!important}.controls>div{
 
   async function loadGame(){
     try{
-      const res=await fetch(GAME_URL,{cache:'no-store'});
+      const res=await fetch(GAME_URL+'?camera-fix=2',{cache:'no-store'});
       if(!res.ok)throw new Error('HTTP '+res.status);
       frame.srcdoc=patchGame(await res.text());
     }catch(err){
@@ -122,6 +133,7 @@ h1{font-size:92px!important}.tagline{margin:17px 0 22px!important}.controls>div{
       let inner={};
       try{
         const d=frame.contentDocument,cv=d?.getElementById('game'),app=d?.getElementById('app');
+        const source=d?.documentElement?.innerHTML||'';
         inner={
           windowW:frame.contentWindow?.innerWidth||0,
           windowH:frame.contentWindow?.innerHeight||0,
@@ -131,6 +143,7 @@ h1{font-size:92px!important}.tagline{margin:17px 0 22px!important}.controls>div{
           canvasCssH:cv?.getBoundingClientRect().height||0,
           canvasW:cv?.width||0,
           canvasH:cv?.height||0,
+          cameraFix:source.includes('camY=lerp(camY,clamp((p.y-430)*.08,-18,26),.09)'),
           game:frame.contentWindow?.__HL12__?.state?.()||null
         };
       }catch(e){}
