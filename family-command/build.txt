@@ -1,3 +1,3 @@
 Familienzentrale personal build
-2026-08-28 v9.1-professional-calendar-branding
+2026-08-28 v9.1.1-professional-icon-hardened
 private family workspace
