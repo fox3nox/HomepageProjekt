@@ -6,20 +6,20 @@
   <meta name="theme-color" content="#f6f8fb">
   <meta name="apple-mobile-web-app-capable" content="yes">
   <meta name="apple-mobile-web-app-status-bar-style" content="default">
-  <meta name="apple-mobile-web-app-title" content="Family Command">
+  <meta name="apple-mobile-web-app-title" content="Familie">
   <meta name="format-detection" content="telephone=no">
-  <title>Family Command</title>
-  <link rel="manifest" href="./manifest.webmanifest?v=20260828-v901">
-  <link rel="icon" href="./icon.svg" type="image/svg+xml">
-  <link rel="apple-touch-icon" href="./icon.svg">
+  <title>Familienzentrale</title>
+  <link rel="manifest" href="./manifest.webmanifest?v=20260828-v910">
+  <link rel="icon" href="./icon.svg?v=20260828-v910" type="image/svg+xml">
+  <link rel="apple-touch-icon" sizes="180x180" href="./apple-touch-icon.png?v=20260828-v910">
   <style>
     html,body{margin:0;min-height:100%;background:#f6f8fb;color-scheme:light}
     #fcApp{visibility:hidden}
-    .fc9-boot{position:fixed;inset:0;z-index:100000;background:#f6f8fb;display:grid;place-items:center;padding:20px;font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif}.fc9-boot-box{width:min(100%,430px)}.fc9-boot-brand{display:flex;align-items:center;gap:10px;font-weight:900;color:#172033}.fc9-boot-mark{width:36px;height:36px;border-radius:11px;background:#263a67;color:#fff;display:grid;place-items:center;font-size:10px}.fc9-boot-bar{height:4px;margin-top:18px;border-radius:999px;background:#e3e8ef;overflow:hidden}.fc9-boot-bar i{display:block;width:48%;height:100%;background:#263a67;border-radius:inherit;animation:fc9load 1s ease-in-out infinite alternate}.fc9-boot p{color:#8491a4;font-size:10px;margin-top:9px}@keyframes fc9load{to{transform:translateX(105%)}}
+    .fc9-boot{position:fixed;inset:0;z-index:100000;background:#f6f8fb;display:grid;place-items:center;padding:20px;font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif}.fc9-boot-box{width:min(100%,430px)}.fc9-boot-brand{display:flex;align-items:center;gap:10px;font-weight:900;color:#172033}.fc9-boot-mark{width:36px;height:36px;border-radius:11px;overflow:hidden;background:#17265d;display:grid;place-items:center}.fc9-boot-mark img{display:block;width:100%;height:100%;object-fit:cover}.fc9-boot-bar{height:4px;margin-top:18px;border-radius:999px;background:#e3e8ef;overflow:hidden}.fc9-boot-bar i{display:block;width:48%;height:100%;background:#263a67;border-radius:inherit;animation:fc9load 1s ease-in-out infinite alternate}.fc9-boot p{color:#8491a4;font-size:10px;margin-top:9px}@keyframes fc9load{to{transform:translateX(105%)}}
   </style>
 </head>
 <body>
-  <div id="fcBoot" class="fc9-boot"><div class="fc9-boot-box"><div class="fc9-boot-brand"><div class="fc9-boot-mark">FC</div><span>Family Command</span></div><div class="fc9-boot-bar"><i></i></div><p>Deine Familienübersicht wird vorbereitet …</p></div></div>
+  <div id="fcBoot" class="fc9-boot"><div class="fc9-boot-box"><div class="fc9-boot-brand"><div class="fc9-boot-mark"><img src="./apple-touch-icon.png?v=20260828-v910" alt=""></div><span>Familienzentrale</span></div><div class="fc9-boot-bar"><i></i></div><p>Deine Familienübersicht wird vorbereitet …</p></div></div>
   <div class="app" id="fcApp"></div>
   <div class="toast" id="toast" role="status" aria-live="polite" aria-atomic="true"></div>
   <script>
@@ -27,17 +27,17 @@
     'use strict';
     window.__fcManagedBoot=true;window.__fcV9Boot=true;
     const STORE='fc-private-access-v1',COOKIE='fc_private_access',PRIVATE_APP='https://lmrvapstojcecljjdgds.supabase.co/functions/v1/family-command-private-app',params=new URLSearchParams(location.search);
-    const VERSION='20260828-v901',PRIVATE_CODE_VERSION='family-command-app-v3-managed1',PRIVATE_CACHE='fc-private-app-code-v2';
-    const CRITICAL=['event-details.js','chat-command-sync.js','app-data-rules.js','v9-data.js','event-delete-fix.js','multi-link-ui.js','v9-app.js','homework-originals.js'];
+    const VERSION='20260828-v910',PRIVATE_CODE_VERSION='family-command-app-v3-managed1',PRIVATE_CACHE='fc-private-app-code-v2';
+    const CRITICAL=['event-details.js','chat-command-sync.js','app-data-rules.js','v9-data.js','event-delete-fix.js','multi-link-ui.js','v9-app.js','v9-professional.js','homework-originals.js'];
     const DEFERRED=['push-v2.js','runtime-health.js','family-ai-v2.js','ai-budget-guard.js','family-ai-original-links.js','print-planner-v2.js','todo-print-addon.js','backup-manager.js','app-selftest-v6.js'];
     const NO_OBSERVER=new Set(['event-details.js']);
     let extrasPromise=null;
     function readCookie(name){const prefix=name+'=',part=document.cookie.split(';').map(x=>x.trim()).find(x=>x.startsWith(prefix));return part?decodeURIComponent(part.slice(prefix.length)):''}
     function saveAccess(value){try{localStorage.setItem(STORE,value)}catch(e){}document.cookie=COOKIE+'='+encodeURIComponent(value)+'; Max-Age=31536000; Path=/HomepageProjekt/family-command/; Secure; SameSite=Strict'}
-    function fatal(message){document.documentElement.dataset.fcReady='1';const boot=document.getElementById('fcBoot');if(boot)boot.innerHTML='<div class="fc9-boot-box"><div class="fc9-boot-brand">Family Command</div><p></p></div>';boot?.querySelector('p')?.append(String(message||'Die App konnte nicht geladen werden.'))}
+    function fatal(message){document.documentElement.dataset.fcReady='1';const boot=document.getElementById('fcBoot');if(boot)boot.innerHTML='<div class="fc9-boot-box"><div class="fc9-boot-brand">Familienzentrale</div><p></p></div>';boot?.querySelector('p')?.append(String(message||'Die App konnte nicht geladen werden.'))}
     let key=params.get('access')||readCookie(COOKIE)||'';if(!key){try{key=localStorage.getItem(STORE)||''}catch(e){}}
     if(params.get('access')){saveAccess(key);params.delete('access');history.replaceState(null,'',location.pathname+(params.toString()?'?'+params.toString():'')+location.hash)}else if(key)saveAccess(key);
-    if(!key){fatal('Privater Zugang erforderlich. Öffne deinen persönlichen Family-Command-Link einmal in Safari.');return}
+    if(!key){fatal('Privater Zugang erforderlich. Öffne deinen persönlichen Familienzentrale-Link einmal in Safari.');return}
     const browserFetch=window.fetch.bind(window),wait=ms=>new Promise(r=>setTimeout(r,ms)),frame=()=>new Promise(r=>requestAnimationFrame(r));
     window.fetch=function(input,init){try{const u=typeof input==='string'?input:(input instanceof Request?input.url:'');if(u.includes('/functions/v1/family-command-app/push/'))return Promise.resolve(new Response(JSON.stringify({ok:true,skipped:true}),{status:200,headers:{'content-type':'application/json'}}))}catch(e){}return browserFetch(input,init)};
     async function fetchText(src){let last='';for(let attempt=0;attempt<2;attempt++){try{const r=await browserFetch(src,{cache:attempt?'reload':'force-cache'});if(!r.ok)throw new Error('HTTP '+r.status);return await r.text()}catch(e){last=e?.message||String(e);if(!attempt)await wait(70)}}throw new Error('Datei konnte nicht geladen werden: '+src+(last?' ('+last+')':''))}
@@ -67,7 +67,7 @@
     function readPrivateCache(){try{const x=JSON.parse(localStorage.getItem(PRIVATE_CACHE)||'null');return x&&x.version===PRIVATE_CODE_VERSION&&typeof x.code==='string'?x.code:''}catch(e){return''}}
     function writePrivateCache(code){try{localStorage.setItem(PRIVATE_CACHE,JSON.stringify({version:PRIVATE_CODE_VERSION,code,at:Date.now()}))}catch(e){}}
     function fetchPrivate(){return browserFetch(PRIVATE_APP+'?v='+PRIVATE_CODE_VERSION,{cache:'no-store',headers:{'x-fc-access':key}}).then(async r=>{if(!r.ok)throw new Error('Privater App-Kern nicht erreichbar ('+r.status+').');return r.text()})}
-    function loadCss(){return new Promise((resolve,reject)=>{const l=document.createElement('link');l.rel='stylesheet';l.href='./v9.css?v='+VERSION;l.onload=resolve;l.onerror=reject;document.head.appendChild(l)})}
+    async function loadCss(){for(const file of ['v9.css','v9-professional.css'])await new Promise((resolve,reject)=>{const l=document.createElement('link');l.rel='stylesheet';l.href='./'+file+'?v='+VERSION;l.onload=resolve;l.onerror=reject;document.head.appendChild(l)})}
     function idle(fn,delay=0){setTimeout(()=>{'requestIdleCallback'in window?requestIdleCallback(fn,{timeout:2200}):setTimeout(fn,40)},delay)}
     async function loadExtras(){if(extrasPromise)return extrasPromise;extrasPromise=(async()=>{for(const file of DEFERRED){try{executeDeferred(file,await fetchText('./'+file+'?v='+VERSION))}catch(e){console.error('fc9_deferred',file,e)}await wait(25)}document.documentElement.dataset.fcExtras='ready';return true})();return extrasPromise}
     window.__fcLoadExtrasNow=loadExtras;
