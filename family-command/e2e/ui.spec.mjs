@@ -11,6 +11,7 @@ const server=spawn('python3',['-m','http.server',String(PORT),'--directory','fam
 const sleep=ms=>new Promise(r=>setTimeout(r,ms));
 async function ready(){for(let i=0;i<40;i++){try{const r=await fetch(BASE+'/index.html');if(r.ok)return}catch{}await sleep(100)}throw new Error('local server not ready')}
 async function textVisible(page,text){return page.getByText(text,{exact:false}).first().isVisible().catch(()=>false)}
+async function diagnostics(page,label){const d=await page.evaluate(()=>({boot:document.documentElement.dataset.fcBoot||'',ready:document.documentElement.dataset.fcV9Ready||'',health:window.__fcV9?.health?.()||null,v9Data:window.__fcV9Data||null,dataTodos:(typeof data!=='undefined'&&Array.isArray(data?.todos))?data.todos.map(t=>({id:t.id,clientRef:t.clientRef,sourceCommandId:t.sourceCommandId,title:t.title,date:t.date,done:t.done,archived:t.archived})):null,chatTodos:window.__fcChatCommandSync?.all?.()?.map?.(t=>({title:t.title,date:t.date,clientRef:t.clientRef,sourceCommandId:t.sourceCommandId}))||null,todayText:document.getElementById('today')?.innerText||'',tomorrowText:document.getElementById('tomorrow')?.innerText||''}));console.log('FC9_DIAG '+label+' '+JSON.stringify(d));return d}
 async function runViewport(browser,name,width,height){
   const context=await browser.newContext({viewport:{width,height},isMobile:true,hasTouch:true,userAgent:'Mozilla/5.0 (iPhone; CPU iPhone OS 18_0 like Mac OS X) AppleWebKit/605.1.15 Version/18.0 Mobile/15E148 Safari/604.1'});
   const page=await context.newPage(),errors=[];
@@ -21,8 +22,10 @@ async function runViewport(browser,name,width,height){
   await page.route('**/functions/v1/family-command-documents/**',r=>r.fulfill({status:200,contentType:'application/json',body:JSON.stringify({documents:[]}),headers:{'access-control-allow-origin':'*'}}));
   for(const file of deferred)await page.route(`**/${file}?*`,r=>r.fulfill({status:200,contentType:'application/javascript',body:'/* deferred disabled in e2e */'}));
   const start=Date.now();await page.goto(BASE+'/?access=test',{waitUntil:'domcontentloaded',timeout:15000});await page.waitForFunction(()=>document.documentElement.dataset.fcV9Ready==='1',{timeout:10000});const boot=Date.now()-start;
+  await page.screenshot({path:`${ART}/${name}-boot.png`,fullPage:false});
+  const bootDiag=await diagnostics(page,name+'-boot');
   assert.equal(await page.locator('.fc9-screen.active').count(),1,'exactly one active screen after boot');
-  assert.ok(await textVisible(page,'Fruchtfliegenfalle für meine Frau in der LANDI kaufen'),'Today preview must contain LANDI todo');
+  assert.ok(await textVisible(page,'Fruchtfliegenfalle für meine Frau in der LANDI kaufen'),'Today preview must contain LANDI todo; diag='+JSON.stringify(bootDiag));
   await page.screenshot({path:`${ART}/${name}-today.png`,fullPage:false});
   const timings={};
   for(const [id,label] of [['tomorrow','Morgen'],['events','Kalender'],['homework','Aufgaben'],['more','Mehr'],['today','Heute']]){
@@ -30,8 +33,9 @@ async function runViewport(browser,name,width,height){
     if(id!=='today')await page.screenshot({path:`${ART}/${name}-${id}.png`,fullPage:false});
   }
   await page.locator('.fc9-nav button[data-screen="tomorrow"]').click();await page.waitForFunction(()=>document.getElementById('tomorrow')?.classList.contains('active'));
-  assert.ok(await textVisible(page,'Morgen erledigen'),'Tomorrow must render its own todo section');
-  assert.ok(await textVisible(page,'Fruchtfliegenfalle für meine Frau in der LANDI kaufen'),'Tomorrow must contain LANDI todo');
+  const tomorrowDiag=await diagnostics(page,name+'-tomorrow');
+  assert.ok(await textVisible(page,'Morgen erledigen'),'Tomorrow must render its own todo section; diag='+JSON.stringify(tomorrowDiag));
+  assert.ok(await textVisible(page,'Fruchtfliegenfalle für meine Frau in der LANDI kaufen'),'Tomorrow must contain LANDI todo; diag='+JSON.stringify(tomorrowDiag));
   assert.ok(await textVisible(page,'bereits bezahlt, kein Geld mehr verlangen'),'Tomorrow must keep paid note');
   const health=await page.evaluate(()=>window.__fcV9.health());
   assert.deepEqual(health.dup,[],'no duplicate IDs');assert.equal(health.overflow,false,'no horizontal overflow');assert.equal(health.tomorrowTodos.length,1,'exactly one tomorrow todo in fixture');
