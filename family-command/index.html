@@ -9,7 +9,7 @@
   <meta name="apple-mobile-web-app-title" content="Family Command">
   <meta name="format-detection" content="telephone=no">
   <title>Family Command</title>
-  <link rel="manifest" href="./manifest.webmanifest?v=20260828-v900">
+  <link rel="manifest" href="./manifest.webmanifest?v=20260828-v901">
   <link rel="icon" href="./icon.svg" type="image/svg+xml">
   <link rel="apple-touch-icon" href="./icon.svg">
   <style>
@@ -27,7 +27,7 @@
     'use strict';
     window.__fcManagedBoot=true;window.__fcV9Boot=true;
     const STORE='fc-private-access-v1',COOKIE='fc_private_access',PRIVATE_APP='https://lmrvapstojcecljjdgds.supabase.co/functions/v1/family-command-private-app',params=new URLSearchParams(location.search);
-    const VERSION='20260828-v900',PRIVATE_CODE_VERSION='family-command-app-v3-managed1',PRIVATE_CACHE='fc-private-app-code-v2';
+    const VERSION='20260828-v901',PRIVATE_CODE_VERSION='family-command-app-v3-managed1',PRIVATE_CACHE='fc-private-app-code-v2';
     const CRITICAL=['event-details.js','chat-command-sync.js','app-data-rules.js','v9-data.js','event-delete-fix.js','multi-link-ui.js','v9-app.js','homework-originals.js'];
     const DEFERRED=['push-v2.js','runtime-health.js','family-ai-v2.js','ai-budget-guard.js','family-ai-original-links.js','print-planner-v2.js','todo-print-addon.js','backup-manager.js','app-selftest-v6.js'];
     const NO_OBSERVER=new Set(['event-details.js']);
@@ -42,8 +42,28 @@
     window.fetch=function(input,init){try{const u=typeof input==='string'?input:(input instanceof Request?input.url:'');if(u.includes('/functions/v1/family-command-app/push/'))return Promise.resolve(new Response(JSON.stringify({ok:true,skipped:true}),{status:200,headers:{'content-type':'application/json'}}))}catch(e){}return browserFetch(input,init)};
     async function fetchText(src){let last='';for(let attempt=0;attempt<2;attempt++){try{const r=await browserFetch(src,{cache:attempt?'reload':'force-cache'});if(!r.ok)throw new Error('HTTP '+r.status);return await r.text()}catch(e){last=e?.message||String(e);if(!attempt)await wait(70)}}throw new Error('Datei konnte nicht geladen werden: '+src+(last?' ('+last+')':''))}
     function execute(code,src){const s=document.createElement('script');s.textContent=code+'\n//# sourceURL='+src.split('?')[0];document.body.appendChild(s)}
-    function executeCritical(file,code){const nativeMO=window.MutationObserver;if(NO_OBSERVER.has(file))window.MutationObserver=class{observe(){}disconnect(){}takeRecords(){return[]}};try{execute(code,'./'+file+'?v='+VERSION)}finally{window.MutationObserver=nativeMO}}
-    function executeDeferred(file,code){const protectedNames=['openScreen','renderToday','renderTomorrow','renderWeek','renderEvents','renderHomeworkScreen','renderMore','renderPeople'],before={};for(const n of protectedNames)before[n]=window[n];try{execute(code,'./'+file+'?v='+VERSION)}finally{if(window.__fcV9){for(const n of protectedNames)if(before[n]){window[n]=before[n];try{globalThis[n]=before[n]}catch(e){}}}}}
+    function executePrivate(code,src){
+      const native={setTimeout:window.setTimeout,setInterval:window.setInterval,requestAnimationFrame:window.requestAnimationFrame,clearTimeout:window.clearTimeout,clearInterval:window.clearInterval,cancelAnimationFrame:window.cancelAnimationFrame,MutationObserver:window.MutationObserver};
+      const timers=[],intervals=[],frames=[];
+      window.setTimeout=(fn,ms,...a)=>{const id=native.setTimeout(fn,ms,...a);timers.push(id);return id};
+      window.setInterval=(fn,ms,...a)=>{const id=native.setInterval(fn,ms,...a);intervals.push(id);return id};
+      window.requestAnimationFrame=fn=>{const id=native.requestAnimationFrame(fn);frames.push(id);return id};
+      window.MutationObserver=class{observe(){}disconnect(){}takeRecords(){return[]}};
+      try{execute(code,src)}finally{
+        window.setTimeout=native.setTimeout;window.setInterval=native.setInterval;window.requestAnimationFrame=native.requestAnimationFrame;window.MutationObserver=native.MutationObserver;
+        timers.forEach(id=>native.clearTimeout(id));intervals.forEach(id=>native.clearInterval(id));frames.forEach(id=>native.cancelAnimationFrame?.(id));
+        document.documentElement.dataset.fcLegacyTimersCleared=String(timers.length+intervals.length+frames.length);
+      }
+    }
+    function normalizeCritical(file,code){
+      if(file==='v9-app.js'){
+        const bad="try{renderToday=window.renderToday;renderEvents=window.renderEvents;renderWeek=window.renderWeek;renderHomeworkScreen=window.renderHomeworkScreen;renderMore=window.renderMore;renderPeople=window.renderPeople}catch(e){};";
+        if(code.includes(bad)){code=code.replace(bad,'');document.documentElement.dataset.fcV9RendererFix='1'}
+      }
+      return code;
+    }
+    function executeCritical(file,code){code=normalizeCritical(file,code);const nativeMO=window.MutationObserver;if(NO_OBSERVER.has(file))window.MutationObserver=class{observe(){}disconnect(){}takeRecords(){return[]}};try{execute(code,'./'+file+'?v='+VERSION)}finally{window.MutationObserver=nativeMO}}
+    function executeDeferred(file,code){const protectedNames=['openScreen','renderToday','renderTomorrow','renderWeek','renderEvents','renderHomeworkScreen','renderMore','renderPeople'],before={};for(const n of protectedNames)before[n]=window[n];try{execute(code,'./'+file+'?v='+VERSION)}finally{if(window.__fcV9){for(const n of protectedNames)if(before[n]){window[n]=before[n]}}}}
     function readPrivateCache(){try{const x=JSON.parse(localStorage.getItem(PRIVATE_CACHE)||'null');return x&&x.version===PRIVATE_CODE_VERSION&&typeof x.code==='string'?x.code:''}catch(e){return''}}
     function writePrivateCache(code){try{localStorage.setItem(PRIVATE_CACHE,JSON.stringify({version:PRIVATE_CODE_VERSION,code,at:Date.now()}))}catch(e){}}
     function fetchPrivate(){return browserFetch(PRIVATE_APP+'?v='+PRIVATE_CODE_VERSION,{cache:'no-store',headers:{'x-fc-access':key}}).then(async r=>{if(!r.ok)throw new Error('Privater App-Kern nicht erreichbar ('+r.status+').');return r.text()})}
@@ -53,7 +73,7 @@
     window.__fcLoadExtrasNow=loadExtras;
     async function boot(){
       const start=performance.now(),cachedPrivate=readPrivateCache(),freshPrivate=fetchPrivate(),downloads=new Map(CRITICAL.map(file=>[file,fetchText('./'+file+'?v='+VERSION)]));
-      const privateCode=cachedPrivate||await freshPrivate;execute(privateCode,cachedPrivate?'family-command-private-app.cached.js':'family-command-private-app.js');
+      const privateCode=cachedPrivate||await freshPrivate;executePrivate(privateCode,cachedPrivate?'family-command-private-app.cached.js':'family-command-private-app.js');
       await loadCss();
       for(const file of CRITICAL)executeCritical(file,await downloads.get(file));
       if(!window.__fcV9)throw new Error('V9-Oberfläche konnte nicht gestartet werden.');
