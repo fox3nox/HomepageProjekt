@@ -19,15 +19,17 @@ iframe{display:block;width:1280px;height:720px;border:0;background:#05070c;overf
 </head>
 <body>
 <div id="shell">
-  <div id="stage"><iframe id="game" src="../heavy-light-v12/" width="1280" height="720" allow="autoplay" scrolling="no"></iframe></div>
+  <div id="stage"><iframe id="game" title="HEAVY / LIGHT V12" width="1280" height="720" allow="autoplay" scrolling="no"></iframe></div>
 </div>
 <div id="rotate"><div><b>iPhone drehen</b><span>Querformat für HEAVY / LIGHT.</span></div></div>
 <script>
 (()=>{
-  const GAME_W=1280,GAME_H=720,PAD=6;
+  'use strict';
+  const GAME_W=1280,GAME_H=720,PAD=6,GAME_URL='../heavy-light-v12/index.html';
   const stage=document.getElementById('stage');
   const frame=document.getElementById('game');
-  let raf=0,lastKey='';
+  let raf=0,lastKey='',locked=false,ready=false;
+
   function viewport(){
     const vv=window.visualViewport;
     return {
@@ -37,25 +39,103 @@ iframe{display:block;width:1280px;height:720px;border:0;background:#05070c;overf
       y:vv?.offsetTop||0
     };
   }
-  function layout(){
+
+  function layout(force=false){
     raf=0;
+    if(locked&&!force)return;
     const v=viewport();
     const s=Math.max(.1,Math.min((v.w-PAD*2)/GAME_W,(v.h-PAD*2)/GAME_H));
     const x=v.x+(v.w-GAME_W*s)/2;
     const y=v.y+(v.h-GAME_H*s)/2;
     const key=[v.w.toFixed(2),v.h.toFixed(2),v.x.toFixed(2),v.y.toFixed(2),s.toFixed(5)].join('|');
-    if(key===lastKey)return;
+    if(!force&&key===lastKey)return;
     lastKey=key;
     stage.style.transform=`translate3d(${x}px,${y}px,0) scale(${s})`;
   }
-  function schedule(){if(!raf)raf=requestAnimationFrame(layout)}
-  addEventListener('resize',schedule,{passive:true});
-  addEventListener('orientationchange',()=>{schedule();setTimeout(schedule,120);setTimeout(schedule,420)},{passive:true});
-  if(window.visualViewport){visualViewport.addEventListener('resize',schedule,{passive:true});visualViewport.addEventListener('scroll',schedule,{passive:true})}
-  frame.addEventListener('load',()=>{schedule();setTimeout(schedule,80);setTimeout(schedule,260)});
-  schedule();setTimeout(schedule,60);setTimeout(schedule,260);
+
+  function schedule(force=false){
+    if(locked&&!force)return;
+    if(!raf)raf=requestAnimationFrame(()=>layout(force));
+  }
+  function freeze(){layout(true);locked=true}
+  function unfreeze(){locked=false;schedule(true)}
+
+  function patchGame(html){
+    const resizeNeedle="let dpr=1,sc=1,vw=W;function resize(){dpr=Math.min(2,devicePixelRatio||1);cv.width=Math.floor(innerWidth*dpr);cv.height=Math.floor(innerHeight*dpr);sc=cv.height/H;vw=cv.width/sc}addEventListener('resize',resize,{passive:true});resize();";
+    const resizeFixed="let dpr=1,sc=1,vw=W;function resize(){dpr=Math.min(2,devicePixelRatio||1);cv.width=Math.floor(W*dpr);cv.height=Math.floor(H*dpr);sc=dpr;vw=W}resize();";
+    if(!html.includes(resizeNeedle))throw new Error('V12 resize hook not found');
+    html=html.replace(resizeNeedle,resizeFixed);
+    const fixedCss=`<style id="hl12-fixed-iphone">
+html,body,#app{width:1280px!important;height:720px!important;min-width:1280px!important;min-height:720px!important;max-width:1280px!important;max-height:720px!important}
+html{overflow:hidden!important}
+body{position:relative!important;inset:auto!important;overflow:hidden!important}
+#app{position:relative!important;overflow:hidden!important}
+canvas{width:1280px!important;height:720px!important}
+.screen{width:1280px!important;height:720px!important}
+.card{width:760px!important;padding:30px 34px!important}
+.result{width:580px!important}
+h1{font-size:92px!important}.tagline{margin:17px 0 22px!important}.controls>div{padding:13px 15px!important}#start{height:58px!important}.meta{margin-top:13px!important}.rank{font-size:92px!important}
+</style>`;
+    if(!html.includes('</head>'))throw new Error('V12 head not found');
+    return html.replace('</head>',fixedCss+'</head>');
+  }
+
+  async function loadGame(){
+    try{
+      const res=await fetch(GAME_URL,{cache:'no-store'});
+      if(!res.ok)throw new Error('HTTP '+res.status);
+      frame.srcdoc=patchGame(await res.text());
+    }catch(err){
+      console.error('HEAVY/LIGHT fixed iPhone bootstrap failed',err);
+      frame.src=GAME_URL+'?fallback=1';
+    }
+  }
+
+  function wireGame(){
+    ready=true;
+    try{
+      const d=frame.contentDocument;
+      d?.getElementById('start')?.addEventListener('pointerdown',freeze,{passive:true});
+      d?.getElementById('retry')?.addEventListener('pointerdown',freeze,{passive:true});
+      d?.getElementById('back')?.addEventListener('pointerdown',unfreeze,{passive:true});
+    }catch(e){}
+    schedule(true);
+  }
+
+  addEventListener('resize',()=>schedule(false),{passive:true});
+  addEventListener('orientationchange',()=>{locked=false;schedule(true);setTimeout(()=>schedule(true),120);setTimeout(()=>schedule(true),420)},{passive:true});
+  if(window.visualViewport){
+    visualViewport.addEventListener('resize',()=>schedule(false),{passive:true});
+    visualViewport.addEventListener('scroll',()=>schedule(false),{passive:true});
+  }
+  document.addEventListener('visibilitychange',()=>{if(!document.hidden&&!locked)setTimeout(()=>schedule(true),80)});
+  frame.addEventListener('load',wireGame);
+
+  schedule(true);
+  setTimeout(()=>schedule(true),80);
+  loadGame();
+
   window.__HL12_IPHONE__={
-    state:()=>{const v=viewport(),r=stage.getBoundingClientRect();return {viewport:v,stage:{x:r.x,y:r.y,w:r.width,h:r.height},frameW:frame.contentWindow?.innerWidth||0,frameH:frame.contentWindow?.innerHeight||0}}
+    fit:()=>layout(true),freeze,unfreeze,
+    state:()=>{
+      const v=viewport(),r=stage.getBoundingClientRect();
+      let inner={};
+      try{
+        const d=frame.contentDocument,cv=d?.getElementById('game'),app=d?.getElementById('app');
+        inner={
+          windowW:frame.contentWindow?.innerWidth||0,
+          windowH:frame.contentWindow?.innerHeight||0,
+          appW:app?.getBoundingClientRect().width||0,
+          appH:app?.getBoundingClientRect().height||0,
+          canvasCssW:cv?.getBoundingClientRect().width||0,
+          canvasCssH:cv?.getBoundingClientRect().height||0,
+          canvasW:cv?.width||0,
+          canvasH:cv?.height||0,
+          game:frame.contentWindow?.__HL12__?.state?.()||null
+        };
+      }catch(e){}
+      return {ready,locked,viewport:v,stage:{x:r.x,y:r.y,w:r.width,h:r.height},inner};
+    }
   };
 })();
 </script>
