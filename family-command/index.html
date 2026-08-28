@@ -9,11 +9,12 @@
   <meta name="apple-mobile-web-app-title" content="Family Command">
   <meta name="format-detection" content="telephone=no">
   <title>Family Command</title>
-  <link rel="manifest" href="./manifest.webmanifest?v=20260825-pro615">
+  <link rel="manifest" href="./manifest.webmanifest?v=20260828-v700">
   <link rel="icon" href="./icon.svg" type="image/svg+xml">
   <link rel="apple-touch-icon" href="./icon.svg">
-  <link rel="stylesheet" href="./styles.css?v=20260825-pro615">
-  <link rel="stylesheet" href="./screen-redesign-v6.css?v=20260825-pro615">
+  <link rel="stylesheet" href="./styles.css?v=20260828-v700">
+  <link rel="stylesheet" href="./screen-redesign-v6.css?v=20260828-v700">
+  <link rel="stylesheet" href="./v7-ui.css?v=20260828-v700">
   <style>
     html:not([data-fc-ready="1"]) .content{visibility:hidden!important}
     .v6-today-title{display:block!important;margin:4px 0 0!important;color:#fff!important;font-size:31px!important;line-height:1.05!important;font-weight:820!important;letter-spacing:-.045em!important}
@@ -105,7 +106,7 @@
     }
     function injectPrivate(code){const s=document.createElement('script');s.textContent=code+'\n//# sourceURL=family-command-private-app.js';document.body.appendChild(s)}
     async function boot(){
-      const v='20260825-pro615';
+      const v='20260828-v700';
       const r=await browserFetch(PRIVATE_APP+'?v='+v,{cache:'no-store',headers:{'x-fc-access':key}});if(!r.ok)throw new Error('Privater App-Kern nicht erreichbar ('+r.status+').');
       injectPrivate(await r.text());if(typeof window.fcEventFilter==='undefined')window.fcEventFilter='all';
       await loadScript('./ai-budget-guard.js?v='+v);
@@ -135,11 +136,12 @@
       await loadScript('./today-addons-stabilizer.js?v='+v);
       await loadScript('./events-visibility-fix.js?v='+v);
       await loadScript('./app-selftest-v6.js?v='+v);
-      document.documentElement.dataset.fcBoot='pro6.15-ok';
-      try{window.__fcScreenRedesignAudit?.();window.__fcSixNav?.ensure?.();window.__fcDailyChecklist?.render?.();window.__fcTodo?.render?.();window.__fcEventsVisibility?.render?.();window.fcRunSelfTest?.()}catch(e){}
+      await loadScript('./v7-ui.js?v='+v);
+      document.documentElement.dataset.fcBoot='v7.0-ok';
+      try{window.__fcScreenRedesignAudit?.();window.__fcSixNav?.ensure?.();window.__fcDailyChecklist?.render?.();window.__fcTodo?.render?.();window.__fcEventsVisibility?.render?.();window.fcRunSelfTest?.();window.__fcV7?.install?.()}catch(e){}
       requestAnimationFrame(()=>requestAnimationFrame(()=>{
         document.documentElement.dataset.fcReady='1';
-        try{window.__fcTodayAddonsStabilizer?.repair?.()}catch(e){}
+        try{window.__fcTodayAddonsStabilizer?.repair?.();window.__fcV7?.install?.()}catch(e){}
       }));
     }
     boot().catch(e=>{console.error('family_command_boot',e);fatal(e?.message)});
