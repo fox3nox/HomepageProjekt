@@ -34,12 +34,12 @@ jobs:
           node --check family-command/chat-command-sync.js
           node --check family-command/smoke-tests.js
           node --check family-command/sw.js
-      - name: V8.5 audited runtime regression
+      - name: V8.5.1 audited runtime regression
         run: |
-          grep -q "family-command-v33" family-command/sw.js
-          grep -q "v8.5-audit" family-command/build.txt
-          grep -q "20260828-v850" family-command/index.html
-          grep -q "v8.5-audit-ok" family-command/index.html
+          grep -q "family-command-v34" family-command/sw.js
+          grep -q "v8.5.1-tomorrow" family-command/build.txt
+          grep -q "20260828-v851" family-command/index.html
+          grep -q "v8.5.1-tomorrow-ok" family-command/index.html
           grep -q "window.__fcManagedBoot=true" family-command/index.html
           grep -q "PRIVATE_CODE_VERSION='family-command-app-v3-managed1'" family-command/index.html
           grep -q "NO_OBSERVER=new Set(\['event-details.js'\])" family-command/index.html
@@ -68,6 +68,14 @@ jobs:
           ! grep -q "screen-redesign-v6.css" family-command/index.html
           ! grep -q "v7-ui.js" family-command/index.html
           ! grep -q "nav-six-fix.js" family-command/index.html
+      - name: Tomorrow todo navigation regression
+        run: |
+          grep -q "todosForTomorrow" family-command/tomorrow-screen.js
+          grep -q "prepCount=todos.length" family-command/tomorrow-screen.js
+          grep -q "window.__fcV8Shell.open('tomorrow')" family-command/tomorrow-screen.js
+          grep -q "if(!window.__fcManagedBoot)document.addEventListener" family-command/tomorrow-screen.js
+          grep -q "dataset.fcTomorrowTodos" family-command/tomorrow-screen.js
+          grep -q "wrap('renderTomorrow')" family-command/todo-list.js
       - name: School schedule regression
         run: |
           grep -q "13:15" family-command/app-data-rules.js
