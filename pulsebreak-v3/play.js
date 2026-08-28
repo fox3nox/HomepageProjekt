@@ -26,6 +26,7 @@
       this.finished = false;
       this.pausedRun = false;
       this.actionHeld = false;
+      this.holdJumped = false;
       this.jumpBuffer = 0;
       this.visualAngle = 0;
       this.beatPulse = 0;
@@ -42,7 +43,6 @@
       this.load.svg('portal', svgUri(ART.portal), { width: 120, height: 180 });
       this.load.svg('crystal', svgUri(ART.crystal), { width: 70, height: 100 });
       this.load.svg('orb', svgUri(ART.orb), { width: 100, height: 100 });
-
       this.load.on('loaderror', (file) => {
         console.error('[PULSEBREAK] asset failed:', file && file.key, file && file.src);
         const err = $('#boot-error');
@@ -73,7 +73,10 @@
         this.actionPress();
         this.audio.resume();
       };
-      const release = () => { this.actionHeld = false; };
+      const release = () => {
+        this.actionHeld = false;
+        this.holdJumped = false;
+      };
 
       this.input.on('pointerdown', press);
       this.input.on('pointerup', release);
@@ -90,7 +93,6 @@
       this.scale.on('resize', () => this.resizeView());
       this.resizeView();
       this.updateHud();
-
       document.addEventListener('visibilitychange', () => {
         if (document.hidden && this.started && !this.dead && !this.finished) this.setPaused(true);
       });
@@ -100,12 +102,10 @@
       this.worldVisuals = [];
       this.portalVisual = [];
       this.orbVisual = [];
-
       for (const d of LEVEL.decor) {
         const im = this.add.image(d.x, d.y, 'crystal').setScale(d.scale).setAlpha(.35).setDepth(0);
         this.worldVisuals.push(im);
       }
-
       for (const s of LEVEL.solids) {
         const ts = this.add.tileSprite(s.x, s.y, s.w, s.h, 'stone').setOrigin(0).setDepth(2);
         ts.setTint(s.kind === 'pillar' ? 0x6462d9 : s.kind === 'ceiling' ? 0x5355b8 : 0x7777ef);
@@ -114,24 +114,20 @@
         const edge = this.add.rectangle(s.x, edgeY, s.w, 4, 0x71efff, .88).setOrigin(0).setDepth(3);
         this.worldVisuals.push(ts, edge);
       }
-
       for (const sp of LEVEL.spikes) {
         const im = this.add.image(sp.x + sp.w / 2, sp.y + sp.h / 2, 'spike').setDisplaySize(sp.w + 14, sp.h + 14).setDepth(8);
         if (sp.down) im.setFlipY(true);
         this.worldVisuals.push(im);
       }
-
       for (const p of LEVEL.portals) {
         const im = this.add.image(p.x + p.w / 2, p.y + p.h / 2, 'portal').setDisplaySize(88, 142).setDepth(9).setAlpha(.96);
         im.setTint(p.mode === MODES.WAVE ? 0x73ffac : p.mode === MODES.BALL ? 0xffb85f : 0xff78dc);
         this.portalVisual.push({ data: p, img: im });
       }
-
       for (const o of LEVEL.orbs) {
         const im = this.add.image(o.x, o.y, 'orb').setDisplaySize(68, 68).setDepth(10);
         this.orbVisual.push({ data: o, img: im });
       }
-
       this.finishGate = this.add.image(END_X, 350, 'portal').setDisplaySize(128, 232).setTint(0xff72dc).setDepth(10);
       this.finishLabel = this.add.text(END_X, 205, 'BREAK', { fontFamily: 'system-ui, sans-serif', fontSize: '20px', fontStyle: '900', color: '#dffcff' }).setOrigin(.5).setDepth(11);
     }
@@ -153,7 +149,6 @@
       if (cam.setOrigin) cam.setOrigin(0, 0);
       cam.setZoom(zoom);
       cam.scrollY = Math.max(0, (WORLD_H - viewH) * .5);
-
       const tex = this.textures.get('bg').getSourceImage();
       const scale = Math.max(viewW / tex.width, viewH / tex.height);
       this.bg.setPosition(0, 0).setDisplaySize(tex.width * scale, tex.height * scale);
@@ -187,6 +182,7 @@
       this.jumpBuffer = 0;
       this.visualAngle = 0;
       this.actionHeld = false;
+      this.holdJumped = false;
       Object.assign(this.player, { x: START_X, y: 600 - CUBE_BODY, w: CUBE_BODY, h: CUBE_BODY, vx: BASE_SPEED, vy: 0, mode: MODES.CUBE, gravity: 1, onGround: true });
       LEVEL.portals.forEach(p => p.used = false);
       LEVEL.orbs.forEach(o => o.used = false);
@@ -208,10 +204,9 @@
       const btn = $('#pause-btn');
       if (btn) btn.textContent = value ? '▶' : 'Ⅱ';
       const badge = $('#pause-badge'); if (badge) badge.classList.toggle('visible', value);
-      if (value) this.actionHeld = false;
+      if (value) { this.actionHeld = false; this.holdJumped = false; }
       else this.audio.resume();
     }
-
     togglePause() { this.setPaused(!this.pausedRun); }
 
     resizeBody(size) {
@@ -222,10 +217,7 @@
       p.x = cx - size / 2;
       p.y = cy - size / 2;
     }
-
-    setModeBody(mode) {
-      this.resizeBody(mode === MODES.WAVE ? WAVE_BODY : CUBE_BODY);
-    }
+    setModeBody(mode) { this.resizeBody(mode === MODES.WAVE ? WAVE_BODY : CUBE_BODY); }
 
     setModeSprite() {
       const key = this.player.mode === MODES.CUBE ? 'cube' : this.player.mode === MODES.WAVE ? 'wave' : 'ball';
@@ -252,6 +244,7 @@
 
     tryOrb() {
       const p = this.player;
+      if (p.mode === MODES.WAVE) return false;
       for (const o of LEVEL.orbs) {
         if (o.used) continue;
         const dx = (p.x + p.w / 2) - o.x;
@@ -261,6 +254,7 @@
           p.vy = -YELLOW_ORB_SPEED * p.gravity;
           p.onGround = false;
           this.jumpBuffer = 0;
+          this.holdJumped = this.actionHeld;
           const vis = this.orbVisual.find(v => v.data === o); if (vis) vis.img.setAlpha(.16);
           this.spawnBurst(o.x, o.y, 0x73f7ff, 18);
           this.audio.portal();
@@ -277,19 +271,22 @@
       if (this.audio.tick(this.simTime)) this.beatPulse = 1;
       this.beatPulse = Math.max(0, this.beatPulse - dt * 3.8);
       this.jumpBuffer = Math.max(0, this.jumpBuffer - dt);
+      if (!this.actionHeld) this.holdJumped = false;
 
       const p = this.player;
       const prev = { x: p.x, y: p.y, bottom: p.y + p.h, top: p.y };
 
       if (p.mode === MODES.CUBE) {
-        if (p.onGround && (this.jumpBuffer > 0 || this.actionHeld)) {
-          p.vy = -CUBE_JUMP_SPEED * p.gravity;
+        const wantsJump = p.onGround && (this.jumpBuffer > 0 || this.actionHeld);
+        if (wantsJump) {
+          const repeatJump = this.actionHeld && this.holdJumped;
+          p.vy = -(repeatJump ? CUBE_REPEAT_JUMP_SPEED : CUBE_JUMP_SPEED) * p.gravity;
           p.onGround = false;
           this.jumpBuffer = 0;
+          this.holdJumped = this.actionHeld;
           this.spawnBurst(p.x + p.w / 2, p.y + p.h, 0x72f1ff, 7);
         }
-        const heldMult = this.actionHeld && ((p.gravity > 0 && p.vy < 0) || (p.gravity < 0 && p.vy > 0)) ? CUBE_HELD_GRAVITY_MULT : 1;
-        p.vy += CUBE_GRAVITY * p.gravity * heldMult * dt;
+        p.vy += CUBE_GRAVITY * p.gravity * dt;
         p.vy = Phaser.Math.Clamp(p.vy, -TERMINAL_SPEED, TERMINAL_SPEED);
         p.x += p.vx * dt;
         p.y += p.vy * dt;
@@ -336,8 +333,6 @@
         if (gravityDir < 0 && p.vy <= 0 && prev.top >= s.y + s.h - 4) {
           p.y = s.y + s.h; p.vy = 0; p.onGround = true; return 'landed';
         }
-        // GD-like split collision: the large non-rotating body is used for hazards
-        // and landing, while a much smaller centered box determines lethal block sides.
         if (overlaps(this.getSolidBody(), s)) { this.kill(); return 'dead'; }
       }
       return 'clear';
@@ -351,8 +346,6 @@
     overlapsSpike() {
       const p = this.player;
       return LEVEL.spikes.some(s => {
-        // Standard GD spikes use a narrow rectangular hazard hitbox elevated
-        // from the base rather than the visible triangle itself.
         const iw = s.w * .38;
         const ih = s.h * .60;
         const ix = s.x + (s.w - iw) / 2;
@@ -372,6 +365,7 @@
           p.vy = 0;
           p.gravity = 1;
           p.onGround = false;
+          this.holdJumped = false;
           this.setModeBody(p.mode);
           if (p.mode === MODES.WAVE) p.y = 330;
           if (p.mode === MODES.BALL) p.y = 500;
@@ -390,6 +384,7 @@
       if (this.dead || this.finished) return;
       this.dead = true;
       this.actionHeld = false;
+      this.holdJumped = false;
       this.audio.death();
       this.spawnBurst(this.player.x + this.player.w / 2, this.player.y + this.player.h / 2, 0xff4cae, 34);
       this.cameras.main.shake(170, .014);
@@ -405,6 +400,7 @@
       if (this.finished) return;
       this.finished = true;
       this.actionHeld = false;
+      this.holdJumped = false;
       this.spawnBurst(this.player.x, this.player.y, 0x72f1ff, 54);
       this.cameras.main.flash(220, 110, 245, 255, false);
       $('#result-kicker').textContent = 'SIGNAL GESICHERT';
@@ -432,7 +428,6 @@
         this.acc -= FIXED;
       }
       if (safety >= 16) this.acc = 0;
-
       const p = this.player;
       const cx = p.x + p.w / 2;
       const cy = p.y + p.h / 2;
