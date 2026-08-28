@@ -9,7 +9,7 @@
   <meta name="apple-mobile-web-app-title" content="Family Command">
   <meta name="format-detection" content="telephone=no">
   <title>Family Command</title>
-  <link rel="manifest" href="./manifest.webmanifest?v=20260828-v850">
+  <link rel="manifest" href="./manifest.webmanifest?v=20260828-v851">
   <link rel="icon" href="./icon.svg" type="image/svg+xml">
   <link rel="apple-touch-icon" href="./icon.svg">
   <style>
@@ -18,9 +18,9 @@
     html:not([data-fc-ready="1"]) .bottomnav{pointer-events:none;opacity:.76}
     .fc-boot-screen{padding:30px 27px 110px;max-width:860px;margin:0 auto}.fc-boot-date{width:170px;height:18px;border-radius:9px;background:#edf1f7}.fc-boot-title{width:135px;height:48px;border-radius:15px;background:#e8edf5;margin-top:12px}.fc-boot-card{height:118px;border-radius:24px;background:#f5f7fb;border:1px solid #e5eaf1;margin-top:34px}.fc-boot-row{height:74px;border-radius:20px;background:#f8fafc;border:1px solid #e7ebf2;margin-top:14px}.fc-boot-note{margin-top:22px;color:#94a0b2;font:700 13px/1.4 -apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif}
   </style>
-  <link rel="stylesheet" href="./v8-foundation.css?v=20260828-v850">
-  <link rel="stylesheet" href="./v8-ui.css?v=20260828-v850">
-  <link rel="stylesheet" href="./v8-overrides.css?v=20260828-v850">
+  <link rel="stylesheet" href="./v8-foundation.css?v=20260828-v851">
+  <link rel="stylesheet" href="./v8-ui.css?v=20260828-v851">
+  <link rel="stylesheet" href="./v8-overrides.css?v=20260828-v851">
 </head>
 <body>
   <div class="app">
@@ -37,7 +37,7 @@
   (()=>{
     window.__fcManagedBoot=true;
     const STORE='fc-private-access-v1',COOKIE='fc_private_access',PRIVATE_APP='https://lmrvapstojcecljjdgds.supabase.co/functions/v1/family-command-private-app',params=new URLSearchParams(location.search);
-    const VERSION='20260828-v850',PRIVATE_CODE_VERSION='family-command-app-v3-managed1',PRIVATE_CACHE='fc-private-app-code-v2';
+    const VERSION='20260828-v851',PRIVATE_CODE_VERSION='family-command-app-v3-managed1',PRIVATE_CACHE='fc-private-app-code-v2';
     const CRITICAL=['event-details.js','chat-command-sync.js','screen-redesign-v6.js','app-data-rules.js','today-relevance.js','tomorrow-screen.js','todo-list.js','tomorrow-preview.js','pendencies.js','multi-link-ui.js','event-delete-fix.js','homework-originals.js','today-addons-stabilizer.js','v8-ui.js','v8-shell.js'];
     const DEFERRED=['push-v2.js','runtime-health.js','family-ai-v2.js','ai-budget-guard.js','family-ai-original-links.js','print-planner-v2.js','todo-print-addon.js','backup-manager.js','app-selftest-v6.js'];
     const NO_OBSERVER=new Set(['event-details.js']);
@@ -68,7 +68,7 @@
       const start=performance.now(),cachedPrivate=readPrivateCache(),freshPrivate=fetchPrivate(),downloads=new Map(CRITICAL.map(file=>[file,fetchText('./'+file+'?v='+VERSION)]));
       const privateCode=cachedPrivate||await freshPrivate;execute(privateCode,cachedPrivate?'family-command-private-app.cached.js':'family-command-private-app.js');if(typeof window.fcEventFilter==='undefined')window.fcEventFilter='all';
       for(const file of CRITICAL)executeModule(file,await downloads.get(file));
-      document.documentElement.dataset.fcBoot='v8.5-audit-ok';
+      document.documentElement.dataset.fcBoot='v8.5.1-tomorrow-ok';
       await frame();document.documentElement.dataset.fcReady='1';await frame();document.documentElement.dataset.fcStable='1';document.documentElement.dataset.fcBootMs=String(Math.round(performance.now()-start));
       freshPrivate.then(code=>writePrivateCache(code)).catch(e=>console.error('fc_private_refresh',e));deferExtras();
     }
