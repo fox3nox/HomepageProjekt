@@ -29,18 +29,26 @@ jobs:
           node --check family-command/app-selftest-v6.js
           node --check family-command/v8-shell.js
           node --check family-command/v8-ui.js
+          node --check family-command/chat-command-sync.js
           node --check family-command/smoke-tests.js
           node --check family-command/sw.js
-      - name: Stable V8 architecture and flicker regression
+      - name: V8 stability and performance regression
         run: |
-          grep -q "v8-shell.js" family-command/sw.js
-          grep -q "v8-foundation.css" family-command/sw.js
-          grep -q "v8-ui.js" family-command/sw.js
-          grep -q "family-command-v30" family-command/sw.js
-          grep -q "v8.2-stable" family-command/build.txt
-          grep -q "20260828-v820" family-command/index.html
-          grep -q "v8.2-stable-ok" family-command/index.html
-          grep -q "data-fc-stable" family-command/index.html
+          grep -q "family-command-v31" family-command/sw.js
+          grep -q "chat-command-sync.js" family-command/sw.js
+          grep -q "staticAsset" family-command/sw.js
+          grep -q "ignoreSearch:true" family-command/sw.js
+          grep -q "v8.3-fast" family-command/build.txt
+          grep -q "20260828-v830" family-command/index.html
+          grep -q "v8.3-fast-ok" family-command/index.html
+          grep -q "const downloads=new Map" family-command/index.html
+          grep -q "force-cache" family-command/index.html
+          grep -q "fcBootMs" family-command/index.html
+          grep -q "fc-boot-screen" family-command/index.html
+          grep -q "renderedAt" family-command/v8-shell.js
+          grep -q "warmScreens" family-command/v8-shell.js
+          grep -q "requestIdleCallback" family-command/v8-shell.js
+          grep -q "version:'8.3-fast'" family-command/v8-shell.js
           grep -q "data-screen=\"events\"" family-command/v8-shell.js
           grep -q "data-screen=\"homework\"" family-command/v8-shell.js
           grep -q "v8-calendar-tabs" family-command/v8-shell.js
