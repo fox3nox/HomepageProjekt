@@ -30,6 +30,7 @@ jobs:
           node --check family-command/events-visibility-fix.js
           node --check family-command/app-selftest-v6.js
           node --check family-command/v7-ui.js
+          node --check family-command/v8-ui.js
           node --check family-command/smoke-tests.js
           node --check family-command/sw.js
       - name: Navigation and PWA wiring
@@ -46,14 +47,19 @@ jobs:
           grep -q "event-details.js" family-command/sw.js
           grep -q "v7-ui.js" family-command/sw.js
           grep -q "v7-ui.css" family-command/sw.js
-          grep -q "family-command-v27" family-command/sw.js
-          grep -q "v7.0" family-command/build.txt
-          grep -q "20260828-v700" family-command/index.html
+          grep -q "v8-ui.js" family-command/sw.js
+          grep -q "v8-ui.css" family-command/sw.js
+          grep -q "v8-overrides.css" family-command/sw.js
+          grep -q "family-command-v28" family-command/sw.js
+          grep -q "v8.0" family-command/build.txt
+          grep -q "20260828-v800" family-command/index.html
           grep -q "events-visibility-fix.js" family-command/index.html
           grep -q "v7-ui.js" family-command/index.html
-          grep -q "v7-ui.css" family-command/index.html
+          grep -q "v8-ui.js" family-command/index.html
+          grep -q "v8-ui.css" family-command/index.html
+          grep -q "v8-overrides.css" family-command/index.html
           grep -q "fc_retry" family-command/index.html
-          grep -q "v7.0-ok" family-command/index.html
+          grep -q "v8.0-ok" family-command/index.html
           grep -q "data-fc-ready" family-command/index.html
           ! grep -q "loadScript('./smoke-tests.js" family-command/index.html
           ! grep -q "'./smoke-tests.js'" family-command/sw.js
@@ -64,6 +70,9 @@ jobs:
           grep -q "Kommende Termine" family-command/events-visibility-fix.js
           grep -q "data-fc-v7" family-command/v7-ui.css
           grep -q "Kalender" family-command/v7-ui.js
+          grep -q "data-fc-v8" family-command/v8-ui.css
+          grep -q "v8-hide-empty-todo" family-command/v8-ui.js
+          grep -q "Alles erledigt" family-command/v8-ui.js
       - name: Eliyah Tuesday regression
         run: |
           grep -q "eliyahTuesday" family-command/app-data-rules.js

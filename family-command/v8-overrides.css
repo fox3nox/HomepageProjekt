@@ -1,0 +1,8 @@
+/* Family Command · V8 late overrides */
+html[data-fc-v8="1"] .fc-today-next{margin:1px 0 0 15px!important;padding:0!important;border:0!important;border-radius:0!important;background:transparent!important;box-shadow:none!important}
+html[data-fc-v8="1"] .fc-today-next strong{display:block!important;color:#28344a!important;font-size:10px!important;line-height:1.25!important;font-weight:800!important}
+html[data-fc-v8="1"] .fc-today-next span{display:block!important;margin-top:1px!important;color:#8792a4!important;font-size:8px!important;line-height:1.25!important}
+html[data-fc-v8="1"] .v8-agenda-summary .v6-simple-main span{display:-webkit-box!important;-webkit-line-clamp:1!important;-webkit-box-orient:vertical!important;overflow:hidden!important}
+html[data-fc-v8="1"] .v8-pendencies .v6-pendency-preview p{display:-webkit-box!important;-webkit-line-clamp:1!important;-webkit-box-orient:vertical!important;overflow:hidden!important}
+html[data-fc-v8="1"] .v8-kids-summary .v6-section-head>span{display:none!important}
+html[data-fc-v8="1"] .v8-day .v6-section:has(.v6-empty):not(.v8-empty-summary){margin-top:-2px!important}
