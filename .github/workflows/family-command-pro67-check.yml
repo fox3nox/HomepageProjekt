@@ -20,8 +20,11 @@ jobs:
           node --check family-command/today-relevance.js
           node --check family-command/tomorrow-preview.js
           node --check family-command/tomorrow-screen.js
-          node --check family-command/daily-checklist.js
           node --check family-command/todo-list.js
+          node --check family-command/pendencies.js
+          node --check family-command/multi-link-ui.js
+          node --check family-command/event-delete-fix.js
+          node --check family-command/ai-budget-guard.js
           node --check family-command/print-planner-v2.js
           node --check family-command/todo-print-addon.js
           node --check family-command/today-addons-stabilizer.js
@@ -31,40 +34,43 @@ jobs:
           node --check family-command/chat-command-sync.js
           node --check family-command/smoke-tests.js
           node --check family-command/sw.js
-      - name: V8.4 lean startup and sync regression
+      - name: V8.5 audited runtime regression
         run: |
-          grep -q "family-command-v32" family-command/sw.js
-          grep -q "chat-command-sync.js" family-command/sw.js
-          grep -q "if(cached){event.waitUntil" family-command/sw.js
-          grep -q "v8.4-lean" family-command/build.txt
-          grep -q "20260828-v840" family-command/index.html
-          grep -q "v8.4-lean-ok" family-command/index.html
+          grep -q "family-command-v33" family-command/sw.js
+          grep -q "v8.5-audit" family-command/build.txt
+          grep -q "20260828-v850" family-command/index.html
+          grep -q "v8.5-audit-ok" family-command/index.html
+          grep -q "window.__fcManagedBoot=true" family-command/index.html
+          grep -q "PRIVATE_CODE_VERSION='family-command-app-v3-managed1'" family-command/index.html
+          grep -q "NO_OBSERVER=new Set(\['event-details.js'\])" family-command/index.html
           grep -q "const CRITICAL=" family-command/index.html
           grep -q "const DEFERRED=" family-command/index.html
-          grep -q "PRIVATE_CACHE" family-command/index.html
-          grep -q "deferExtras" family-command/index.html
-          grep -q "force-cache" family-command/index.html
-          grep -q "fcBootMs" family-command/index.html
-          grep -q "version:'8.4-lean'" family-command/v8-shell.js
-          grep -q "renderedAt" family-command/v8-shell.js
-          ! grep -q "warmScreens" family-command/v8-shell.js
-          grep -q "version:2" family-command/chat-command-sync.js
-          grep -q "refreshVisible" family-command/chat-command-sync.js
+          ! grep -q "daily-checklist.js'" family-command/index.html
+          grep -q "version:'8.5-audit'" family-command/v8-shell.js
+          grep -q "const dirty=new Set" family-command/v8-shell.js
+          ! grep -q "renderedAt" family-command/v8-shell.js
+          ! grep -q "setTimeout(()=>post" family-command/v8-shell.js
+          grep -q "fc-chat-todos-v2" family-command/chat-command-sync.js
+          grep -q "hydrateLocal" family-command/chat-command-sync.js
+          grep -q "getTodosFor" family-command/chat-command-sync.js
+          grep -q "dismiss" family-command/chat-command-sync.js
+          grep -q "chat-2026-08-28-fruchtfliegenfalle-landi-bezahlt-v2" family-command/app-data-rules.js
+          grep -q "bereits bezahlt, kein Geld mehr verlangen" family-command/app-data-rules.js
+          grep -q "version:2,rowsFor" family-command/todo-list.js
+          ! grep -q "setTimeout(renderAll,1000)" family-command/todo-list.js
+          ! grep -q "MutationObserver" family-command/multi-link-ui.js
+          ! grep -q "MutationObserver" family-command/event-delete-fix.js
+          ! grep -q "MutationObserver" family-command/ai-budget-guard.js
           grep -q "todosAt" family-command/tomorrow-preview.js
           grep -q ">To-dos<" family-command/tomorrow-preview.js
           grep -q "groupedNext" family-command/today-addons-stabilizer.js
-          grep -q "v8-hide-empty-todo" family-command/v8-ui.js
           ! grep -q "events-visibility-fix.js" family-command/index.html
-          ! grep -q "MutationObserver" family-command/v8-ui.js
-          ! grep -q "MutationObserver" family-command/v8-shell.js
-          ! grep -q "MutationObserver" family-command/today-addons-stabilizer.js
           ! grep -q "screen-redesign-v6.css" family-command/index.html
-          ! grep -q "v7-ui.css" family-command/index.html
           ! grep -q "v7-ui.js" family-command/index.html
           ! grep -q "nav-six-fix.js" family-command/index.html
-      - name: Eliyah Tuesday regression
+      - name: School schedule regression
         run: |
-          grep -q "eliyahTuesday" family-command/app-data-rules.js
           grep -q "13:15" family-command/app-data-rules.js
           grep -q "13:25" family-command/app-data-rules.js
+          grep -q "Tagesschule holt Eliyah" family-command/app-data-rules.js
           grep -q "Losgehzeit ist nicht hinterlegt" family-command/today-relevance.js

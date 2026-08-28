@@ -1,44 +1,51 @@
-/* Family Command · durable chat command bridge · 2026-08-28 */
+/* Family Command · durable Chat → app bridge · V8.5 · 2026-08-28 */
 (()=>{
   'use strict';
   if(window.__fcChatCommandSyncInstalled)return;window.__fcChatCommandSyncInstalled=true;
   const BASE='https://lmrvapstojcecljjdgds.supabase.co/functions/v1/family-command-chat-commands';
+  const CACHE='fc-chat-todos-v2',DISMISSED='fc-chat-todos-dismissed-v1';
+  const SUPERSEDED=new Set(['chat-2026-08-28-fruchtfliegenfalle-landi']);
+
   function accessKey(){try{const p=document.cookie.split(';').map(x=>x.trim()).find(x=>x.startsWith('fc_private_access='));if(p)return decodeURIComponent(p.split('=').slice(1).join('='))}catch(e){}try{return localStorage.getItem('fc-private-access-v1')||''}catch(e){return''}}
-  async function request(path='',init={}){const headers=new Headers(init.headers||{});headers.set('x-fc-access',accessKey());return fetch(BASE+path,{...init,headers,cache:'no-store'})}
+  function read(key,fallback){try{const v=JSON.parse(localStorage.getItem(key)||'null');return v??fallback}catch(e){return fallback}}
+  function write(key,v){try{localStorage.setItem(key,JSON.stringify(v))}catch(e){}}
+  function dismissed(){return new Set(read(DISMISSED,[]).map(String))}
+  function cacheRows(){return Array.isArray(read(CACHE,[]))?read(CACHE,[]):[]}
+  function saveCache(rows){write(CACHE,rows.slice(-100))}
   function todos(){try{if(!Array.isArray(data.todos))data.todos=[];return data.todos}catch(e){return[]}}
-  function applyTodo(cmd){
-    const p=cmd?.payload||{},title=String(p.title||'').trim(),date=String(p.date||'').trim();
-    if(!title||!/^[0-9]{4}-[0-9]{2}-[0-9]{2}$/.test(date))return{ok:false,changed:false};
-    const rows=todos(),sid=String(cmd.id||''),cref=String(cmd.client_ref||'');
-    let t=rows.find(x=>String(x.sourceCommandId||'')===sid||(cref&&String(x.clientRef||'')===cref));
-    let changed=false;
-    if(!t){
-      const max=Math.max(0,...rows.map(x=>Number(x.order||0)));
-      t={id:'todo-chat-'+sid.slice(0,12),title,date,section:['morning','day','evening'].includes(p.section)?p.section:'day',priority:!!p.priority,done:false,order:max+10,createdAt:new Date().toISOString(),completedAt:'',sourceCommandId:sid,clientRef:cref};
-      rows.push(t);changed=true;
-    }else{
-      const next={title,date,section:['morning','day','evening'].includes(p.section)?p.section:'day',priority:!!p.priority};
-      for(const [k,v] of Object.entries(next)){if(t[k]!==v){t[k]=v;changed=true}}
-      if(!t.sourceCommandId){t.sourceCommandId=sid;changed=true}if(cref&&!t.clientRef){t.clientRef=cref;changed=true}
-    }
-    return{ok:true,changed};
+  function normalizeTodo(raw={}){return{id:String(raw.id||''),sourceCommandId:String(raw.sourceCommandId||''),clientRef:String(raw.clientRef||''),title:String(raw.title||'').trim(),date:String(raw.date||''),section:['morning','day','evening'].includes(raw.section)?raw.section:'day',priority:!!raw.priority,done:!!raw.done,archived:!!raw.archived,order:Number(raw.order||0),createdAt:String(raw.createdAt||new Date().toISOString()),completedAt:String(raw.completedAt||'')}}
+  function fromCommand(cmd){const p=cmd?.payload||{},sid=String(cmd?.id||''),ref=String(cmd?.client_ref||'');if(cmd?.command_type!=='todo_add'||!sid||!p.title||!/^[0-9]{4}-[0-9]{2}-[0-9]{2}$/.test(String(p.date||''))||SUPERSEDED.has(ref))return null;return normalizeTodo({id:'todo-chat-'+sid.slice(0,12),sourceCommandId:sid,clientRef:ref,title:p.title,date:p.date,section:p.section,priority:p.priority,done:false,order:0,createdAt:cmd.created_at||new Date().toISOString()})}
+  function keyOf(t){return String(t.sourceCommandId||'')||String(t.clientRef||'')||`${t.date}|${t.title}`}
+  function mergeIntoData(incoming){
+    const rows=todos(),dead=dismissed(),k=keyOf(incoming);if(!k||dead.has(k)||SUPERSEDED.has(incoming.clientRef))return false;
+    let t=rows.find(x=>keyOf(x)===k);let changed=false;
+    if(!t){const max=Math.max(0,...rows.map(x=>Number(x.order||0)));t={...incoming,order:incoming.order||max+10};rows.push(t);return true}
+    for(const f of ['title','date','section','priority','sourceCommandId','clientRef'])if(incoming[f]!==undefined&&t[f]!==incoming[f]){t[f]=incoming[f];changed=true}
+    return changed;
   }
-  function refreshVisible(){
-    const active=document.querySelector('.screen.active')?.id||'today';
-    try{window.__fcV8Shell?.invalidate?.(['today','tomorrow'])}catch(e){}
-    try{window.__fcV8Shell?.render?.(active)}catch(e){}
-    setTimeout(()=>{try{if(active==='today')window.__fcTomorrowPreview?.render?.();if(active==='today'||active==='tomorrow')window.__fcV8?.enhance?.(active)}catch(e){}},0);
+  function upsertCache(incoming){
+    const rows=cacheRows().filter(x=>!SUPERSEDED.has(String(x.clientRef||''))),k=keyOf(incoming),i=rows.findIndex(x=>keyOf(x)===k);if(i>=0)rows[i]={...rows[i],...incoming};else rows.push(incoming);saveCache(rows);return rows
   }
+  function hydrateLocal(){let changed=false;const dead=dismissed();for(const raw of cacheRows()){const t=normalizeTodo(raw),k=keyOf(t);if(!k||dead.has(k)||SUPERSEDED.has(t.clientRef))continue;changed=mergeIntoData(t)||changed}return changed}
+  function allMerged(){
+    const dead=dismissed(),map=new Map();for(const raw of [...cacheRows(),...todos()]){const t=normalizeTodo(raw),k=keyOf(t);if(!k||dead.has(k)||SUPERSEDED.has(t.clientRef))continue;map.set(k,{...(map.get(k)||{}),...t})}return [...map.values()]
+  }
+  function getTodosFor(date,{includeOverdue=false,includeDone=false}={}){return allMerged().filter(t=>!t.archived&&(includeDone||!t.done)&&(String(t.date)===String(date)||(includeOverdue&&!t.done&&String(t.date)<String(date)))).sort((a,b)=>Number(!!b.priority)-Number(!!a.priority)||Number(a.order||0)-Number(b.order||0)||String(a.createdAt).localeCompare(String(b.createdAt)))}
+  function dismiss(todo){const k=typeof todo==='string'?todo:keyOf(todo||{});if(!k)return;const s=dismissed();s.add(k);write(DISMISSED,[...s]);saveCache(cacheRows().filter(x=>keyOf(x)!==k))}
+  async function request(init={}){const h=new Headers(init.headers||{});h.set('x-fc-access',accessKey());return fetch(BASE,{...init,headers:h,cache:'no-store'})}
+  function refreshVisible(){const active=document.querySelector('.screen.active')?.id||'today';try{window.__fcV8Shell?.invalidate?.(['today','tomorrow'])}catch(e){}try{window.__fcTodo?.render?.()}catch(e){}try{if(active==='today'||active==='tomorrow')window.__fcV8Shell?.render?.(active)}catch(e){}try{if(active==='today')window.__fcTomorrowPreview?.render?.()}catch(e){}}
   async function sync(){
     try{
-      if(typeof data==='undefined'||!data||!accessKey())return;
-      const r=await request(),j=await r.json().catch(()=>({}));if(!r.ok||!j.ok||!Array.isArray(j.commands))return;
-      const applied=[];let changed=false;
-      for(const cmd of j.commands){let res={ok:false,changed:false};if(cmd.command_type==='todo_add')res=applyTodo(cmd);if(res.ok){applied.push(cmd.id);changed=changed||res.changed}}
+      if(typeof data==='undefined'||!data||!accessKey())return false;
+      const r=await request(),j=await r.json().catch(()=>({}));if(!r.ok||!j.ok||!Array.isArray(j.commands))return false;
+      const ids=[];let changed=false;
+      for(const cmd of j.commands){const t=fromCommand(cmd);if(!t)continue;upsertCache(t);changed=mergeIntoData(t)||changed;ids.push(String(cmd.id))}
       if(changed){try{if(typeof save==='function')save()}catch(e){console.error('fc_chat_save',e)}refreshVisible()}
-      if(applied.length)await request('',{method:'POST',headers:{'content-type':'application/json'},body:JSON.stringify({ids:applied})});
-    }catch(e){console.error('fc_chat_command_sync',e)}
+      if(ids.length)await request({method:'POST',headers:{'content-type':'application/json'},body:JSON.stringify({ids})});return changed;
+    }catch(e){console.error('fc_chat_command_sync',e);return false}
   }
-  window.__fcChatCommandSync={version:2,sync};
-  sync();document.addEventListener('visibilitychange',()=>{if(document.visibilityState==='visible')sync()});window.addEventListener('pageshow',()=>sync());
+
+  const hydrated=hydrateLocal();if(hydrated){try{if(typeof save==='function')save()}catch(e){}}
+  window.__fcChatCommandSync={version:3,sync,hydrateLocal,getTodosFor,dismiss,all:allMerged,cacheKey:CACHE};
+  queueMicrotask(sync);document.addEventListener('visibilitychange',()=>{if(document.visibilityState==='visible')sync()});window.addEventListener('pageshow',()=>sync());
 })();

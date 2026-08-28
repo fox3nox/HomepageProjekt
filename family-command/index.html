@@ -9,7 +9,7 @@
   <meta name="apple-mobile-web-app-title" content="Family Command">
   <meta name="format-detection" content="telephone=no">
   <title>Family Command</title>
-  <link rel="manifest" href="./manifest.webmanifest?v=20260828-v840">
+  <link rel="manifest" href="./manifest.webmanifest?v=20260828-v850">
   <link rel="icon" href="./icon.svg" type="image/svg+xml">
   <link rel="apple-touch-icon" href="./icon.svg">
   <style>
@@ -18,9 +18,9 @@
     html:not([data-fc-ready="1"]) .bottomnav{pointer-events:none;opacity:.76}
     .fc-boot-screen{padding:30px 27px 110px;max-width:860px;margin:0 auto}.fc-boot-date{width:170px;height:18px;border-radius:9px;background:#edf1f7}.fc-boot-title{width:135px;height:48px;border-radius:15px;background:#e8edf5;margin-top:12px}.fc-boot-card{height:118px;border-radius:24px;background:#f5f7fb;border:1px solid #e5eaf1;margin-top:34px}.fc-boot-row{height:74px;border-radius:20px;background:#f8fafc;border:1px solid #e7ebf2;margin-top:14px}.fc-boot-note{margin-top:22px;color:#94a0b2;font:700 13px/1.4 -apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif}
   </style>
-  <link rel="stylesheet" href="./v8-foundation.css?v=20260828-v840">
-  <link rel="stylesheet" href="./v8-ui.css?v=20260828-v840">
-  <link rel="stylesheet" href="./v8-overrides.css?v=20260828-v840">
+  <link rel="stylesheet" href="./v8-foundation.css?v=20260828-v850">
+  <link rel="stylesheet" href="./v8-ui.css?v=20260828-v850">
+  <link rel="stylesheet" href="./v8-overrides.css?v=20260828-v850">
 </head>
 <body>
   <div class="app">
@@ -35,10 +35,13 @@
   <div class="toast" id="toast" role="status" aria-live="polite" aria-atomic="true"></div>
   <script>
   (()=>{
+    window.__fcManagedBoot=true;
     const STORE='fc-private-access-v1',COOKIE='fc_private_access',PRIVATE_APP='https://lmrvapstojcecljjdgds.supabase.co/functions/v1/family-command-private-app',params=new URLSearchParams(location.search);
-    const VERSION='20260828-v840',PRIVATE_CACHE='fc-private-app-code-v1';
-    const CRITICAL=['screen-redesign-v6.js','app-data-rules.js','today-relevance.js','tomorrow-screen.js','daily-checklist.js','todo-list.js','tomorrow-preview.js','pendencies.js','event-details.js','multi-link-ui.js','event-delete-fix.js','homework-originals.js','today-addons-stabilizer.js','v8-ui.js','v8-shell.js','chat-command-sync.js'];
-    const DEFERRED=['ai-budget-guard.js','push-v2.js','runtime-health.js','family-ai-v2.js','family-ai-original-links.js','print-planner-v2.js','todo-print-addon.js','backup-manager.js','app-selftest-v6.js'];
+    const VERSION='20260828-v850',PRIVATE_CODE_VERSION='family-command-app-v3-managed1',PRIVATE_CACHE='fc-private-app-code-v2';
+    const CRITICAL=['event-details.js','chat-command-sync.js','screen-redesign-v6.js','app-data-rules.js','today-relevance.js','tomorrow-screen.js','todo-list.js','tomorrow-preview.js','pendencies.js','multi-link-ui.js','event-delete-fix.js','homework-originals.js','today-addons-stabilizer.js','v8-ui.js','v8-shell.js'];
+    const DEFERRED=['push-v2.js','runtime-health.js','family-ai-v2.js','ai-budget-guard.js','family-ai-original-links.js','print-planner-v2.js','todo-print-addon.js','backup-manager.js','app-selftest-v6.js'];
+    const NO_OBSERVER=new Set(['event-details.js']);
+    const NO_BOOT_SCHEDULE=new Set(['today-relevance.js','tomorrow-preview.js']);
     function readCookie(name){const prefix=name+'=',part=document.cookie.split(';').map(x=>x.trim()).find(x=>x.startsWith(prefix));return part?decodeURIComponent(part.slice(prefix.length)):''}
     function saveAccess(value){try{localStorage.setItem(STORE,value)}catch(e){}document.cookie=COOKIE+'='+encodeURIComponent(value)+'; Max-Age=31536000; Path=/HomepageProjekt/family-command/; Secure; SameSite=Strict'}
     function fatal(message){document.documentElement.dataset.fcReady='1';document.documentElement.dataset.fcStable='1';const root=document.querySelector('.content');if(root){root.textContent='';const section=document.createElement('section');section.className='screen active';section.innerHTML='<div class="v6-card" style="padding:18px"><h2 style="margin:0 0 6px">App konnte nicht vollständig geladen werden.</h2><p style="margin:0;color:#7b879b"></p></div>';section.querySelector('p').textContent=String(message||'Bitte die App einmal vollständig schließen und neu öffnen.');root.appendChild(section)}const nav=document.querySelector('.bottomnav'),add=document.getElementById('quickAdd');if(nav)nav.style.display='none';if(add)add.style.display='none'}
@@ -47,26 +50,27 @@
     if(!key){fatal('Privater Zugang erforderlich. Öffne deinen persönlichen Family-Command-Link einmal in Safari.');return}
     const browserFetch=window.fetch.bind(window),wait=ms=>new Promise(r=>setTimeout(r,ms)),frame=()=>new Promise(r=>requestAnimationFrame(r));
     window.fetch=function(input,init){try{const u=typeof input==='string'?input:(input instanceof Request?input.url:'');if(u.includes('/functions/v1/family-command-app/push/'))return Promise.resolve(new Response(JSON.stringify({ok:true,skipped:true}),{status:200,headers:{'content-type':'application/json'}}))}catch(e){}return browserFetch(input,init)};
-    async function fetchText(src){let last='';for(let attempt=0;attempt<2;attempt++){try{const r=await browserFetch(src,{cache:attempt?'reload':'force-cache'});if(!r.ok)throw new Error('HTTP '+r.status);return await r.text()}catch(e){last=e?.message||String(e);if(!attempt)await wait(80)}}throw new Error('Datei konnte nicht geladen werden: '+src+(last?' ('+last+')':''))}
+    async function fetchText(src){let last='';for(let attempt=0;attempt<2;attempt++){try{const r=await browserFetch(src,{cache:attempt?'reload':'force-cache'});if(!r.ok)throw new Error('HTTP '+r.status);return await r.text()}catch(e){last=e?.message||String(e);if(!attempt)await wait(70)}}throw new Error('Datei konnte nicht geladen werden: '+src+(last?' ('+last+')':''))}
     function execute(code,src){const s=document.createElement('script');s.textContent=code+'\n//# sourceURL='+src.split('?')[0];document.body.appendChild(s)}
-    function readPrivateCache(){try{const x=JSON.parse(localStorage.getItem(PRIVATE_CACHE)||'null');return x&&x.version===VERSION&&typeof x.code==='string'?x.code:''}catch(e){return''}}
-    function writePrivateCache(code){try{localStorage.setItem(PRIVATE_CACHE,JSON.stringify({version:VERSION,code,at:Date.now()}))}catch(e){}}
-    function fetchPrivate(){return browserFetch(PRIVATE_APP+'?v='+VERSION,{cache:'no-store',headers:{'x-fc-access':key}}).then(async r=>{if(!r.ok)throw new Error('Privater App-Kern nicht erreichbar ('+r.status+').');return r.text()})}
-    function idle(fn,delay=0){setTimeout(()=>{'requestIdleCallback'in window?requestIdleCallback(fn,{timeout:1500}):setTimeout(fn,20)},delay)}
+    function executeModule(file,code){
+      const nativeMO=window.MutationObserver,nativeRAF=window.requestAnimationFrame,nativeTO=window.setTimeout;
+      if(NO_OBSERVER.has(file))window.MutationObserver=class{observe(){}disconnect(){}takeRecords(){return[]}};
+      if(NO_BOOT_SCHEDULE.has(file)){window.requestAnimationFrame=()=>0;window.setTimeout=(fn,ms,...a)=>Number(ms||0)<=1200?0:nativeTO(fn,ms,...a)}
+      try{execute(code,'./'+file+'?v='+VERSION)}finally{window.MutationObserver=nativeMO;window.requestAnimationFrame=nativeRAF;window.setTimeout=nativeTO}
+    }
+    function readPrivateCache(){try{const x=JSON.parse(localStorage.getItem(PRIVATE_CACHE)||'null');return x&&x.version===PRIVATE_CODE_VERSION&&typeof x.code==='string'?x.code:''}catch(e){return''}}
+    function writePrivateCache(code){try{localStorage.setItem(PRIVATE_CACHE,JSON.stringify({version:PRIVATE_CODE_VERSION,code,at:Date.now()}))}catch(e){}}
+    function fetchPrivate(){return browserFetch(PRIVATE_APP+'?v='+PRIVATE_CODE_VERSION,{cache:'no-store',headers:{'x-fc-access':key}}).then(async r=>{if(!r.ok)throw new Error('Privater App-Kern nicht erreichbar ('+r.status+').');return r.text()})}
+    function idle(fn,delay=0){setTimeout(()=>{'requestIdleCallback'in window?requestIdleCallback(fn,{timeout:1800}):setTimeout(fn,30)},delay)}
     function loadExternal(src){return new Promise((resolve,reject)=>{const s=document.createElement('script');s.src=src;s.async=true;s.onload=resolve;s.onerror=reject;document.head.appendChild(s)})}
-    function deferExtras(){let i=0;const next=()=>{if(i>=DEFERRED.length){document.documentElement.dataset.fcExtras='ready';return}const file=DEFERRED[i++];fetchText('./'+file+'?v='+VERSION).then(code=>execute(code,'./'+file+'?v='+VERSION)).catch(e=>console.error('fc_deferred',file,e)).finally(()=>idle(next,140))};idle(next,1200);idle(()=>{if(!window.jspdf)loadExternal('https://cdn.jsdelivr.net/npm/jspdf@2.5.2/dist/jspdf.umd.min.js').catch(()=>{})},2500)}
+    function deferExtras(){let i=0;const next=()=>{if(i>=DEFERRED.length){document.documentElement.dataset.fcExtras='ready';return}const file=DEFERRED[i++];fetchText('./'+file+'?v='+VERSION).then(code=>executeModule(file,code)).catch(e=>console.error('fc_deferred',file,e)).finally(()=>idle(next,260))};idle(next,1800);idle(()=>{if(!window.jspdf)loadExternal('https://cdn.jsdelivr.net/npm/jspdf@2.5.2/dist/jspdf.umd.min.js').catch(()=>{})},4200)}
     async function boot(){
-      const start=performance.now(),cachedPrivate=readPrivateCache();
-      const freshPrivate=fetchPrivate();
-      const downloads=new Map(CRITICAL.map(file=>[file,fetchText('./'+file+'?v='+VERSION)]));
-      if(cachedPrivate)execute(cachedPrivate,'family-command-private-app.cached.js');else execute(await freshPrivate,'family-command-private-app.js');
-      if(typeof window.fcEventFilter==='undefined')window.fcEventFilter='all';
-      for(const file of CRITICAL)execute(await downloads.get(file),'./'+file+'?v='+VERSION);
-      document.documentElement.dataset.fcBoot='v8.4-lean-ok';
-      const active=document.querySelector('.screen.active')?.id||'today';try{window.__fcV8Shell?.render?.(active)}catch(e){console.error('fc_v8_postboot',e)}
+      const start=performance.now(),cachedPrivate=readPrivateCache(),freshPrivate=fetchPrivate(),downloads=new Map(CRITICAL.map(file=>[file,fetchText('./'+file+'?v='+VERSION)]));
+      const privateCode=cachedPrivate||await freshPrivate;execute(privateCode,cachedPrivate?'family-command-private-app.cached.js':'family-command-private-app.js');if(typeof window.fcEventFilter==='undefined')window.fcEventFilter='all';
+      for(const file of CRITICAL)executeModule(file,await downloads.get(file));
+      document.documentElement.dataset.fcBoot='v8.5-audit-ok';
       await frame();document.documentElement.dataset.fcReady='1';await frame();document.documentElement.dataset.fcStable='1';document.documentElement.dataset.fcBootMs=String(Math.round(performance.now()-start));
-      freshPrivate.then(code=>writePrivateCache(code)).catch(e=>console.error('fc_private_refresh',e));
-      deferExtras();
+      freshPrivate.then(code=>writePrivateCache(code)).catch(e=>console.error('fc_private_refresh',e));deferExtras();
     }
     boot().catch(e=>{console.error('family_command_boot',e);fatal(e?.message)});
   })();
