@@ -1,0 +1,245 @@
+    filter.frequency.value = 6200;
+    gain.gain.setValueAtTime(level, time);
+    gain.gain.exponentialRampToValueAtTime(0.001, time + 0.045);
+    source.connect(filter);
+    filter.connect(gain);
+    gain.connect(this.master);
+    this.scheduledSources.add(source);
+    source.addEventListener?.("ended", () => this.scheduledSources.delete(source));
+    source.start(time);
+  }
+
+  scheduleSnare(time, level = 0.055) {
+    const source = this.context.createBufferSource();
+    const filter = this.context.createBiquadFilter();
+    const gain = this.context.createGain();
+    source.buffer = this.noiseBuffer;
+    filter.type = "bandpass";
+    filter.frequency.value = 1800;
+    filter.Q.value = 0.7;
+    gain.gain.setValueAtTime(level, time);
+    gain.gain.exponentialRampToValueAtTime(0.001, time + 0.11);
+    source.connect(filter);
+    filter.connect(gain);
+    gain.connect(this.master);
+    this.scheduledSources.add(source);
+    source.addEventListener?.("ended", () => this.scheduledSources.delete(source));
+    source.start(time);
+  }
+
+  scheduleBass(time, beatInBar) {
+    const ratios = [1, 1.1892, 0.8909, 1.3348];
+    const notes = ratios.map((ratio) => this.rootFrequency * ratio);
+    const osc = this.context.createOscillator();
+    const gain = this.context.createGain();
+    osc.type = "triangle";
+    osc.frequency.value = notes[beatInBar % notes.length];
+    gain.gain.setValueAtTime(0.075 + this.drive * 0.025, time);
+    gain.gain.exponentialRampToValueAtTime(0.001, time + 0.24);
+    osc.connect(gain);
+    gain.connect(this.master);
+    this.scheduledSources.add(osc);
+    osc.addEventListener?.("ended", () => this.scheduledSources.delete(osc));
+    osc.start(time);
+    osc.stop(time + 0.25);
+  }
+
+  oneShot(kind = "action") {
+    if (!this.context || !this.master || this.context.state !== "running" || !this.enabled) return;
+    const time = this.context.currentTime;
+    const osc = this.context.createOscillator();
+    const gain = this.context.createGain();
+
+    const config = {
+      action: [420, 610, 0.045],
+      portal: [620, 920, 0.07],
+      death: [150, 52, 0.18],
+      finish: [520, 1040, 0.22],
+      checkpoint: [740, 1180, 0.095],
+      sync: [980, 1320, 0.038],
+      milestone: [410, 980, 0.16],
+    }[kind] ?? [420, 610, 0.045];
+
+    osc.type = kind === "death" ? "sawtooth" : (kind === "milestone" ? "triangle" : "square");
+    osc.frequency.setValueAtTime(config[0], time);
+    osc.frequency.exponentialRampToValueAtTime(config[1], time + config[2]);
+    gain.gain.setValueAtTime(kind === "death" ? 0.16 : 0.07, time);
+    gain.gain.exponentialRampToValueAtTime(0.001, time + config[2]);
+    osc.connect(gain);
+    gain.connect(this.master);
+    this.scheduledSources.add(osc);
+    osc.addEventListener?.("ended", () => this.scheduledSources.delete(osc));
+    osc.start(time);
+    osc.stop(time + config[2] + 0.01);
+  }
+
+  toggle(simulationTime = null) {
+    this.enabled = !this.enabled;
+    if (this.master) this.master.gain.value = this.enabled ? this.volume : 0;
+
+    if (!this.enabled) {
+      // Muting is also a battery/performance operation on mobile: stop the
+      // high-frequency scheduler and cancel already planned silent sources.
+      if (this.timer) clearInterval(this.timer);
+      this.timer = null;
+      this.cancelScheduledSources();
+      return false;
+    }
+
+    // Re-enable from the current simulation phase; never replay missed beats.
+    if (this.started && Number.isFinite(simulationTime)) {
+      this.syncToSimulation(simulationTime);
+      if (!this.timer) this.timer = setInterval(() => this.schedule(), SCHEDULER_MS);
+    }
+
+    return true;
+  }
+
+  stop() {
+    if (this.timer) clearInterval(this.timer);
+    this.timer = null;
+    this.cancelScheduledSources();
+    this.started = false;
+  }
+}
+
+Object.assign(exports, { RhythmAudio });
+
+};
+__mods["particles.js"] = function(module,exports,__require){
+/**
+ * PULSEBREAK — lightweight visual particle state.
+ * Rendering stays in game.js; this module only owns particle data/lifetime.
+ */
+
+function seededSpread(index, total) {
+  const golden = 2.399963229728653;
+  return index * golden + total * 0.173;
+}
+
+function createBurst({
+  x,
+  y,
+  count = 12,
+  speed = 180,
+  life = 0.45,
+  size = 4,
+  gravity = 420,
+  color = "#ffffff",
+  ring = false,
+}) {
+  const particles = [];
+  const safeCount = Math.max(1, Math.floor(count));
+
+  for (let i = 0; i < safeCount; i += 1) {
+    const angle = seededSpread(i, safeCount);
+    const magnitude = speed * (0.55 + ((i * 37) % 100) / 220);
+    particles.push({
+      x,
+      y,
+      vx: Math.cos(angle) * magnitude,
+      vy: Math.sin(angle) * magnitude,
+      life,
+      maxLife: life,
+      size: size * (0.72 + ((i * 13) % 10) / 20),
+      gravity,
+      color,
+      ring,
+    });
+  }
+
+  return particles;
+}
+
+function updateParticles(particles, dt) {
+  let write = 0;
+  for (let read = 0; read < particles.length; read += 1) {
+    const p = particles[read];
+    p.life -= dt;
+    if (p.life <= 0) continue;
+
+    p.vy += p.gravity * dt;
+    p.x += p.vx * dt;
+    p.y += p.vy * dt;
+    particles[write] = p;
+    write += 1;
+  }
+  particles.length = write;
+  return particles;
+}
+
+Object.assign(exports, { createBurst, updateParticles });
+
+};
+__mods["session.js"] = function(module,exports,__require){
+/**
+ * PULSEBREAK — Final session/practice helpers.
+ * Pure state helpers: no Canvas, DOM, audio or rendering dependencies.
+ */
+
+const { overlapsAABB, getPlayerHitbox } = __require('physics.js');
+
+const RUN_TYPES = Object.freeze({
+  NORMAL: "normal",
+  PRACTICE: "practice",
+});
+
+const GAME_STATES = Object.freeze({
+  MENU: "menu",
+  PLAYING: "playing",
+  PAUSED: "paused",
+  COMPLETE: "complete",
+});
+
+function progressPercent(playerX, spawnX, finishX) {
+  const span = finishX - spawnX;
+  if (!Number.isFinite(span) || span <= 0) return 0;
+  const value = ((playerX - spawnX) / span) * 100;
+  return Math.max(0, Math.min(100, value));
+}
+
+function createPracticeState() {
+  return {
+    activeCheckpoint: null,
+    activatedCheckpointIds: new Set(),
+    respawns: 0,
+  };
+}
+
+function findEnteredCheckpoint(player, checkpoints, activatedIds = new Set()) {
+  const playerBox = getPlayerHitbox(player);
+  return (checkpoints ?? []).find(
+    (checkpoint) =>
+      !activatedIds.has(checkpoint.id) &&
+      overlapsAABB(playerBox, checkpoint),
+  ) ?? null;
+}
+
+function snapshotPlayer(player) {
+  return {
+    x: player.x,
+    y: player.y,
+    width: player.width,
+    height: player.height,
+    velocityX: player.velocityX,
+    velocityY: player.velocityY,
+    mode: player.mode,
+    gravityDirection: player.gravityDirection,
+    onGround: player.onGround,
+    groundId: player.groundId,
+    // Input edges/holds are intentionally NOT persisted in practice snapshots.
+    // A checkpoint may be activated while the player is holding the screen;
+    // restoring that stale physical input later would create a "ghost hold".
+    jumpBufferRemaining: 0,
+    actionHeld: false,
+    pulseCooldownRemaining: player.pulseCooldownRemaining,
+    triggeredPortalIds: [...player.triggeredPortalIds],
+  };
+}
+
+function createCheckpointSnapshot({
+  checkpoint,
+  player,
+  simulationTime,
+  visualAngle,
+}) {

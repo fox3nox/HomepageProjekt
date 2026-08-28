@@ -1,0 +1,234 @@
+  if (reachedMilestones.has(percent)) return;
+  reachedMilestones.add(percent);
+  const [title, subtitle] = milestoneCopy(percent);
+  milestoneTitle = title;
+  milestoneSubtitle = subtitle;
+  milestoneTimer = 1.18;
+  milestoneFlash = 0.5;
+  screenShake = Math.max(screenShake, percent >= 75 ? 0.13 : 0.08);
+  emitAtPlayer({
+    count: percent >= 75 ? 26 : 18,
+    speed: percent >= 75 ? 230 : 170,
+    life: 0.52,
+    size: percent >= 75 ? 4.8 : 3.8,
+    gravity: 0,
+    color: percent >= 75 ? theme.amber : theme.cyan,
+    ring: true,
+  });
+  audio.oneShot("milestone");
+}
+
+function updateRunDirector(progress) {
+  const safeProgress = Math.max(0, Math.min(100, Number(progress) || 0));
+  for (const threshold of crossedMilestones(lastDirectorProgress, safeProgress)) {
+    triggerMilestone(threshold);
+  }
+  lastDirectorProgress = safeProgress;
+
+  const nextSection = directorSection(safeProgress);
+  if (nextSection !== currentDirectorSection) {
+    currentDirectorSection = nextSection;
+    const baseIntensity = currentLevelDefinition.music?.intensity ?? 2;
+    audio.setIntensity?.(Math.min(3, baseIntensity + (currentDirectorSection >= 2 ? 1 : 0)));
+  }
+  audio.setDrive?.(directorDrive(safeProgress));
+}
+
+function updateInterface() {
+  const progress = currentProgress();
+  if (runType === RUN_TYPES.NORMAL && gameState !== GAME_STATES.MENU) {
+    writeBestProgress(progress);
+  }
+
+  setStyleWidth(progressFillEl, `${progress.toFixed(1)}%`);
+  setText(progressTextEl, `${Math.floor(progress)}%`);
+  setText(runModeEl, runType === RUN_TYPES.PRACTICE ? "ÜBUNG" : "NORMAL");
+
+  const cp = practiceState.activeCheckpoint;
+  if (checkpointTextEl) {
+    setText(checkpointTextEl, runType === RUN_TYPES.PRACTICE
+      ? (cp ? `CHECKPOINT ${checkpointSerial}/${world.checkpoints.length} · RESPAWNS ${practiceState.respawns}` : "CHECKPOINT — · RESPAWNS 0")
+      : `BEST ${Math.floor(bestProgress)}%`);
+  }
+  setText(bestTextEl, `BEST ${Math.floor(bestProgress)}%`);
+  setText(soundButton, audio.enabled ? "SOUND ON" : "SOUND OFF");
+  if (pauseSoundButton) {
+    const label = pauseSoundButton.querySelector?.("strong") ?? pauseSoundButton;
+    setText(label, audio.enabled ? "SOUND ON" : "SOUND OFF");
+  }
+
+  setHidden(menuEl, gameState !== GAME_STATES.MENU);
+  setHidden(pauseEl, gameState !== GAME_STATES.PAUSED);
+  setHidden(completeEl, gameState !== GAME_STATES.COMPLETE);
+  if (pauseButton) pauseButton.disabled = gameState !== GAME_STATES.PLAYING || finishing;
+}
+
+function showModeCue(mode, duration = 1.35) {
+  const [title, subtitle] = modeInstruction(mode);
+  cueTitle = title;
+  cueSubtitle = subtitle;
+  cueTimer = duration;
+}
+
+function startRun(type) {
+  runType = type;
+  runStartBestProgress = readBestProgress(currentLevelDefinition);
+  gameState = GAME_STATES.PLAYING;
+  practiceState = createPracticeState();
+  checkpointSerial = 0;
+  deathCount = 0;
+  clearCount = 0;
+  lastDeathCause = null;
+  deathFlash = 0;
+  portalFlash = 0;
+  finishFlash = 0;
+  checkpointFlash = 0;
+  syncHits = 0;
+  syncStreak = 0;
+  bestSyncStreak = 0;
+  lastDeathX = null;
+  lastSyncLabel = "";
+  attemptFlash = 1.0;
+  resetRun({ keepStats: false, clearEffects: true });
+  showModeCue(player.mode, 1.55);
+  audio.unlock(simulationTime).catch(() => {});
+  updateInterface();
+}
+
+function restartCurrentRun() {
+  runStartBestProgress = bestProgress;
+  practiceState = createPracticeState();
+  checkpointSerial = 0;
+  deathCount = 0;
+  clearCount = 0;
+  lastDeathCause = null;
+  deathFlash = 0;
+  portalFlash = 0;
+  finishFlash = 0;
+  checkpointFlash = 0;
+  syncHits = 0;
+  syncStreak = 0;
+  bestSyncStreak = 0;
+  lastDeathX = null;
+  lastSyncLabel = "";
+  attemptFlash = 1.0;
+  resetRun({ keepStats: false, clearEffects: true });
+  showModeCue(player.mode, 1.35);
+  gameState = GAME_STATES.PLAYING;
+  if (audio.enabled) audio.unlock(simulationTime).catch(() => {});
+  updateInterface();
+}
+
+function pauseGame() {
+  if (gameState !== GAME_STATES.PLAYING || finishing) return;
+  endAction();
+  if (runType === RUN_TYPES.NORMAL) writeBestProgress(currentProgress(), { forcePersist: true });
+  gameState = GAME_STATES.PAUSED;
+  audio.stop();
+  updateInterface();
+}
+
+function resumeGame() {
+  if (gameState !== GAME_STATES.PAUSED) return;
+  gameState = GAME_STATES.PLAYING;
+  if (audio.enabled) audio.unlock(simulationTime).catch(() => {});
+  updateInterface();
+}
+
+function returnToMenu() {
+  endAction();
+  if (runType === RUN_TYPES.NORMAL && gameState !== GAME_STATES.MENU) {
+    writeBestProgress(currentProgress(), { forcePersist: true });
+  }
+  audio.stop();
+  gameState = GAME_STATES.MENU;
+  runType = RUN_TYPES.NORMAL;
+  practiceState = createPracticeState();
+  checkpointSerial = 0;
+  lastDeathX = null;
+  cueTimer = 0;
+  resetRun({ keepStats: false, clearEffects: true });
+  updateInterface();
+}
+
+function activatePracticeCheckpoint(checkpoint) {
+  if (runType !== RUN_TYPES.PRACTICE || !checkpoint) return;
+  practiceState.activatedCheckpointIds.add(checkpoint.id);
+  practiceState.activeCheckpoint = createCheckpointSnapshot({
+    checkpoint,
+    player,
+    simulationTime,
+    visualAngle,
+  });
+  checkpointSerial = Math.max(1, world.checkpoints.findIndex((item) => item.id === checkpoint.id) + 1);
+  checkpointFlash = 0.34;
+  lastPortalLabel = `CHECKPOINT ${checkpointSerial}`;
+  emitAtPlayer({
+    count: 18,
+    speed: 160,
+    life: 0.48,
+    size: 4,
+    gravity: 0,
+    color: theme.lime,
+    ring: true,
+  });
+  audio.oneShot("checkpoint");
+}
+
+function restorePracticeCheckpoint() {
+  const snapshot = practiceState.activeCheckpoint;
+  if (!snapshot) {
+    resetRun({ keepStats: true, clearEffects: false });
+    return;
+  }
+
+  world = loadLevel(currentLevelDefinition);
+  player = createPlayer(world.spawn.x, world.spawn.y);
+  restorePlayerFromSnapshot(player, snapshot);
+  simulationTime = snapshot.simulationTime;
+  visualAngle = snapshot.visualAngle;
+  accumulator = 0;
+  cameraX = Math.max(0, player.x - CAMERA_ANCHOR_X);
+  updateKinematicSolids(world.dynamicSolids, simulationTime);
+  lastBeatIndex = beatIndexAtTime(simulationTime, world.bpm, world.music?.beatOffset ?? 0);
+  trail = [];
+  resetDirectorState(progressPercent(player.x, world.spawn.x, world.finishX));
+  if (audio.started) audio.syncToSimulation(simulationTime);
+}
+
+function findSpawnSupport() {
+  const initialSlice = queryCollisionObjects(
+    world,
+    player.x,
+    player.x + player.width,
+    world.tileSize,
+  );
+  return initialSlice.solids.find(
+    (solid) =>
+      solid.y === player.y + player.height &&
+      player.x < solid.x + solid.width &&
+      player.x + player.width > solid.x,
+  );
+}
+
+function resetRun({ keepStats = true, clearEffects = false } = {}) {
+  const savedDeaths = keepStats ? deathCount : 0;
+  const savedClears = keepStats ? clearCount : 0;
+
+  world = loadLevel(currentLevelDefinition);
+  player = createPlayer(world.spawn.x, world.spawn.y);
+
+  const support = findSpawnSupport();
+  player.groundId = support?.id ?? null;
+  player.onGround = Boolean(support);
+
+  accumulator = 0;
+  simulationTime = 0;
+  visualAngle = 0;
+  actionCount = 0;
+  cameraX = 0;
+  deathCount = savedDeaths;
+  clearCount = savedClears;
+  lastPortalLabel = null;
+  lastBeatIndex = -1;
+  beatFlash = 0;

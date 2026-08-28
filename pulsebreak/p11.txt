@@ -1,0 +1,225 @@
+const levelButtons = LEVELS.map((_, index) => document.querySelector(`#level-button-${index}`));
+const levelBestEls = LEVELS.map((_, index) => document.querySelector(`#level-best-${index}`));
+const ctx = canvas.getContext("2d", { alpha: false });
+
+const VIEW_WIDTH = 1280;
+const VIEW_HEIGHT = 720;
+const MAX_FRAME_DELTA = 0.25;
+const AIR_ROTATION_SPEED = (520 * Math.PI) / 180;
+const FLIP_ROTATION_SPEED = (360 * Math.PI) / 180;
+const QUARTER_TURN = Math.PI / 2;
+const CAMERA_ANCHOR_X = 280;
+const COLLISION_MARGIN = 112;
+const GROUND_Y = 576;
+const FINISH_SEQUENCE_SECONDS = 0.92;
+
+const BASE_THEME = Object.freeze({
+  void: "#050711",
+  background: "#080c18",
+  grid: "#172039",
+  cyan: "#53efff",
+  cyanSoft: "#1aa6bc",
+  magenta: "#ff3e96",
+  violet: "#a679ff",
+  lime: "#7cffb2",
+  amber: "#ffd15c",
+  white: "#f3fbff",
+  panel: "#11182a",
+  panel2: "#18233b",
+  bgTop: "#050711",
+  bgMid: "#091025",
+  bgBottom: "#070a14",
+  horizon: "#1a3656",
+});
+
+let currentLevelIndex = 0;
+let currentLevelDefinition = LEVELS[currentLevelIndex];
+let theme = { ...BASE_THEME, ...(currentLevelDefinition.theme ?? {}) };
+
+const audio = new RhythmAudio({
+  bpm: currentLevelDefinition.bpm,
+  beatsPerBar: currentLevelDefinition.music?.beatsPerBar ?? 4,
+  volume: 0.32,
+  rootFrequency: currentLevelDefinition.music?.rootFrequency ?? 55,
+  intensity: currentLevelDefinition.music?.intensity ?? 2,
+});
+
+let world;
+let player;
+let accumulator;
+let simulationTime;
+let lastTime;
+let visualAngle;
+let actionCount;
+let deathCount;
+let clearCount;
+let cameraX;
+let deathFlash;
+let portalFlash;
+let finishFlash;
+let beatFlash;
+let screenShake;
+let lastDeathCause;
+let lastPortalLabel;
+let lastBeatIndex;
+let particles = [];
+let trail = [];
+let debugHitboxes = false;
+let gameState = GAME_STATES.MENU;
+let runType = RUN_TYPES.NORMAL;
+let practiceState = createPracticeState();
+let bestProgress = 0;
+let persistedBestWholePercent = 0;
+let runStartBestProgress = 0;
+let checkpointFlash = 0;
+let checkpointSerial = 0;
+let cueTimer = 0;
+let cueTitle = "";
+let cueSubtitle = "";
+let attemptFlash = 0;
+let lastDeathX = null;
+let syncFlash = 0;
+let syncHits = 0;
+let syncStreak = 0;
+let bestSyncStreak = 0;
+let lastSyncLabel = "";
+let milestoneFlash = 0;
+let milestoneTimer = 0;
+let milestoneTitle = "";
+let milestoneSubtitle = "";
+let lastDirectorProgress = 0;
+let currentDirectorSection = 0;
+let finishing = false;
+let finishSequenceTimer = 0;
+let pendingCompletionGrade = "";
+let pendingCompletionStats = "";
+let finishPulseOriginX = 0;
+const reachedMilestones = new Set();
+const activeActionSources = new Set();
+
+function modeColor(mode) {
+  if (mode === MODES.FLIP) return theme.violet;
+  if (mode === MODES.GLIDE) return theme.cyan;
+  if (mode === MODES.PULSE) return "#ff66ce";
+  return theme.magenta;
+}
+
+
+function bestStorageKey(levelDefinition = currentLevelDefinition) {
+  return `pulsebreak.best.${levelDefinition.id}`;
+}
+
+function readBestProgress(levelDefinition = currentLevelDefinition) {
+  try {
+    const value = Number(globalThis.localStorage?.getItem(bestStorageKey(levelDefinition)) ?? 0);
+    return Number.isFinite(value) ? Math.max(0, Math.min(100, value)) : 0;
+  } catch {
+    return 0;
+  }
+}
+
+function writeBestProgress(value, { forcePersist = false } = {}) {
+  bestProgress = Math.max(bestProgress, Math.max(0, Math.min(100, value)));
+  const wholePercent = Math.floor(bestProgress);
+
+  // Rendering runs at 60–120+ FPS. Persist only when the visible integer
+  // best actually improves (or at an explicit lifecycle boundary), rather
+  // than hammering synchronous localStorage every frame.
+  if (forcePersist || wholePercent > persistedBestWholePercent) {
+    try {
+      globalThis.localStorage?.setItem(bestStorageKey(), bestProgress.toFixed(2));
+      persistedBestWholePercent = Math.max(persistedBestWholePercent, wholePercent);
+    } catch {}
+  }
+
+  const cardBest = levelBestEls[currentLevelIndex];
+  setText(cardBest, `BEST ${wholePercent}%`);
+}
+
+function syncLevelPresentation() {
+  theme = { ...BASE_THEME, ...(currentLevelDefinition.theme ?? {}) };
+  audio.configure({
+    bpm: currentLevelDefinition.bpm,
+    beatsPerBar: currentLevelDefinition.music?.beatsPerBar ?? 4,
+    rootFrequency: currentLevelDefinition.music?.rootFrequency ?? 55,
+    intensity: currentLevelDefinition.music?.intensity ?? 2,
+  });
+
+  setText(levelNameEl, currentLevelDefinition.name.toUpperCase());
+  setText(levelSubtitleEl, currentLevelDefinition.subtitle ?? "");
+  setText(levelDifficultyEl, `${currentLevelDefinition.difficultyLabel ?? "LEVEL"} · ${currentLevelDefinition.columns} TILES`);
+
+  levelButtons.forEach((button, index) => {
+    if (!button) return;
+    const selected = index === currentLevelIndex;
+    button.classList?.toggle("selected", selected);
+    button.setAttribute?.("aria-pressed", selected ? "true" : "false");
+  });
+
+  levelBestEls.forEach((element, index) => {
+    if (!element) return;
+    setText(element, `BEST ${Math.floor(readBestProgress(LEVELS[index]))}%`);
+  });
+}
+
+function selectLevel(index) {
+  if (!Number.isInteger(index) || index < 0 || index >= LEVELS.length) return;
+  if (gameState !== GAME_STATES.MENU) return;
+
+  currentLevelIndex = index;
+  currentLevelDefinition = LEVELS[index];
+  bestProgress = readBestProgress(currentLevelDefinition);
+  runStartBestProgress = bestProgress;
+  persistedBestWholePercent = Math.floor(bestProgress);
+  syncLevelPresentation();
+  resetRun({ keepStats: false, clearEffects: true });
+  updateInterface();
+}
+
+function setText(element, value) {
+  if (!element) return;
+  const text = String(value);
+  if (element.textContent !== text) element.textContent = text;
+}
+
+function setStyleWidth(element, value) {
+  if (!element?.style) return;
+  if (element.style.width !== value) element.style.width = value;
+}
+
+function setHidden(element, hidden) {
+  if (!element) return;
+  const currentlyHidden = element.classList?.contains?.("hidden") ?? false;
+  if (currentlyHidden !== hidden) element.classList?.toggle("hidden", hidden);
+  const ariaValue = hidden ? "true" : "false";
+  if (element.getAttribute?.("aria-hidden") !== ariaValue) element.setAttribute?.("aria-hidden", ariaValue);
+}
+
+function currentProgress() {
+  if (!world || !player) return 0;
+  if (gameState === GAME_STATES.COMPLETE) return 100;
+  return progressPercent(player.x, world.spawn.x, world.finishX);
+}
+
+function resetDirectorState(progress = 0) {
+  const safeProgress = Math.max(0, Math.min(100, Number(progress) || 0));
+  reachedMilestones.clear();
+  for (const threshold of MILESTONE_THRESHOLDS) {
+    if (safeProgress >= threshold) reachedMilestones.add(threshold);
+  }
+  lastDirectorProgress = safeProgress;
+  currentDirectorSection = directorSection(safeProgress);
+  milestoneFlash = 0;
+  milestoneTimer = 0;
+  milestoneTitle = "";
+  milestoneSubtitle = "";
+  finishing = false;
+  finishSequenceTimer = 0;
+  pendingCompletionGrade = "";
+  pendingCompletionStats = "";
+  audio.setDrive?.(directorDrive(safeProgress));
+  const baseIntensity = currentLevelDefinition.music?.intensity ?? 2;
+  audio.setIntensity?.(Math.min(3, baseIntensity + (currentDirectorSection >= 2 ? 1 : 0)));
+}
+
+function triggerMilestone(percent) {

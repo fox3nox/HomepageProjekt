@@ -1,0 +1,209 @@
+    const col = Math.floor(player.x / world.tileSize);
+    ctx.save();
+    ctx.font = "600 10px ui-monospace, SFMono-Regular, Menlo, monospace";
+    ctx.fillStyle = "rgba(226,241,255,0.6)";
+    ctx.fillText(`${player.velocityX.toFixed(0)} px/s · ${beatTiles.toFixed(0)} tiles/beat · col ${col}/${world.columns - 1} · actions ${actionCount} · deaths ${deathCount}`, 24, VIEW_HEIGHT - 50);
+    ctx.restore();
+  }
+}
+
+function drawTransientFeedback() {
+  if (milestoneTimer > 0) {
+    const age = 1 - Math.min(1, milestoneTimer / 1.18);
+    const alpha = Math.min(1, milestoneTimer * 2.8);
+    const scale = 0.96 + Math.min(1, age * 2) * 0.04;
+    ctx.save();
+    ctx.globalAlpha = alpha;
+    ctx.translate(VIEW_WIDTH / 2, 166);
+    ctx.scale(scale, scale);
+    ctx.textAlign = "center";
+    ctx.fillStyle = milestoneTitle.startsWith("75") ? theme.amber : theme.lime;
+    ctx.shadowBlur = 24;
+    ctx.shadowColor = ctx.fillStyle;
+    ctx.font = "950 27px ui-monospace, SFMono-Regular, Menlo, monospace";
+    ctx.fillText(milestoneTitle, 0, 0);
+    ctx.shadowBlur = 0;
+    ctx.fillStyle = "rgba(243,251,255,0.78)";
+    ctx.font = "800 9px ui-monospace, SFMono-Regular, Menlo, monospace";
+    ctx.fillText(milestoneSubtitle, 0, 22);
+    ctx.restore();
+  }
+
+  if (cueTimer > 0 && milestoneTimer <= 0) {
+    const alpha = Math.min(1, cueTimer * 2.4);
+    const y = 122;
+    ctx.save();
+    ctx.globalAlpha = alpha;
+    ctx.textAlign = "center";
+    ctx.fillStyle = modeColor(player.mode);
+    ctx.font = "900 24px ui-monospace, SFMono-Regular, Menlo, monospace";
+    ctx.fillText(cueTitle, VIEW_WIDTH / 2, y);
+    ctx.fillStyle = "rgba(243,251,255,0.82)";
+    ctx.font = "800 10px ui-monospace, SFMono-Regular, Menlo, monospace";
+    ctx.fillText(cueSubtitle, VIEW_WIDTH / 2, y + 22);
+    ctx.restore();
+  }
+
+  if (attemptFlash > 0) {
+    const alpha = Math.min(0.85, attemptFlash * 1.7);
+    ctx.save();
+    ctx.globalAlpha = alpha;
+    ctx.fillStyle = theme.white;
+    ctx.font = "900 11px ui-monospace, SFMono-Regular, Menlo, monospace";
+    const label = runType === RUN_TYPES.PRACTICE && practiceState.activeCheckpoint
+      ? `CHECKPOINT · RESPAWN ${practiceState.respawns}`
+      : `VERSUCH ${deathCount + 1}`;
+    ctx.fillText(label, 24, 86);
+    ctx.restore();
+  }
+}
+
+function drawFlashes() {
+  if (beatFlash > 0) {
+    ctx.fillStyle = `rgba(83,239,255,${beatFlash * 0.025})`;
+    ctx.fillRect(0, 0, VIEW_WIDTH, VIEW_HEIGHT);
+  }
+  if (deathFlash > 0) {
+    ctx.fillStyle = `rgba(255,62,150,${Math.min(0.3, deathFlash * 1.35)})`;
+    ctx.fillRect(0, 0, VIEW_WIDTH, VIEW_HEIGHT);
+  }
+  if (portalFlash > 0) {
+    ctx.fillStyle = `rgba(167,121,255,${Math.min(0.12, portalFlash * 0.48)})`;
+    ctx.fillRect(0, 0, VIEW_WIDTH, VIEW_HEIGHT);
+  }
+  if (finishFlash > 0) {
+    ctx.fillStyle = `rgba(124,255,178,${Math.min(0.2, finishFlash * 0.4)})`;
+    ctx.fillRect(0, 0, VIEW_WIDTH, VIEW_HEIGHT);
+  }
+  if (checkpointFlash > 0) {
+    ctx.fillStyle = `rgba(124,255,178,${Math.min(0.11, checkpointFlash * 0.28)})`;
+    ctx.fillRect(0, 0, VIEW_WIDTH, VIEW_HEIGHT);
+  }
+  if (milestoneFlash > 0) {
+    ctx.fillStyle = currentDirectorSection >= 3
+      ? `rgba(255,209,92,${Math.min(0.12, milestoneFlash * 0.2)})`
+      : `rgba(83,239,255,${Math.min(0.1, milestoneFlash * 0.18)})`;
+    ctx.fillRect(0, 0, VIEW_WIDTH, VIEW_HEIGHT);
+  }
+}
+
+function render() {
+  const shakeAmount = screenShake > 0 ? Math.sin(simulationTime * 93) * screenShake * 12 : 0;
+  ctx.save();
+  ctx.translate(shakeAmount, shakeAmount * 0.35);
+  drawBackground();
+  drawSectionGates();
+  for (const solid of world.solids) drawSolid(solid);
+  for (const spike of world.spikes) drawSpike(spike);
+  for (const portal of world.portals) drawPortal(portal);
+  for (const checkpoint of world.checkpoints) drawCheckpoint(checkpoint);
+  drawFinishMarker();
+  drawRunMarkers();
+  drawTrail();
+  drawPlayer();
+  drawParticles();
+  drawFinishEnergy();
+  drawFlashes();
+  ctx.restore();
+
+  drawHud();
+  drawTransientFeedback();
+  updateInterface();
+  setText(statusEl, `${gameState.toUpperCase()} · ${runType.toUpperCase()} · ${player.mode.toUpperCase()} · ${player.velocityX.toFixed(0)} px/s`);
+}
+
+function frame(nowMs) {
+  const now = nowMs / 1000;
+  const frameDt = now - lastTime;
+  lastTime = now;
+  if (gameState === GAME_STATES.PLAYING) update(frameDt);
+  render();
+  requestAnimationFrame(frame);
+}
+
+function isActionKey(code) {
+  return code === "Space" || code === "ArrowUp" || code === "KeyW";
+}
+
+function toggleSound() {
+  audio.toggle(simulationTime);
+  if (audio.enabled && gameState === GAME_STATES.PLAYING && !audio.started) {
+    audio.unlock(simulationTime).catch(() => {});
+  }
+  updateInterface();
+}
+
+window.addEventListener("resize", resizeCanvasBackingStore);
+
+window.addEventListener("keydown", (event) => {
+  if ((event.code === "Escape" || event.code === "KeyP") && !event.repeat) {
+    if (gameState === GAME_STATES.PLAYING) pauseGame();
+    else if (gameState === GAME_STATES.PAUSED) resumeGame();
+    return;
+  }
+
+  if (event.code === "KeyR" && !event.repeat) {
+    if (gameState === GAME_STATES.PLAYING || gameState === GAME_STATES.PAUSED) {
+      restartCurrentRun();
+    }
+    return;
+  }
+
+  if (event.code === "KeyD" && !event.repeat) {
+    debugHitboxes = !debugHitboxes;
+    return;
+  }
+
+  if (event.code === "KeyS" && !event.repeat) {
+    toggleSound();
+    return;
+  }
+
+  if (isActionKey(event.code) && !event.repeat) {
+    event.preventDefault?.();
+    beginAction(`key:${event.code}`);
+  }
+});
+
+window.addEventListener("keyup", (event) => {
+  if (isActionKey(event.code)) {
+    event.preventDefault?.();
+    endAction(`key:${event.code}`);
+  }
+});
+
+touchSurface.addEventListener("pointerdown", (event) => {
+  if (gameState !== GAME_STATES.PLAYING) return;
+  event.preventDefault?.();
+  touchSurface.setPointerCapture?.(event.pointerId);
+  beginAction(`pointer:${event.pointerId}`);
+});
+touchSurface.addEventListener("pointerup", (event) => {
+  event.preventDefault?.();
+  endAction(`pointer:${event.pointerId}`);
+});
+touchSurface.addEventListener("pointercancel", (event) => endAction(`pointer:${event.pointerId}`));
+touchSurface.addEventListener("lostpointercapture", (event) => endAction(`pointer:${event.pointerId}`));
+window.addEventListener("blur", () => {
+  endAction();
+  if (gameState === GAME_STATES.PLAYING) pauseGame();
+});
+
+document.addEventListener?.("visibilitychange", () => {
+  if (document.hidden && gameState === GAME_STATES.PLAYING) {
+    pauseGame();
+  }
+});
+
+normalButton?.addEventListener?.("click", () => startRun(RUN_TYPES.NORMAL));
+practiceButton?.addEventListener?.("click", () => startRun(RUN_TYPES.PRACTICE));
+resumeButton?.addEventListener?.("click", resumeGame);
+restartButton?.addEventListener?.("click", restartCurrentRun);
+menuButton?.addEventListener?.("click", returnToMenu);
+replayButton?.addEventListener?.("click", () => startRun(runType));
+completeMenuButton?.addEventListener?.("click", returnToMenu);
+pauseButton?.addEventListener?.("click", pauseGame);
+soundButton?.addEventListener?.("click", toggleSound);
+pauseSoundButton?.addEventListener?.("click", toggleSound);
+
+levelButtons.forEach((button, index) => {

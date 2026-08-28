@@ -1,0 +1,166 @@
+  if (!checkpoint?.id) throw new Error("Checkpoint snapshot needs checkpoint.id");
+  return {
+    checkpointId: checkpoint.id,
+    checkpointX: checkpoint.x,
+    simulationTime,
+    visualAngle,
+    player: snapshotPlayer(player),
+  };
+}
+
+function restorePlayerFromSnapshot(player, snapshot) {
+  if (!snapshot?.player) throw new Error("Missing checkpoint player snapshot");
+  const source = snapshot.player;
+
+  player.x = source.x;
+  player.y = source.y;
+  player.width = source.width;
+  player.height = source.height;
+  player.velocityX = source.velocityX;
+  player.velocityY = source.velocityY;
+  player.mode = source.mode;
+  player.gravityDirection = source.gravityDirection;
+  player.onGround = source.onGround;
+  player.groundId = source.groundId;
+  // Respawns always start from a neutral physical input state.
+  player.jumpBufferRemaining = 0;
+  player.actionHeld = false;
+  player.actionPressed = false;
+  player.pulseCooldownRemaining = source.pulseCooldownRemaining;
+  player.triggeredPortalIds = new Set(source.triggeredPortalIds ?? []);
+
+  player.landedThisStep = false;
+  player.jumpedThisStep = false;
+  player.modeChangedThisStep = false;
+  player.speedChangedThisStep = false;
+
+  return player;
+}
+
+Object.assign(exports, { RUN_TYPES, GAME_STATES, progressPercent, createPracticeState, findEnteredCheckpoint, createCheckpointSnapshot, restorePlayerFromSnapshot });
+
+};
+__mods["feedback.js"] = function(module,exports,__require){
+/**
+ * PULSEBREAK 1.2 — pure player-feedback helpers.
+ * No DOM, Canvas, audio or physics dependencies.
+ */
+
+function timingFeedback(simulationTime, bpm, subdivision = 2, windowSeconds = 0.065) {
+  if (!Number.isFinite(simulationTime) || simulationTime < 0) {
+    return { synced: false, offsetSeconds: Infinity, accuracy: 0 };
+  }
+  if (!Number.isFinite(bpm) || bpm <= 0) {
+    return { synced: false, offsetSeconds: Infinity, accuracy: 0 };
+  }
+
+  const safeSubdivision = Math.max(1, Math.floor(subdivision || 1));
+  const interval = (60 / bpm) / safeSubdivision;
+  const nearest = Math.round(simulationTime / interval) * interval;
+  const offsetSeconds = simulationTime - nearest;
+  const distance = Math.abs(offsetSeconds);
+  const safeWindow = Math.max(0.001, windowSeconds);
+  const accuracy = Math.max(0, Math.min(1, 1 - distance / safeWindow));
+
+  return {
+    synced: distance <= safeWindow,
+    offsetSeconds,
+    accuracy,
+  };
+}
+
+function completionGrade({ deaths = 0, actions = 0, syncHits = 0, difficulty = 1 } = {}) {
+  const safeActions = Math.max(1, actions);
+  const syncRate = Math.max(0, Math.min(1, syncHits / safeActions));
+  const deathAllowance = Math.max(0, Number(difficulty) - 1);
+
+  if (deaths === 0 && syncRate >= 0.72) return "S";
+  if (deaths <= deathAllowance + 1 && syncRate >= 0.48) return "A";
+  if (deaths <= deathAllowance + 4 && syncRate >= 0.25) return "B";
+  return "C";
+}
+
+function worldXAtProgress(percent, spawnX, finishX) {
+  const p = Math.max(0, Math.min(100, Number(percent) || 0)) / 100;
+  return spawnX + (finishX - spawnX) * p;
+}
+
+function modeInstruction(mode) {
+  const instructions = {
+    run: ["RUN", "TIPPEN = SPRINGEN"],
+    flip: ["FLIP", "TIPPEN = SCHWERKRAFT WENDEN"],
+    glide: ["GLIDE", "HALTEN = STEIGEN · LOSLASSEN = SINKEN"],
+    pulse: ["PULSE", "TIPPEN = LUFTIMPULS"],
+  };
+  return instructions[mode] ?? [String(mode ?? "MODE").toUpperCase(), "EINE TASTE · EIN SIGNAL"];
+}
+
+const MILESTONE_THRESHOLDS = Object.freeze([25, 50, 75]);
+
+function directorSection(progress) {
+  const p = Math.max(0, Math.min(100, Number(progress) || 0));
+  if (p >= 75) return 3;
+  if (p >= 50) return 2;
+  if (p >= 25) return 1;
+  return 0;
+}
+
+function directorDrive(progress) {
+  return [0, 0.22, 0.58, 0.9][directorSection(progress)];
+}
+
+function crossedMilestones(previousProgress, currentProgress, thresholds = MILESTONE_THRESHOLDS) {
+  const previous = Math.max(0, Math.min(100, Number(previousProgress) || 0));
+  const current = Math.max(0, Math.min(100, Number(currentProgress) || 0));
+  if (current <= previous) return [];
+  return thresholds.filter((threshold) => previous < threshold && current >= threshold);
+}
+
+function milestoneCopy(percent) {
+  const copy = {
+    25: ["25% · SIGNAL ONLINE", "SEKTOR II"],
+    50: ["50% · SIGNAL VERDICHTET", "SEKTOR III"],
+    75: ["75% · REDLINE", "FINALER SEKTOR"],
+  };
+  return copy[percent] ?? [`${Math.round(percent)}%`, "SIGNAL STABIL"];
+}
+
+Object.assign(exports, { timingFeedback, completionGrade, worldXAtProgress, modeInstruction, MILESTONE_THRESHOLDS, directorSection, directorDrive, crossedMilestones, milestoneCopy });
+
+};
+__mods["game.js"] = function(module,exports,__require){
+const { LEVELS } = __require('levels.js');
+const { loadLevel, queryCollisionObjects } = __require('level-loader.js');
+const { MODES, PHYSICS, SPEEDS, createPlayer, getPlayerHitbox, getSpikeHitbox, pressAction, releaseAction, stepPhysics, updateKinematicSolids } = __require('physics.js');
+const { beatIndexAtTime, beatPhaseAtTime, pulseEnvelope, tilesPerBeat } = __require('rhythm.js');
+const { RhythmAudio } = __require('audio.js');
+const { createBurst, updateParticles } = __require('particles.js');
+const { GAME_STATES, RUN_TYPES, createCheckpointSnapshot, createPracticeState, findEnteredCheckpoint, progressPercent, restorePlayerFromSnapshot } = __require('session.js');
+const { timingFeedback, completionGrade, worldXAtProgress, modeInstruction, MILESTONE_THRESHOLDS, directorSection, directorDrive, crossedMilestones, milestoneCopy } = __require('feedback.js');
+
+const canvas = document.querySelector("#game");
+const touchSurface = document.querySelector("#touch-surface") ?? canvas;
+const statusEl = document.querySelector("#status");
+const menuEl = document.querySelector("#menu");
+const pauseEl = document.querySelector("#pause-menu");
+const completeEl = document.querySelector("#complete-menu");
+const normalButton = document.querySelector("#normal-button");
+const practiceButton = document.querySelector("#practice-button");
+const resumeButton = document.querySelector("#resume-button");
+const restartButton = document.querySelector("#restart-button");
+const menuButton = document.querySelector("#menu-button");
+const replayButton = document.querySelector("#replay-button");
+const completeMenuButton = document.querySelector("#complete-menu-button");
+const pauseButton = document.querySelector("#pause-button");
+const soundButton = document.querySelector("#sound-button");
+const pauseSoundButton = document.querySelector("#pause-sound-button");
+const progressFillEl = document.querySelector("#progress-fill");
+const progressTextEl = document.querySelector("#progress-text");
+const runModeEl = document.querySelector("#run-mode");
+const checkpointTextEl = document.querySelector("#checkpoint-text");
+const bestTextEl = document.querySelector("#best-text");
+const completeStatsEl = document.querySelector("#complete-stats");
+const completeGradeEl = document.querySelector("#complete-grade");
+const levelNameEl = document.querySelector("#level-name");
+const levelSubtitleEl = document.querySelector("#level-subtitle");
+const levelDifficultyEl = document.querySelector("#level-difficulty");

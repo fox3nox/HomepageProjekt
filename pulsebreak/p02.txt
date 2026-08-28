@@ -1,0 +1,216 @@
+              <div class="signal-mark" aria-hidden="true"><span></span><span></span><span></span></div>
+              <h1>PULSEBREAK</h1>
+              <p class="menu-copy campaign-copy">Drei Signalrouten. Eine Taste. Jeder Modus zählt.</p>
+            </div>
+            <div class="campaign-count">03<br><span>LEVELS</span></div>
+          </div>
+
+          <div class="level-picker" aria-label="Level auswählen">
+            <button id="level-button-0" class="level-select-button selected" type="button" aria-pressed="true">
+              <span class="level-number">01</span>
+              <span class="level-select-copy"><strong>FIRST SIGNAL</strong><small>EINSTIEG · 120 TILES</small></span>
+              <span id="level-best-0" class="level-card-best">BEST 0%</span>
+            </button>
+            <button id="level-button-1" class="level-select-button" type="button" aria-pressed="false">
+              <span class="level-number">02</span>
+              <span class="level-select-copy"><strong>VECTOR SHIFT</strong><small>FORTGESCHRITTEN · 145 TILES</small></span>
+              <span id="level-best-1" class="level-card-best">BEST 0%</span>
+            </button>
+            <button id="level-button-2" class="level-select-button" type="button" aria-pressed="false">
+              <span class="level-number">03</span>
+              <span class="level-select-copy"><strong>REDLINE CORE</strong><small>EXPERTE · 185 TILES</small></span>
+              <span id="level-best-2" class="level-card-best">BEST 0%</span>
+            </button>
+          </div>
+
+          <div class="selected-level-copy">
+            <div class="selected-level-title-row">
+              <p id="level-name" class="level-name">FIRST SIGNAL</p>
+              <span id="level-difficulty" class="difficulty-label">EINSTIEG · 120 TILES</span>
+            </div>
+            <p id="level-subtitle" class="level-subtitle">Lerne die Sprache des Gitters</p>
+          </div>
+
+          <div class="menu-actions mode-actions">
+            <button id="normal-button" class="primary-button" type="button">
+              <strong>NORMAL RUN</strong>
+              <span>Nach einem Tod wieder ab 0%</span>
+            </button>
+            <button id="practice-button" class="secondary-button" type="button">
+              <strong>ÜBUNG</strong>
+              <span>Respawn an aktivierten Checkpoints</span>
+            </button>
+          </div>
+
+          <div class="menu-footer">
+            <span id="best-text">BEST 0%</span>
+            <button id="sound-button" class="text-button" type="button">SOUND ON</button>
+          </div>
+        </div>
+      </section>
+
+      <section id="pause-menu" class="overlay-panel hidden" aria-label="Pause" aria-hidden="true">
+        <div class="menu-card compact-card">
+          <p class="eyeline">SIGNAL PAUSIERT</p>
+          <h2>PAUSE</h2>
+          <div class="menu-actions">
+            <button id="resume-button" class="primary-button" type="button"><strong>WEITER</strong></button>
+            <button id="restart-button" class="secondary-button" type="button"><strong>NEUSTART</strong></button>
+            <button id="pause-sound-button" class="secondary-button" type="button"><strong>SOUND ON</strong></button>
+            <button id="menu-button" class="text-button wide" type="button">ZUM MENÜ</button>
+          </div>
+        </div>
+      </section>
+
+      <section id="complete-menu" class="overlay-panel hidden" aria-label="Level abgeschlossen" aria-hidden="true">
+        <div class="menu-card compact-card success-card">
+          <p class="eyeline">SIGNAL GESICHERT</p>
+          <div id="complete-grade" class="completion-grade">A</div>
+          <h2>100%</h2>
+          <p id="complete-stats" class="menu-copy">LEVEL GESCHAFFT</p>
+          <div class="menu-actions">
+            <button id="replay-button" class="primary-button" type="button"><strong>NOCHMALS</strong></button>
+            <button id="complete-menu-button" class="text-button wide" type="button">ZUM MENÜ</button>
+          </div>
+        </div>
+      </section>
+    </section>
+  </main>
+
+  <script>(()=>{
+const __mods = Object.create(null);
+const __cache = Object.create(null);
+function __require(id){ if(__cache[id]) return __cache[id].exports; const module={exports:{}}; __cache[id]=module; __mods[id](module,module.exports,__require); return module.exports; }
+__mods["physics.js"] = function(module,exports,__require){
+/**
+ * PULSEBREAK — pure physics/collision engine (Phase 5).
+ * No Canvas, DOM, audio or rendering dependency is allowed here.
+ *
+ * FAKE ROTATION CONTRACT:
+ * The player collision body is ALWAYS an axis-aligned rectangle (AABB).
+ * Visual rotation/animation belongs exclusively to game.js.
+ */
+
+const MODES = Object.freeze({
+  RUN: "run",
+  FLIP: "flip",
+  GLIDE: "glide",
+  PULSE: "pulse",
+});
+
+const SPEEDS = Object.freeze({
+  SLOW: 270,
+  NORMAL: 360,
+  FAST: 450,
+});
+
+const PHYSICS = Object.freeze({
+  gravity: 2200,
+  jumpSpeed: 760,
+  maxFallSpeed: 1600,
+  jumpBufferTime: 0.09,
+
+  flipGravity: 1850,
+  flipKickSpeed: 220,
+  flipMaxSpeed: 1050,
+
+  glideAcceleration: 1350,
+  glideMaxSpeed: 430,
+  glideEntrySpeed: -180,
+
+  pulseGravity: 1180,
+  pulseImpulse: 470,
+  pulseCooldown: 0.18,
+  pulseMaxFallSpeed: 680,
+  pulseEntrySpeed: -250,
+
+  autoRunSpeed: SPEEDS.NORMAL,
+  playerWidth: 36,
+  playerHeight: 36,
+  fixedStep: 1 / 120,
+});
+
+const SPIKE_FAIRNESS = Object.freeze({
+  sideInset: 8,
+  baseInset: 2,
+  tipInset: 12,
+});
+
+function createPlayer(x, y) {
+  return {
+    x,
+    y,
+    width: PHYSICS.playerWidth,
+    height: PHYSICS.playerHeight,
+
+    velocityX: PHYSICS.autoRunSpeed,
+    velocityY: 0,
+
+    mode: MODES.RUN,
+    gravityDirection: 1,
+
+    onGround: false,
+    groundId: null,
+    landedThisStep: false,
+    jumpedThisStep: false,
+    modeChangedThisStep: false,
+    speedChangedThisStep: false,
+
+    jumpBufferRemaining: 0,
+    actionHeld: false,
+    actionPressed: false,
+    pulseCooldownRemaining: 0,
+
+    triggeredPortalIds: new Set(),
+  };
+}
+
+/**
+ * The ONLY physical player shape. No angle, rotation or transformed corners.
+ */
+function getPlayerHitbox(player) {
+  return {
+    x: player.x,
+    y: player.y,
+    width: player.width,
+    height: player.height,
+  };
+}
+
+function getSpikeHitbox(spike) {
+  const orientation = spike.orientation ?? "up";
+  const topInset = orientation === "down"
+    ? SPIKE_FAIRNESS.baseInset
+    : SPIKE_FAIRNESS.tipInset;
+  const bottomInset = orientation === "down"
+    ? SPIKE_FAIRNESS.tipInset
+    : SPIKE_FAIRNESS.baseInset;
+
+  return {
+    x: spike.x + SPIKE_FAIRNESS.sideInset,
+    y: spike.y + topInset,
+    width: spike.width - SPIKE_FAIRNESS.sideInset * 2,
+    height: spike.height - topInset - bottomInset,
+  };
+}
+
+function overlapsAABB(a, b) {
+  return (
+    a.x < b.x + b.width &&
+    a.x + a.width > b.x &&
+    a.y < b.y + b.height &&
+    a.y + a.height > b.y
+  );
+}
+
+function pressAction(player) {
+  if (!player.actionHeld) player.actionPressed = true;
+  player.actionHeld = true;
+
+  // RUN uses a short input buffer. Other modes consume the edge directly.
+  if (player.mode === MODES.RUN) {
+    player.jumpBufferRemaining = PHYSICS.jumpBufferTime;
+  }
+}
+
+function releaseAction(player) {

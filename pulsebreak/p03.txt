@@ -1,0 +1,256 @@
+  player.actionHeld = false;
+}
+
+// Backwards-compatible alias for older phase tests/callers.
+function requestJump(player) {
+  pressAction(player);
+  releaseAction(player);
+}
+
+function consumeGroundedJump(player) {
+  if (
+    player.mode !== MODES.RUN ||
+    !player.onGround ||
+    player.jumpBufferRemaining <= 0
+  ) {
+    return false;
+  }
+
+  player.velocityY = -PHYSICS.jumpSpeed;
+  player.onGround = false;
+  player.groundId = null;
+  player.jumpBufferRemaining = 0;
+  player.jumpedThisStep = true;
+  return true;
+}
+
+function setPlayerMode(player, mode, options = {}) {
+  if (!Object.values(MODES).includes(mode)) {
+    throw new Error(`Unknown player mode '${mode}'`);
+  }
+
+  player.mode = mode;
+  player.modeChangedThisStep = true;
+  player.onGround = false;
+  player.groundId = null;
+  player.jumpBufferRemaining = 0;
+  player.actionPressed = false;
+  player.gravityDirection = options.gravityDirection === -1 ? -1 : 1;
+
+  if (mode === MODES.RUN) {
+    player.gravityDirection = 1;
+    // Do not teleport. A high portal exit simply falls back to ground.
+    player.velocityY = Number.isFinite(options.entryVelocityY)
+      ? options.entryVelocityY
+      : Math.min(player.velocityY, 0);
+  } else if (mode === MODES.FLIP) {
+    player.velocityY = Number.isFinite(options.entryVelocityY)
+      ? options.entryVelocityY
+      : 0;
+  } else if (mode === MODES.GLIDE) {
+    player.gravityDirection = 1;
+    player.velocityY = Number.isFinite(options.entryVelocityY)
+      ? options.entryVelocityY
+      : PHYSICS.glideEntrySpeed;
+  } else if (mode === MODES.PULSE) {
+    player.gravityDirection = 1;
+    player.pulseCooldownRemaining = 0;
+    player.velocityY = Number.isFinite(options.entryVelocityY)
+      ? options.entryVelocityY
+      : PHYSICS.pulseEntrySpeed;
+  }
+}
+
+function setPlayerSpeed(player, speed) {
+  if (!Number.isFinite(speed) || speed <= 0) {
+    throw new Error(`Invalid player speed '${speed}'`);
+  }
+  player.velocityX = speed;
+  player.speedChangedThisStep = true;
+}
+
+function updateKinematicSolids(solids, simulationTime) {
+  for (const solid of solids) {
+    const oldX = solid.x;
+    const oldY = solid.y;
+
+    if (!solid.motion) {
+      solid.dx = 0;
+      solid.dy = 0;
+      continue;
+    }
+
+    const {
+      axis = "y",
+      amplitude = 0,
+      period = 2,
+      phase = 0,
+      originX = solid.x,
+      originY = solid.y,
+    } = solid.motion;
+
+    const safePeriod = Math.max(0.001, period);
+    const wave = Math.sin((simulationTime / safePeriod) * Math.PI * 2 + phase);
+
+    solid.x = axis === "x" ? originX + amplitude * wave : originX;
+    solid.y = axis === "y" ? originY + amplitude * wave : originY;
+    solid.dx = solid.x - oldX;
+    solid.dy = solid.y - oldY;
+  }
+}
+
+function carryByGroundMotion(player, solids) {
+  if (!player.onGround || !player.groundId) return;
+
+  const support = solids.find((solid) => solid.id === player.groundId);
+  if (!support) {
+    player.onGround = false;
+    player.groundId = null;
+    return;
+  }
+
+  player.x += support.dx || 0;
+  player.y += support.dy || 0;
+}
+
+function death(cause, objectId = null, portalEvents = []) {
+  return { died: true, cause, objectId, portalEvents };
+}
+
+function applyModeInput(player) {
+  if (player.mode === MODES.RUN) {
+    consumeGroundedJump(player);
+    return;
+  }
+
+  if (player.mode === MODES.FLIP && player.actionPressed) {
+    player.gravityDirection *= -1;
+    player.velocityY = PHYSICS.flipKickSpeed * player.gravityDirection;
+    player.onGround = false;
+    player.groundId = null;
+    player.jumpedThisStep = true;
+    return;
+  }
+
+  if (
+    player.mode === MODES.PULSE &&
+    player.actionPressed &&
+    player.pulseCooldownRemaining <= 0
+  ) {
+    player.velocityY = -PHYSICS.pulseImpulse;
+    player.pulseCooldownRemaining = PHYSICS.pulseCooldown;
+    player.jumpedThisStep = true;
+  }
+}
+
+function integrateVerticalVelocity(player, dt) {
+  if (player.mode === MODES.RUN) {
+    player.velocityY = Math.min(
+      player.velocityY + PHYSICS.gravity * dt,
+      PHYSICS.maxFallSpeed,
+    );
+    return;
+  }
+
+  if (player.mode === MODES.FLIP) {
+    player.velocityY += PHYSICS.flipGravity * player.gravityDirection * dt;
+    player.velocityY = Math.max(
+      -PHYSICS.flipMaxSpeed,
+      Math.min(PHYSICS.flipMaxSpeed, player.velocityY),
+    );
+    return;
+  }
+
+  if (player.mode === MODES.GLIDE) {
+    const acceleration = player.actionHeld
+      ? -PHYSICS.glideAcceleration
+      : PHYSICS.glideAcceleration;
+    player.velocityY += acceleration * dt;
+    player.velocityY = Math.max(
+      -PHYSICS.glideMaxSpeed,
+      Math.min(PHYSICS.glideMaxSpeed, player.velocityY),
+    );
+    return;
+  }
+
+  if (player.mode === MODES.PULSE) {
+    player.velocityY = Math.min(
+      player.velocityY + PHYSICS.pulseGravity * dt,
+      PHYSICS.pulseMaxFallSpeed,
+    );
+  }
+}
+
+function findLandingSurface(player, solids, previousY) {
+  if (player.mode !== MODES.RUN && player.mode !== MODES.FLIP) return null;
+
+  const previousTop = previousY;
+  const previousBottom = previousY + player.height;
+  const newTop = player.y;
+  const newBottom = player.y + player.height;
+  const direction = player.mode === MODES.FLIP ? player.gravityDirection : 1;
+
+  let best = null;
+
+  for (const solid of solids) {
+    const horizontalOverlap =
+      player.x < solid.x + solid.width &&
+      player.x + player.width > solid.x;
+    if (!horizontalOverlap) continue;
+
+    if (direction > 0 && player.velocityY >= 0) {
+      const crossedTop = previousBottom <= solid.y && newBottom >= solid.y;
+      if (!crossedTop) continue;
+      if (!best || solid.y < best.surfaceY) {
+        best = { solid, side: "top", surfaceY: solid.y };
+      }
+    } else if (direction < 0 && player.velocityY <= 0) {
+      const bottom = solid.y + solid.height;
+      const crossedBottom = previousTop >= bottom && newTop <= bottom;
+      if (!crossedBottom) continue;
+      if (!best || bottom > best.surfaceY) {
+        best = { solid, side: "bottom", surfaceY: bottom };
+      }
+    }
+  }
+
+  return best;
+}
+
+function resolveLanding(player, landing, wasOnGround, previousGroundId) {
+  if (!landing) {
+    player.onGround = false;
+    player.groundId = null;
+    return;
+  }
+
+  if (landing.side === "top") {
+    player.y = landing.solid.y - player.height;
+  } else {
+    player.y = landing.solid.y + landing.solid.height;
+  }
+
+  player.velocityY = 0;
+  player.onGround = true;
+  player.groundId = landing.solid.id;
+  player.landedThisStep = !wasOnGround || previousGroundId !== landing.solid.id;
+
+  if (player.mode === MODES.RUN) consumeGroundedJump(player);
+}
+
+function collidesFatallyWithSolid(player, solid) {
+  const playerBox = getPlayerHitbox(player);
+  if (!overlapsAABB(playerBox, solid)) return false;
+
+  // GLIDE and PULSE are corridor modes: every solid touch is fatal.
+  if (player.mode === MODES.GLIDE || player.mode === MODES.PULSE) return true;
+
+  // RUN/FLIP valid surface landings were already snapped to exact contact,
+  // so any remaining overlap is a side/underside/wrong-direction collision.
+  return Boolean(solid.lethalSides);
+}
+
+function applyPortal(player, portal) {
+  if (portal.type === "mode") {
+    setPlayerMode(player, portal.mode, {
+      gravityDirection: portal.gravityDirection,

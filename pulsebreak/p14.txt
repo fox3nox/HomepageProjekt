@@ -1,0 +1,221 @@
+    visualAngle = snapAngleToQuarterTurn(visualAngle);
+    emitAtPlayer({
+      count: 7,
+      speed: 90,
+      life: 0.24,
+      size: 2.5,
+      gravity: 180,
+      color: modeColor(player.mode),
+    });
+  } else if (player.mode === MODES.RUN && !player.onGround) {
+    visualAngle += AIR_ROTATION_SPEED * PHYSICS.fixedStep;
+  } else if (player.mode === MODES.FLIP && !player.onGround) {
+    visualAngle += FLIP_ROTATION_SPEED * player.gravityDirection * PHYSICS.fixedStep;
+  }
+
+  appendTrailPoint();
+
+  if (runType === RUN_TYPES.PRACTICE) {
+    const checkpoint = findEnteredCheckpoint(
+      player,
+      nearbyWorld.checkpoints,
+      practiceState.activatedCheckpointIds,
+    );
+    if (checkpoint) activatePracticeCheckpoint(checkpoint);
+  }
+
+  updateRunDirector(progressPercent(player.x, world.spawn.x, world.finishX));
+
+  if (player.x >= world.finishX) {
+    beginFinishSequence();
+    return true;
+  }
+
+  cameraX = Math.max(0, player.x - CAMERA_ANCHOR_X);
+  return false;
+}
+
+function update(frameDt) {
+  const clampedDt = Math.min(frameDt, MAX_FRAME_DELTA);
+  deathFlash = Math.max(0, deathFlash - clampedDt);
+  portalFlash = Math.max(0, portalFlash - clampedDt);
+  finishFlash = Math.max(0, finishFlash - clampedDt);
+  checkpointFlash = Math.max(0, checkpointFlash - clampedDt);
+  cueTimer = Math.max(0, cueTimer - clampedDt);
+  attemptFlash = Math.max(0, attemptFlash - clampedDt);
+  syncFlash = Math.max(0, syncFlash - clampedDt);
+  milestoneFlash = Math.max(0, milestoneFlash - clampedDt * 1.25);
+  milestoneTimer = Math.max(0, milestoneTimer - clampedDt);
+  beatFlash = Math.max(0, beatFlash - clampedDt * 4.4);
+  screenShake = Math.max(0, screenShake - clampedDt * 2.5);
+  updateParticles(particles, clampedDt);
+
+  for (const point of trail) point.life -= clampedDt;
+  trail = trail.filter((point) => point.life > 0);
+
+  if (finishing) {
+    simulationTime += clampedDt;
+    registerBeat();
+    finishSequenceTimer = Math.max(0, finishSequenceTimer - clampedDt);
+    if (finishSequenceTimer <= 0) finalizeFinishSequence();
+    return;
+  }
+
+  accumulator += clampedDt;
+  while (accumulator >= PHYSICS.fixedStep) {
+    const restarted = fixedUpdate();
+    if (restarted) {
+      accumulator = 0;
+      break;
+    }
+    accumulator -= PHYSICS.fixedStep;
+  }
+}
+
+function worldToScreenX(x) {
+  return x - cameraX;
+}
+
+function isVisible(object, padding = 64) {
+  const x = worldToScreenX(object.x);
+  return x + object.width >= -padding && x <= VIEW_WIDTH + padding;
+}
+
+function drawBackground() {
+  const phase = beatPhaseAtTime(
+    simulationTime,
+    world.bpm,
+    world.music?.beatOffset ?? 0,
+  );
+  const directorEnergy = directorDrive(currentProgress());
+  const pulse = pulseEnvelope(phase) * 0.18 + beatFlash * 0.09 + directorEnergy * 0.035;
+
+  const gradient = ctx.createLinearGradient(0, 0, 0, VIEW_HEIGHT);
+  gradient.addColorStop(0, theme.bgTop);
+  gradient.addColorStop(0.58, theme.bgMid);
+  gradient.addColorStop(1, theme.bgBottom);
+  ctx.fillStyle = gradient;
+  ctx.fillRect(0, 0, VIEW_WIDTH, VIEW_HEIGHT);
+
+  const glow = ctx.createRadialGradient(
+    VIEW_WIDTH * 0.62,
+    VIEW_HEIGHT * 0.43,
+    20,
+    VIEW_WIDTH * 0.62,
+    VIEW_HEIGHT * 0.43,
+    520,
+  );
+  glow.addColorStop(0, `rgba(50, 209, 255, ${0.06 + pulse})`);
+  glow.addColorStop(1, "rgba(5, 7, 17, 0)");
+  ctx.fillStyle = glow;
+  ctx.fillRect(0, 0, VIEW_WIDTH, VIEW_HEIGHT);
+
+  // Far lattice: parallax horizontal/diagonal signal lines.
+  const farOffset = -((cameraX * 0.13) % 160);
+  ctx.strokeStyle = `rgba(84, 239, 255, ${0.045 + pulse * 0.18})`;
+  ctx.lineWidth = 1;
+  for (let x = farOffset - 160; x < VIEW_WIDTH + 180; x += 160) {
+    ctx.beginPath();
+    ctx.moveTo(x, 70);
+    ctx.lineTo(x + 240, 500);
+    ctx.stroke();
+  }
+
+  const tile = world.tileSize;
+  const gridOffset = -(cameraX % tile);
+  ctx.strokeStyle = `rgba(62, 91, 142, ${0.09 + pulse * 0.15})`;
+  for (let x = gridOffset; x <= VIEW_WIDTH; x += tile) {
+    ctx.beginPath();
+    ctx.moveTo(x + 0.5, 250);
+    ctx.lineTo(x + 0.5, VIEW_HEIGHT);
+    ctx.stroke();
+  }
+  for (let y = 288; y <= VIEW_HEIGHT; y += tile) {
+    ctx.beginPath();
+    ctx.moveTo(0, y + 0.5);
+    ctx.lineTo(VIEW_WIDTH, y + 0.5);
+    ctx.stroke();
+  }
+
+  // Ambient signal nodes.
+  const nodeOffset = -((cameraX * 0.24) % 260);
+  for (let i = 0; i < 7; i += 1) {
+    const x = nodeOffset + i * 260;
+    const y = 150 + ((i * 83) % 180);
+    ctx.fillStyle = `rgba(167, 121, 255, ${0.08 + pulse * 0.16})`;
+    ctx.beginPath();
+    ctx.arc(x, y, 3 + beatFlash * 2, 0, Math.PI * 2);
+    ctx.fill();
+  }
+
+  // Speed should be felt before it is read. FAST adds restrained horizontal
+  // signal streaks; SLOW stays calm and spacious.
+  const speedFactor = Math.max(0, Math.min(1, (Math.abs(player.velocityX) - SPEEDS.SLOW) / (SPEEDS.FAST - SPEEDS.SLOW)));
+  if (speedFactor > 0.08) {
+    ctx.strokeStyle = `rgba(83,239,255,${0.025 + speedFactor * 0.055})`;
+    ctx.lineWidth = 1 + speedFactor;
+    const streakOffset = -((cameraX * (0.5 + speedFactor * 0.45)) % 220);
+    for (let i = 0; i < 9; i += 1) {
+      const y = 110 + ((i * 67) % 390);
+      const x = streakOffset + i * 170;
+      const length = 30 + speedFactor * 85;
+      ctx.beginPath();
+      ctx.moveTo(x, y);
+      ctx.lineTo(x + length, y);
+      ctx.stroke();
+    }
+  }
+
+  if (directorEnergy > 0.45) {
+    ctx.save();
+    ctx.globalAlpha = (directorEnergy - 0.45) * 0.07;
+    ctx.fillStyle = currentDirectorSection >= 3 ? theme.magenta : theme.violet;
+    ctx.fillRect(0, 0, VIEW_WIDTH, VIEW_HEIGHT);
+    ctx.restore();
+  }
+}
+
+function drawSectionGates() {
+  for (const threshold of MILESTONE_THRESHOLDS) {
+    const worldX = worldXAtProgress(threshold, world.spawn.x, world.finishX);
+    const x = worldToScreenX(worldX);
+    if (x < -80 || x > VIEW_WIDTH + 80) continue;
+    const [title, subtitle] = milestoneCopy(threshold);
+    const passed = currentProgress() >= threshold;
+    const color = threshold >= 75 ? theme.amber : (threshold >= 50 ? theme.violet : theme.cyan);
+    const beatPulse = pulseEnvelope(beatPhaseAtTime(simulationTime, world.bpm));
+
+    ctx.save();
+    ctx.globalAlpha = passed ? 0.18 : 0.42 + beatPulse * 0.12;
+    ctx.strokeStyle = color;
+    ctx.lineWidth = threshold >= 75 ? 2 : 1.5;
+    ctx.setLineDash([5, 10]);
+    ctx.beginPath();
+    ctx.moveTo(x, 170);
+    ctx.lineTo(x, GROUND_Y);
+    ctx.stroke();
+    ctx.setLineDash([]);
+
+    ctx.globalAlpha = passed ? 0.12 : 0.28 + beatPulse * 0.1;
+    ctx.beginPath();
+    ctx.arc(x, 205, 18 + beatPulse * 6, 0, Math.PI * 2);
+    ctx.stroke();
+
+    ctx.globalAlpha = passed ? 0.24 : 0.72;
+    ctx.fillStyle = color;
+    ctx.textAlign = "center";
+    ctx.font = "900 9px ui-monospace, SFMono-Regular, Menlo, monospace";
+    ctx.fillText(`${threshold}%`, x, 208);
+    ctx.font = "700 7px ui-monospace, SFMono-Regular, Menlo, monospace";
+    ctx.fillText(subtitle, x, 226);
+    ctx.restore();
+  }
+
+  const progress = currentProgress();
+  if (progress >= 88) {
+    const finishX = worldToScreenX(world.finishX);
+    const energy = Math.max(0, Math.min(1, (progress - 88) / 12));
+    ctx.save();
+    ctx.globalAlpha = 0.12 + energy * 0.24;
+    ctx.strokeStyle = theme.lime;
+    ctx.lineWidth = 1.5 + energy * 2;

@@ -1,0 +1,242 @@
+  ctx.moveTo(x, y);
+  ctx.lineTo(x, GROUND_Y - 8);
+  ctx.stroke();
+
+  ctx.translate(x, y + 16);
+  ctx.rotate(Math.PI / 4);
+  ctx.strokeRect(-8, -8, 16, 16);
+  if (isActive) ctx.fillRect(-4, -4, 8, 8);
+  ctx.restore();
+}
+
+function drawFinishMarker() {
+  const x = worldToScreenX(world.finishX);
+  if (x < -90 || x > VIEW_WIDTH + 90) return;
+
+  ctx.save();
+  ctx.shadowBlur = 24;
+  ctx.shadowColor = theme.lime;
+  ctx.strokeStyle = theme.lime;
+  ctx.lineWidth = 4;
+  ctx.beginPath();
+  ctx.moveTo(x, 250);
+  ctx.lineTo(x, GROUND_Y);
+  ctx.stroke();
+  ctx.shadowBlur = 0;
+
+  for (let y = 282; y < GROUND_Y; y += 42) {
+    ctx.fillStyle = `rgba(124,255,178,${0.3 + ((y / 42) % 2) * 0.25})`;
+    ctx.fillRect(x + 8, y, 28, 3);
+  }
+  ctx.fillStyle = theme.lime;
+  ctx.font = "800 12px ui-monospace, SFMono-Regular, Menlo, monospace";
+  ctx.fillText("SIGNAL LOCK", x + 12, 270);
+  ctx.restore();
+}
+
+function drawRunMarkers() {
+  if (runType !== RUN_TYPES.NORMAL) return;
+
+  const markers = [];
+  if (runStartBestProgress > 0 && runStartBestProgress < 100) {
+    markers.push({
+      x: worldXAtProgress(runStartBestProgress, world.spawn.x, world.finishX),
+      label: `BEST ${Math.floor(runStartBestProgress)}%`,
+      color: theme.lime,
+      alpha: 0.6,
+    });
+  }
+  if (Number.isFinite(lastDeathX)) {
+    markers.push({ x: lastDeathX, label: "LETZTER TOD", color: theme.magenta, alpha: 0.52 });
+  }
+
+  for (const marker of markers) {
+    const x = worldToScreenX(marker.x);
+    if (x < -30 || x > VIEW_WIDTH + 30) continue;
+    ctx.save();
+    ctx.globalAlpha = marker.alpha;
+    ctx.strokeStyle = marker.color;
+    ctx.setLineDash([6, 8]);
+    ctx.lineWidth = 1.5;
+    ctx.beginPath();
+    ctx.moveTo(x, 205);
+    ctx.lineTo(x, GROUND_Y);
+    ctx.stroke();
+    ctx.setLineDash([]);
+    ctx.fillStyle = marker.color;
+    ctx.font = "800 9px ui-monospace, SFMono-Regular, Menlo, monospace";
+    ctx.fillText(marker.label, x + 7, 220);
+    ctx.restore();
+  }
+}
+
+function drawTrail() {
+  ctx.save();
+  ctx.globalCompositeOperation = "lighter";
+  for (const point of trail) {
+    const alpha = Math.max(0, point.life / point.maxLife);
+    const x = worldToScreenX(point.x);
+    ctx.globalAlpha = alpha * 0.42;
+    ctx.fillStyle = point.color;
+    ctx.beginPath();
+    ctx.arc(x, point.y, 2 + alpha * 4, 0, Math.PI * 2);
+    ctx.fill();
+  }
+  ctx.restore();
+}
+
+function drawPlayer() {
+  const hitbox = getPlayerHitbox(player);
+  const x = worldToScreenX(hitbox.x);
+  const centerX = x + hitbox.width / 2;
+  const centerY = hitbox.y + hitbox.height / 2;
+  const color = modeColor(player.mode);
+
+  ctx.save();
+  ctx.translate(centerX, centerY);
+  ctx.shadowBlur = 20;
+  ctx.shadowColor = color;
+
+  if (player.mode === MODES.RUN || player.mode === MODES.FLIP) {
+    ctx.rotate(visualAngle);
+    ctx.fillStyle = color;
+    ctx.fillRect(-14, -14, 28, 28);
+    ctx.shadowBlur = 0;
+    ctx.fillStyle = theme.void;
+    ctx.fillRect(-8, -8, 16, 16);
+    ctx.strokeStyle = theme.white;
+    ctx.lineWidth = 2;
+    ctx.strokeRect(-5.5, -5.5, 11, 11);
+  } else if (player.mode === MODES.GLIDE) {
+    ctx.fillStyle = color;
+    ctx.beginPath();
+    ctx.moveTo(17, 0);
+    ctx.lineTo(-9, -13);
+    ctx.lineTo(-4, 0);
+    ctx.lineTo(-9, 13);
+    ctx.closePath();
+    ctx.fill();
+    ctx.shadowBlur = 0;
+    ctx.strokeStyle = theme.white;
+    ctx.lineWidth = 1.5;
+    ctx.beginPath();
+    ctx.moveTo(9, 0);
+    ctx.lineTo(-4, -6);
+    ctx.lineTo(-1, 0);
+    ctx.lineTo(-4, 6);
+    ctx.closePath();
+    ctx.stroke();
+  } else {
+    ctx.fillStyle = color;
+    ctx.beginPath();
+    ctx.arc(0, 0, 14, 0, Math.PI * 2);
+    ctx.fill();
+    ctx.shadowBlur = 0;
+    ctx.strokeStyle = theme.white;
+    ctx.lineWidth = 2;
+    ctx.beginPath();
+    ctx.arc(0, 0, 7, 0, Math.PI * 2);
+    ctx.stroke();
+    ctx.fillStyle = theme.white;
+    ctx.fillRect(-2, -11, 4, 6);
+  }
+  ctx.restore();
+
+  if (debugHitboxes) {
+    ctx.strokeStyle = theme.cyan;
+    ctx.lineWidth = 2;
+    ctx.strokeRect(
+      Math.round(x) + 0.5,
+      Math.round(hitbox.y) + 0.5,
+      hitbox.width,
+      hitbox.height,
+    );
+  }
+}
+
+function drawParticles() {
+  ctx.save();
+  ctx.globalCompositeOperation = "lighter";
+  for (const p of particles) {
+    const alpha = Math.max(0, p.life / p.maxLife);
+    ctx.globalAlpha = alpha;
+    ctx.strokeStyle = p.color;
+    ctx.fillStyle = p.color;
+    if (p.ring) {
+      ctx.lineWidth = 1.5;
+      ctx.beginPath();
+      ctx.arc(p.x, p.y, Math.max(1, p.size * (1.4 - alpha * 0.4)), 0, Math.PI * 2);
+      ctx.stroke();
+    } else {
+      ctx.fillRect(p.x - p.size / 2, p.y - p.size / 2, p.size, p.size);
+    }
+  }
+  ctx.restore();
+}
+
+function drawFinishEnergy() {
+  if (!finishing && finishFlash <= 0) return;
+  const centerX = Number.isFinite(finishPulseOriginX) ? finishPulseOriginX : VIEW_WIDTH * 0.72;
+  const centerY = GROUND_Y - 44;
+  const progress = finishing ? 1 - finishSequenceTimer / FINISH_SEQUENCE_SECONDS : 1;
+  ctx.save();
+  ctx.globalCompositeOperation = "lighter";
+  for (let i = 0; i < 4; i += 1) {
+    const radius = 28 + progress * (95 + i * 34);
+    ctx.globalAlpha = Math.max(0, 0.34 - i * 0.055 - progress * 0.13);
+    ctx.strokeStyle = i % 2 === 0 ? theme.lime : theme.cyan;
+    ctx.lineWidth = 2.5 - i * 0.3;
+    ctx.beginPath();
+    ctx.arc(centerX, centerY, radius, 0, Math.PI * 2);
+    ctx.stroke();
+  }
+  ctx.restore();
+}
+
+function drawBeatRail() {
+  const beatsPerBar = world.music?.beatsPerBar ?? 4;
+  const currentBeat = beatIndexAtTime(simulationTime, world.bpm);
+  const phase = beatPhaseAtTime(simulationTime, world.bpm);
+  const startX = VIEW_WIDTH / 2 - 72;
+  const y = 26;
+
+  for (let i = 0; i < beatsPerBar; i += 1) {
+    const active = i === currentBeat % beatsPerBar;
+    const width = active ? 24 + (1 - phase) * 8 : 24;
+    ctx.fillStyle = active ? theme.cyan : "rgba(180,205,235,0.16)";
+    ctx.fillRect(startX + i * 38 - (width - 24) / 2, y, width, 3);
+  }
+}
+
+function drawHud() {
+  const modeHelp = {
+    [MODES.RUN]: "TIPPEN = SPRINGEN",
+    [MODES.FLIP]: "TIPPEN = WENDEN",
+    [MODES.GLIDE]: "HALTEN / LOSLASSEN",
+    [MODES.PULSE]: "TIPPEN = IMPULS",
+  }[player.mode];
+
+  // The main game HUD stays intentionally minimal. Technical telemetry is
+  // available only in D/debug mode so the shipped game no longer reads like
+  // a developer build.
+  ctx.save();
+  ctx.font = "800 11px ui-monospace, SFMono-Regular, Menlo, monospace";
+  ctx.fillStyle = modeColor(player.mode);
+  ctx.fillText(`${player.mode.toUpperCase()}  ·  ${modeHelp}`, 24, VIEW_HEIGHT - 28);
+
+  ctx.textAlign = "right";
+  if (syncStreak >= 2 || syncFlash > 0) {
+    ctx.globalAlpha = Math.max(0.45, Math.min(1, syncFlash * 3.2));
+    ctx.fillStyle = theme.lime;
+    ctx.font = "900 12px ui-monospace, SFMono-Regular, Menlo, monospace";
+    ctx.fillText(lastSyncLabel || `SYNC ×${syncStreak}`, VIEW_WIDTH - 24, VIEW_HEIGHT - 28);
+  } else {
+    ctx.globalAlpha = 0.34;
+    ctx.fillStyle = theme.white;
+    ctx.font = "700 9px ui-monospace, SFMono-Regular, Menlo, monospace";
+    ctx.fillText(lastPortalLabel ?? "SIGNAL STABIL", VIEW_WIDTH - 24, VIEW_HEIGHT - 28);
+  }
+  ctx.restore();
+
+  if (debugHitboxes) {
+    const beatTiles = tilesPerBeat(player.velocityX, world.bpm, world.tileSize);

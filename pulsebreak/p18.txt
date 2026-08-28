@@ -1,0 +1,33 @@
+  button?.addEventListener?.("click", () => selectLevel(index));
+});
+
+// BOOT
+bestProgress = readBestProgress();
+runStartBestProgress = bestProgress;
+persistedBestWholePercent = Math.floor(bestProgress);
+syncLevelPresentation();
+deathCount = 0;
+clearCount = 0;
+deathFlash = 0;
+portalFlash = 0;
+finishFlash = 0;
+checkpointFlash = 0;
+beatFlash = 0;
+screenShake = 0;
+lastDeathCause = null;
+lastPortalLabel = null;
+lastBeatIndex = -1;
+resetRun({ keepStats: false, clearEffects: true });
+lastTime = performance.now() / 1000;
+resizeCanvasBackingStore();
+updateInterface();
+requestAnimationFrame(frame);
+
+Object.assign(exports, {  });
+
+};
+__require('game.js');
+})();
+</script>
+</body>
+</html>

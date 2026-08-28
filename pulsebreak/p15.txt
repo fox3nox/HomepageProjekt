@@ -1,0 +1,226 @@
+    for (let i = 0; i < 4; i += 1) {
+      const y = GROUND_Y - 16 - i * 13;
+      ctx.beginPath();
+      ctx.moveTo(Math.max(0, finishX - 360 - i * 42), y);
+      ctx.lineTo(Math.min(VIEW_WIDTH, finishX - 10), y);
+      ctx.stroke();
+    }
+    ctx.restore();
+  }
+}
+
+function drawSolid(solid) {
+  if (!isVisible(solid)) return;
+  const x = worldToScreenX(solid.x);
+  const moving = solid.kind === "moving-platform";
+  const edgeColor = moving ? theme.violet : theme.cyan;
+
+  ctx.save();
+  ctx.shadowBlur = moving ? 18 : 12;
+  ctx.shadowColor = edgeColor;
+  ctx.fillStyle = moving ? "#131a34" : theme.panel;
+  ctx.fillRect(x, solid.y, solid.width, solid.height);
+  ctx.shadowBlur = 0;
+
+  ctx.fillStyle = edgeColor;
+  ctx.fillRect(x, solid.y, solid.width, moving ? 5 : 4);
+
+  if (solid.kind !== "ground") {
+    ctx.strokeStyle = "rgba(255,255,255,0.09)";
+    ctx.lineWidth = 1;
+    ctx.strokeRect(x + 6.5, solid.y + 8.5, Math.max(1, solid.width - 13), Math.max(1, solid.height - 17));
+
+    ctx.strokeStyle = moving ? "rgba(167,121,255,0.35)" : "rgba(83,239,255,0.18)";
+    const step = 18;
+    for (let sx = x - solid.height; sx < x + solid.width; sx += step) {
+      ctx.beginPath();
+      ctx.moveTo(sx, solid.y + solid.height);
+      ctx.lineTo(sx + solid.height, solid.y);
+      ctx.stroke();
+    }
+  } else {
+    // Ground gets a repeating luminous circuit motif.
+    ctx.fillStyle = "rgba(83,239,255,0.06)";
+    const motifStart = Math.max(-48, Math.floor(x / 48) * 48);
+    const motifEnd = Math.min(VIEW_WIDTH + 48, x + solid.width);
+    for (let sx = motifStart; sx < motifEnd; sx += 48) {
+      ctx.fillRect(sx + 12, solid.y + 18, 24, 2);
+      ctx.fillRect(sx + 23, solid.y + 18, 2, 14);
+    }
+  }
+  ctx.restore();
+}
+
+function drawSpike(spike) {
+  if (!isVisible(spike)) return;
+  const x = worldToScreenX(spike.x);
+  const down = spike.orientation === "down";
+
+  ctx.save();
+  ctx.shadowBlur = 18;
+  ctx.shadowColor = theme.magenta;
+  ctx.fillStyle = theme.magenta;
+  ctx.beginPath();
+  if (down) {
+    ctx.moveTo(x, spike.y);
+    ctx.lineTo(x + spike.width / 2, spike.y + spike.height);
+    ctx.lineTo(x + spike.width, spike.y);
+  } else {
+    ctx.moveTo(x, spike.y + spike.height);
+    ctx.lineTo(x + spike.width / 2, spike.y);
+    ctx.lineTo(x + spike.width, spike.y + spike.height);
+  }
+  ctx.closePath();
+  ctx.fill();
+  ctx.shadowBlur = 0;
+
+  ctx.strokeStyle = "rgba(255,255,255,0.52)";
+  ctx.lineWidth = 1.5;
+  ctx.stroke();
+
+  // Inner cut gives hazards a custom crystalline signal look.
+  ctx.strokeStyle = "rgba(8,12,24,0.7)";
+  ctx.lineWidth = 2;
+  ctx.beginPath();
+  if (down) {
+    ctx.moveTo(x + 11, spike.y + 7);
+    ctx.lineTo(x + spike.width / 2, spike.y + spike.height - 12);
+    ctx.lineTo(x + spike.width - 11, spike.y + 7);
+  } else {
+    ctx.moveTo(x + 11, spike.y + spike.height - 7);
+    ctx.lineTo(x + spike.width / 2, spike.y + 12);
+    ctx.lineTo(x + spike.width - 11, spike.y + spike.height - 7);
+  }
+  ctx.stroke();
+
+  if (debugHitboxes) {
+    const hit = getSpikeHitbox(spike);
+    ctx.setLineDash([4, 4]);
+    ctx.strokeStyle = "rgba(255,255,255,0.9)";
+    ctx.strokeRect(worldToScreenX(hit.x) + 0.5, hit.y + 0.5, hit.width, hit.height);
+    ctx.setLineDash([]);
+  }
+  ctx.restore();
+}
+
+function portalColor(portal) {
+  if (portal.type === "speed") return theme.amber;
+  return modeColor(portal.mode);
+}
+
+function drawPortalGlyph(portal, centerX, centerY, color) {
+  ctx.save();
+  ctx.translate(centerX, centerY);
+  ctx.strokeStyle = color;
+  ctx.fillStyle = color;
+  ctx.lineWidth = 2.5;
+  ctx.globalAlpha = 0.92;
+
+  if (portal.type === "speed") {
+    const direction = portal.speed > SPEEDS.NORMAL ? 1 : -1;
+    for (let i = -1; i <= 1; i += 1) {
+      const x = i * 8;
+      ctx.beginPath();
+      ctx.moveTo(x - direction * 5, -7);
+      ctx.lineTo(x + direction * 2, 0);
+      ctx.lineTo(x - direction * 5, 7);
+      ctx.stroke();
+    }
+  } else if (portal.mode === MODES.RUN) {
+    ctx.strokeRect(-8, -8, 16, 16);
+    ctx.strokeRect(-3, -3, 6, 6);
+  } else if (portal.mode === MODES.FLIP) {
+    ctx.beginPath();
+    ctx.moveTo(-8, -2); ctx.lineTo(0, -10); ctx.lineTo(8, -2);
+    ctx.moveTo(-8, 2); ctx.lineTo(0, 10); ctx.lineTo(8, 2);
+    ctx.stroke();
+  } else if (portal.mode === MODES.GLIDE) {
+    ctx.beginPath();
+    ctx.moveTo(10, 0);
+    ctx.lineTo(-7, -9);
+    ctx.lineTo(-2, 0);
+    ctx.lineTo(-7, 9);
+    ctx.closePath();
+    ctx.stroke();
+  } else if (portal.mode === MODES.PULSE) {
+    ctx.beginPath(); ctx.arc(0, 0, 9, 0, Math.PI * 2); ctx.stroke();
+    ctx.beginPath(); ctx.arc(0, 0, 3, 0, Math.PI * 2); ctx.fill();
+  }
+  ctx.restore();
+}
+
+function drawPortal(portal) {
+  if (!isVisible(portal, 90)) return;
+  const x = worldToScreenX(portal.x);
+  const color = portalColor(portal);
+  const pulse = 0.55 + pulseEnvelope(beatPhaseAtTime(simulationTime, world.bpm)) * 0.45;
+
+  ctx.save();
+  ctx.shadowBlur = 22;
+  ctx.shadowColor = color;
+  ctx.strokeStyle = color;
+  ctx.lineWidth = 3;
+  ctx.globalAlpha = 0.72 + pulse * 0.2;
+  ctx.strokeRect(x, portal.y, portal.width, portal.height);
+  ctx.shadowBlur = 0;
+
+  const centerX = x + portal.width / 2;
+  for (let y = portal.y + 18; y < portal.y + portal.height - 12; y += 34) {
+    const phase = (y / 34 + simulationTime * 4) % 2;
+    const radius = phase < 1 ? 3 : 5;
+    ctx.fillStyle = color;
+    ctx.globalAlpha = 0.34 + pulse * 0.3;
+    ctx.beginPath();
+    ctx.arc(centerX, y, radius, 0, Math.PI * 2);
+    ctx.fill();
+  }
+
+  ctx.globalAlpha = 0.16;
+  ctx.fillStyle = color;
+  ctx.fillRect(x, portal.y, portal.width, portal.height);
+
+  ctx.globalAlpha = 1;
+  drawPortalGlyph(portal, centerX, portal.y + portal.height / 2, color);
+
+  // Three approach ticks make mode/speed changes readable at a glance at FAST speed.
+  ctx.globalAlpha = 0.42 + pulse * 0.18;
+  ctx.strokeStyle = color;
+  ctx.lineWidth = 1.5;
+  for (let i = 1; i <= 3; i += 1) {
+    const tx = x - i * 16;
+    ctx.beginPath();
+    ctx.moveTo(tx, portal.y + portal.height * 0.42);
+    ctx.lineTo(tx + 6, portal.y + portal.height * 0.5);
+    ctx.lineTo(tx, portal.y + portal.height * 0.58);
+    ctx.stroke();
+  }
+
+  const label = portal.type === "speed"
+    ? (portal.speed > SPEEDS.NORMAL ? "FAST" : (portal.speed < SPEEDS.NORMAL ? "SLOW" : "NORMAL"))
+    : String(portal.mode).toUpperCase();
+  ctx.globalAlpha = 0.7;
+  ctx.fillStyle = color;
+  ctx.textAlign = "center";
+  ctx.font = "900 8px ui-monospace, SFMono-Regular, Menlo, monospace";
+  ctx.fillText(label, centerX, Math.max(20, portal.y - 10));
+  ctx.restore();
+}
+
+function drawCheckpoint(checkpoint) {
+  if (!isVisible(checkpoint, 90)) return;
+  const x = worldToScreenX(checkpoint.x + checkpoint.width / 2);
+  const isActive = practiceState.activeCheckpoint?.checkpointId === checkpoint.id;
+  const isPassed = practiceState.activatedCheckpointIds.has(checkpoint.id);
+  const visibleAlpha = runType === RUN_TYPES.PRACTICE ? 1 : 0.16;
+  const color = isActive ? theme.lime : theme.cyan;
+
+  ctx.save();
+  ctx.globalAlpha = visibleAlpha * (isPassed ? 0.55 : 0.82);
+  ctx.strokeStyle = color;
+  ctx.fillStyle = color;
+  ctx.lineWidth = isActive ? 3 : 2;
+  ctx.shadowBlur = isActive ? 22 : 10;
+  ctx.shadowColor = color;
+
+  const y = 168;
+  ctx.beginPath();

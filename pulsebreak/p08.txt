@@ -1,0 +1,201 @@
+    for (const checkpoint of bucket.checkpoints) checkpointSet.add(checkpoint);
+  }
+
+  for (const solid of world.dynamicSolids) {
+    if (solid.x + solid.width >= queryMin && solid.x <= queryMax) solidSet.add(solid);
+  }
+
+  return {
+    solids: [...solidSet],
+    spikes: [...spikeSet],
+    portals: [...portalSet],
+    checkpoints: [...checkpointSet],
+  };
+}
+
+Object.assign(exports, { validateLevelDefinition, loadLevel, queryCollisionObjects });
+
+};
+__mods["rhythm.js"] = function(module,exports,__require){
+/**
+ * PULSEBREAK — pure rhythm math.
+ * No DOM, Canvas or WebAudio dependencies.
+ */
+
+function beatDuration(bpm) {
+  if (!Number.isFinite(bpm) || bpm <= 0) throw new Error("bpm must be > 0");
+  return 60 / bpm;
+}
+
+function beatIndexAtTime(time, bpm, offset = 0) {
+  const duration = beatDuration(bpm);
+  return Math.floor(Math.max(0, time - offset) / duration);
+}
+
+function beatPhaseAtTime(time, bpm, offset = 0) {
+  const duration = beatDuration(bpm);
+  const local = Math.max(0, time - offset);
+  return (local % duration) / duration;
+}
+
+function subdivisionIndexAtTime(time, bpm, subdivision = 2, offset = 0) {
+  if (!Number.isInteger(subdivision) || subdivision <= 0) {
+    throw new Error("subdivision must be a positive integer");
+  }
+  const step = beatDuration(bpm) / subdivision;
+  return Math.floor(Math.max(0, time - offset) / step);
+}
+
+function tilesPerBeat(speed, bpm, tileSize) {
+  if (!Number.isFinite(speed) || speed <= 0) throw new Error("speed must be > 0");
+  if (!Number.isFinite(tileSize) || tileSize <= 0) throw new Error("tileSize must be > 0");
+  return speed * beatDuration(bpm) / tileSize;
+}
+
+function pulseEnvelope(phase, sharpness = 7) {
+  const clamped = Math.max(0, Math.min(1, phase));
+  return Math.exp(-clamped * sharpness);
+}
+
+Object.assign(exports, { beatDuration, beatIndexAtTime, beatPhaseAtTime, subdivisionIndexAtTime, tilesPerBeat, pulseEnvelope });
+
+};
+__mods["audio.js"] = function(module,exports,__require){
+/**
+ * PULSEBREAK — procedural WebAudio rhythm engine.
+ * No downloaded music/audio assets are required.
+ * Audio starts only after a user gesture, which is required on iPhone/Safari.
+ */
+
+const { beatDuration } = __require('rhythm.js');
+
+const LOOKAHEAD_SECONDS = 0.12;
+const SCHEDULER_MS = 35;
+
+function createNoiseBuffer(context) {
+  const length = Math.max(1, Math.floor(context.sampleRate * 0.08));
+  const buffer = context.createBuffer(1, length, context.sampleRate);
+  const data = buffer.getChannelData(0);
+  for (let i = 0; i < data.length; i += 1) {
+    // Deterministic-enough white noise is unnecessary for gameplay state;
+    // Math.random only affects timbre.
+    data[i] = Math.random() * 2 - 1;
+  }
+  return buffer;
+}
+
+class RhythmAudio {
+  constructor({ bpm, beatsPerBar = 4, volume = 0.34, rootFrequency = 55, intensity = 2 } = {}) {
+    this.bpm = bpm;
+    this.beatsPerBar = beatsPerBar;
+    this.volume = volume;
+    this.context = null;
+    this.master = null;
+    this.noiseBuffer = null;
+    this.timer = null;
+    this.nextBeatNumber = 0;
+    this.nextBeatTime = 0;
+    this.enabled = true;
+    this.started = false;
+    this.scheduledSources = new Set();
+    this.rootFrequency = rootFrequency;
+    this.intensity = intensity;
+    this.drive = 0;
+  }
+
+  setDrive(value = 0) {
+    this.drive = Math.max(0, Math.min(1, Number(value) || 0));
+  }
+
+  setIntensity(value = this.intensity) {
+    if (Number.isFinite(value)) this.intensity = Math.max(1, Math.min(3, Math.round(value)));
+  }
+
+  configure({ bpm = this.bpm, beatsPerBar = this.beatsPerBar, rootFrequency = this.rootFrequency, intensity = this.intensity } = {}) {
+    if (Number.isFinite(bpm) && bpm > 0) this.bpm = bpm;
+    if (Number.isFinite(beatsPerBar) && beatsPerBar > 0) this.beatsPerBar = Math.floor(beatsPerBar);
+    if (Number.isFinite(rootFrequency) && rootFrequency > 0) this.rootFrequency = rootFrequency;
+    if (Number.isFinite(intensity)) this.intensity = Math.max(1, Math.min(3, Math.round(intensity)));
+    if (this.started && this.context) this.syncToSimulation(0);
+  }
+
+  async unlock(simulationTime = 0) {
+    if (!this.enabled) return false;
+
+    const AudioContextCtor = window.AudioContext || window.webkitAudioContext;
+    if (!AudioContextCtor) return false;
+
+    if (!this.context) {
+      this.context = new AudioContextCtor();
+      this.master = this.context.createGain();
+      this.master.gain.value = this.volume;
+      this.master.connect(this.context.destination);
+      this.noiseBuffer = createNoiseBuffer(this.context);
+    }
+
+    if (this.context.state === "suspended") await this.context.resume();
+
+    this.syncToSimulation(simulationTime);
+    if (!this.timer) {
+      this.timer = setInterval(() => this.schedule(), SCHEDULER_MS);
+    }
+    this.started = true;
+    return true;
+  }
+
+  cancelScheduledSources() {
+    for (const source of this.scheduledSources) {
+      try { source.stop(); } catch {}
+    }
+    this.scheduledSources.clear();
+  }
+
+  syncToSimulation(simulationTime = 0) {
+    if (!this.context) return;
+    this.cancelScheduledSources();
+    const duration = beatDuration(this.bpm);
+    const currentBeat = simulationTime / duration;
+    this.nextBeatNumber = Math.ceil(currentBeat - 1e-9);
+    const secondsUntilBeat = Math.max(0.01, (this.nextBeatNumber - currentBeat) * duration);
+    this.nextBeatTime = this.context.currentTime + secondsUntilBeat;
+  }
+
+  schedule() {
+    if (!this.context || !this.master || !this.enabled || this.context.state !== "running") return;
+    const duration = beatDuration(this.bpm);
+
+    while (this.nextBeatTime < this.context.currentTime + LOOKAHEAD_SECONDS) {
+      const beatInBar = this.nextBeatNumber % this.beatsPerBar;
+      this.scheduleKick(this.nextBeatTime, beatInBar === 0);
+      this.scheduleHat(this.nextBeatTime + duration * 0.5, this.intensity >= 2 ? 0.032 : 0.024);
+      if (beatInBar === 1 || beatInBar === 3) this.scheduleSnare(this.nextBeatTime, this.intensity >= 3 ? 0.075 : 0.052);
+      if (this.intensity >= 3 || this.drive >= 0.5) this.scheduleHat(this.nextBeatTime + duration * 0.75, 0.014 + this.drive * 0.012);
+      if (this.drive >= 0.72) this.scheduleHat(this.nextBeatTime + duration * 0.25, 0.011 + this.drive * 0.009);
+      this.scheduleBass(this.nextBeatTime, beatInBar);
+      this.nextBeatNumber += 1;
+      this.nextBeatTime += duration;
+    }
+  }
+
+  scheduleKick(time, accent) {
+    const osc = this.context.createOscillator();
+    const gain = this.context.createGain();
+    osc.type = "sine";
+    osc.frequency.setValueAtTime(accent ? 128 : 106, time);
+    osc.frequency.exponentialRampToValueAtTime(48, time + 0.12);
+    gain.gain.setValueAtTime(accent ? 0.72 : 0.5, time);
+    gain.gain.exponentialRampToValueAtTime(0.001, time + 0.16);
+    osc.connect(gain);
+    gain.connect(this.master);
+    this.scheduledSources.add(osc);
+    osc.addEventListener?.("ended", () => this.scheduledSources.delete(osc));
+    osc.start(time);
+    osc.stop(time + 0.17);
+  }
+
+  scheduleHat(time, level = 0.024) {
+    const source = this.context.createBufferSource();
+    const filter = this.context.createBiquadFilter();
+    const gain = this.context.createGain();
+    source.buffer = this.noiseBuffer;
+    filter.type = "highpass";

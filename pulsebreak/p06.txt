@@ -1,0 +1,185 @@
+    "00000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000010000000000000000000000000000000000000000000000000000000000000",
+    "00000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000",
+    "00000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000",
+    "00000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000001000000000000000000000000000000000000000000000000000000",
+    "00000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000004000000000000100000000000001000000000000000000000000000000000000000000000000000000",
+    "00000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000100000000000001000000000000000000000000000000000000000000000000000000",
+    "00005000800000002000000220000001000022200900070000020000000000000200000000900070800000220000010000020000009007000000100000000000001009000070800002000000000022000090700000900220000026000",
+    "33333333333333333333333333333333333333333333333333333333333333333333333333333333333333333333333333333333333333333333333333333333333333333333333333333333333333333333333333333333333333333",
+    "00000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000",
+    "00000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000"
+  ],
+  "tileOptions": {
+    "11,8": {
+      "portal": {
+        "type": "speed",
+        "speed": 450,
+        "heightTiles": 10,
+        "yOffsetTiles": -9
+      }
+    },
+    "11,45": {
+      "portal": {
+        "type": "mode",
+        "mode": "flip",
+        "heightTiles": 10,
+        "yOffsetTiles": -9
+      }
+    },
+    "3,58": {
+      "orientation": "down"
+    },
+    "3,72": {
+      "orientation": "down"
+    },
+    "11,78": {
+      "portal": {
+        "type": "mode",
+        "mode": "run",
+        "heightTiles": 10,
+        "yOffsetTiles": -9,
+        "entryVelocityY": 0
+      }
+    },
+    "11,80": {
+      "portal": {
+        "type": "speed",
+        "speed": 360,
+        "heightTiles": 10,
+        "yOffsetTiles": -9
+      }
+    },
+    "9,103": {
+      "widthTiles": 2,
+      "height": 22,
+      "motion": {
+        "axis": "y",
+        "amplitude": 38,
+        "period": 2.2,
+        "phase": 0.4
+      }
+    },
+    "11,109": {
+      "portal": {
+        "type": "mode",
+        "mode": "glide",
+        "heightTiles": 10,
+        "yOffsetTiles": -9,
+        "entryVelocityY": -170
+      }
+    },
+    "11,138": {
+      "portal": {
+        "type": "mode",
+        "mode": "pulse",
+        "heightTiles": 10,
+        "yOffsetTiles": -9,
+        "entryVelocityY": 80
+      }
+    },
+    "11,140": {
+      "portal": {
+        "type": "speed",
+        "speed": 450,
+        "heightTiles": 10,
+        "yOffsetTiles": -9
+      }
+    },
+    "3,151": {
+      "orientation": "down"
+    },
+    "3,161": {
+      "orientation": "down"
+    },
+    "11,164": {
+      "portal": {
+        "type": "mode",
+        "mode": "run",
+        "heightTiles": 10,
+        "yOffsetTiles": -9,
+        "entryVelocityY": 0
+      }
+    }
+  }
+};
+
+const LEVELS = Object.freeze([
+  LEVEL_1_FIRST_SIGNAL,
+  LEVEL_2_VECTOR_SHIFT,
+  LEVEL_3_REDLINE_CORE,
+]);
+
+// Backwards-compatible aliases for regression tests from earlier phases.
+const PHASE_7_SESSION_LEVEL = LEVEL_2_VECTOR_SHIFT;
+const PHASE_6_RHYTHM_LEVEL = LEVEL_2_VECTOR_SHIFT;
+const PHASE_5_MODE_LEVEL = LEVEL_2_VECTOR_SHIFT;
+
+Object.assign(exports, { LEVEL_1_FIRST_SIGNAL, LEVEL_2_VECTOR_SHIFT, LEVEL_3_REDLINE_CORE, LEVELS, PHASE_7_SESSION_LEVEL, PHASE_6_RHYTHM_LEVEL, PHASE_5_MODE_LEVEL });
+
+};
+__mods["level-loader.js"] = function(module,exports,__require){
+/**
+ * PULSEBREAK — data-only grid level loader (Final).
+ * Converts level definitions into runtime objects and horizontal collision buckets.
+ * No Canvas/DOM/rendering dependency exists here.
+ */
+
+const { MODES } = __require('physics.js');
+
+const KNOWN_CODES = new Set(["0", "1", "2", "3", "4", "5", "6", "7", "8", "9"]);
+
+function assert(condition, message) {
+  if (!condition) throw new Error(`Invalid level: ${message}`);
+}
+
+function cellKey(row, col) {
+  return `${row},${col}`;
+}
+
+function addObjectToColumns(index, object, tileSize, bucketName) {
+  const first = Math.max(0, Math.floor(object.x / tileSize));
+  const last = Math.min(
+    index.length - 1,
+    Math.floor((object.x + object.width - 0.0001) / tileSize),
+  );
+
+  for (let col = first; col <= last; col += 1) {
+    index[col][bucketName].push(object);
+  }
+}
+
+function validateLevelDefinition(definition) {
+  assert(definition && typeof definition === "object", "definition is missing");
+  assert(Number.isFinite(definition.tileSize) && definition.tileSize > 0, "tileSize must be positive");
+  assert(Number.isInteger(definition.rows) && definition.rows > 0, "rows must be a positive integer");
+  assert(Number.isInteger(definition.columns) && definition.columns > 0, "columns must be a positive integer");
+  assert(Number.isFinite(definition.bpm) && definition.bpm > 0, "bpm must be positive");
+  if (definition.difficulty !== undefined) {
+    assert(Number.isInteger(definition.difficulty) && definition.difficulty >= 1, "difficulty must be a positive integer");
+  }
+  assert(Array.isArray(definition.grid), "grid must be an array of row strings");
+  assert(definition.grid.length === definition.rows, `expected ${definition.rows} grid rows`);
+
+  let spawnCount = 0;
+  let finishCount = 0;
+
+  definition.grid.forEach((row, rowIndex) => {
+    assert(typeof row === "string", `row ${rowIndex} must be a string`);
+    assert(row.length === definition.columns, `row ${rowIndex} has ${row.length} columns; expected ${definition.columns}`);
+
+    [...row].forEach((code, colIndex) => {
+      assert(KNOWN_CODES.has(code), `unknown tile code '${code}' at ${rowIndex},${colIndex}`);
+      if (code === "5") spawnCount += 1;
+      if (code === "6") finishCount += 1;
+
+      if (code === "7") {
+        const option = definition.tileOptions?.[cellKey(rowIndex, colIndex)]?.portal;
+        assert(option?.type === "mode", `mode portal ${rowIndex},${colIndex} needs tileOptions.portal.type='mode'`);
+        assert(Object.values(MODES).includes(option.mode), `mode portal ${rowIndex},${colIndex} has invalid mode '${option.mode}'`);
+      }
+
+      if (code === "8") {
+        const option = definition.tileOptions?.[cellKey(rowIndex, colIndex)]?.portal;
+        assert(option?.type === "speed", `speed portal ${rowIndex},${colIndex} needs tileOptions.portal.type='speed'`);
+        assert(Number.isFinite(option.speed) && option.speed > 0, `speed portal ${rowIndex},${colIndex} needs positive speed`);
+      }

@@ -1,0 +1,216 @@
+      entryVelocityY: portal.entryVelocityY,
+    });
+    return {
+      id: portal.id,
+      type: "mode",
+      mode: player.mode,
+    };
+  }
+
+  if (portal.type === "speed") {
+    setPlayerSpeed(player, portal.speed);
+    return {
+      id: portal.id,
+      type: "speed",
+      speed: player.velocityX,
+    };
+  }
+
+  throw new Error(`Unknown portal type '${portal.type}'`);
+}
+
+function processPortals(player, portals) {
+  const events = [];
+  const playerBox = getPlayerHitbox(player);
+
+  for (const portal of portals ?? []) {
+    if (player.triggeredPortalIds.has(portal.id)) continue;
+    if (!overlapsAABB(playerBox, portal)) continue;
+
+    player.triggeredPortalIds.add(portal.id);
+    events.push(applyPortal(player, portal));
+  }
+
+  return events;
+}
+
+/**
+ * One deterministic 120-Hz physics step.
+ * `nearbyWorld` is a collision slice from level-loader.js.
+ */
+function stepPhysics(player, nearbyWorld, dt, killBounds = {}) {
+  const solids = nearbyWorld.solids ?? [];
+  const spikes = nearbyWorld.spikes ?? [];
+  const portals = nearbyWorld.portals ?? [];
+
+  const killTop = Number.isFinite(killBounds.killTop) ? killBounds.killTop : -Infinity;
+  const killBottom = Number.isFinite(killBounds.killBottom)
+    ? killBounds.killBottom
+    : Number.isFinite(killBounds)
+      ? killBounds
+      : Infinity;
+
+  player.landedThisStep = false;
+  player.jumpedThisStep = false;
+  player.modeChangedThisStep = false;
+  player.speedChangedThisStep = false;
+  player.pulseCooldownRemaining = Math.max(0, player.pulseCooldownRemaining - dt);
+
+  carryByGroundMotion(player, solids);
+
+  const wasOnGround = player.onGround;
+  const previousGroundId = player.groundId;
+  const previousX = player.x;
+  const previousY = player.y;
+  const previousRight = previousX + player.width;
+
+  applyModeInput(player);
+  integrateVerticalVelocity(player, dt);
+
+  player.x += player.velocityX * dt;
+  player.y += player.velocityY * dt;
+
+  const landing = findLandingSurface(player, solids, previousY);
+  resolveLanding(player, landing, wasOnGround, previousGroundId);
+
+  for (const solid of solids) {
+    if (collidesFatallyWithSolid(player, solid)) {
+      player.actionPressed = false;
+      return death("solid", solid.id);
+    }
+  }
+
+  // Swept left-face check protects against future high-speed tunnelling.
+  if (player.velocityX > 0) {
+    const newRight = player.x + player.width;
+    for (const solid of solids) {
+      if (!solid.lethalSides) continue;
+      const crossedLeftFace = previousRight <= solid.x && newRight > solid.x;
+      const verticalOverlap =
+        player.y < solid.y + solid.height &&
+        player.y + player.height > solid.y;
+      if (crossedLeftFace && verticalOverlap) {
+        player.actionPressed = false;
+        return death("solid", solid.id);
+      }
+    }
+  }
+
+  const playerBox = getPlayerHitbox(player);
+  for (const spike of spikes) {
+    if (overlapsAABB(playerBox, getSpikeHitbox(spike))) {
+      player.actionPressed = false;
+      return death("spike", spike.id);
+    }
+  }
+
+  if (player.y < killTop || player.y > killBottom) {
+    player.actionPressed = false;
+    return death("void", null);
+  }
+
+  const portalEvents = processPortals(player, portals);
+
+  if (!player.jumpedThisStep && player.mode === MODES.RUN) {
+    player.jumpBufferRemaining = Math.max(0, player.jumpBufferRemaining - dt);
+  }
+
+  player.actionPressed = false;
+
+  return {
+    died: false,
+    cause: null,
+    objectId: null,
+    portalEvents,
+  };
+}
+
+Object.assign(exports, { MODES, SPEEDS, PHYSICS, SPIKE_FAIRNESS, createPlayer, getPlayerHitbox, getSpikeHitbox, overlapsAABB, pressAction, releaseAction, requestJump, setPlayerMode, setPlayerSpeed, updateKinematicSolids, stepPhysics });
+
+};
+__mods["levels.js"] = function(module,exports,__require){
+/**
+ * PULSEBREAK — PULSEBREAK 1.1 LEVEL DATA ONLY.
+ *
+ * Tile codes:
+ * 0 empty | 1 block | 2 spike | 3 floor | 4 moving platform
+ * 5 spawn | 6 finish | 7 mode portal | 8 speed portal | 9 practice checkpoint
+ *
+ * No loader, physics, rendering or input logic belongs here.
+ */
+
+const LEVEL_1_FIRST_SIGNAL = {
+  "id": "first-signal",
+  "name": "First Signal",
+  "subtitle": "Lerne die Sprache des Gitters",
+  "difficulty": 1,
+  "difficultyLabel": "EINSTIEG",
+  "bpm": 112.5,
+  "music": {
+    "beatsPerBar": 4,
+    "subdivision": 2,
+    "beatOffset": 0,
+    "key": "D1",
+    "concept": "spacious neon breakbeat",
+    "rootFrequency": 36.708,
+    "intensity": 1
+  },
+  "theme": {
+    "cyan": "#69f7ff",
+    "magenta": "#ff5f9e",
+    "violet": "#8c9bff",
+    "lime": "#8dffbf",
+    "amber": "#ffd36a",
+    "panel": "#0f1a2c",
+    "panel2": "#17283d",
+    "bgTop": "#04101a",
+    "bgMid": "#092039",
+    "bgBottom": "#06111d",
+    "horizon": "#123f58"
+  },
+  "tileSize": 48,
+  "rows": 15,
+  "columns": 120,
+  "grid": [
+    "000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000",
+    "000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000",
+    "000000000000000000000000000000000000011111111111111111111111000000000000000001111111111111111110111111111111100000000000",
+    "000000000000000000000000000000000000000000000000000200000000000000000000000000000000000000200000000000002000000000000000",
+    "000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000",
+    "000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000",
+    "000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000",
+    "000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000",
+    "000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000",
+    "000000000000000000000000000000000000000000000000000000000000000000000000400000000000000000000000000000000000000000000000",
+    "000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000",
+    "000050000000002000090000220000010090070900002000000000000000070000020000009007090000200000000000709002000070090000006000",
+    "333333333333333333333333333333333333333333333333333333333333333333333333333333333333333333333333333333333333333333333333",
+    "000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000",
+    "000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000"
+  ],
+  "tileOptions": {
+    "11,37": {
+      "portal": {
+        "type": "mode",
+        "mode": "flip",
+        "heightTiles": 10,
+        "yOffsetTiles": -9
+      }
+    },
+    "3,51": {
+      "orientation": "down"
+    },
+    "11,61": {
+      "portal": {
+        "type": "mode",
+        "mode": "run",
+        "heightTiles": 10,
+        "yOffsetTiles": -9,
+        "entryVelocityY": 0
+      }
+    },
+    "9,72": {
+      "widthTiles": 2,
+      "height": 22,
+      "motion": {
+        "axis": "y",

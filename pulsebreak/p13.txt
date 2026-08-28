@@ -1,0 +1,264 @@
+  trail = [];
+
+  if (clearEffects) particles = [];
+  resetDirectorState(0);
+  if (audio.started) audio.syncToSimulation(0);
+}
+
+function snapAngleToQuarterTurn(angle) {
+  return Math.round(angle / QUARTER_TURN) * QUARTER_TURN;
+}
+
+function emitAtPlayer(options = {}) {
+  const hitbox = getPlayerHitbox(player);
+  particles.push(...createBurst({
+    x: worldToScreenX(hitbox.x + hitbox.width / 2),
+    y: hitbox.y + hitbox.height / 2,
+    ...options,
+  }));
+}
+
+function unlockAudioAndPlay(kind) {
+  if (audio.started) {
+    audio.oneShot(kind);
+    return;
+  }
+  audio.unlock(simulationTime).then((ok) => {
+    if (ok) audio.oneShot(kind);
+  }).catch(() => {});
+}
+
+function beginAction(sourceId = "generic") {
+  if (gameState !== GAME_STATES.PLAYING || finishing || activeActionSources.has(sourceId)) return;
+
+  const isNewPressEdge = activeActionSources.size === 0;
+  activeActionSources.add(sourceId);
+  if (!isNewPressEdge) return;
+
+  actionCount += 1;
+
+  const timing = timingFeedback(
+    simulationTime,
+    world.bpm,
+    world.music?.subdivision ?? 2,
+    currentLevelDefinition.difficulty >= 3 ? 0.052 : 0.065,
+  );
+
+  if (timing.synced) {
+    syncHits += 1;
+    syncStreak += 1;
+    bestSyncStreak = Math.max(bestSyncStreak, syncStreak);
+    syncFlash = 0.32;
+    lastSyncLabel = syncStreak >= 3 ? `SYNC ×${syncStreak}` : "SYNC";
+    emitAtPlayer({
+      count: 7,
+      speed: 115,
+      life: 0.24,
+      size: 2.8,
+      gravity: 0,
+      color: theme.lime,
+      ring: true,
+    });
+    if (audio.started && syncStreak >= 2) audio.oneShot("sync");
+  } else {
+    syncStreak = 0;
+  }
+
+  pressAction(player);
+  unlockAudioAndPlay("action");
+  emitAtPlayer({
+    count: 5,
+    speed: 80,
+    life: 0.2,
+    size: 2.5,
+    gravity: 0,
+    color: modeColor(player.mode),
+  });
+}
+
+function endAction(sourceId = null) {
+  if (sourceId === null) activeActionSources.clear();
+  else activeActionSources.delete(sourceId);
+
+  if (activeActionSources.size === 0) releaseAction(player);
+}
+
+function resizeCanvasBackingStore() {
+  const dpr = Math.min(window.devicePixelRatio || 1, 2);
+  canvas.width = Math.round(VIEW_WIDTH * dpr);
+  canvas.height = Math.round(VIEW_HEIGHT * dpr);
+  ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+  ctx.imageSmoothingEnabled = false;
+}
+
+function killAndInstantlyRestart(result) {
+  // A pointer/key can still be physically held when death occurs. Do not let
+  // that stale hold leak into the freshly restored run/checkpoint.
+  endAction();
+  const deathProgress = progressPercent(player.x, world.spawn.x, world.finishX);
+  if (runType === RUN_TYPES.NORMAL) {
+    writeBestProgress(deathProgress, { forcePersist: true });
+    runStartBestProgress = bestProgress;
+  }
+  lastDeathX = player.x + player.width / 2;
+  syncStreak = 0;
+  attemptFlash = 0.9;
+  emitAtPlayer({
+    count: 26,
+    speed: 285,
+    life: 0.62,
+    size: 5,
+    gravity: 360,
+    color: theme.magenta,
+  });
+  audio.oneShot("death");
+  deathCount += 1;
+  lastDeathCause = result.cause;
+  deathFlash = 0.2;
+  screenShake = 0.28;
+
+  if (runType === RUN_TYPES.PRACTICE) {
+    practiceState.respawns += 1;
+    restorePracticeCheckpoint();
+  } else {
+    resetRun({ keepStats: true });
+  }
+}
+
+function handlePortalEvents(events) {
+  for (const event of events) {
+    portalFlash = 0.22;
+    screenShake = Math.max(screenShake, 0.08);
+    emitAtPlayer({
+      count: 16,
+      speed: 150,
+      life: 0.42,
+      size: 4,
+      gravity: 0,
+      color: event.type === "mode" ? modeColor(event.mode) : theme.amber,
+      ring: true,
+    });
+    audio.oneShot("portal");
+
+    if (event.type === "mode") {
+      lastPortalLabel = `MODE ${event.mode.toUpperCase()}`;
+      showModeCue(event.mode, 1.45);
+      visualAngle = snapAngleToQuarterTurn(visualAngle);
+    } else {
+      lastPortalLabel = `SPEED ${event.speed}`;
+    }
+  }
+}
+
+function registerBeat() {
+  const beat = beatIndexAtTime(
+    simulationTime,
+    world.bpm,
+    world.music?.beatOffset ?? 0,
+  );
+  if (beat !== lastBeatIndex) {
+    lastBeatIndex = beat;
+    beatFlash = beat % (world.music?.beatsPerBar ?? 4) === 0 ? 1 : 0.58;
+  }
+}
+
+function appendTrailPoint() {
+  if (player.onGround && player.mode === MODES.RUN) return;
+  if ((Math.floor(simulationTime / PHYSICS.fixedStep) % 3) !== 0) return;
+  trail.push({
+    x: player.x + player.width / 2,
+    y: player.y + player.height / 2,
+    life: 0.28,
+    maxLife: 0.28,
+    color: modeColor(player.mode),
+  });
+  if (trail.length > 28) trail.shift();
+}
+
+function beginFinishSequence() {
+  if (finishing) return;
+  endAction();
+  finishing = true;
+  finishSequenceTimer = FINISH_SEQUENCE_SECONDS;
+  finishPulseOriginX = worldToScreenX(world.finishX);
+  player.velocityX = 0;
+  player.velocityY = 0;
+  audio.setDrive?.(1);
+
+  emitAtPlayer({
+    count: 46,
+    speed: 360,
+    life: 0.82,
+    size: 5.5,
+    gravity: 120,
+    color: theme.lime,
+    ring: true,
+  });
+  audio.oneShot("finish");
+  clearCount += 1;
+  lastDeathCause = null;
+  finishFlash = 0.78;
+  milestoneFlash = 0.62;
+  screenShake = Math.max(screenShake, 0.2);
+  milestoneTitle = "100% · SIGNAL LOCK";
+  milestoneSubtitle = "ROUTE GESICHERT";
+  milestoneTimer = 1.0;
+
+  if (runType === RUN_TYPES.NORMAL) writeBestProgress(100, { forcePersist: true });
+  const grade = completionGrade({
+    deaths: deathCount,
+    actions: actionCount,
+    syncHits,
+    difficulty: currentLevelDefinition.difficulty,
+  });
+  const syncRate = actionCount > 0 ? Math.round((syncHits / actionCount) * 100) : 0;
+  pendingCompletionGrade = runType === RUN_TYPES.PRACTICE ? "✓" : grade;
+  const achievement = deathCount === 0 ? "CLEAN RUN · " : (runStartBestProgress < 100 ? "NEUER BESTWERT · " : "");
+  pendingCompletionStats = runType === RUN_TYPES.PRACTICE
+    ? `${currentLevelDefinition.name.toUpperCase()} · ÜBUNG GESCHAFFT · ${practiceState.respawns} RESPAWNS`
+    : `${achievement}${currentLevelDefinition.name.toUpperCase()} · ${deathCount} TODESFÄLLE · SYNC ${syncRate}% · STREAK ${bestSyncStreak}`;
+}
+
+function finalizeFinishSequence() {
+  if (!finishing) return;
+  finishing = false;
+  finishSequenceTimer = 0;
+  gameState = GAME_STATES.COMPLETE;
+  if (completeGradeEl) {
+    const grade = pendingCompletionGrade || "A";
+    completeGradeEl.textContent = grade;
+    completeGradeEl.dataset.grade = grade === "✓" ? "practice" : grade;
+  }
+  if (completeStatsEl) completeStatsEl.textContent = pendingCompletionStats || `${currentLevelDefinition.name.toUpperCase()} · LEVEL GESCHAFFT`;
+  audio.stop();
+  updateInterface();
+}
+
+function fixedUpdate() {
+  simulationTime += PHYSICS.fixedStep;
+  registerBeat();
+  updateKinematicSolids(world.dynamicSolids, simulationTime);
+
+  const maxStepSpeed = Math.max(Math.abs(player.velocityX), SPEEDS.FAST);
+  const nearbyWorld = queryCollisionObjects(
+    world,
+    player.x,
+    player.x + player.width + maxStepSpeed * PHYSICS.fixedStep,
+    COLLISION_MARGIN,
+  );
+
+  const result = stepPhysics(
+    player,
+    nearbyWorld,
+    PHYSICS.fixedStep,
+    { killTop: world.killTop, killBottom: world.killBottom },
+  );
+
+  if (result.died) {
+    killAndInstantlyRestart(result);
+    return true;
+  }
+
+  handlePortalEvents(result.portalEvents);
+
+  if (player.landedThisStep) {

@@ -1,0 +1,246 @@
+    });
+  });
+
+  assert(spawnCount === 1, `expected exactly one spawn marker, found ${spawnCount}`);
+  assert(finishCount === 1, `expected exactly one finish marker, found ${finishCount}`);
+  return true;
+}
+
+function makeBlock(id, x, y, size) {
+  return {
+    id,
+    x,
+    y,
+    width: size,
+    height: size,
+    kind: "block",
+    lethalSides: true,
+    motion: null,
+    dx: 0,
+    dy: 0,
+    dynamic: false,
+  };
+}
+
+function makeSpike(id, x, y, size, options = {}) {
+  const spriteSize = Math.min(44, size - 4);
+  return {
+    id,
+    x: x + (size - spriteSize) / 2,
+    y: y + (size - spriteSize) / 2,
+    width: spriteSize,
+    height: spriteSize,
+    kind: "spike",
+    orientation: options.orientation === "down" ? "down" : "up",
+    dynamic: false,
+  };
+}
+
+function makeMovingPlatform(id, x, y, size, options = {}) {
+  const widthTiles = Math.max(1, options.widthTiles ?? 1);
+  const height = Math.max(8, options.height ?? Math.round(size * 0.5));
+
+  const platform = {
+    id,
+    x,
+    y,
+    width: widthTiles * size,
+    height,
+    kind: "moving-platform",
+    lethalSides: true,
+    dx: 0,
+    dy: 0,
+    dynamic: true,
+    motion: null,
+  };
+
+  if (options.motion) {
+    platform.motion = {
+      axis: options.motion.axis ?? "y",
+      amplitude: options.motion.amplitude ?? 0,
+      period: options.motion.period ?? 2,
+      phase: options.motion.phase ?? 0,
+      originX: x,
+      originY: y,
+    };
+  }
+
+  return platform;
+}
+
+function makePortal(id, x, y, size, options) {
+  const portal = options.portal;
+  const width = Math.max(12, portal.width ?? Math.round(size * 0.5));
+  const heightTiles = Math.max(1, portal.heightTiles ?? 1);
+  const yOffsetTiles = portal.yOffsetTiles ?? 0;
+
+  return {
+    id,
+    x: x + (size - width) / 2,
+    y: y + yOffsetTiles * size,
+    width,
+    height: heightTiles * size,
+    kind: "portal",
+    type: portal.type,
+    mode: portal.mode ?? null,
+    speed: portal.speed ?? null,
+    gravityDirection: portal.gravityDirection === -1 ? -1 : 1,
+    entryVelocityY: Number.isFinite(portal.entryVelocityY) ? portal.entryVelocityY : undefined,
+    dynamic: false,
+  };
+}
+
+function makeCheckpoint(id, x, y, size, options = {}) {
+  const checkpoint = options.checkpoint ?? {};
+  const width = Math.max(10, checkpoint.width ?? Math.round(size * 0.34));
+  const heightTiles = Math.max(1, checkpoint.heightTiles ?? 10);
+  const yOffsetTiles = checkpoint.yOffsetTiles ?? -9;
+
+  return {
+    id,
+    x: x + (size - width) / 2,
+    y: y + yOffsetTiles * size,
+    width,
+    height: heightTiles * size,
+    kind: "checkpoint",
+    dynamic: false,
+  };
+}
+
+function loadLevel(definition) {
+  validateLevelDefinition(definition);
+
+  const tileSize = definition.tileSize;
+  const width = definition.columns * tileSize;
+  const height = definition.rows * tileSize;
+
+  const solids = [];
+  const spikes = [];
+  const portals = [];
+  const checkpoints = [];
+  const dynamicSolids = [];
+  const staticSolids = [];
+
+  let spawn = null;
+  let finishX = null;
+  let objectSerial = 0;
+  const floorRuns = [];
+
+  for (let row = 0; row < definition.rows; row += 1) {
+    const rowData = definition.grid[row];
+    let floorRunStart = null;
+
+    for (let col = 0; col <= definition.columns; col += 1) {
+      const code = col < definition.columns ? rowData[col] : "0";
+      const x = col * tileSize;
+      const y = row * tileSize;
+
+      if (code === "3" && floorRunStart === null) floorRunStart = col;
+      if (code !== "3" && floorRunStart !== null) {
+        floorRuns.push({ row, startCol: floorRunStart, endCol: col - 1 });
+        floorRunStart = null;
+      }
+      if (col === definition.columns) continue;
+
+      const options = definition.tileOptions?.[cellKey(row, col)] ?? {};
+
+      if (code === "1") {
+        staticSolids.push(makeBlock(`block-${objectSerial++}`, x, y, tileSize));
+      } else if (code === "2") {
+        spikes.push(makeSpike(`spike-${objectSerial++}`, x, y, tileSize, options));
+      } else if (code === "4") {
+        const platform = makeMovingPlatform(`moving-${objectSerial++}`, x, y, tileSize, options);
+        dynamicSolids.push(platform);
+      } else if (code === "5") {
+        spawn = {
+          x: x + (tileSize - 36) / 2,
+          y: y + tileSize - 36,
+        };
+      } else if (code === "6") {
+        finishX = x + tileSize / 2;
+      } else if (code === "7" || code === "8") {
+        portals.push(makePortal(`portal-${objectSerial++}`, x, y, tileSize, options));
+      } else if (code === "9") {
+        checkpoints.push(makeCheckpoint(`checkpoint-${objectSerial++}`, x, y, tileSize, options));
+      }
+    }
+  }
+
+  for (const run of floorRuns) {
+    const x = run.startCol * tileSize;
+    const y = run.row * tileSize;
+    staticSolids.push({
+      id: `floor-${objectSerial++}`,
+      x,
+      y,
+      width: (run.endCol - run.startCol + 1) * tileSize,
+      height: height - y,
+      kind: "ground",
+      lethalSides: false,
+      motion: null,
+      dx: 0,
+      dy: 0,
+      dynamic: false,
+    });
+  }
+
+  solids.push(...staticSolids, ...dynamicSolids);
+
+  const collisionColumns = Array.from(
+    { length: definition.columns },
+    () => ({ solids: [], spikes: [], portals: [], checkpoints: [] }),
+  );
+
+  for (const solid of staticSolids) addObjectToColumns(collisionColumns, solid, tileSize, "solids");
+  for (const spike of spikes) addObjectToColumns(collisionColumns, spike, tileSize, "spikes");
+  for (const portal of portals) addObjectToColumns(collisionColumns, portal, tileSize, "portals");
+  for (const checkpoint of checkpoints) addObjectToColumns(collisionColumns, checkpoint, tileSize, "checkpoints");
+
+  return {
+    id: definition.id,
+    name: definition.name,
+    subtitle: definition.subtitle ?? "",
+    difficulty: definition.difficulty ?? 1,
+    difficultyLabel: definition.difficultyLabel ?? "",
+    theme: definition.theme ? structuredClone(definition.theme) : null,
+    bpm: definition.bpm,
+    music: definition.music ? structuredClone(definition.music) : { beatsPerBar: 4, subdivision: 2, beatOffset: 0 },
+    tileSize,
+    rows: definition.rows,
+    columns: definition.columns,
+    width,
+    height,
+    spawn,
+    finishX,
+    killTop: -(tileSize * 2),
+    killBottom: height + tileSize,
+    solids,
+    staticSolids,
+    dynamicSolids,
+    spikes,
+    portals,
+    checkpoints,
+    collisionColumns,
+  };
+}
+
+function queryCollisionObjects(world, minX, maxX, margin = world.tileSize) {
+  const queryMin = Math.max(0, minX - margin);
+  const queryMax = Math.min(world.width, maxX + margin);
+
+  const firstCol = Math.max(0, Math.floor(queryMin / world.tileSize));
+  const lastCol = Math.min(
+    world.columns - 1,
+    Math.floor(Math.max(queryMin, queryMax - 0.0001) / world.tileSize),
+  );
+
+  const solidSet = new Set();
+  const spikeSet = new Set();
+  const portalSet = new Set();
+  const checkpointSet = new Set();
+
+  for (let col = firstCol; col <= lastCol; col += 1) {
+    const bucket = world.collisionColumns[col];
+    for (const solid of bucket.solids) solidSet.add(solid);
+    for (const spike of bucket.spikes) spikeSet.add(spike);
+    for (const portal of bucket.portals) portalSet.add(portal);
