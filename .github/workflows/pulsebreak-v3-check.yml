@@ -1,0 +1,99 @@
+name: Pulsebreak V3 iPhone Check
+
+on:
+  push:
+    paths:
+      - '.github/workflows/pulsebreak-v3-check.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  iphone-smoke:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: Install Playwright
+        run: |
+          npm init -y >/dev/null 2>&1
+          npm install playwright@1.55.0 --no-save
+          npx playwright install --with-deps chromium
+      - name: Test live Pulsebreak on iPhone viewport
+        run: |
+          node <<'NODE'
+          const { chromium } = require('playwright');
+          const assert = require('assert');
+          (async()=>{
+            const browser = await chromium.launch({headless:true});
+            const context = await browser.newContext({
+              viewport:{width:852,height:393},
+              deviceScaleFactor:2,
+              isMobile:true,
+              hasTouch:true,
+              serviceWorkers:'block'
+            });
+            const page = await context.newPage();
+            const errors=[];
+            page.on('pageerror', e=>errors.push('pageerror: '+e.message));
+            page.on('console', m=>{ if(m.type()==='error') errors.push('console: '+m.text()); });
+            const url='https://fox3nox.github.io/HomepageProjekt/pulsebreak-v3/?qa='+Date.now();
+            const response=await page.goto(url,{waitUntil:'networkidle',timeout:45000});
+            assert(response && response.ok(), 'live page did not return 2xx');
+            await page.waitForFunction(()=>window.Phaser && window.pulsebreakScene,{timeout:30000});
+            assert(await page.locator('#start-btn').isVisible(), 'start button not visible');
+            await page.locator('#start-btn').click();
+            await page.waitForFunction(()=>window.pulsebreakScene?.started===true,{timeout:5000});
+            await page.waitForTimeout(650);
+            const before=await page.evaluate(()=>({x:pulsebreakScene.player.x,y:pulsebreakScene.player.y,w:pulsebreakScene.player.w,h:pulsebreakScene.player.h,attempt:pulsebreakScene.attempt}));
+            assert(before.x>320, 'auto-run did not move player');
+            assert(before.w===42 && before.h===42, 'AABB size changed');
+            const rotationLeak=await page.evaluate(()=>('rotation' in pulsebreakScene.player)||('angle' in pulsebreakScene.player));
+            assert(!rotationLeak, 'visual rotation leaked into physics body');
+
+            await page.touchscreen.tap(426,250);
+            await page.waitForTimeout(80);
+            const vy=await page.evaluate(()=>pulsebreakScene.player.vy);
+            assert(vy<0, 'tap did not trigger cube jump');
+
+            const modes=await page.evaluate(()=>{
+              const s=pulsebreakScene;
+              s.setPaused(true);
+              const result=[];
+              for(const v of s.portalVisual){
+                const po=v.data;
+                s.player.x=po.x+2;
+                s.player.y=po.y+Math.min(120,po.h/2);
+                s.checkPortals();
+                result.push(s.player.mode);
+              }
+              return result;
+            });
+            assert.deepStrictEqual(modes,['wave','ball','cube'],'portal mode sequence failed');
+
+            const attemptBefore=await page.evaluate(()=>pulsebreakScene.attempt);
+            await page.evaluate(()=>{pulsebreakScene.setPaused(false);pulsebreakScene.kill();});
+            await page.waitForTimeout(650);
+            const afterDeath=await page.evaluate(()=>({attempt:pulsebreakScene.attempt,dead:pulsebreakScene.dead,visible:pulsebreakScene.playerSprite.visible,mode:pulsebreakScene.player.mode,x:pulsebreakScene.player.x}));
+            assert(afterDeath.attempt===attemptBefore+1,'death did not increment attempt');
+            assert(!afterDeath.dead && afterDeath.visible,'respawn did not recover');
+            assert(afterDeath.mode==='cube' && afterDeath.x>=320,'respawn state invalid');
+
+            await page.screenshot({path:'pulsebreak-v3-iphone.png',fullPage:true});
+            if(errors.length) throw new Error(errors.join('\n'));
+            console.log('PULSEBREAK LIVE IPHONE CHECK: PASS', {before,modes,afterDeath});
+            await browser.close();
+          })().catch(e=>{console.error(e);process.exit(1)});
+          NODE
+      - name: Upload iPhone screenshot
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: pulsebreak-v3-iphone
+          path: pulsebreak-v3-iphone.png
+          if-no-files-found: ignore
+          retention-days: 1
