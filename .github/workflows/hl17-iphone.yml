@@ -1,0 +1,60 @@
+name: HEAVY LIGHT V17 iPhone
+on:
+  push:
+    paths:
+      - 'heavy-light-v17/**'
+      - '.github/workflows/hl17-iphone.yml'
+  workflow_dispatch:
+jobs:
+  iphone:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: Install browser
+        run: |
+          npm init -y >/dev/null 2>&1
+          npm install playwright@1.55.0 >/dev/null 2>&1
+          npx playwright install --with-deps chromium >/dev/null
+      - name: Verify V17 five-zone design, camera and unchanged core run
+        run: |
+          python3 -m http.server 8000 >/tmp/server.log 2>&1 &
+          cat > v17.mjs <<'JS'
+          import { chromium } from 'playwright';
+          const browser=await chromium.launch({headless:true});
+          const page=await browser.newPage({viewport:{width:932,height:430},isMobile:true,hasTouch:true,deviceScaleFactor:3});
+          const errors=[];
+          page.on('pageerror',e=>errors.push('page:'+e.message));
+          page.on('console',m=>{if(m.type()==='error')errors.push('console:'+m.text())});
+          await page.goto('http://127.0.0.1:8000/heavy-light-v17/?test=1',{waitUntil:'load'});
+          await page.waitForFunction(()=>window.__HL17__?.state?.().mode==='menu');
+          if(!(await page.locator('#startBtn').isVisible()))throw new Error('START_NOT_VISIBLE');
+          await page.locator('#startBtn').click();
+          await page.waitForFunction(()=>window.__HL17__?.state?.().mode==='run');
+          const a=await page.evaluate(()=>window.__HL17__.state());
+          await page.waitForTimeout(520);
+          const b=await page.evaluate(()=>window.__HL17__.state());
+          if(!(b.x>a.x+120))throw new Error('RUNNER_NOT_MOVING '+JSON.stringify({a,b}));
+          if(!b.view.locked)throw new Error('VIEW_NOT_LOCKED');
+          if(!(b.cam>=0&&b.x-b.cam<b.view.vw*.55))throw new Error('CAMERA_NOT_FOLLOWING '+JSON.stringify(b));
+          const zones=[
+            [900,'RUINEN-TOR'],[2400,'TEMPELPFAD'],[4700,'HIMMELS-ZITADELLE'],[7000,'INFERNO-KORRIDOR'],[9000,'NEXUS-FINALE']
+          ];
+          for(const [x,name] of zones){
+            await page.evaluate(v=>window.__HL17__.debugSetX(v),x);
+            await page.waitForTimeout(90);
+            const s=await page.evaluate(()=>window.__HL17__.state());
+            if(s.zoneName!==name)throw new Error('ZONE_MISMATCH '+JSON.stringify({x,name,state:s}));
+          }
+          const locked=await page.evaluate(()=>window.__HL17__.state().view);
+          await page.setViewportSize({width:844,height:390});
+          await page.waitForTimeout(180);
+          const after=await page.evaluate(()=>window.__HL17__.state());
+          if(after.view.w!==locked.w||after.view.h!==locked.h)throw new Error('VIEWPORT_DRIFT '+JSON.stringify({locked,after:after.view}));
+          if(errors.length)throw new Error(errors.join('\n'));
+          console.log('HL17_PASS '+JSON.stringify(after));
+          await browser.close();
+          JS
+          node v17.mjs
