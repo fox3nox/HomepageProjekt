@@ -1,0 +1,70 @@
+<!doctype html>
+<html lang="de">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no,viewport-fit=cover">
+<meta name="theme-color" content="#07020f">
+<title>HEAVY / LIGHT V15 — FRACTURE TEMPLE</title>
+<link rel="stylesheet" href="./style.css?v=15">
+</head>
+<body>
+<div id="gameRoot">
+  <canvas id="game" aria-label="HEAVY LIGHT Rhythm Runner"></canvas>
+
+  <div id="hud" class="hidden" aria-hidden="true">
+    <div class="hudBox hudLeft">
+      <div class="tiny">ATTEMPT <b id="attempt">1</b></div>
+      <div id="state" class="state light"><span class="stateIcon">◇</span><span>LIGHT</span></div>
+    </div>
+
+    <div class="hudCenter">
+      <div class="trackRow"><span>FRACTURE // 01</span><b id="percent">0%</b></div>
+      <div class="progress"><i id="progressBar"></i></div>
+    </div>
+
+    <div class="hudBox hudRight">
+      <div class="scoreWrap"><span id="score">000000</span><b id="combo">1×</b></div>
+      <button id="soundBtn" class="roundBtn" type="button" aria-label="Ton ein oder aus">♪</button>
+      <button id="pauseBtn" class="roundBtn" type="button" aria-label="Spiel pausieren">Ⅱ</button>
+    </div>
+  </div>
+
+  <div id="menu" class="screen">
+    <div class="menuCard">
+      <div class="eyebrow">ORIGINAL ONE-TOUCH RHYTHM RUNNER</div>
+      <div class="brand"><span>HEAVY</span><em>/</em><strong>LIGHT</strong></div>
+      <p class="tagline">Halte für Gewicht. Lass los für Licht. Überlebe den Tempel.</p>
+      <div class="controlGrid">
+        <div class="control heavyCard"><span class="controlIcon">●</span><div><b>HALTEN</b><small>HEAVY · SLAM · SMASH</small></div></div>
+        <div class="control lightCard"><span class="controlIcon">↥</span><div><b>LOSLASSEN</b><small>LIGHT · JUMP · PHASE</small></div></div>
+      </div>
+      <button id="startBtn" class="startBtn" type="button"><span>FRACTURE // 01</span><b>START RUN →</b></button>
+      <div class="meta"><span>158 BPM</span><i>•</i><span>ONE TOUCH</span><i>•</i><span>V15 TEMPLE</span></div>
+    </div>
+  </div>
+
+  <div id="pause" class="screen hidden">
+    <div class="pauseCard">
+      <div class="eyebrow">RUN PAUSED</div>
+      <h2>FRACTURE // 01</h2>
+      <button id="resumeBtn" class="startBtn" type="button"><span>CONTINUE</span><b>RESUME →</b></button>
+      <button id="menuBtn" class="secondaryBtn" type="button">BACK TO MENU</button>
+    </div>
+  </div>
+
+  <div id="result" class="screen hidden">
+    <div class="pauseCard resultCard">
+      <div class="eyebrow">RUN COMPLETE</div>
+      <div id="rank" class="rank">A</div>
+      <div class="resultStats"><span>SCORE <b id="finalScore">000000</b></span><span>TIME <b id="finalTime">0.00s</b></span></div>
+      <button id="retryBtn" class="startBtn" type="button"><span>FRACTURE // 01</span><b>RETRY →</b></button>
+      <button id="resultMenuBtn" class="secondaryBtn" type="button">BACK TO MENU</button>
+    </div>
+  </div>
+
+  <div id="toast" aria-live="polite"></div>
+  <div id="rotate"><div><b>iPhone drehen</b><span>HEAVY / LIGHT läuft im Querformat.</span></div></div>
+</div>
+<script src="./game.js?v=15"></script>
+</body>
+</html>
