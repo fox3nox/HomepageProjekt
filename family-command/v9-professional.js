@@ -1,0 +1,24 @@
+/* Familienzentrale V9.1 · professional polish without observer loops */
+(()=>{
+'use strict';
+if(window.__fcProfessionalInstalled)return;window.__fcProfessionalInstalled=true;
+const APP='Familienzentrale',SHORT='Familie',ASSET_VERSION='20260828-v910';
+const isoToday=()=>{try{return typeof todayISO==='function'?todayISO():(()=>{const d=new Date();return `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`})()}catch(_){return new Date().toISOString().slice(0,10)}};
+const mins=t=>{const m=String(t||'').match(/^(\d{1,2}):(\d{2})$/);return m?Number(m[1])*60+Number(m[2]):null};
+const nowMins=()=>{const d=new Date();return d.getHours()*60+d.getMinutes()};
+function events(){try{return typeof data!=='undefined'&&Array.isArray(data?.events)?data.events:[]}catch(_){return[]}}
+function eventById(id){return events().find(e=>String(e.id)===String(id))||null}
+function isPast(e){if(!e)return false;const t=isoToday(),start=String(e.date||''),last=String(e.endDate||e.date||'');if(last<t)return true;if(last>t)return false;if(start<t&&String(e.endDate||'')===t){const end=mins(e.end);return end!==null?nowMins()>end:false}if(start!==t)return false;let end=mins(e.end),st=mins(e.time);if(end===null&&st!==null)end=st+90;return end!==null?nowMins()>end:false}
+function brand(){document.title=APP;const b=document.querySelector('.fc9-brand b');if(b)b.textContent=APP;const s=document.querySelector('.fc9-brand span');if(s)s.textContent='Familie auf einen Blick';const mark=document.querySelector('.fc9-mark');if(mark&&!mark.querySelector('img'))mark.innerHTML=`<img src="./apple-touch-icon.png?v=${ASSET_VERSION}" alt="">`;document.querySelectorAll('.fc9-sheet-head small').forEach(x=>{if(/family command/i.test(x.textContent||''))x.textContent=APP.toUpperCase()});document.documentElement.dataset.fcBrand='familienzentrale'}
+function pastBadge(row){row.classList.add('fc9-past-event');const main=row.querySelector('.fc9-row-main');if(main&&!main.querySelector('.fc9-past-badge')){const badge=document.createElement('span');badge.className='fc9-past-badge';badge.textContent='Vergangen';main.prepend(badge)}}
+function polishCalendar(){const root=document.getElementById('events');if(!root?.children.length||root.querySelector('.fc9-past-wrap'))return;const page=root.querySelector('.fc9-page');if(!page)return;const sections=[...page.querySelectorAll(':scope > .fc9-section')].filter(s=>s.querySelector('.fc9-event[data-event]'));let pastCount=0,upcomingCount=0,pastSections=[];for(const section of sections){const rows=[...section.querySelectorAll('.fc9-event[data-event]')],pastRows=rows.filter(r=>isPast(eventById(r.dataset.event)));pastCount+=pastRows.length;upcomingCount+=rows.length-pastRows.length;if(rows.length&&pastRows.length===rows.length){pastRows.forEach(pastBadge);pastSections.push(section)}else pastRows.forEach(pastBadge)}const count=page.querySelector('.fc9-month span');if(count)count.textContent=`${upcomingCount} kommende${upcomingCount===1?'r':' '} Termin${upcomingCount===1?'':'e'}`.replace('kommende  ','kommende ');if(!pastCount)return;const wrap=document.createElement('section');wrap.className='fc9-past-wrap';wrap.innerHTML=`<button type="button" class="fc9-past-toggle" aria-expanded="false"><span>Vergangene Termine (${pastCount}) anzeigen</span><span class="fc9-past-arrow">⌄</span></button><div class="fc9-past-list" hidden></div>`;const list=wrap.querySelector('.fc9-past-list');pastSections.forEach(s=>list.appendChild(s));const toggle=wrap.querySelector('.fc9-past-toggle');toggle.onclick=()=>{const open=list.hidden;list.hidden=!open;toggle.setAttribute('aria-expanded',String(open));toggle.querySelector('span:first-child').textContent=open?`Vergangene Termine (${pastCount}) ausblenden`:`Vergangene Termine (${pastCount}) anzeigen`;toggle.classList.toggle('open',open)};page.appendChild(wrap);document.documentElement.dataset.fcPastEvents=String(pastCount)}
+function apply(){brand();polishCalendar()}
+function afterAction(){queueMicrotask(apply)}
+document.addEventListener('click',afterAction,false);
+document.addEventListener('change',afterAction,false);
+document.addEventListener('fc:v9-ready',apply,{once:true});
+if(document.documentElement.dataset.fcV9Ready==='1')apply();
+for(const name of ['renderEvents','renderWeek']){const raw=window[name];if(typeof raw==='function'&&!raw.__fcProfessional){const w=function(...a){const r=raw.apply(this,a);apply();return r};w.__fcProfessional=true;window[name]=w}}
+if(window.__fcV9?.open){const raw=window.__fcV9.open.bind(window.__fcV9);window.__fcV9.open=(id,...a)=>{const r=raw(id,...a);apply();return r}}
+window.__fcProfessional={version:'9.1.0',apply,isPast,brand,shortName:SHORT};
+})();
