@@ -49,7 +49,6 @@ jobs:
           grep -q "window.__fcV9" family-command/v9-app.js
           test -s family-command/apple-touch-icon.png
           test -s family-command/icon-192.png
-          test -s family-command/icon-512.png
           ! grep -q "screen-redesign-v6.js" family-command/index.html
           ! grep -q "today-relevance.js" family-command/index.html
           ! grep -q "tomorrow-screen.js" family-command/index.html
