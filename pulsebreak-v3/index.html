@@ -1,0 +1,45 @@
+<!doctype html>
+<html lang="de">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover,user-scalable=no" />
+  <meta name="theme-color" content="#050718" />
+  <meta name="apple-mobile-web-app-capable" content="yes" />
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+  <title>PULSEBREAK 3.0 — Crystal Rise</title>
+  <link rel="manifest" href="./manifest.webmanifest" />
+  <link rel="stylesheet" href="./styles.css" />
+</head>
+<body>
+  <main id="app">
+    <div id="game"></div>
+    <section id="start-screen" class="panel visible">
+      <div class="logo">PULSEBREAK <b>3.0</b></div>
+      <p class="eyeline">CRYSTAL RISE · 140 BPM</p>
+      <h1>Rhythm. React.<br>Break the pulse.</h1>
+      <p class="desc">Ein 50-Sekunden-Vertical-Slice: Cube → Wave → Ball → Finale.</p>
+      <button id="start-btn">SPIEL STARTEN</button>
+      <div class="hint">TIPPEN = AKTION · QUERFORMAT EMPFOHLEN</div>
+    </section>
+    <div id="hud" aria-hidden="true">
+      <div class="hud-left">
+        <strong>CRYSTAL RISE</strong>
+        <span id="mode-label">CUBE</span>
+      </div>
+      <div class="hud-progress"><i id="progress-fill"></i></div>
+      <div class="hud-right"><strong id="progress-text">0%</strong><span id="attempt-text">TRY 1</span></div>
+    </div>
+    <button id="pause-btn" aria-label="Pause">Ⅱ</button>
+    <section id="result" class="panel">
+      <p class="eyeline" id="result-kicker">SIGNAL LOST</p>
+      <h2 id="result-title">32%</h2>
+      <p id="result-copy">Noch einmal.</p>
+      <button id="retry-btn">NOCHMALS</button>
+    </section>
+  </main>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/phaser/3.90.0/phaser.min.js"></script>
+  <script src="./level.js"></script>
+  <script src="./art.js"></script>
+  <script src="./play.js"></script>
+</body>
+</html>
