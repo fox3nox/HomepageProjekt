@@ -17,10 +17,10 @@ class BeatAudio {
     const Ctx = window.AudioContext || window.webkitAudioContext;
     if (!Ctx) return;
     if (!this.ctx) this.ctx = new Ctx();
-    this.ctx.resume?.();
+    if (this.ctx.resume) this.ctx.resume();
     this.started=true;
   }
-  resume(){ this.ctx?.resume?.(); }
+  resume(){ if (this.ctx && this.ctx.resume) this.ctx.resume(); }
   reset(time=0){ this.nextBeat=time; this.index=-1; }
   tick(simTime){
     if (!this.started || !this.ctx) return false;
@@ -37,8 +37,11 @@ class BeatAudio {
     const now=this.ctx.currentTime;
     const o=this.ctx.createOscillator();
     const g=this.ctx.createGain();
-    o.type='sine'; o.frequency.setValueAtTime(downbeat?82:122,now); o.frequency.exponentialRampToValueAtTime(downbeat?42:72,now+.09);
-    g.gain.setValueAtTime(downbeat ? .17 : .07,now); g.gain.exponentialRampToValueAtTime(.0001,now+.11);
+    o.type='sine';
+    o.frequency.setValueAtTime(downbeat ? 82 : 122,now);
+    o.frequency.exponentialRampToValueAtTime(downbeat ? 42 : 72,now+.09);
+    g.gain.setValueAtTime(downbeat ? .17 : .07,now);
+    g.gain.exponentialRampToValueAtTime(.0001,now+.11);
     o.connect(g).connect(this.ctx.destination); o.start(now); o.stop(now+.12);
   }
   portal(){
