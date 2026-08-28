@@ -1,19 +1,19 @@
 # PULSEBREAK — Physics Calibration Research
 
-This document tracks public measurements and reverse-engineering facts used to make PULSEBREAK feel precise and familiar while keeping all game code, levels, visuals, names and audio original.
+This log tracks public measurements and reverse-engineering facts used to make PULSEBREAK feel precise and familiar while keeping all code, levels, visuals, names and audio original.
 
 ## Method
 
-- Prefer the Official Geometry Dash Wiki for measured gameplay distances and behaviour.
-- Cross-check implementation constants against public reverse-engineering projects instead of guessing from video.
+- Prefer the Official Geometry Dash Wiki for measured movement distances and behaviour.
+- Cross-check constants against public reverse-engineering projects instead of guessing from video.
 - Convert source coordinates into PULSEBREAK's own block/pixel scale.
-- Lock gameplay to deterministic 240 Hz fixed physics.
-- Keep visual rotation separate from collision.
-- Every gameplay change must pass automated Chromium + WebKit mobile QA before release.
+- Use deterministic 240 Hz fixed physics.
+- Keep visual rotation completely separate from collision.
+- Every gameplay change must pass Chromium + WebKit mobile QA before release.
 
 ## Coordinate model
 
-Geometry Dash uses a 30-unit editor/grid block. PULSEBREAK currently maps one block to 42 px.
+Geometry Dash uses a 30-unit editor/grid block. PULSEBREAK maps one gameplay block to 42 px.
 
 `scale = 42 / 30 = 1.4 px per source coordinate`
 
@@ -21,21 +21,13 @@ Geometry Dash uses a 30-unit editor/grid block. PULSEBREAK currently maps one bl
 
 Verified target: **240 physics updates per second** in 2.2-era gameplay.
 
-PULSEBREAK:
+PULSEBREAK: `FIXED = 1 / 240`.
 
-`FIXED = 1 / 240`
+Public reverse-engineering reference: `camila314/gdp`, `GJBaseGameLayer/GJBaseGameLayer_update.cpp`, whose step count is based on `delta * 240`.
 
-Public reverse-engineering reference:
-- camila314/gdp — `GJBaseGameLayer/GJBaseGameLayer_update.cpp`
-- the update loop computes physics step count from `delta * 240`.
+## Horizontal speeds
 
-Official wiki also documents 2.2 physics/input behaviour around 240 TPS.
-
-## Horizontal speed portals
-
-Measured blocks/second:
-
-| Speed | GD b/s | PULSEBREAK px/s @ 42px/block |
+| Speed | blocks/s | PULSEBREAK px/s |
 |---|---:|---:|
 | Slow | 8.371978759765625 | 351.6231 |
 | Normal | 10.385991096496582 | 436.2116 |
@@ -43,161 +35,138 @@ Measured blocks/second:
 | Very fast | 15.600034713745117 | 655.2015 |
 | Extreme | 19.19999122619629 | 806.3996 |
 
-These values are now stored directly in `level.js`.
+These are stored directly in `level.js`.
 
-## Normal cube
+## Cube
 
 Public reverse-engineering reference: `PlayerObject_updateTimeMod.cpp`.
 
-Normal-speed source constants:
-
+Normal-speed source constants include:
 - `m_yStart = 11.1800318`
 - `m_gravity = 0.958199024`
-- terminal vertical velocity = `15` source units/update scale
+- terminal vertical velocity = `15`
 
-Converted to PULSEBREAK:
+At PULSEBREAK's scale, gravity is about **4829.3231 px/s²** and terminal speed is **1260 px/s**.
 
-- jump speed ≈ **939.1227 px/s**
-- gravity ≈ **4829.3231 px/s²**
-- terminal speed = **1260 px/s**
+Official measured targets:
+- first/ordinary jump: **2.1333 blocks**
+- immediately repeated held jump after landing: **2.2330 blocks**
 
-Official measured jump target:
+Important correction: the 2.233 value is **not implemented as reduced gravity during every held jump**. The engine now uses separate impulses for the normal first jump and the held repeat after landing, matching the observed/reconstructed behaviour much more closely.
 
-- tap jump ≈ **2.1333 blocks**
-- sustained/held jump ≈ **2.233 blocks**
-
-PULSEBREAK applies a small reduced-gravity multiplier while rising and held to reproduce the sustained-jump difference.
+The impulses are solved against our actual 240 Hz discrete integrator:
+- normal cube impulse: **940.3421748657386 px/s** → 2.1333 blocks
+- held-repeat impulse: **961.8395421385526 px/s** → 2.2330 blocks
 
 ### Cube collision model
 
-The collision body never rotates.
+The physics body never rotates.
+- hazard/landing AABB: **42×42 px = 1 block**
+- centered solid-side box: **14×14 px = 1/3 block**
+- visual rotation is cosmetic
+- visual rotation snaps to nearest 90° on landing
 
-Current model:
-
-- hazard/landing AABB: **1 block = 42×42 px**
-- centered solid-side collision box: **1/3 block = 14×14 px**
-- visible sprite rotation is cosmetic only
-- landing snaps visual rotation to nearest 90°
-
-This deliberately follows the documented multi-hitbox feel rather than using the visible square as one universal hitbox.
+The smaller center box is currently a calibrated approximation based on public hitbox references and remains subject to editor-measurement refinement.
 
 ## Wave
 
 Verified normal-size behaviour:
-
-- horizontal and vertical magnitudes are equal
-- trajectory is therefore exactly **45°**
+- vertical speed magnitude equals horizontal speed magnitude
+- trajectory is exactly **45°**
 - hold = rise, release = fall
-- no smoothing/acceleration between the two trajectories
+- no interpolation/smoothing between trajectories
 
-PULSEBREAK:
+PULSEBREAK uses `vy = ±vx`.
 
-`vy = ±vx`
+Current wave physics body: **14×14 px = 1/3 block**.
 
-Current wave body:
-
-- **1/3 block = 14×14 px**
-
-Mini wave is not yet implemented. Research target: double vertical rate relative to horizontal.
+Mini wave is queued for a later pass; research target is double vertical rate relative to horizontal.
 
 ## Ball
 
-Public reverse-engineering `PlayerObject_updateJump.cpp` uses a **0.6 gravity factor** for ball/spider/swing in the non-flying branch.
+Public reverse-engineering `PlayerObject_updateJump.cpp` uses a **0.6 gravity factor** for the ball branch.
 
-PULSEBREAK:
+PULSEBREAK: `BALL_GRAVITY = CUBE_GRAVITY * 0.6`.
 
-`BALL_GRAVITY = CUBE_GRAVITY * 0.6`
+Input behaviour:
+- gravity switch is accepted only while touching a valid surface
+- pressing in mid-air does not immediately flip gravity
 
-Behaviour target:
+This is covered by automated browser QA.
 
-- input requests a gravity flip
-- flip is accepted only while touching a valid surface
-- pressing in mid-air must not instantly flip gravity
+## Standard spike
 
-This rule is now covered by automated QA.
+The visible triangle is not the complete lethal region. Public editor/hitbox references show a narrow rectangular hitbox raised above the visual base.
 
-## Standard spike collision
+PULSEBREAK therefore uses a centered, narrower rectangle instead of treating the entire visible triangle as lethal. Exact spike dimensions remain a calibration target.
 
-The visible triangle is not treated as the entire lethal area.
+## Yellow orb
 
-Research target from editor/hitbox references:
+Official measured regular-cube launch height: **2.3833 blocks**.
 
-- narrow rectangular lethal region
-- elevated above the visual base of the spike
+The old approximate multiplier has been removed. PULSEBREAK now solves the impulse against its 240 Hz integrator:
 
-PULSEBREAK currently uses a narrow centered rectangle rather than the full triangle. This remains a calibration area and may be adjusted against measured editor hitbox screenshots.
+- yellow orb impulse: **993.3333447428565 px/s** → 2.3833 blocks
 
-## Transporters / orbs / pads
+## Pads / transporters measured from official references
 
-Official transporters reference provides measured launch heights by mode.
+Regular cube launch heights:
+- yellow pad: **4.533 blocks**
+- pink pad: **1.933 blocks**
+- red pad: **6.533 blocks**
+- blue pad: gravity reversal
+- spider pad: nearest-surface teleport + gravity switch
 
-Confirmed cube examples:
+The official transporter table also provides separate values for ship, ball, UFO, robot, spider and mini variants. These values will be implemented mode-by-mode rather than approximated.
 
-- yellow orb: about **2.3833 blocks**
-- yellow pad: about **4.533 blocks**
-- pink pad: about **1.933 blocks**
-- red pad: about **6.533 blocks**
-- blue transporters: gravity manipulation rather than ordinary jump impulse
-- spider orb/pad: instant travel to the nearest valid opposite surface
-
-Current Crystal Rise only uses a yellow-style orb and it is still marked **approximate**. Exact transporter impulse calibration is the next physics pass.
-
-## Other forms — research/implementation queue
+## Other forms — implementation queue
 
 ### Ship
-- Continuous hold/release acceleration.
-- Gravity and acceleration differ by normal/mini size.
-- Vertical speed is clamped.
-- Needs exact reconstruction from `PlayerObject_updateJump.cpp` before release.
+- continuous hold/release flight
+- normal and mini use different acceleration/limits
+- exact reconstruction from `PlayerObject_updateJump.cpp` required before release
 
 ### UFO
-- Discrete flap impulse per input rather than continuous hold flight.
-- Has its own transporter response and terminal-velocity behaviour.
-- Needs exact normal + mini calibration.
+- discrete flap impulse per input
+- separate normal/mini behaviour and transporter responses
 
 ### Robot
-- Variable-height jump based on press duration.
-- 2.2 fixed an older high-jump behaviour for new levels while preserving compatibility options.
-- Needs exact press-duration acceleration curve.
+- variable-height jump based on hold duration
+- 2.2 changed/fixed older high-jump behaviour for new levels
 
 ### Spider
-- Input while on a valid surface teleports instantly to nearest valid surface in gravity direction and flips gravity.
-- No travel arc between surfaces.
-- Needs exact collision/surface-selection rules.
+- input from a valid surface instantly moves to the nearest opposite valid surface and switches gravity
+- no travel arc
 
 ### Swing
-- Airborne gravity toggling each input.
-- Uses reduced gravity factor in the reverse-engineered jump routine.
-- Needs exact velocity preservation/damping and mini behaviour.
+- each input toggles gravity while airborne
+- reverse-engineered jump routine uses reduced gravity factors that still need full state-machine calibration
 
-## Portals/features still to calibrate
+## Remaining calibration queue
 
-- mini-size portal and every form's mini physics
-- blue/yellow/green gravity portals
-- all five speed portals during active gameplay
+- mini portal and every mini form
+- all five live speed portals
+- gravity portals
 - yellow/pink/red/blue/green/black orbs
-- yellow/pink/red/blue pads
-- dash orbs
-- spider orb/pad
+- yellow/pink/red/blue/spider pads
+- dash and spider orbs
 - teleport portals
+- ship, UFO, robot, spider, swing
 - dual mode
 - slopes and slope momentum
-- ship/UFO/robot/spider/swing
 - reverse direction
 - exact death/restart timing
-- exact camera lead/zoom rules
+- camera lead/zoom rules
 - practice checkpoints
-- click-between-steps / on-steps behaviour from later 2.208 precision options
+- later 2.208 click precision modes
 
-## Sources being tracked
+## Tracked public sources
 
-- Official Geometry Dash Wiki — Portals
-  - https://geometrydash.wiki.gg/wiki/Portals
-- Official Geometry Dash Wiki — Transporters
-  - https://geometrydash.wiki.gg/wiki/Transporters
-- Official Geometry Dash Wiki — Update 2.2
-  - https://geometrydash.wiki.gg/wiki/Update_2.2
-- Public reverse-engineering project `camila314/gdp`
+- Official Geometry Dash Wiki — Portals: https://geometrydash.wiki.gg/wiki/Portals
+- Official Geometry Dash Wiki — Transporters: https://geometrydash.wiki.gg/wiki/Transporters
+- Official Geometry Dash Wiki — Update 2.2: https://geometrydash.wiki.gg/wiki/Update_2.2
+- Geometry Dash Editor Wiki — Pad: https://gdeditor.net/wiki/Pad
+- Public reverse-engineering project `camila314/gdp`:
   - `GJBaseGameLayer/GJBaseGameLayer_update.cpp`
   - `PlayerObject/PlayerObject_updateTimeMod.cpp`
   - `PlayerObject/PlayerObject_updateJump.cpp`
@@ -206,8 +175,7 @@ Current Crystal Rise only uses a yellow-style orb and it is still marked **appro
 
 ## Release gate
 
-A PULSEBREAK physics build is not considered verified until:
-
+A build is not considered verified until:
 1. JavaScript syntax checks pass.
 2. GitHub Pages serves the exact expected build id.
 3. Chromium mobile 852×393 passes.
@@ -215,10 +183,10 @@ A PULSEBREAK physics build is not considered verified until:
 5. Start button starts real movement.
 6. Touch triggers a cube jump.
 7. 240 Hz self-test passes.
-8. normal speed/jump targets remain inside tolerance.
-9. wave trajectory remains 45°.
+8. normal speed and measured jump/orb targets remain in tolerance.
+9. wave remains 45°.
 10. ball cannot flip in mid-air.
-11. mode portals resize the body correctly.
-12. death→respawn restores a valid cube state.
-13. canvas fills the mobile viewport without gutters.
+11. mode portals resize bodies correctly.
+12. death→respawn restores valid state.
+13. canvas fills the viewport without gutters.
 14. screenshots are visually reviewed.
