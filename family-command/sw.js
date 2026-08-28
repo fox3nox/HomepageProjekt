@@ -1,4 +1,4 @@
-const CACHE='family-command-v33';
+const CACHE='family-command-v34';
 const CORE=['./','./index.html','./v8-foundation.css','./v8-ui.css','./v8-overrides.css','./event-details.js','./chat-command-sync.js','./screen-redesign-v6.js','./app-data-rules.js','./today-relevance.js','./tomorrow-screen.js','./todo-list.js','./tomorrow-preview.js','./pendencies.js','./multi-link-ui.js','./event-delete-fix.js','./homework-originals.js','./today-addons-stabilizer.js','./v8-shell.js','./v8-ui.js','./manifest.webmanifest','./icon.svg'];
 self.addEventListener('install',e=>{e.waitUntil(caches.open(CACHE).then(c=>c.addAll(CORE)).catch(()=>{}));self.skipWaiting()});
 self.addEventListener('activate',e=>{e.waitUntil(caches.keys().then(keys=>Promise.all(keys.filter(k=>k.startsWith('family-command-')&&k!==CACHE).map(k=>caches.delete(k)))));self.clients.claim()});
