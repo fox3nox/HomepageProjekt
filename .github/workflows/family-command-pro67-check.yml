@@ -24,7 +24,6 @@ jobs:
           node --check family-command/todo-list.js
           node --check family-command/print-planner-v2.js
           node --check family-command/todo-print-addon.js
-          node --check family-command/week-overview-v2.js
           node --check family-command/today-addons-stabilizer.js
           node --check family-command/app-selftest-v6.js
           node --check family-command/v8-shell.js
@@ -32,31 +31,30 @@ jobs:
           node --check family-command/chat-command-sync.js
           node --check family-command/smoke-tests.js
           node --check family-command/sw.js
-      - name: V8 stability and performance regression
+      - name: V8.4 lean startup and sync regression
         run: |
-          grep -q "family-command-v31" family-command/sw.js
+          grep -q "family-command-v32" family-command/sw.js
           grep -q "chat-command-sync.js" family-command/sw.js
-          grep -q "staticAsset" family-command/sw.js
-          grep -q "ignoreSearch:true" family-command/sw.js
-          grep -q "v8.3-fast" family-command/build.txt
-          grep -q "20260828-v830" family-command/index.html
-          grep -q "v8.3-fast-ok" family-command/index.html
-          grep -q "const downloads=new Map" family-command/index.html
+          grep -q "if(cached){event.waitUntil" family-command/sw.js
+          grep -q "v8.4-lean" family-command/build.txt
+          grep -q "20260828-v840" family-command/index.html
+          grep -q "v8.4-lean-ok" family-command/index.html
+          grep -q "const CRITICAL=" family-command/index.html
+          grep -q "const DEFERRED=" family-command/index.html
+          grep -q "PRIVATE_CACHE" family-command/index.html
+          grep -q "deferExtras" family-command/index.html
           grep -q "force-cache" family-command/index.html
           grep -q "fcBootMs" family-command/index.html
-          grep -q "fc-boot-screen" family-command/index.html
+          grep -q "version:'8.4-lean'" family-command/v8-shell.js
           grep -q "renderedAt" family-command/v8-shell.js
-          grep -q "warmScreens" family-command/v8-shell.js
-          grep -q "requestIdleCallback" family-command/v8-shell.js
-          grep -q "version:'8.3-fast'" family-command/v8-shell.js
-          grep -q "data-screen=\"events\"" family-command/v8-shell.js
-          grep -q "data-screen=\"homework\"" family-command/v8-shell.js
-          grep -q "v8-calendar-tabs" family-command/v8-shell.js
+          ! grep -q "warmScreens" family-command/v8-shell.js
+          grep -q "version:2" family-command/chat-command-sync.js
+          grep -q "refreshVisible" family-command/chat-command-sync.js
+          grep -q "todosAt" family-command/tomorrow-preview.js
+          grep -q ">To-dos<" family-command/tomorrow-preview.js
           grep -q "groupedNext" family-command/today-addons-stabilizer.js
           grep -q "v8-hide-empty-todo" family-command/v8-ui.js
-          grep -q "Alles erledigt" family-command/v8-ui.js
           ! grep -q "events-visibility-fix.js" family-command/index.html
-          ! grep -q "events-visibility-fix.js" family-command/sw.js
           ! grep -q "MutationObserver" family-command/v8-ui.js
           ! grep -q "MutationObserver" family-command/v8-shell.js
           ! grep -q "MutationObserver" family-command/today-addons-stabilizer.js
