@@ -9,7 +9,7 @@
   <meta name="mobile-web-app-capable" content="yes" />
   <title>PULSEBREAK 3.0 — Crystal Rise</title>
   <link rel="manifest" href="./manifest.webmanifest" />
-  <link rel="stylesheet" href="./styles.css?v=34" />
+  <link rel="stylesheet" href="./styles.css?v=35" />
 </head>
 <body>
   <main id="app">
@@ -48,10 +48,10 @@
     (async()=>{
       const load=(src)=>new Promise((resolve,reject)=>{const s=document.createElement('script');s.src=src;s.onload=resolve;s.onerror=reject;document.head.appendChild(s)});
       if(!window.Phaser) await load('https://cdnjs.cloudflare.com/ajax/libs/phaser/3.90.0/phaser.min.js');
-      await load('./level.js?v=34');
-      await load('./art.js?v=34');
-      await load('./play.js?v=34');
-      if('serviceWorker' in navigator) navigator.serviceWorker.register('./sw.js?v=34').catch(()=>{});
+      await load('./level.js?v=35');
+      await load('./art.js?v=35');
+      await load('./play.js?v=35');
+      if('serviceWorker' in navigator) navigator.serviceWorker.register('./sw.js?v=35').catch(()=>{});
     })().catch((error)=>{console.error('[PULSEBREAK] boot failed',error);document.querySelector('#boot-error')?.classList.add('visible')});
   </script>
 </body>
