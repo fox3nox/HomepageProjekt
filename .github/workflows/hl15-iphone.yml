@@ -1,0 +1,54 @@
+name: HEAVY LIGHT V15 iPhone
+on:
+  push:
+    paths:
+      - 'heavy-light-v15/**'
+      - '.github/workflows/hl15-iphone.yml'
+  workflow_dispatch:
+jobs:
+  iphone:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: Install browser
+        run: |
+          npm init -y >/dev/null 2>&1
+          npm install playwright@1.55.0 >/dev/null 2>&1
+          npx playwright install --with-deps chromium >/dev/null
+      - name: Verify V15 gameplay, UI and locked iPhone viewport
+        run: |
+          python3 -m http.server 8000 >/tmp/server.log 2>&1 &
+          cat > v15.mjs <<'JS'
+          import { chromium } from 'playwright';
+          const browser=await chromium.launch({headless:true});
+          const page=await browser.newPage({viewport:{width:932,height:430},isMobile:true,hasTouch:true,deviceScaleFactor:3});
+          const errors=[];
+          page.on('pageerror',e=>errors.push('page:'+e.message));
+          page.on('console',m=>{if(m.type()==='error')errors.push('console:'+m.text())});
+          await page.goto('http://127.0.0.1:8000/heavy-light-v15/',{waitUntil:'load'});
+          await page.waitForFunction(()=>window.__HL15__?.state?.().mode==='menu');
+          if(!(await page.locator('#startBtn').isVisible()))throw new Error('START_NOT_VISIBLE');
+          if(!(await page.locator('#game').isVisible()))throw new Error('CANVAS_NOT_VISIBLE');
+          await page.locator('#startBtn').click();
+          await page.waitForFunction(()=>window.__HL15__?.state?.().mode==='run');
+          const a=await page.evaluate(()=>window.__HL15__.state());
+          await page.waitForTimeout(650);
+          const b=await page.evaluate(()=>window.__HL15__.state());
+          if(!(b.x>a.x+100))throw new Error('RUNNER_NOT_MOVING '+JSON.stringify({a,b}));
+          if(!b.view.locked)throw new Error('VIEW_NOT_LOCKED');
+          const locked={w:b.view.w,h:b.view.h};
+          await page.setViewportSize({width:844,height:390});
+          await page.waitForTimeout(220);
+          const c=await page.evaluate(()=>window.__HL15__.state());
+          if(c.view.w!==locked.w||c.view.h!==locked.h)throw new Error('VIEWPORT_DRIFT '+JSON.stringify({locked,after:c.view}));
+          if(c.mode!=='run')throw new Error('RUN_INTERRUPTED');
+          await page.locator('#soundBtn').click();
+          if(!(await page.locator('#soundBtn').evaluate(el=>el.classList.contains('muted'))))throw new Error('MUTE_TOGGLE_FAILED');
+          if(errors.length)throw new Error(errors.join('\n'));
+          console.log('HL15_PASS '+JSON.stringify(c));
+          await browser.close();
+          JS
+          node v15.mjs
