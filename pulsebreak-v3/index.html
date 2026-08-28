@@ -6,40 +6,55 @@
   <meta name="theme-color" content="#050718" />
   <meta name="apple-mobile-web-app-capable" content="yes" />
   <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+  <meta name="mobile-web-app-capable" content="yes" />
   <title>PULSEBREAK 3.0 — Crystal Rise</title>
   <link rel="manifest" href="./manifest.webmanifest" />
-  <link rel="stylesheet" href="./styles.css" />
+  <link rel="stylesheet" href="./styles.css?v=31" />
 </head>
 <body>
   <main id="app">
-    <div id="game"></div>
+    <div id="game" aria-label="PULSEBREAK Spielfläche"></div>
+
     <section id="start-screen" class="panel visible">
       <div class="logo">PULSEBREAK <b>3.0</b></div>
       <p class="eyeline">CRYSTAL RISE · 140 BPM</p>
       <h1>Rhythm. React.<br>Break the pulse.</h1>
-      <p class="desc">Ein 50-Sekunden-Vertical-Slice: Cube → Wave → Ball → Finale.</p>
+      <p class="desc">Ein echter spielbarer Run: Cube → Wave → Ball → schneller Cube-Finalteil. Tippen, halten, reagieren.</p>
       <button id="start-btn">SPIEL STARTEN</button>
-      <div class="hint">TIPPEN = AKTION · QUERFORMAT EMPFOHLEN</div>
+      <div class="hint">TIPPEN = AKTION · BEI WAVE GEDRÜCKT HALTEN · QUERFORMAT</div>
     </section>
+
     <div id="hud" aria-hidden="true">
-      <div class="hud-left">
-        <strong>CRYSTAL RISE</strong>
-        <span id="mode-label">CUBE</span>
-      </div>
+      <div class="hud-left"><strong>CRYSTAL RISE</strong><span id="mode-label">CUBE</span></div>
       <div class="hud-progress"><i id="progress-fill"></i></div>
       <div class="hud-right"><strong id="progress-text">0%</strong><span id="attempt-text">TRY 1</span></div>
     </div>
+
     <button id="pause-btn" aria-label="Pause">Ⅱ</button>
+    <div id="pause-badge">PAUSE · TIPPEN ZUM WEITERSPIELEN</div>
+
     <section id="result" class="panel">
-      <p class="eyeline" id="result-kicker">SIGNAL LOST</p>
-      <h2 id="result-title">32%</h2>
-      <p id="result-copy">Noch einmal.</p>
+      <p class="eyeline" id="result-kicker">SIGNAL GESICHERT</p>
+      <h2 id="result-title">100%</h2>
+      <p id="result-copy">Crystal Rise geschafft.</p>
       <button id="retry-btn">NOCHMALS</button>
     </section>
+
+    <section id="boot-error" class="panel error-panel">
+      <p class="eyeline">LADEFEHLER</p>
+      <h3>PULSEBREAK konnte nicht vollständig geladen werden.</h3>
+      <p>Bitte die Seite einmal neu laden. Falls es bleibt, prüfe die Internetverbindung.</p>
+      <button onclick="location.reload()">NEU LADEN</button>
+    </section>
+
+    <div id="rotate"><strong>QUERFORMAT</strong><span>Bitte das iPhone drehen.</span></div>
   </main>
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/phaser/3.90.0/phaser.min.js"></script>
-  <script src="./level.js"></script>
-  <script src="./art.js"></script>
-  <script src="./play.js"></script>
+
+  <script src="https://cdn.jsdelivr.net/npm/phaser@3.90.0/dist/phaser.min.js"></script>
+  <script>if(!window.Phaser){document.write('<script src="https://cdnjs.cloudflare.com/ajax/libs/phaser/3.90.0/phaser.min.js"><\\/script>')}</script>
+  <script src="./level.js?v=31"></script>
+  <script src="./art.js?v=31"></script>
+  <script src="./play.js?v=31"></script>
+  <script>if('serviceWorker' in navigator){navigator.serviceWorker.register('./sw.js?v=31').catch(()=>{})}</script>
 </body>
 </html>
