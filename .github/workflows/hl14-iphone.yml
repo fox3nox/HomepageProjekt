@@ -1,0 +1,69 @@
+name: HEAVY LIGHT V14 iPhone
+on:
+  push:
+    paths:
+      - 'heavy-light-v14-iphone/**'
+      - 'heavy-light-v12/index.html'
+      - '.github/workflows/hl14-iphone.yml'
+  workflow_dispatch:
+jobs:
+  iphone:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: Install browser
+        run: |
+          npm init -y >/dev/null 2>&1
+          npm install playwright@1.55.0 >/dev/null 2>&1
+          npx playwright install --with-deps chromium >/dev/null
+      - name: Verify V14 premium UI audio and iPhone stability
+        run: |
+          python3 -m http.server 8000 >/tmp/server.log 2>&1 &
+          cat > v14.mjs <<'JS'
+          import { chromium } from 'playwright';
+          const browser=await chromium.launch({headless:true,args:['--autoplay-policy=no-user-gesture-required']});
+          const page=await browser.newPage({viewport:{width:932,height:430},isMobile:true,hasTouch:true,deviceScaleFactor:3});
+          const errors=[];
+          page.on('pageerror',e=>errors.push('page:'+e.message));
+          page.on('console',m=>{if(m.type()==='error')errors.push('console:'+m.text())});
+          await page.goto('http://127.0.0.1:8000/heavy-light-v14-iphone/',{waitUntil:'load'});
+          await page.waitForFunction(()=>{const s=window.__HL14__?.state?.();return s?.ready&&s?.premium&&s?.soundButton&&s?.game});
+          const frame=page.frameLocator('#game');
+
+          const card=await frame.locator('#menu .card').boundingBox();
+          const inner=await frame.locator('body').evaluate(()=>({w:innerWidth,h:innerHeight}));
+          if(!card)throw new Error('NO_MENU_CARD');
+          if(card.x<0||card.y<0||card.x+card.width>inner.w+2||card.y+card.height>inner.h+2)throw new Error('MENU_CLIPPED '+JSON.stringify({card,inner}));
+
+          await frame.locator('#start').click();
+          await page.waitForFunction(()=>{const s=window.__HL14__?.state?.();return s?.game?.mode==='run'&&s?.audio?.created&&s?.audio?.started});
+          await page.waitForTimeout(900);
+          const initial=await page.evaluate(()=>window.__HL14__.state());
+          if(!initial.locked)throw new Error('RUN_NOT_LOCKED '+JSON.stringify(initial));
+          if(Math.abs(initial.game.camY)>45)throw new Error('CAMERA_Y_DRIFT '+JSON.stringify(initial.game));
+          if(initial.audio.state!=='running')throw new Error('AUDIO_NOT_RUNNING '+JSON.stringify(initial.audio));
+
+          const muteBefore=initial.audio.muted;
+          await frame.locator('#hl14Sound').click();
+          await page.waitForTimeout(80);
+          const afterMute=await page.evaluate(()=>window.__HL14__.state());
+          if(afterMute.audio.muted===muteBefore)throw new Error('MUTE_DID_NOT_TOGGLE '+JSON.stringify(afterMute.audio));
+          await frame.locator('#hl14Sound').click();
+
+          const anchor=afterMute.frame;
+          await page.setViewportSize({width:844,height:390});
+          await page.waitForTimeout(260);
+          const compact=await page.evaluate(()=>window.__HL14__.state());
+          const close=(a,b,t=2)=>Math.abs(a-b)<=t;
+          if(!close(compact.frame.x,anchor.x)||!close(compact.frame.y,anchor.y)||!close(compact.frame.w,anchor.w)||!close(compact.frame.h,anchor.h))throw new Error('RUN_FRAME_JUMPED '+JSON.stringify({anchor,compact:compact.frame}));
+          if(Math.abs(compact.game.camY)>45)throw new Error('CAMERA_DRIFT_AFTER_RESIZE '+JSON.stringify(compact.game));
+
+          if(errors.length)throw new Error(errors.join('\n'));
+          console.log('HL14_PASS '+JSON.stringify({initial,compact}));
+          await page.screenshot({path:'hl14-pass.png'});
+          await browser.close();
+          JS
+          node v14.mjs
