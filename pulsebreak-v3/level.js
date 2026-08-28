@@ -1,6 +1,14 @@
 const BPM = 140;
 const BEAT = 60 / BPM;
-const BASE_SPEED = 360;
+const BLOCK = 42;
+const SPEEDS = {
+  slow: 8.371978759765625 * BLOCK,
+  normal: 10.385991096496582 * BLOCK,
+  fast: 12.914042472839355 * BLOCK,
+  veryFast: 15.600034713745117 * BLOCK,
+  extreme: 19.19999122619629 * BLOCK
+};
+const BASE_SPEED = SPEEDS.normal;
 const BEAT_DIST = BASE_SPEED * BEAT;
 const WORLD_H = 720;
 const START_X = 320;
@@ -71,21 +79,21 @@ function buildLevel(){
   ground(12,18); platform(12.8,1.0,500); sp(15.2); orbs.push(orb(16.8,470));
   ground(18.8,24); platform(18.1,.7,540); platform(20.1,.9,485); platform(22.2,.8,530); sp(23.2);
   ground(24.5,31.8); sp(25.5,556,3,.28); platform(27.6,1.0,500); sp(29.6,556,2,.3);
-  portals.push(portal(32,MODES.WAVE,110,500,400));
+  portals.push(portal(32,MODES.WAVE,110,500));
 
   solids.push(rect(X(32),0,X(56)-X(32),105,'ceiling'));
   solids.push(rect(X(32),620,X(56)-X(32),100,'ground'));
   [35,41,47,53].forEach((b,i)=>solids.push(rect(X(b),i%2?0:410,72,i%2?280:210,'pillar')));
   [38,44,50].forEach((b,i)=>solids.push(rect(X(b),i%2?430:0,72,i%2?190:255,'pillar')));
   sp(36.4,366,1,.3,false); sp(39.5,105,1,.3,true); sp(45.5,105,1,.3,true); sp(51.5,576,1,.3,false);
-  portals.push(portal(56,MODES.BALL,100,520,360));
+  portals.push(portal(56,MODES.BALL,100,520));
 
   solids.push(rect(X(56),0,X(78)-X(56),90,'ceiling'));
   solids.push(rect(X(56),630,X(78)-X(56),90,'ground'));
   [59,65,71].forEach(b=>solids.push(rect(X(b),390,85,240,'pillar')));
   [62,68,74].forEach(b=>solids.push(rect(X(b),90,85,240,'pillar')));
   sp(60.4,586,2,.3); sp(63.4,90,2,.3,true); sp(69.4,586,2,.3); sp(72.4,90,2,.3,true);
-  portals.push(portal(78,MODES.CUBE,110,500,430));
+  portals.push(portal(78,MODES.CUBE,110,500));
 
   ground(78,84); sp(80.2,556,2,.3); sp(82.5);
   ground(84.7,90); platform(84,.8,530); platform(86,.8,470); platform(88.2,.9,520); sp(89.4);
