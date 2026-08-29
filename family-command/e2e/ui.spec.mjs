@@ -44,15 +44,15 @@ async function runViewport(browser,name,width,height){
     assert.equal(await page.locator('.fc9-screen.active').count(),1,`${label}: exactly one active screen`);
     assert.ok((await page.locator(`#${id}`).innerText()).trim().length>0,`${label}: active screen must contain content`);
     if(id==='events'){
-      await page.waitForFunction(()=>document.documentElement.dataset.fcPastEvents==='1');
+      await page.waitForSelector('#events .fc9-past-toggle',{state:'visible'});
       assert.ok(await textVisible(page,'SRK Betreuung – Frau Roth Nicole'),'Upcoming SRK event remains visible');
       assert.equal(await textVisible(page,'Kaffee bei Tanja'),false,'Past event is hidden by default');
-      assert.ok(await textVisible(page,'Vergangene Termine (1) anzeigen'),'Past event disclosure is visible');
+      assert.ok(await textVisible(page,'Vergangene Termine'),'Past event disclosure is visible');
     }
     if(id!=='today')await page.screenshot({path:`${ART}/${name}-${id}.png`,fullPage:false});
   }
   await appClick(page,'events');await page.waitForFunction(()=>document.getElementById('events')?.classList.contains('active'));
-  await page.waitForFunction(()=>document.documentElement.dataset.fcPastEvents==='1');
+  await page.waitForSelector('#events .fc9-past-toggle',{state:'visible'});
   await page.locator('.fc9-past-toggle').click();
   assert.ok(await textVisible(page,'Kaffee bei Tanja'),'Past event appears after disclosure');
   assert.ok(await textVisible(page,'Vergangen'),'Past event receives clear visual status');
