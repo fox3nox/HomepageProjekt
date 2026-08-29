@@ -6,7 +6,7 @@ import assert from 'node:assert/strict';
 const PORT=4173,BASE=`http://127.0.0.1:${PORT}`,ART='family-command/e2e-artifacts';
 mkdirSync(ART,{recursive:true});
 const mock=readFileSync('family-command/e2e/mock-private-core.js','utf8');
-const deferred=['push-v2.js','runtime-health.js','family-ai-v2.js','ai-budget-guard.js','family-ai-original-links.js','print-planner-v2.js','todo-print-addon.js','backup-manager.js','app-selftest-v6.js'];
+const deferred=['push-v2.js','runtime-health.js','family-ai-v2.js','ai-budget-guard.js','family-ai-original-links.js','backup-manager.js','app-selftest-v6.js'];
 const server=spawn('python3',['-m','http.server',String(PORT),'--directory','family-command'],{stdio:['ignore','pipe','pipe']});
 const sleep=ms=>new Promise(r=>setTimeout(r,ms));
 async function ready(){for(let i=0;i<40;i++){try{const r=await fetch(BASE+'/index.html');if(r.ok)return}catch{}await sleep(100)}throw new Error('local server not ready')}
@@ -15,6 +15,9 @@ async function diagnostics(page,label){const d=await page.evaluate(()=>({boot:do
 async function appClick(page,id){return page.locator(`.fc9-nav button[data-screen="${id}"]`).evaluate(el=>{const t=performance.now();el.click();return Math.round((performance.now()-t)*10)/10})}
 async function runViewport(browser,name,width,height){
   const context=await browser.newContext({viewport:{width,height},isMobile:true,hasTouch:true,userAgent:'Mozilla/5.0 (iPhone; CPU iPhone OS 18_0 like Mac OS X) AppleWebKit/605.1.15 Version/18.0 Mobile/15E148 Safari/604.1'});
+  await context.addInitScript(()=>{
+    try{Object.defineProperty(navigator,'canShare',{configurable:true,value:()=>true});Object.defineProperty(navigator,'share',{configurable:true,value:async payload=>{const f=payload?.files?.[0];window.__fcLastShare=f?{name:f.name,type:f.type,size:f.size}:null;return undefined}})}catch{}
+  });
   const page=await context.newPage(),errors=[];
   page.on('pageerror',e=>errors.push('pageerror: '+e.message));
   page.on('console',m=>{if(m.type()==='error')errors.push('console: '+m.text())});
@@ -41,17 +44,17 @@ async function runViewport(browser,name,width,height){
     assert.equal(await page.locator('.fc9-screen.active').count(),1,`${label}: exactly one active screen`);
     assert.ok((await page.locator(`#${id}`).innerText()).trim().length>0,`${label}: active screen must contain content`);
     if(id==='events'){
-      await page.waitForFunction(()=>document.documentElement.dataset.fcPastEvents==='1');
+      await page.waitForSelector('#events .fc9-past-toggle',{state:'visible'});
       assert.ok(await textVisible(page,'SRK Betreuung – Frau Roth Nicole'),'Upcoming SRK event remains visible');
-      assert.equal(await textVisible(page,'Kaffee bei Tanja'),false,'Past event is hidden by default');
-      assert.ok(await textVisible(page,'Vergangene Termine (1) anzeigen'),'Past event disclosure is visible');
+      assert.equal(await textVisible(page,'Vergangener Testtermin'),false,'Past event is hidden by default');
+      assert.ok(await textVisible(page,'Vergangene Termine'),'Past event disclosure is visible');
     }
     if(id!=='today')await page.screenshot({path:`${ART}/${name}-${id}.png`,fullPage:false});
   }
   await appClick(page,'events');await page.waitForFunction(()=>document.getElementById('events')?.classList.contains('active'));
-  await page.waitForFunction(()=>document.documentElement.dataset.fcPastEvents==='1');
+  await page.waitForSelector('#events .fc9-past-toggle',{state:'visible'});
   await page.locator('.fc9-past-toggle').click();
-  assert.ok(await textVisible(page,'Kaffee bei Tanja'),'Past event appears after disclosure');
+  assert.ok(await textVisible(page,'Vergangener Testtermin'),'Past event appears after disclosure');
   assert.ok(await textVisible(page,'Vergangen'),'Past event receives clear visual status');
   await page.screenshot({path:`${ART}/${name}-events-past.png`,fullPage:false});
   await appClick(page,'tomorrow');await page.waitForFunction(()=>document.getElementById('tomorrow')?.classList.contains('active'));
@@ -59,6 +62,36 @@ async function runViewport(browser,name,width,height){
   assert.ok(await textVisible(page,'Morgen erledigen'),'Tomorrow must render its own todo section; diag='+JSON.stringify(tomorrowDiag));
   assert.ok(await textVisible(page,'Fruchtfliegenfalle für meine Frau in der LANDI kaufen'),'Tomorrow must contain LANDI todo; diag='+JSON.stringify(tomorrowDiag));
   assert.ok(await textVisible(page,'bereits bezahlt, kein Geld mehr verlangen'),'Tomorrow must keep paid note');
+
+  await page.evaluate(()=>window.__fcLoadExtrasNow());
+  await page.waitForFunction(()=>window.__fcPrintPlannerV2?.version==='3.0.0');
+  await page.evaluate(()=>window.fcPrintDay('2026-08-29'));
+  await page.waitForSelector('#fcPrintOverlay .fp-day-sheet');
+  assert.ok(await page.getByText('Fruchtfliegenfalle für meine Frau in der LANDI kaufen',{exact:false}).last().isVisible(),'Day print preview includes personal todo');
+  assert.ok(await page.getByText('SRK Betreuung – Frau Roth Nicole',{exact:false}).last().isVisible(),'Day print preview includes SRK appointment');
+  const dayGeom=await page.evaluate(()=>({vw:innerWidth,scrollW:document.getElementById('fcPrintOverlay')?.scrollWidth||0,sheetW:document.querySelector('.fp-day-sheet')?.getBoundingClientRect().width||0}));
+  assert.ok(dayGeom.scrollW<=dayGeom.vw+1,`Day print preview must not overflow horizontally: ${JSON.stringify(dayGeom)}`);
+  await page.screenshot({path:`${ART}/${name}-print-day.png`,fullPage:false});
+  await page.locator('[data-pdf-action]').click();
+  await page.waitForFunction(()=>window.__fcLastShare?.type==='application/pdf'&&window.__fcLastShare?.size>1000);
+  const dayShare=await page.evaluate(()=>({share:window.__fcLastShare,bytes:Number(document.documentElement.dataset.fcPrintPdfBytes||0),kind:document.documentElement.dataset.fcPrintPdfKind||''}));
+  assert.equal(dayShare.kind,'day');assert.ok(dayShare.bytes>1000,`Day PDF should contain data: ${JSON.stringify(dayShare)}`);
+  await page.locator('[data-close-print]').click();await page.waitForSelector('#fcPrintOverlay',{state:'detached'});
+
+  await page.evaluate(()=>window.fcPrintWeek('2026-08-24'));
+  await page.waitForSelector('#fcPrintOverlay .fp-week-sheet');
+  assert.ok(await page.getByText('Kaffee bei Tanja',{exact:false}).last().isVisible(),'Week preview contains Friday event');
+  const weekGeom=await page.evaluate(()=>({vw:innerWidth,scrollW:document.getElementById('fcPrintOverlay')?.scrollWidth||0,cols:getComputedStyle(document.querySelector('.fp-week-grid')).gridTemplateColumns}));
+  assert.ok(weekGeom.scrollW<=weekGeom.vw+1,`Week print preview must not overflow horizontally: ${JSON.stringify(weekGeom)}`);
+  if(width<=700)assert.ok(!weekGeom.cols.includes(' '),`Mobile week preview should stack days instead of five cramped columns: ${weekGeom.cols}`);
+  await page.screenshot({path:`${ART}/${name}-print-week.png`,fullPage:false});
+  await page.evaluate(()=>{window.__fcLastShare=null});
+  await page.locator('[data-pdf-action]').click();
+  await page.waitForFunction(()=>window.__fcLastShare?.type==='application/pdf'&&window.__fcLastShare?.size>1000);
+  const weekShare=await page.evaluate(()=>({share:window.__fcLastShare,bytes:Number(document.documentElement.dataset.fcPrintPdfBytes||0),kind:document.documentElement.dataset.fcPrintPdfKind||''}));
+  assert.equal(weekShare.kind,'week');assert.ok(weekShare.bytes>1000,`Week PDF should contain data: ${JSON.stringify(weekShare)}`);
+  await page.locator('[data-close-print]').click();
+
   const health=await page.evaluate(()=>window.__fcV9.health());
   assert.deepEqual(health.dup,[],'no duplicate IDs');assert.equal(health.overflow,false,'no horizontal overflow');assert.equal(health.tomorrowTodos.length,1,'exactly one tomorrow todo in fixture');
   assert.ok(health.nav.every(x=>x.h>=44),`all nav touch targets >=44px: ${JSON.stringify(health.nav)}`);
@@ -67,7 +100,7 @@ async function runViewport(browser,name,width,height){
   for(let i=0;i<12;i++){const id=i%2?'today':'tomorrow';await appClick(page,id);await page.waitForFunction(x=>document.getElementById(x)?.classList.contains('active'),id)}
   assert.equal(await page.locator('.fc9-screen.active').count(),1,'rapid tab switching remains stable');
   assert.equal(errors.length,0,'browser errors: '+errors.join(' | '));
-  await context.close();return{name,width,height,boot,timings,geometry,health};
+  await context.close();return{name,width,height,boot,timings,geometry,health,dayShare,weekShare};
 }
 let browser;
 try{await ready();browser=await webkit.launch({headless:true});const results=[];results.push(await runViewport(browser,'iphone-390',390,844));results.push(await runViewport(browser,'iphone-430',430,932));console.log(JSON.stringify({ok:true,results},null,2))}finally{if(browser)await browser.close();server.kill('SIGTERM')}

@@ -1,3 +1,3 @@
-Family Command personal build
-2026-08-28 v8.5.2-native-tomorrow
+Familienzentrale personal build
+2026-08-29 v9.2-responsive-pdf
 private family workspace
