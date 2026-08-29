@@ -6,7 +6,7 @@ let data={version:1,people:[
 {id:'fynn',name:'Fynn',role:'Kind',school:'Schule',color:'#d97914',teachers:[],notes:[]},
 {id:'eliyah',name:'Eliyah',role:'Kindergarten',school:'Kindergarten',color:'#16a477',teachers:[],notes:[]}
 ],schedules:{jayden:{5:[{start:'08:20',end:'11:50',depart:'07:55',label:'Schule'}]},fynn:{5:[{start:'08:20',end:'11:50',depart:'07:55',label:'Schule'}]},eliyah:{5:[{start:'08:20',end:'11:50',depart:'08:10',label:'Kindergarten'}]}},reminders:[],events:[
-{id:'coffee',personIds:['oli'],title:'Kaffee bei Tanja',date:'2026-08-27',time:'08:20',end:'',note:'Kurzer Kaffee.'},
+{id:'oli-tanja-coffee-20260828',personIds:['oli'],title:'Kaffee bei Tanja',date:'2026-08-28',time:'08:20',end:'00:01',note:'Kurzer Kaffee.'},
 {id:'past-fixture',personIds:['oli'],title:'Vergangener Testtermin',date:'2026-08-27',time:'16:00',end:'17:00',note:'Deterministischer Kalender-History-Test.'},
 {id:'srk',personIds:['oli'],title:'SRK Betreuung – Frau Roth Nicole',date:'2026-08-29',time:'07:20',end:'17:15',note:'SRK Kinderbetreuung zu Hause.'},
 {id:'visit',personIds:['jayden'],title:'Besuchswoche',date:'2026-08-31',endDate:'2026-09-04',time:'',end:'',note:'Eltern dürfen den Unterricht besuchen.'}
