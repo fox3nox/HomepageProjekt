@@ -37,9 +37,9 @@ jobs:
           node --check family-command/e2e/mock-private-core.js
           node --check family-command/e2e/mock-private-rules.js
           node --check family-command/e2e/ui.spec.mjs
-      - name: V9.10 native event details regression
+      - name: V9.11 native past-event calendar regression
         run: |
-          grep -q "20260830-v9100" family-command/index.html
+          grep -q "20260830-v9110" family-command/index.html
           grep -q "v9-runtime-ok" family-command/index.html
           grep -q "core-runtime.js" family-command/index.html
           grep -q "__fcCoreRuntime" family-command/index.html
@@ -67,8 +67,7 @@ jobs:
           ! grep -q "tomorrow-screen.js" family-command/app-selftest-v9.js
           grep -q "Familienzentrale" family-command/index.html
           grep -q '"short_name":"Familie"' family-command/manifest.webmanifest
-          grep -q "Vergangene Termine" family-command/v9-professional.js
-          grep -q "family-command-v50" family-command/sw.js
+          grep -q "family-command-v51" family-command/sw.js
           grep -q "core-runtime.js" family-command/sw.js
           grep -q "cloud-state.js" family-command/sw.js
           grep -q "event-details.js" family-command/sw.js
@@ -89,6 +88,18 @@ jobs:
           ! grep -q "v6EditEvent" family-command/v9-app.js
           ! grep -q "__fcV8Shell" family-command/v9-app.js
           grep -q "fcHomeworkOriginals.*open" family-command/v9-app.js
+          grep -q "function eventIsPast" family-command/v9-app.js
+          grep -q "function eventSections" family-command/v9-app.js
+          grep -q "fc9-past-toggle" family-command/v9-app.js
+          grep -q "fc9-past-badge" family-command/v9-app.js
+          grep -q "version:'9.11.0'" family-command/v9-professional.js
+          grep -q "renderWrappers:false" family-command/v9-professional.js
+          grep -q "calendarPostProcessor:false" family-command/v9-professional.js
+          ! grep -q "polishCalendar" family-command/v9-professional.js
+          ! grep -q "splitPastSection" family-command/v9-professional.js
+          ! grep -q "renderEvents" family-command/v9-professional.js
+          ! grep -q "renderWeek" family-command/v9-professional.js
+          ! grep -q "__fcV9.open" family-command/v9-professional.js
           grep -q "version:'3.0.0'" family-command/homework-originals.js
           ! grep -q "v6HomeworkMenu" family-command/homework-originals.js
           grep -q "__fcEventDetailsHealth" family-command/event-details.js
@@ -122,6 +133,8 @@ jobs:
           grep -q "fc-bu-sheet" family-command/e2e/ui.spec.mjs
           grep -q "oldGlobals" family-command/e2e/ui.spec.mjs
           grep -q "v9Version.*9.9.0" family-command/e2e/ui.spec.mjs
+          grep -q "Vergangene Termine" family-command/e2e/ui.spec.mjs
+          grep -q "Vergangen" family-command/e2e/ui.spec.mjs
           test -s family-command/apple-touch-icon.png
           test -s family-command/icon-192.png
           ! grep -qi "Fruchtfliegenfalle" family-command/v9-data.js
