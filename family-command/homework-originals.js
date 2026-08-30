@@ -1,68 +1,24 @@
-/* Family Command · homework originals · 2026-08-24 */
+/* Familienzentrale · homework originals · standalone V9 runtime */
 (()=>{
+  'use strict';
   if(window.__fcHomeworkOriginalsInstalled)return;window.__fcHomeworkOriginalsInstalled=true;
-
   const DOC_BASE='https://lmrvapstojcecljjdgds.supabase.co/functions/v1/family-command-documents';
+  const MODAL='fcHwOriginalModal';
   let cache=null;
-
-  function accessKey(){
-    try{const p=document.cookie.split(';').map(x=>x.trim()).find(x=>x.startsWith('fc_private_access='));if(p)return decodeURIComponent(p.split('=').slice(1).join('='))}catch(e){}
-    try{return localStorage.getItem('fc-private-access-v1')||''}catch(e){return''}
-  }
-  function esc(s){return String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]))}
+  const esc=s=>String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+  function accessKey(){try{const p=document.cookie.split(';').map(x=>x.trim()).find(x=>x.startsWith('fc_private_access='));if(p)return decodeURIComponent(p.split('=').slice(1).join('='))}catch(e){}try{return localStorage.getItem('fc-private-access-v1')||''}catch(e){return''}}
   function toast2(s){try{if(typeof toast==='function')toast(s)}catch(e){}}
-  async function request(path,init={}){
-    const headers=new Headers(init.headers||{});headers.set('x-fc-access',accessKey());
-    return fetch(DOC_BASE+path,{...init,headers,cache:'no-store'});
-  }
-  async function docs(force=false){
-    if(cache&&!force)return cache;
-    const r=await request('/list');if(!r.ok)throw new Error('Dokumente konnten nicht geladen werden');
-    const j=await r.json();cache=Array.isArray(j.documents)?j.documents:[];return cache;
-  }
-  function linked(d,kind,id){
-    if(String(d?.source_kind||'')===kind&&String(d?.source_id||'')===String(id))return true;
-    return Array.isArray(d?.links)&&d.links.some(x=>String(x?.source_kind||'')===kind&&String(x?.source_id||'')===String(id));
-  }
-  async function forHomework(id){return (await docs()).filter(d=>linked(d,'homework',id))}
-
+  async function request(path,init={}){const headers=new Headers(init.headers||{});headers.set('x-fc-access',accessKey());return fetch(DOC_BASE+path,{...init,headers,cache:'no-store'})}
+  async function docs(force=false){if(cache&&!force)return cache;const r=await request('/list');if(!r.ok)throw new Error('Dokumente konnten nicht geladen werden');const j=await r.json();cache=Array.isArray(j.documents)?j.documents:[];return cache}
+  function linked(d,kind,id){if(String(d?.source_kind||'')===kind&&String(d?.source_id||'')===String(id))return true;return Array.isArray(d?.links)&&d.links.some(x=>String(x?.source_kind||'')===kind&&String(x?.source_id||'')===String(id))}
+  async function forHomework(id){return(await docs()).filter(d=>linked(d,'homework',id))}
+  function hw(id){return(Array.isArray(data?.homework)?data.homework:[]).find(x=>String(x.id)===String(id))||null}
   function ensureStyle(){if(document.getElementById('fc-hw-original-style'))return;const s=document.createElement('style');s.id='fc-hw-original-style';s.textContent=`
-    .fc-hw-originals{margin:4px 0 12px;padding:12px;border:1px solid #1d3047;background:#091522;border-radius:14px}.fc-hw-originals>div:first-child{display:flex;align-items:center;justify-content:space-between;gap:10px;margin-bottom:8px}.fc-hw-originals h3{margin:0!important;font-size:12px!important;color:#f2f5f9!important}.fc-hw-originals small{color:#7e8fa7;font-size:9px}.fc-hw-docs{display:grid;gap:7px}.fc-hw-doc{width:100%;min-height:44px;border:1px solid #263a52;background:#0d1c2c;color:#e8edf5;border-radius:11px;padding:9px 10px;display:flex;align-items:center;gap:9px;text-align:left}.fc-hw-doc strong{flex:none;min-width:34px;font-size:9px;color:#8dafff}.fc-hw-doc span{min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;font-size:11px;font-weight:750}.fc-hw-add-original{width:100%;min-height:42px;margin-top:8px;border:1px dashed #334a67;background:transparent;color:#aebbd0;border-radius:11px;font-size:11px;font-weight:750}.fc-hw-original-empty{font-size:10px;color:#7e8fa7;padding:2px 0 4px}.fc-hw-uploading{opacity:.65;pointer-events:none}
-  `;document.head.appendChild(s)}
-
-  async function enhanceMenu(id){
-    const menu=document.getElementById('v6HwMenu'),sheet=menu?.querySelector('.v6-sheet');if(!sheet)return;
-    sheet.querySelector('.fc-hw-originals')?.remove();
-    const box=document.createElement('section');box.className='fc-hw-originals';box.innerHTML='<div><h3>Original & Vorlage</h3><small>Privat gespeichert</small></div><div class="fc-hw-docs"><div class="fc-hw-original-empty">Wird geladen …</div></div><button type="button" class="fc-hw-add-original">＋ Foto oder PDF hinzufügen</button>';
-    const actions=sheet.querySelector('.v6-sheet-actions');sheet.insertBefore(box,actions||null);
-    box.querySelector('.fc-hw-add-original').onclick=()=>pickFile(id,box);
-    try{
-      const list=await forHomework(id);const root=box.querySelector('.fc-hw-docs');
-      if(!list.length)root.innerHTML='<div class="fc-hw-original-empty">Noch kein Original mit dieser Aufgabe verknüpft.</div>';
-      else root.innerHTML=list.map(d=>`<button type="button" class="fc-hw-doc" data-doc="${esc(d.id)}"><strong>${String(d.mime_type||'').includes('pdf')?'PDF':'BILD'}</strong><span>${esc(d.title||'Original')}</span></button>`).join('');
-      root.querySelectorAll('[data-doc]').forEach(b=>b.onclick=()=>{if(typeof fcOpenOriginal==='function')fcOpenOriginal(b.dataset.doc)});
-    }catch(e){box.querySelector('.fc-hw-docs').innerHTML='<div class="fc-hw-original-empty">Originale konnten nicht geladen werden.</div>'}
-  }
-
-  function pickFile(id,box){
-    const h=(Array.isArray(data?.homework)?data.homework:[]).find(x=>String(x.id)===String(id));if(!h)return;
-    const input=document.createElement('input');input.type='file';input.accept='image/*,application/pdf';input.style.display='none';
-    input.onchange=async()=>{const file=input.files?.[0];if(!file){input.remove();return}if(file.size>15*1024*1024){toast2('Datei ist größer als 15 MB');input.remove();return}
-      box.classList.add('fc-hw-uploading');
-      try{
-        const form=new FormData();form.append('file',file);form.append('personId',h.personId||'');form.append('title',file.name||h.title||'Hausaufgabe Original');form.append('sourceKind','homework');form.append('sourceId',String(id));
-        const r=await request('/upload',{method:'POST',body:form});const j=await r.json().catch(()=>({}));if(!r.ok)throw new Error(j.error||'Upload fehlgeschlagen');cache=null;toast2('Original gespeichert und angeheftet');await enhanceMenu(id);
-      }catch(e){console.error('fc_hw_original_upload',e);toast2('Original konnte nicht gespeichert werden')}
-      finally{box.classList.remove('fc-hw-uploading');input.remove()}
-    };
-    document.body.appendChild(input);input.click();
-  }
-
+    .fc-hwo-modal{position:fixed;inset:0;z-index:100350;background:rgba(15,23,42,.45);backdrop-filter:blur(5px);display:flex;align-items:flex-end;justify-content:center;padding:12px 12px calc(12px + env(safe-area-inset-bottom))}.fc-hwo-sheet{width:min(560px,100%);max-height:90dvh;overflow:auto;background:#fff;border-radius:24px;padding:16px;box-shadow:0 22px 60px rgba(15,23,42,.25)}.fc-hwo-head{display:flex;justify-content:space-between;gap:12px;align-items:flex-start}.fc-hwo-head small{display:block;font-size:8px;font-weight:1000;letter-spacing:.12em;color:#7a8494}.fc-hwo-head h2{margin:4px 0 0;font-size:21px;color:#172033}.fc-hwo-close{width:38px;height:38px;border:0;border-radius:999px;background:#f1f5f9;color:#475569;font-size:22px}.fc-hwo-list{display:grid;gap:8px;margin-top:14px}.fc-hwo-doc{width:100%;min-height:52px;border:1px solid #dfe5ed;background:#f8fafc;border-radius:13px;padding:10px;display:flex;align-items:center;gap:10px;text-align:left}.fc-hwo-doc strong{flex:none;min-width:42px;font-size:9px;color:#315f97}.fc-hwo-doc span{font-size:12px;font-weight:800;color:#27364a;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}.fc-hwo-empty{padding:18px;border:1px dashed #d6dde7;border-radius:13px;color:#7a8494;font-size:11px;text-align:center}.fc-hwo-add{display:flex;align-items:center;justify-content:center;width:100%;min-height:48px;margin-top:12px;border:1px dashed #9fb0c5;border-radius:13px;background:#f8fafc;color:#315f97;font-size:12px;font-weight:900;cursor:pointer}.fc-hwo-busy{opacity:.6;pointer-events:none}`;document.head.appendChild(s)}
+  async function renderList(id,root){try{const list=await forHomework(id);root.innerHTML=list.length?list.map(d=>`<button type="button" class="fc-hwo-doc" data-doc="${esc(d.id)}"><strong>${String(d.mime_type||'').includes('pdf')?'PDF':'BILD'}</strong><span>${esc(d.title||'Original')}</span></button>`).join(''):'<div class="fc-hwo-empty">Noch kein Original mit dieser Schulaufgabe verknüpft.</div>';root.querySelectorAll('[data-doc]').forEach(b=>b.onclick=()=>window.fcOpenOriginal?.(b.dataset.doc))}catch(e){root.innerHTML='<div class="fc-hwo-empty">Originale konnten nicht geladen werden.</div>'}}
+  async function upload(id,file,modal){const h=hw(id);if(!h||!file)return;if(file.size>15*1024*1024)return toast2('Datei ist größer als 15 MB');modal?.classList.add('fc-hwo-busy');try{const form=new FormData();form.append('file',file,file.name);form.append('personId',h.personId||'');form.append('title',file.name||h.title||'Schulaufgabe Original');form.append('sourceKind','homework');form.append('sourceId',String(id));const r=await request('/upload',{method:'POST',body:form});const j=await r.json().catch(()=>({}));if(!r.ok)throw new Error(j.error||'Upload fehlgeschlagen');cache=null;toast2('Original gespeichert und angeheftet');const root=modal?.querySelector('.fc-hwo-list');if(root)await renderList(id,root)}catch(e){console.error('fc_hw_original_upload',e);toast2('Original konnte nicht gespeichert werden')}finally{modal?.classList.remove('fc-hwo-busy')}}
+  function open(id){const h=hw(id);if(!h)return toast2('Schulaufgabe nicht gefunden');document.getElementById(MODAL)?.remove();ensureStyle();const m=document.createElement('div');m.id=MODAL;m.className='fc-hwo-modal';const inputId='fcHwoFile';m.innerHTML=`<section class="fc-hwo-sheet" role="dialog" aria-modal="true"><div class="fc-hwo-head"><div><small>ORIGINALE & VORLAGEN</small><h2>${esc(h.title||'Schulaufgabe')}</h2></div><button type="button" class="fc-hwo-close">×</button></div><div class="fc-hwo-list"><div class="fc-hwo-empty">Wird geladen …</div></div><input id="${inputId}" type="file" accept="image/*,application/pdf" capture="environment" hidden><label class="fc-hwo-add" for="${inputId}">＋ Foto oder PDF hinzufügen</label></section>`;m.querySelector('.fc-hwo-close').onclick=()=>m.remove();m.onclick=e=>{if(e.target===m)m.remove()};m.querySelector('#'+inputId).onchange=e=>{const f=e.target.files?.[0];if(f)upload(id,f,m);e.target.value=''};document.body.appendChild(m);renderList(id,m.querySelector('.fc-hwo-list'));return m}
   ensureStyle();
-  const raw=window.v6HomeworkMenu;
-  if(typeof raw==='function'){
-    window.v6HomeworkMenu=function(id){const out=raw.call(this,id);queueMicrotask(()=>enhanceMenu(id));return out};
-    try{v6HomeworkMenu=window.v6HomeworkMenu}catch(e){}
-  }
-  window.fcHomeworkOriginals={list:forHomework,refresh:()=>{cache=null},version:'1'};
+  window.fcHomeworkOriginals={list:forHomework,refresh:()=>{cache=null},open,version:'2.0.0'};
+  if(typeof window.v6HomeworkMenu!=='function')window.v6HomeworkMenu=open;
 })();
