@@ -39,9 +39,9 @@ jobs:
           node --check family-command/e2e/mock-private-rules.js
           node --check family-command/e2e/ui.spec.mjs
           node --check family-command/e2e/document-viewer.spec.mjs
-      - name: V9.13 readable documents regression
+      - name: V9.14 document integrity regression
         run: |
-          grep -q "20260830-v9130" family-command/index.html
+          grep -q "20260830-v9140" family-command/index.html
           grep -q "v9-runtime-ok" family-command/index.html
           grep -q "core-runtime.js" family-command/index.html
           grep -q "__fcCoreRuntime" family-command/index.html
@@ -71,8 +71,8 @@ jobs:
           ! grep -q "tomorrow-screen.js" family-command/app-selftest-v9.js
           grep -q "Familienzentrale" family-command/index.html
           grep -q '"short_name":"Familie"' family-command/manifest.webmanifest
-          grep -q "v9.13-readable-documents" family-command/build.txt
-          grep -q "family-command-v53" family-command/sw.js
+          grep -q "v9.14-document-integrity" family-command/build.txt
+          grep -q "family-command-v54" family-command/sw.js
           grep -q "core-runtime.js" family-command/sw.js
           grep -q "cloud-state.js" family-command/sw.js
           grep -q "document-viewer.js" family-command/sw.js
@@ -87,6 +87,8 @@ jobs:
           grep -q "v9Native:true" family-command/document-viewer.js
           grep -q "readable:true" family-command/document-viewer.js
           grep -q "original:true" family-command/document-viewer.js
+          grep -q "originalPath:true" family-command/document-viewer.js
+          grep -q "original=1" family-command/document-viewer.js
           grep -q "zoom:true" family-command/document-viewer.js
           grep -q "legacyWrapper:false" family-command/document-viewer.js
           grep -q "window.fcOpenOriginal=open" family-command/document-viewer.js
@@ -183,6 +185,7 @@ jobs:
           grep -q "document-viewer.spec.mjs" .github/workflows/family-command-pro67-check.yml
           grep -q "Lesefassung" family-command/e2e/document-viewer.spec.mjs
           grep -q "data-zoom-in" family-command/e2e/document-viewer.spec.mjs
+          grep -q "original=1" family-command/e2e/document-viewer.spec.mjs
           grep -q "390,844" family-command/e2e/document-viewer.spec.mjs
           grep -q "430,932" family-command/e2e/document-viewer.spec.mjs
           test -s family-command/apple-touch-icon.png
