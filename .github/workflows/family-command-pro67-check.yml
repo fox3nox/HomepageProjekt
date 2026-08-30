@@ -37,9 +37,9 @@ jobs:
           node --check family-command/e2e/mock-private-core.js
           node --check family-command/e2e/mock-private-rules.js
           node --check family-command/e2e/ui.spec.mjs
-      - name: V9.9 native runtime regression
+      - name: V9.10 native event details regression
         run: |
-          grep -q "20260830-v990" family-command/index.html
+          grep -q "20260830-v9100" family-command/index.html
           grep -q "v9-runtime-ok" family-command/index.html
           grep -q "core-runtime.js" family-command/index.html
           grep -q "__fcCoreRuntime" family-command/index.html
@@ -49,6 +49,9 @@ jobs:
           ! grep -q "family-command-private-app" family-command/index.html
           ! grep -q "executePrivate" family-command/index.html
           ! grep -q "PRIVATE_CODE_VERSION" family-command/index.html
+          ! grep -q "NO_OBSERVER" family-command/index.html
+          ! grep -q "MutationObserver" family-command/index.html
+          grep -q "function executeCritical(file,code){execute" family-command/index.html
           grep -q "no private UI bundle" family-command/core-runtime.js
           grep -q "legacyBundle:false" family-command/core-runtime.js
           grep -q "family-command-state-v2" family-command/cloud-state.js
@@ -65,9 +68,10 @@ jobs:
           grep -q "Familienzentrale" family-command/index.html
           grep -q '"short_name":"Familie"' family-command/manifest.webmanifest
           grep -q "Vergangene Termine" family-command/v9-professional.js
-          grep -q "family-command-v49" family-command/sw.js
+          grep -q "family-command-v50" family-command/sw.js
           grep -q "core-runtime.js" family-command/sw.js
           grep -q "cloud-state.js" family-command/sw.js
+          grep -q "event-details.js" family-command/sw.js
           grep -q "print-planner-v2.js" family-command/sw.js
           grep -q "backup-manager.js" family-command/sw.js
           grep -q "app-selftest-v9.js" family-command/sw.js
@@ -87,6 +91,23 @@ jobs:
           grep -q "fcHomeworkOriginals.*open" family-command/v9-app.js
           grep -q "version:'3.0.0'" family-command/homework-originals.js
           ! grep -q "v6HomeworkMenu" family-command/homework-originals.js
+          grep -q "__fcEventDetailsHealth" family-command/event-details.js
+          grep -q "v9Native:true" family-command/event-details.js
+          grep -q "mutationObserver:false" family-command/event-details.js
+          grep -q "renderWrappers:false" family-command/event-details.js
+          grep -q "legacySelectors:false" family-command/event-details.js
+          grep -q "fc-detail-pick" family-command/event-details.js
+          grep -q "fc-picker-sheet" family-command/event-details.js
+          ! grep -q "MutationObserver" family-command/event-details.js
+          ! grep -q "pro-event" family-command/event-details.js
+          ! grep -q "fc-7day" family-command/event-details.js
+          ! grep -q "pro-modal" family-command/event-details.js
+          ! grep -q "pro-sheet" family-command/event-details.js
+          ! grep -q "enhanceEventCards" family-command/event-details.js
+          ! grep -q "enhance7Day" family-command/event-details.js
+          ! grep -q "renderEvents" family-command/event-details.js
+          ! grep -q "renderToday" family-command/event-details.js
+          ! grep -q "renderWeek" family-command/event-details.js
           grep -q "v9Native:true" family-command/backup-manager.js
           grep -q "legacySelectors:false" family-command/backup-manager.js
           grep -q "renderWrapper:false" family-command/backup-manager.js
@@ -94,6 +115,9 @@ jobs:
           ! grep -q "\.screen.active" family-command/backup-manager.js
           ! grep -q "__fcV8Shell" family-command/backup-manager.js
           ! grep -q "renderMore" family-command/backup-manager.js
+          grep -q "eventDetailsHealth" family-command/e2e/ui.spec.mjs
+          grep -q "fc-detail-pick" family-command/e2e/ui.spec.mjs
+          grep -q "fcDocPicker" family-command/e2e/ui.spec.mjs
           grep -q "family-command-backups" family-command/e2e/ui.spec.mjs
           grep -q "fc-bu-sheet" family-command/e2e/ui.spec.mjs
           grep -q "oldGlobals" family-command/e2e/ui.spec.mjs
