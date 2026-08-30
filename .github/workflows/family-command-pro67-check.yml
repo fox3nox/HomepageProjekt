@@ -20,6 +20,7 @@ jobs:
         run: |
           node --check family-command/core-runtime.js
           node --check family-command/cloud-state.js
+          node --check family-command/document-viewer.js
           node --check family-command/v9-app.js
           node --check family-command/v9-professional.js
           node --check family-command/v9-data.js
@@ -37,9 +38,10 @@ jobs:
           node --check family-command/e2e/mock-private-core.js
           node --check family-command/e2e/mock-private-rules.js
           node --check family-command/e2e/ui.spec.mjs
-      - name: V9.12 native event actions regression
+          node --check family-command/e2e/document-viewer.spec.mjs
+      - name: V9.13 readable documents regression
         run: |
-          grep -q "20260830-v9120" family-command/index.html
+          grep -q "20260830-v9130" family-command/index.html
           grep -q "v9-runtime-ok" family-command/index.html
           grep -q "core-runtime.js" family-command/index.html
           grep -q "__fcCoreRuntime" family-command/index.html
@@ -58,6 +60,8 @@ jobs:
           grep -q "canonical Supabase state" family-command/cloud-state.js
           grep -q "FC_PRIVATE_RULES" family-command/app-data-rules.js
           grep -q "FC_PRIVATE_RULES" family-command/v9-data.js
+          grep -q "document-viewer.js" family-command/index.html
+          grep -q "document-viewer.css" family-command/index.html
           grep -q "v9-app.js" family-command/index.html
           grep -q "v9-professional.js" family-command/index.html
           grep -q "app-selftest-v9.js" family-command/index.html
@@ -67,15 +71,32 @@ jobs:
           ! grep -q "tomorrow-screen.js" family-command/app-selftest-v9.js
           grep -q "Familienzentrale" family-command/index.html
           grep -q '"short_name":"Familie"' family-command/manifest.webmanifest
-          grep -q "v9.12-native-event-actions" family-command/build.txt
-          grep -q "family-command-v52" family-command/sw.js
+          grep -q "v9.13-readable-documents" family-command/build.txt
+          grep -q "family-command-v53" family-command/sw.js
           grep -q "core-runtime.js" family-command/sw.js
           grep -q "cloud-state.js" family-command/sw.js
+          grep -q "document-viewer.js" family-command/sw.js
+          grep -q "document-viewer.css" family-command/sw.js
           grep -q "event-details.js" family-command/sw.js
           grep -q "print-planner-v2.js" family-command/sw.js
           grep -q "backup-manager.js" family-command/sw.js
           grep -q "app-selftest-v9.js" family-command/sw.js
           grep -q "application/pdf" family-command/print-planner-v2.js
+          grep -q "__fcDocumentViewerHealth" family-command/document-viewer.js
+          grep -q "version:VERSION" family-command/document-viewer.js
+          grep -q "v9Native:true" family-command/document-viewer.js
+          grep -q "readable:true" family-command/document-viewer.js
+          grep -q "original:true" family-command/document-viewer.js
+          grep -q "zoom:true" family-command/document-viewer.js
+          grep -q "legacyWrapper:false" family-command/document-viewer.js
+          grep -q "window.fcOpenOriginal=open" family-command/document-viewer.js
+          grep -q "Lesefassung" family-command/document-viewer.js
+          grep -q "/readable?id=" family-command/document-viewer.js
+          grep -q "fc-dv-table-wrap" family-command/document-viewer.css
+          grep -q "fc-dv-original-img" family-command/document-viewer.css
+          ! grep -qi "Jayden" family-command/document-viewer.js
+          ! grep -qi "Fynn" family-command/document-viewer.js
+          ! grep -qi "Eliyah" family-command/document-viewer.js
           grep -q "v9Native:true" family-command/event-delete-fix.js
           grep -q "__fcEventDeleteInstalled" family-command/event-delete-fix.js
           grep -q "legacyGuard:false" family-command/event-delete-fix.js
@@ -159,6 +180,11 @@ jobs:
           grep -q "Vergangene Termine" family-command/e2e/ui.spec.mjs
           grep -q "Vergangen" family-command/e2e/ui.spec.mjs
           ! grep -q "visit-fixture-2" family-command/e2e/ui.spec.mjs
+          grep -q "document-viewer.spec.mjs" .github/workflows/family-command-pro67-check.yml
+          grep -q "Lesefassung" family-command/e2e/document-viewer.spec.mjs
+          grep -q "data-zoom-in" family-command/e2e/document-viewer.spec.mjs
+          grep -q "390,844" family-command/e2e/document-viewer.spec.mjs
+          grep -q "430,932" family-command/e2e/document-viewer.spec.mjs
           test -s family-command/apple-touch-icon.png
           test -s family-command/icon-192.png
           ! grep -qi "Fruchtfliegenfalle" family-command/v9-data.js
@@ -191,7 +217,9 @@ jobs:
           npm install --no-save --package-lock=false playwright@1.57.0
           npx playwright install --with-deps webkit
       - name: iPhone WebKit end-to-end
-        run: node family-command/e2e/ui.spec.mjs
+        run: |
+          node family-command/e2e/ui.spec.mjs
+          node family-command/e2e/document-viewer.spec.mjs
       - name: Upload UI screenshots
         if: always()
         uses: actions/upload-artifact@v4
