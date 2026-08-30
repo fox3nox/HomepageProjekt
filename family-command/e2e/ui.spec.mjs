@@ -7,7 +7,7 @@ const PORT=4173,BASE=`http://127.0.0.1:${PORT}`,ART='family-command/e2e-artifact
 const SUPABASE_FUNCTIONS='https://lmrvapstojcecljjdgds.supabase.co/functions/v1/';
 mkdirSync(ART,{recursive:true});
 const stateSeed=readFileSync('family-command/e2e/mock-private-core.js','utf8');
-const deferred=['push-v2.js','runtime-health.js','family-ai-v2.js','ai-budget-guard.js','family-ai-original-links.js','backup-manager.js','app-selftest-v6.js'];
+const deferred=['push-v2.js','runtime-health.js','ai-budget-guard.js','family-ai-original-links.js','backup-manager.js'];
 const server=spawn('python3',['-m','http.server',String(PORT),'--directory','family-command'],{stdio:['ignore','pipe','pipe']});
 const sleep=ms=>new Promise(r=>setTimeout(r,ms));
 async function ready(){for(let i=0;i<40;i++){try{const r=await fetch(BASE+'/index.html');if(r.ok)return}catch{}await sleep(100)}throw new Error('local server not ready')}
@@ -91,6 +91,10 @@ async function runViewport(browser,name,width,height){
 
   await page.evaluate(()=>window.__fcLoadExtrasNow());
   await page.waitForFunction(()=>window.__fcPrintPlannerV2?.version==='3.0.0');
+  await page.waitForFunction(()=>window.__fcSelfTestV9?.version==='9.0.0');
+  const selfTest=await page.evaluate(()=>window.fcRunSelfTest?.());
+  assert.equal(selfTest?.legacyLoaders,false,'V9 self-test must never load legacy modules');
+  assert.equal(selfTest?.ok,true,'V9 self-test must pass: '+JSON.stringify(selfTest?.critical||[]));
   await page.evaluate(()=>window.fcPrintDay('2026-08-29'));
   await page.waitForSelector('#fcPrintOverlay .fp-day-sheet');
   assert.ok(await page.getByText('Testaufgabe für morgen',{exact:false}).last().isVisible());
@@ -133,7 +137,7 @@ async function runViewport(browser,name,width,height){
   assert.deepEqual(unexpectedExternal,[],'unexpected external Supabase calls: '+unexpectedExternal.join(' | '));
   assert.equal(errors.length,0,'browser errors: '+errors.join(' | '));
   await context.close();
-  return{name,width,height,boot,timings,runtime,dayShare,weekShare};
+  return{name,width,height,boot,timings,runtime,selfTest,dayShare,weekShare};
 }
 
 let browser;
