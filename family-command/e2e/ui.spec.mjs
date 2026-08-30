@@ -4,6 +4,7 @@ import { readFileSync, mkdirSync } from 'node:fs';
 import assert from 'node:assert/strict';
 
 const PORT=4173,BASE=`http://127.0.0.1:${PORT}`,ART='family-command/e2e-artifacts';
+const SUPABASE_FUNCTIONS='https://lmrvapstojcecljjdgds.supabase.co/functions/v1/';
 mkdirSync(ART,{recursive:true});
 const stateSeed=readFileSync('family-command/e2e/mock-private-core.js','utf8');
 const deferred=['push-v2.js','runtime-health.js','family-ai-v2.js','ai-budget-guard.js','family-ai-original-links.js','backup-manager.js','app-selftest-v6.js'];
@@ -14,14 +15,25 @@ async function textVisible(page,text){return page.locator('.fc9-screen.active').
 async function appClick(page,id){return page.locator(`.fc9-nav button[data-screen="${id}"]`).evaluate(el=>{const t=performance.now();el.click();return Math.round((performance.now()-t)*10)/10})}
 
 async function runViewport(browser,name,width,height){
-  const context=await browser.newContext({viewport:{width,height},isMobile:true,hasTouch:true,userAgent:'Mozilla/5.0 (iPhone; CPU iPhone OS 18_0 like Mac OS X) AppleWebKit/605.1.15 Version/18.0 Mobile/15E148 Safari/604.1'});
+  /* Service workers are tested separately by static/architecture checks. Blocking them here keeps
+     the UI E2E deterministic and ensures no service-worker fetch can bypass Playwright routing. */
+  const context=await browser.newContext({viewport:{width,height},isMobile:true,hasTouch:true,serviceWorkers:'block',userAgent:'Mozilla/5.0 (iPhone; CPU iPhone OS 18_0 like Mac OS X) AppleWebKit/605.1.15 Version/18.0 Mobile/15E148 Safari/604.1'});
   await context.addInitScript({content:stateSeed});
   await context.addInitScript(()=>{try{Object.defineProperty(navigator,'canShare',{configurable:true,value:()=>true});Object.defineProperty(navigator,'share',{configurable:true,value:async payload=>{const f=payload?.files?.[0];window.__fcLastShare=f?{name:f.name,type:f.type,size:f.size}:null}})}catch{}});
-  const page=await context.newPage(),errors=[];
+  const page=await context.newPage(),errors=[],unexpectedExternal=[];
   page.on('pageerror',e=>errors.push('pageerror: '+e.message));
   page.on('console',m=>{if(m.type()==='error')errors.push('console: '+m.text())});
-  await page.route('**/functions/v1/family-command-chat-commands*',r=>r.fulfill({status:200,contentType:'application/json',body:JSON.stringify({ok:true,commands:[]}),headers:{'access-control-allow-origin':'*'}}));
-  await page.route('**/functions/v1/family-command-documents/**',r=>r.fulfill({status:200,contentType:'application/json',body:JSON.stringify({documents:[]}),headers:{'access-control-allow-origin':'*'}}));
+  page.on('response',r=>{if(r.status()>=400)errors.push(`http ${r.status()}: ${r.url()}`)});
+
+  /* Never let the local E2E touch a real Supabase function. Expected calls are fulfilled from
+     deterministic fixtures; any unexpected function is recorded and still receives a harmless 200. */
+  await page.route(SUPABASE_FUNCTIONS+'**',route=>{
+    const url=route.request().url();
+    if(url.includes('/family-command-chat-commands'))return route.fulfill({status:200,contentType:'application/json',body:JSON.stringify({ok:true,commands:[]}),headers:{'access-control-allow-origin':'*'}});
+    if(url.includes('/family-command-documents'))return route.fulfill({status:200,contentType:'application/json',body:JSON.stringify({ok:true,documents:[]}),headers:{'access-control-allow-origin':'*'}});
+    unexpectedExternal.push(url);
+    return route.fulfill({status:200,contentType:'application/json',body:JSON.stringify({ok:true,test:true}),headers:{'access-control-allow-origin':'*'}});
+  });
   for(const file of deferred)await page.route(`**/${file}?*`,r=>r.fulfill({status:200,contentType:'application/javascript',body:'/* deferred disabled in e2e */'}));
 
   const start=Date.now();
@@ -118,6 +130,7 @@ async function runViewport(browser,name,width,height){
   assert.ok(health.nav.every(x=>x.h>=44),`touch targets: ${JSON.stringify(health.nav)}`);
   for(let i=0;i<12;i++){const id=i%2?'today':'tomorrow';await appClick(page,id);await page.waitForFunction(x=>document.getElementById(x)?.classList.contains('active'),id)}
   assert.equal(await page.locator('.fc9-screen.active').count(),1);
+  assert.deepEqual(unexpectedExternal,[],'unexpected external Supabase calls: '+unexpectedExternal.join(' | '));
   assert.equal(errors.length,0,'browser errors: '+errors.join(' | '));
   await context.close();
   return{name,width,height,boot,timings,runtime,dayShare,weekShare};
