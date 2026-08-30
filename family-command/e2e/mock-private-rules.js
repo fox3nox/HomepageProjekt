@@ -5,7 +5,7 @@ window.FC_PRIVATE_RULES={
     {
       op:'upsert',collection:'todos',
       matchAny:[{id:'todo-e2e-next-day'}],
-      value:{id:'todo-e2e-next-day',title:'Testaufgabe für morgen – bereits erledigt vorbereitet',date:'2026-08-29',section:'day',priority:true,done:false,archived:false}
+      value:{id:'todo-e2e-next-day',title:'Fruchtfliegenfalle für meine Frau in der LANDI kaufen – bereits bezahlt, kein Geld mehr verlangen',date:'2026-08-29',section:'day',priority:true,done:false,archived:false}
     }
   ],
   scheduleRules:{departures:[],notes:[],pickupRules:[]},
