@@ -37,9 +37,9 @@ jobs:
           node --check family-command/e2e/mock-private-core.js
           node --check family-command/e2e/mock-private-rules.js
           node --check family-command/e2e/ui.spec.mjs
-      - name: V9.8 native backup regression
+      - name: V9.9 native runtime regression
         run: |
-          grep -q "20260830-v980" family-command/index.html
+          grep -q "20260830-v990" family-command/index.html
           grep -q "v9-runtime-ok" family-command/index.html
           grep -q "core-runtime.js" family-command/index.html
           grep -q "__fcCoreRuntime" family-command/index.html
@@ -65,7 +65,7 @@ jobs:
           grep -q "Familienzentrale" family-command/index.html
           grep -q '"short_name":"Familie"' family-command/manifest.webmanifest
           grep -q "Vergangene Termine" family-command/v9-professional.js
-          grep -q "family-command-v48" family-command/sw.js
+          grep -q "family-command-v49" family-command/sw.js
           grep -q "core-runtime.js" family-command/sw.js
           grep -q "cloud-state.js" family-command/sw.js
           grep -q "print-planner-v2.js" family-command/sw.js
@@ -76,8 +76,17 @@ jobs:
           ! grep -q "__fcV8Shell" family-command/event-delete-fix.js
           grep -q "legacyBundle:false" family-command/runtime-health.js
           ! grep -q "legacyPushDisabled" family-command/runtime-health.js
-          grep -q "version:'2.1.0'" family-command/homework-originals.js
-          grep -q "window.v6HomeworkMenu=open" family-command/homework-originals.js
+          grep -q "const VERSION='9.9.0'" family-command/v9-app.js
+          grep -q "function installRuntimeAPI" family-command/v9-app.js
+          ! grep -q "installCompatibility" family-command/v9-app.js
+          ! grep -q "v6HomeworkMenu" family-command/v9-app.js
+          ! grep -q "v6OpenHomework" family-command/v9-app.js
+          ! grep -q "v6EditHomework" family-command/v9-app.js
+          ! grep -q "v6EditEvent" family-command/v9-app.js
+          ! grep -q "__fcV8Shell" family-command/v9-app.js
+          grep -q "fcHomeworkOriginals.*open" family-command/v9-app.js
+          grep -q "version:'3.0.0'" family-command/homework-originals.js
+          ! grep -q "v6HomeworkMenu" family-command/homework-originals.js
           grep -q "v9Native:true" family-command/backup-manager.js
           grep -q "legacySelectors:false" family-command/backup-manager.js
           grep -q "renderWrapper:false" family-command/backup-manager.js
@@ -87,6 +96,8 @@ jobs:
           ! grep -q "renderMore" family-command/backup-manager.js
           grep -q "family-command-backups" family-command/e2e/ui.spec.mjs
           grep -q "fc-bu-sheet" family-command/e2e/ui.spec.mjs
+          grep -q "oldGlobals" family-command/e2e/ui.spec.mjs
+          grep -q "v9Version.*9.9.0" family-command/e2e/ui.spec.mjs
           test -s family-command/apple-touch-icon.png
           test -s family-command/icon-192.png
           ! grep -qi "Fruchtfliegenfalle" family-command/v9-data.js
