@@ -1,7 +1,7 @@
 /* Familienzentrale · reliable event deletion · V9 native · observer-free */
 (()=>{
   'use strict';
-  if(window.__fcEventDeleteV6)return;window.__fcEventDeleteV6=true;
+  if(window.__fcEventDeleteInstalled)return;window.__fcEventDeleteInstalled=true;
   const TOMBSTONES='fc-deleted-events-v1',MODAL='fcDeleteConfirm';
   const deleted=()=>{try{return new Set(JSON.parse(localStorage.getItem(TOMBSTONES)||'[]'))}catch(e){return new Set()}};
   const saveDeleted=s=>{try{localStorage.setItem(TOMBSTONES,JSON.stringify([...s]))}catch(e){}};
@@ -18,5 +18,5 @@
   window.fcRestoreDeletedEvent=function(id){const s=deleted();s.delete(String(id||''));saveDeleted(s)};
   if(prune())persist();
   if(!document.getElementById('fc-delete-v9-style')){const s=document.createElement('style');s.id='fc-delete-v9-style';s.textContent='.fc-delete-confirm{position:fixed;inset:0;z-index:100400;background:rgba(15,23,42,.42);display:flex;align-items:flex-end;justify-content:center;padding:14px 14px calc(14px + env(safe-area-inset-bottom));backdrop-filter:blur(4px)}.fc-delete-sheet{width:min(100%,520px);background:#fff;border-radius:20px;padding:18px;box-shadow:0 18px 50px rgba(15,23,42,.22)}.fc-delete-sheet h3{margin:0;color:#172033;font-size:19px}.fc-delete-sheet p{margin:7px 0 16px;color:#667085;font-size:13px}.fc-delete-sheet>div{display:grid;grid-template-columns:1fr 1fr;gap:9px}.fc-delete-sheet button{min-height:46px;border-radius:12px;font-weight:850;font-size:14px}.fc-delete-cancel{background:#f5f7fa;border:1px solid #dce3ec;color:#455267}.fc-delete-yes{background:#b4232c;border:1px solid #b4232c;color:#fff}';document.head.appendChild(s)}
-  window.__fcDeleteHealth={version:7,observer:false,tombstones:true,customConfirm:true,v9Native:true};
+  window.__fcDeleteHealth={version:8,observer:false,tombstones:true,customConfirm:true,v9Native:true,legacyGuard:false};
 })();
