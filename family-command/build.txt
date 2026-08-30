@@ -1,3 +1,3 @@
 Familienzentrale personal build
-2026-08-30 v9.7-legacy-file-cleanup
+2026-08-30 v9.8-v9-native-backups
 private family workspace
