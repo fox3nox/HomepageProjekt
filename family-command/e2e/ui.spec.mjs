@@ -7,7 +7,7 @@ const PORT=4173,BASE=`http://127.0.0.1:${PORT}`,ART='family-command/e2e-artifact
 const SUPABASE_FUNCTIONS='https://lmrvapstojcecljjdgds.supabase.co/functions/v1/';
 mkdirSync(ART,{recursive:true});
 const stateSeed=readFileSync('family-command/e2e/mock-private-core.js','utf8');
-const deferred=['push-v2.js','runtime-health.js','ai-budget-guard.js','family-ai-original-links.js','backup-manager.js'];
+const deferred=['push-v2.js','runtime-health.js','ai-budget-guard.js','family-ai-original-links.js'];
 const server=spawn('python3',['-m','http.server',String(PORT),'--directory','family-command'],{stdio:['ignore','pipe','pipe']});
 const sleep=ms=>new Promise(r=>setTimeout(r,ms));
 async function ready(){for(let i=0;i<40;i++){try{const r=await fetch(BASE+'/index.html');if(r.ok)return}catch{}await sleep(100)}throw new Error('local server not ready')}
@@ -15,22 +15,24 @@ async function textVisible(page,text){return page.locator('.fc9-screen.active').
 async function appClick(page,id){return page.locator(`.fc9-nav button[data-screen="${id}"]`).evaluate(el=>{const t=performance.now();el.click();return Math.round((performance.now()-t)*10)/10})}
 
 async function runViewport(browser,name,width,height){
-  /* Service workers are tested separately by static/architecture checks. Blocking them here keeps
-     the UI E2E deterministic and ensures no service-worker fetch can bypass Playwright routing. */
   const context=await browser.newContext({viewport:{width,height},isMobile:true,hasTouch:true,serviceWorkers:'block',userAgent:'Mozilla/5.0 (iPhone; CPU iPhone OS 18_0 like Mac OS X) AppleWebKit/605.1.15 Version/18.0 Mobile/15E148 Safari/604.1'});
   await context.addInitScript({content:stateSeed});
   await context.addInitScript(()=>{try{Object.defineProperty(navigator,'canShare',{configurable:true,value:()=>true});Object.defineProperty(navigator,'share',{configurable:true,value:async payload=>{const f=payload?.files?.[0];window.__fcLastShare=f?{name:f.name,type:f.type,size:f.size}:null}})}catch{}});
-  const page=await context.newPage(),errors=[],unexpectedExternal=[];
+  const page=await context.newPage(),errors=[],unexpectedExternal=[],backendCalls={backupList:0,backupSnapshot:0};
   page.on('pageerror',e=>errors.push('pageerror: '+e.message));
   page.on('console',m=>{if(m.type()==='error')errors.push('console: '+m.text())});
   page.on('response',r=>{if(r.status()>=400)errors.push(`http ${r.status()}: ${r.url()}`)});
 
-  /* Never let the local E2E touch a real Supabase function. Expected calls are fulfilled from
-     deterministic fixtures; any unexpected function is recorded and still receives a harmless 200. */
+  /* The local UI test never reaches a real Supabase function. */
   await page.route(SUPABASE_FUNCTIONS+'**',route=>{
     const url=route.request().url();
     if(url.includes('/family-command-chat-commands'))return route.fulfill({status:200,contentType:'application/json',body:JSON.stringify({ok:true,commands:[]}),headers:{'access-control-allow-origin':'*'}});
     if(url.includes('/family-command-documents'))return route.fulfill({status:200,contentType:'application/json',body:JSON.stringify({ok:true,documents:[]}),headers:{'access-control-allow-origin':'*'}});
+    if(url.includes('/family-command-backups')){
+      if(url.includes('/snapshot')){backendCalls.backupSnapshot++;return route.fulfill({status:200,contentType:'application/json',body:JSON.stringify({ok:true,skipped:false,snapshot:{id:'snap-new',created_at:'2026-08-30T06:30:00Z',reason:'manual'}}),headers:{'access-control-allow-origin':'*'}})}
+      if(url.includes('/get'))return route.fulfill({status:200,contentType:'application/json',body:JSON.stringify({ok:true,snapshot:{id:'snap-1',state:{people:[],events:[],schedules:{}}}}),headers:{'access-control-allow-origin':'*'}});
+      backendCalls.backupList++;return route.fulfill({status:200,contentType:'application/json',body:JSON.stringify({ok:true,snapshots:[{id:'snap-1',created_at:'2026-08-29T18:00:00Z',reason:'auto'}]}),headers:{'access-control-allow-origin':'*'}});
+    }
     unexpectedExternal.push(url);
     return route.fulfill({status:200,contentType:'application/json',body:JSON.stringify({ok:true,test:true}),headers:{'access-control-allow-origin':'*'}});
   });
@@ -73,7 +75,6 @@ async function runViewport(browser,name,width,height){
   assert.ok(await textVisible(page,'Vergangener Testtermin'));
   assert.ok(await textVisible(page,'Vergangen'));
 
-  /* Standalone homework-originals flow must no longer depend on the old V6 menu. */
   await appClick(page,'homework');
   await page.locator('#homework [data-edit-hw]').first().click();
   await page.waitForSelector('#fc9Modal');
@@ -92,9 +93,28 @@ async function runViewport(browser,name,width,height){
   await page.evaluate(()=>window.__fcLoadExtrasNow());
   await page.waitForFunction(()=>window.__fcPrintPlannerV2?.version==='3.0.0');
   await page.waitForFunction(()=>window.__fcSelfTestV9?.version==='9.0.0');
+  await page.waitForFunction(()=>window.__fcBackupHealth?.version===2);
   const selfTest=await page.evaluate(()=>window.fcRunSelfTest?.());
   assert.equal(selfTest?.legacyLoaders,false,'V9 self-test must never load legacy modules');
   assert.equal(selfTest?.ok,true,'V9 self-test must pass: '+JSON.stringify(selfTest?.critical||[]));
+
+  /* V9-native backup UI: More -> Sicherung -> list -> manual snapshot. */
+  await appClick(page,'more');
+  await page.locator('#more [data-feature="backup"]').click();
+  await page.waitForSelector('#fcBackupSheet .fc-bu-sheet');
+  const backupHealth=await page.evaluate(()=>window.__fcBackupHealth||null);
+  assert.equal(backupHealth?.v9Native,true);assert.equal(backupHealth?.legacySelectors,false);assert.equal(backupHealth?.renderWrapper,false);
+  assert.ok(await page.getByText('Aktuellste Sicherung',{exact:false}).last().isVisible());
+  const backupGeom=await page.evaluate(()=>({vw:innerWidth,scrollW:document.getElementById('fcBackupSheet')?.scrollWidth||0}));
+  assert.ok(backupGeom.scrollW<=backupGeom.vw+1,`backup sheet overflow: ${JSON.stringify(backupGeom)}`);
+  const beforeManual=backendCalls.backupSnapshot;
+  await page.locator('#fcBackupSheet .fc-bu-now').click();
+  for(let i=0;i<50&&backendCalls.backupSnapshot===beforeManual;i++)await sleep(20);
+  assert.ok(backendCalls.backupSnapshot>beforeManual,'manual backup must call snapshot endpoint');
+  assert.ok(backendCalls.backupList>=1,'backup sheet must load snapshot list');
+  await page.locator('#fcBackupSheet .fc-bu-close').click();
+  await page.waitForSelector('#fcBackupSheet',{state:'detached'});
+
   await page.evaluate(()=>window.fcPrintDay('2026-08-29'));
   await page.waitForSelector('#fcPrintOverlay .fp-day-sheet');
   assert.ok(await page.getByText('Testaufgabe für morgen',{exact:false}).last().isVisible());
@@ -120,7 +140,6 @@ async function runViewport(browser,name,width,height){
   assert.equal(weekShare.kind,'week');assert.ok(weekShare.bytes>1000);
   await page.locator('[data-close-print]').click();
 
-  /* Event deletion must redraw through V9 only, without a V8 shell dependency. */
   const deleteHealth=await page.evaluate(()=>window.__fcDeleteHealth||null);
   assert.equal(deleteHealth?.v9Native,true,'event deletion must be V9-native');
   await page.evaluate(()=>window.removeEvent('visit-fixture'));
@@ -137,7 +156,7 @@ async function runViewport(browser,name,width,height){
   assert.deepEqual(unexpectedExternal,[],'unexpected external Supabase calls: '+unexpectedExternal.join(' | '));
   assert.equal(errors.length,0,'browser errors: '+errors.join(' | '));
   await context.close();
-  return{name,width,height,boot,timings,runtime,selfTest,dayShare,weekShare};
+  return{name,width,height,boot,timings,runtime,selfTest,backupHealth,backendCalls,dayShare,weekShare};
 }
 
 let browser;
