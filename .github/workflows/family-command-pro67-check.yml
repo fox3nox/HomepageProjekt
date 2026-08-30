@@ -70,6 +70,9 @@ jobs:
           ! grep -qi "Tagesschule holt Eliyah" family-command/app-data-rules.js
           ! grep -qi "Frau Roth" family-command/e2e/ui.spec.mjs
           ! grep -qi "Kaffee bei Tanja" family-command/e2e/ui.spec.mjs
+          ! grep -qi "Fruchtfliegenfalle" family-command/e2e/mock-private-rules.js
+          ! grep -qi "Frau Roth" family-command/e2e/mock-private-core.js
+          ! grep -qi "Kaffee bei Tanja" family-command/e2e/mock-private-core.js
           ! grep -q "todo-print-addon.js" family-command/index.html
           ! grep -q "screen-redesign-v6.js" family-command/index.html
           ! grep -q "v8-shell.js" family-command/index.html
