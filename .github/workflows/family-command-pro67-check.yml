@@ -31,13 +31,14 @@ jobs:
           node --check family-command/homework-originals.js
           node --check family-command/runtime-health.js
           node --check family-command/print-planner-v2.js
+          node --check family-command/app-selftest-v9.js
           node --check family-command/sw.js
           node --check family-command/e2e/mock-private-core.js
           node --check family-command/e2e/mock-private-rules.js
           node --check family-command/e2e/ui.spec.mjs
-      - name: V9.6 active runtime regression
+      - name: V9.7 clean runtime regression
         run: |
-          grep -q "20260830-v960" family-command/index.html
+          grep -q "20260830-v970" family-command/index.html
           grep -q "v9-runtime-ok" family-command/index.html
           grep -q "core-runtime.js" family-command/index.html
           grep -q "__fcCoreRuntime" family-command/index.html
@@ -55,13 +56,19 @@ jobs:
           grep -q "FC_PRIVATE_RULES" family-command/v9-data.js
           grep -q "v9-app.js" family-command/index.html
           grep -q "v9-professional.js" family-command/index.html
+          grep -q "app-selftest-v9.js" family-command/index.html
+          ! grep -q "app-selftest-v6.js" family-command/index.html
+          grep -q "legacyLoaders:false" family-command/app-selftest-v9.js
+          ! grep -q "nav-six-fix.js" family-command/app-selftest-v9.js
+          ! grep -q "tomorrow-screen.js" family-command/app-selftest-v9.js
           grep -q "Familienzentrale" family-command/index.html
           grep -q '"short_name":"Familie"' family-command/manifest.webmanifest
           grep -q "Vergangene Termine" family-command/v9-professional.js
-          grep -q "family-command-v46" family-command/sw.js
+          grep -q "family-command-v47" family-command/sw.js
           grep -q "core-runtime.js" family-command/sw.js
           grep -q "cloud-state.js" family-command/sw.js
           grep -q "print-planner-v2.js" family-command/sw.js
+          grep -q "app-selftest-v9.js" family-command/sw.js
           grep -q "application/pdf" family-command/print-planner-v2.js
           grep -q "v9Native:true" family-command/event-delete-fix.js
           ! grep -q "__fcV8Shell" family-command/event-delete-fix.js
@@ -80,10 +87,9 @@ jobs:
           ! grep -qi "Fruchtfliegenfalle" family-command/e2e/mock-private-rules.js
           ! grep -qi "Frau Roth" family-command/e2e/mock-private-core.js
           ! grep -qi "Kaffee bei Tanja" family-command/e2e/mock-private-core.js
-          ! grep -q "todo-print-addon.js" family-command/index.html
-          ! grep -q "screen-redesign-v6.js" family-command/index.html
-          ! grep -q "v8-shell.js" family-command/index.html
-          ! grep -q "v8-ui.js" family-command/index.html
+          for f in app.js app-selftest-v6.js balanced-ui.js daily-checklist.js events-controls-fix.js events-visibility-fix.js fixes.js layout-safety.js nav-six-fix.js pendencies.js pro-ui.js professional-ui.js screen-redesign-v6.css screen-redesign-v6.js smoke-tests.js styles.css today-addons-stabilizer.js today-relevance.js todo-list.js todo-print-addon.js tomorrow-preview.js tomorrow-screen.js v7-ui.css v7-ui.js v8-foundation.css v8-overrides.css v8-shell.js v8-ui.css v8-ui.js week-overview-v2.js; do
+            test ! -e "family-command/$f" || { echo "Legacy file still present: $f"; exit 1; }
+          done
           grep -q "async function navigation" family-command/sw.js
       - name: Validate PWA icon files
         run: |
