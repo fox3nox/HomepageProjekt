@@ -37,9 +37,9 @@ jobs:
           node --check family-command/e2e/mock-private-core.js
           node --check family-command/e2e/mock-private-rules.js
           node --check family-command/e2e/ui.spec.mjs
-      - name: V9.11 native past-event calendar regression
+      - name: V9.12 native event actions regression
         run: |
-          grep -q "20260830-v9110" family-command/index.html
+          grep -q "20260830-v9120" family-command/index.html
           grep -q "v9-runtime-ok" family-command/index.html
           grep -q "core-runtime.js" family-command/index.html
           grep -q "__fcCoreRuntime" family-command/index.html
@@ -67,7 +67,8 @@ jobs:
           ! grep -q "tomorrow-screen.js" family-command/app-selftest-v9.js
           grep -q "Familienzentrale" family-command/index.html
           grep -q '"short_name":"Familie"' family-command/manifest.webmanifest
-          grep -q "family-command-v51" family-command/sw.js
+          grep -q "v9.12-native-event-actions" family-command/build.txt
+          grep -q "family-command-v52" family-command/sw.js
           grep -q "core-runtime.js" family-command/sw.js
           grep -q "cloud-state.js" family-command/sw.js
           grep -q "event-details.js" family-command/sw.js
@@ -76,12 +77,17 @@ jobs:
           grep -q "app-selftest-v9.js" family-command/sw.js
           grep -q "application/pdf" family-command/print-planner-v2.js
           grep -q "v9Native:true" family-command/event-delete-fix.js
+          grep -q "__fcEventDeleteInstalled" family-command/event-delete-fix.js
+          grep -q "legacyGuard:false" family-command/event-delete-fix.js
+          ! grep -q "__fcEventDeleteV6" family-command/event-delete-fix.js
           ! grep -q "__fcV8Shell" family-command/event-delete-fix.js
           grep -q "legacyBundle:false" family-command/runtime-health.js
           ! grep -q "legacyPushDisabled" family-command/runtime-health.js
           grep -q "const VERSION='9.9.0'" family-command/v9-app.js
           grep -q "function installRuntimeAPI" family-command/v9-app.js
           ! grep -q "installCompatibility" family-command/v9-app.js
+          ! grep -q "installEventDetailActions" family-command/v9-app.js
+          ! grep -q "fc9-detail-actions" family-command/v9-app.js
           ! grep -q "v6HomeworkMenu" family-command/v9-app.js
           ! grep -q "v6OpenHomework" family-command/v9-app.js
           ! grep -q "v6EditHomework" family-command/v9-app.js
@@ -103,12 +109,22 @@ jobs:
           grep -q "version:'3.0.0'" family-command/homework-originals.js
           ! grep -q "v6HomeworkMenu" family-command/homework-originals.js
           grep -q "__fcEventDetailsHealth" family-command/event-details.js
+          grep -q "version:3" family-command/event-details.js
           grep -q "v9Native:true" family-command/event-details.js
           grep -q "mutationObserver:false" family-command/event-details.js
           grep -q "renderWrappers:false" family-command/event-details.js
           grep -q "legacySelectors:false" family-command/event-details.js
+          grep -q "nativeActions:true" family-command/event-details.js
+          grep -q "editNative:true" family-command/event-details.js
+          grep -q "deleteViaTombstones:true" family-command/event-details.js
+          grep -q "fcEditEventDetails" family-command/event-details.js
+          grep -q "fcDeleteEventDetails" family-command/event-details.js
+          grep -q "fc-detail-edit" family-command/event-details.js
+          grep -q "fc-detail-delete" family-command/event-details.js
+          grep -q "fc-event-edit-sheet" family-command/event-details.js
           grep -q "fc-detail-pick" family-command/event-details.js
           grep -q "fc-picker-sheet" family-command/event-details.js
+          grep -q "window.removeEvent" family-command/event-details.js
           ! grep -q "MutationObserver" family-command/event-details.js
           ! grep -q "pro-event" family-command/event-details.js
           ! grep -q "fc-7day" family-command/event-details.js
@@ -127,6 +143,13 @@ jobs:
           ! grep -q "__fcV8Shell" family-command/backup-manager.js
           ! grep -q "renderMore" family-command/backup-manager.js
           grep -q "eventDetailsHealth" family-command/e2e/ui.spec.mjs
+          grep -q "nativeActions" family-command/e2e/ui.spec.mjs
+          grep -q "fc-detail-edit" family-command/e2e/ui.spec.mjs
+          grep -q "fcEventEdit" family-command/e2e/ui.spec.mjs
+          grep -q "fc-detail-delete" family-command/e2e/ui.spec.mjs
+          grep -q "fc-deleted-events-v1" family-command/e2e/ui.spec.mjs
+          grep -q "eventDeleteV6" family-command/e2e/ui.spec.mjs
+          grep -q "nativeDeleteGuard" family-command/e2e/ui.spec.mjs
           grep -q "fc-detail-pick" family-command/e2e/ui.spec.mjs
           grep -q "fcDocPicker" family-command/e2e/ui.spec.mjs
           grep -q "family-command-backups" family-command/e2e/ui.spec.mjs
@@ -135,6 +158,7 @@ jobs:
           grep -q "v9Version.*9.9.0" family-command/e2e/ui.spec.mjs
           grep -q "Vergangene Termine" family-command/e2e/ui.spec.mjs
           grep -q "Vergangen" family-command/e2e/ui.spec.mjs
+          ! grep -q "visit-fixture-2" family-command/e2e/ui.spec.mjs
           test -s family-command/apple-touch-icon.png
           test -s family-command/icon-192.png
           ! grep -qi "Fruchtfliegenfalle" family-command/v9-data.js
