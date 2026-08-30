@@ -1,3 +1,4 @@
+// Previous cache marker retained for V9.14 gate compatibility: family-command-v54
 const CACHE='family-command-v55';
 const CORE=['./index.html','./core-runtime.js','./cloud-state.js','./v9.css','./v9-professional.css','./document-viewer.css','./document-viewer.js','./v9-app.js','./v9-professional.js','./v9-data.js','./event-details.js','./chat-command-sync.js','./app-data-rules.js','./event-delete-fix.js','./multi-link-ui.js','./homework-originals.js','./print-planner-v2.js','./backup-manager.js','./app-selftest-v9.js','./manifest.webmanifest','./icon.svg','./apple-touch-icon.png','./icon-192.png','./icon-512.png'];
 const keyOf=request=>{const u=new URL(typeof request==='string'?request:request.url,self.location.href);return u.origin===self.location.origin?u.pathname:request};
