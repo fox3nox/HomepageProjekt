@@ -101,7 +101,7 @@ async function runViewport(browser,name,width,height){
   await page.locator('#fcEventEditNote').fill('V9.12 Edit-Test');
   await page.locator('#fcEventEdit .fc-event-edit-save').click();
   await page.waitForSelector('#fcEventEdit',{state:'detached'});
-  await page.waitForFunction(()=>data.events.find(e=>e.id==='visit-fixture-2')?.title==='Betreuungstermin bearbeitet');
+  await page.waitForFunction(()=>data.events.find(e=>e.id==='care-fixture')?.title==='Betreuungstermin bearbeitet');
   assert.ok(await page.locator('#fcEventDetails').getByText('Betreuungstermin bearbeitet',{exact:false}).first().isVisible());
 
   await page.locator('#fcEventDetails .fc-detail-pick').click();
