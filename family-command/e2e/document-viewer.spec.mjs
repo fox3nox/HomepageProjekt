@@ -22,22 +22,22 @@ const svg='data:image/svg+xml;charset=utf-8,'+encodeURIComponent('<svg xmlns="ht
 async function runViewport(browser,name,width,height){
   const context=await browser.newContext({viewport:{width,height},isMobile:true,hasTouch:true,serviceWorkers:'block',userAgent:'Mozilla/5.0 (iPhone; CPU iPhone OS 18_0 like Mac OS X) AppleWebKit/605.1.15 Version/18.0 Mobile/15E148 Safari/604.1'});
   await context.addInitScript({content:stateSeed});
-  const page=await context.newPage(),errors=[];
+  const page=await context.newPage(),errors=[],originalRequests=[];
   page.on('pageerror',e=>errors.push('pageerror: '+e.message));
   page.on('console',m=>{if(m.type()==='error')errors.push('console: '+m.text())});
   page.on('response',r=>{if(r.status()>=400)errors.push(`http ${r.status()}: ${r.url()}`)});
   await page.route(SUPABASE_FUNCTIONS+'**',route=>{
     const u=new URL(route.request().url());
-    if(u.pathname.includes('/family-command-documents/list'))return route.fulfill({status:200,contentType:'application/json',body:JSON.stringify({ok:true,documents:[{id:'doc-fixture',title:'Test-Stundenplan',mime_type:'image/png',created_at:'2026-08-30T08:00:00Z',has_readable:true,readable_version:'test'}]}),headers:{'access-control-allow-origin':'*'}});
+    if(u.pathname.includes('/family-command-documents/list'))return route.fulfill({status:200,contentType:'application/json',body:JSON.stringify({ok:true,documents:[{id:'doc-fixture',title:'Test-Stundenplan',mime_type:'image/png',created_at:'2026-08-30T08:00:00Z',has_readable:true,has_original:true,readable_version:'test'}]}),headers:{'access-control-allow-origin':'*'}});
     if(u.pathname.includes('/family-command-documents/readable'))return route.fulfill({status:200,contentType:'application/json',body:JSON.stringify({ok:true,title:'Test-Stundenplan',content:readable,version:'test'}),headers:{'access-control-allow-origin':'*'}});
-    if(u.pathname.includes('/family-command-documents/file'))return route.fulfill({status:200,contentType:'application/json',body:JSON.stringify({ok:true,url:svg,title:'Test-Stundenplan',mimeType:'image/svg+xml'}),headers:{'access-control-allow-origin':'*'}});
+    if(u.pathname.includes('/family-command-documents/file')){originalRequests.push(u.search);return route.fulfill({status:200,contentType:'application/json',body:JSON.stringify({ok:true,url:svg,title:'Test-Stundenplan',mimeType:'image/svg+xml',isOriginal:u.searchParams.get('original')==='1'}),headers:{'access-control-allow-origin':'*'}})}
     if(u.pathname.includes('/family-command-chat-commands'))return route.fulfill({status:200,contentType:'application/json',body:JSON.stringify({ok:true,commands:[]}),headers:{'access-control-allow-origin':'*'}});
     return route.fulfill({status:200,contentType:'application/json',body:JSON.stringify({ok:true,test:true}),headers:{'access-control-allow-origin':'*'}});
   });
   await page.goto(BASE+'/?access=test',{waitUntil:'domcontentloaded',timeout:15000});
   await page.waitForFunction(()=>document.documentElement.dataset.fcReady==='1'&&window.__fcV9&&window.__fcDocumentViewerHealth,{timeout:10000});
   const health=await page.evaluate(()=>window.__fcDocumentViewerHealth);
-  assert.deepEqual(health,{version:'1.0.0',v9Native:true,readable:true,original:true,zoom:true,legacyWrapper:false});
+  assert.deepEqual(health,{version:'1.1.0',v9Native:true,readable:true,original:true,originalPath:true,zoom:true,legacyWrapper:false});
 
   await page.evaluate(()=>window.__fcV9.open('more'));
   await page.locator('#more [data-feature="docs"]').click();
@@ -57,6 +57,7 @@ async function runViewport(browser,name,width,height){
 
   await page.locator('#fcDocumentViewer [data-mode="original"]').click();
   await page.waitForSelector('#fcDocumentViewer .fc-dv-original-img');
+  assert.ok(originalRequests.some(q=>new URLSearchParams(q).get('original')==='1'),'Original tab must request original=1');
   assert.equal((await page.locator('#fcDocumentViewer [data-zoom-label]').innerText()).trim(),'100 %');
   await page.locator('#fcDocumentViewer [data-zoom-in]').click();
   assert.equal((await page.locator('#fcDocumentViewer [data-zoom-label]').innerText()).trim(),'125 %');
@@ -77,5 +78,5 @@ try{
   await ready();browser=await webkit.launch({headless:true});
   await runViewport(browser,'iphone-390',390,844);
   await runViewport(browser,'iphone-430',430,932);
-  console.log('V9.13 document viewer WebKit E2E passed');
+  console.log('V9.14 document viewer WebKit E2E passed');
 }finally{if(browser)await browser.close();server.kill('SIGTERM')}
