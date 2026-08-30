@@ -9,9 +9,9 @@
   <meta name="apple-mobile-web-app-title" content="Familie">
   <meta name="format-detection" content="telephone=no">
   <title>Familienzentrale</title>
-  <link rel="manifest" href="./manifest.webmanifest?v=20260830-v990">
-  <link rel="icon" href="./icon.svg?v=20260830-v990" type="image/svg+xml">
-  <link rel="apple-touch-icon" sizes="180x180" href="./apple-touch-icon.png?v=20260830-v990">
+  <link rel="manifest" href="./manifest.webmanifest?v=20260830-v9100">
+  <link rel="icon" href="./icon.svg?v=20260830-v9100" type="image/svg+xml">
+  <link rel="apple-touch-icon" sizes="180x180" href="./apple-touch-icon.png?v=20260830-v9100">
   <style>
     html,body{margin:0;min-height:100%;background:#f6f8fb;color-scheme:light}
     #fcApp{visibility:hidden}
@@ -19,7 +19,7 @@
   </style>
 </head>
 <body>
-  <div id="fcBoot" class="fc9-boot"><div class="fc9-boot-box"><div class="fc9-boot-brand"><div class="fc9-boot-mark"><img src="./apple-touch-icon.png?v=20260830-v990" alt=""></div><span>Familienzentrale</span></div><div class="fc9-boot-bar"><i></i></div><p>Deine Familienübersicht wird vorbereitet …</p></div></div>
+  <div id="fcBoot" class="fc9-boot"><div class="fc9-boot-box"><div class="fc9-boot-brand"><div class="fc9-boot-mark"><img src="./apple-touch-icon.png?v=20260830-v9100" alt=""></div><span>Familienzentrale</span></div><div class="fc9-boot-bar"><i></i></div><p>Deine Familienübersicht wird vorbereitet …</p></div></div>
   <div class="app" id="fcApp"></div>
   <div class="toast" id="toast" role="status" aria-live="polite" aria-atomic="true"></div>
   <script>
@@ -28,10 +28,9 @@
     window.__fcManagedBoot=true;window.__fcV9Boot=true;
     const STORE='fc-private-access-v1',COOKIE='fc_private_access',params=new URLSearchParams(location.search);
     const PRIVATE_CONFIG='https://lmrvapstojcecljjdgds.supabase.co/functions/v1/family-command-private-config';
-    const VERSION='20260830-v990',PRIVATE_RULES_VERSION='2026-08-30-v1',PRIVATE_RULES_CACHE='fc-private-rules-code-v1';
+    const VERSION='20260830-v9100',PRIVATE_RULES_VERSION='2026-08-30-v1',PRIVATE_RULES_CACHE='fc-private-rules-code-v1';
     const CRITICAL=['core-runtime.js','cloud-state.js','event-details.js','chat-command-sync.js','app-data-rules.js','v9-data.js','event-delete-fix.js','multi-link-ui.js','v9-app.js','v9-professional.js','homework-originals.js'];
     const DEFERRED=['push-v2.js','runtime-health.js','family-ai-v2.js','ai-budget-guard.js','family-ai-original-links.js','print-planner-v2.js','backup-manager.js','app-selftest-v9.js'];
-    const NO_OBSERVER=new Set(['event-details.js']);
     let extrasPromise=null;
     function readCookie(name){const prefix=name+'=',part=document.cookie.split(';').map(x=>x.trim()).find(x=>x.startsWith(prefix));return part?decodeURIComponent(part.slice(prefix.length)):''}
     function saveAccess(value){try{localStorage.setItem(STORE,value)}catch(e){}document.cookie=COOKIE+'='+encodeURIComponent(value)+'; Max-Age=31536000; Path=/HomepageProjekt/family-command/; Secure; SameSite=Strict'}
@@ -42,7 +41,7 @@
     const browserFetch=window.fetch.bind(window),wait=ms=>new Promise(r=>setTimeout(r,ms)),frame=()=>new Promise(r=>requestAnimationFrame(r));
     async function fetchText(src){let last='';for(let attempt=0;attempt<2;attempt++){try{const r=await browserFetch(src,{cache:attempt?'reload':'force-cache'});if(!r.ok)throw new Error('HTTP '+r.status);return await r.text()}catch(e){last=e?.message||String(e);if(!attempt)await wait(70)}}throw new Error('Datei konnte nicht geladen werden: '+src+(last?' ('+last+')':''))}
     function execute(code,src){const s=document.createElement('script');s.textContent=code+'\n//# sourceURL='+src.split('?')[0];document.body.appendChild(s)}
-    function executeCritical(file,code){const nativeMO=window.MutationObserver;if(NO_OBSERVER.has(file))window.MutationObserver=class{observe(){}disconnect(){}takeRecords(){return[]}};try{execute(code,'./'+file+'?v='+VERSION)}finally{window.MutationObserver=nativeMO}}
+    function executeCritical(file,code){execute(code,'./'+file+'?v='+VERSION)}
     function executeDeferred(file,code){const protectedNames=['openScreen','renderToday','renderTomorrow','renderWeek','renderEvents','renderHomeworkScreen','renderMore','renderPeople'],before={};for(const n of protectedNames)before[n]=window[n];try{execute(code,'./'+file+'?v='+VERSION)}finally{if(window.__fcV9){for(const n of protectedNames)if(before[n])window[n]=before[n]}}}
     function readRulesCache(){try{const x=JSON.parse(localStorage.getItem(PRIVATE_RULES_CACHE)||'null');return x&&x.version===PRIVATE_RULES_VERSION&&typeof x.code==='string'?x.code:''}catch(e){return''}}
     function writeRulesCache(code){try{localStorage.setItem(PRIVATE_RULES_CACHE,JSON.stringify({version:PRIVATE_RULES_VERSION,code,at:Date.now()}))}catch(e){}}
