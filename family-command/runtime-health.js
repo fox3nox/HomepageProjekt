@@ -1,29 +1,17 @@
-/* Family Command · runtime health guard · 2026-08-24 */
+/* Familienzentrale · V9 runtime health guard */
 (()=>{
-  /* The original private bundle still contains its first-generation push helper.
-     Push v2/push3 is authoritative; suppress only the retired /push/* helper calls. */
-  try{
-    if(typeof window.post==='function'){
-      const legacyPost=window.post.bind(window);
-      window.post=async function(path,payload){
-        if(String(path||'').startsWith('/push/'))return{ok:true,skipped:true,reason:'legacy-push-disabled'};
-        return legacyPost(path,payload);
-      };
-      try{post=window.post}catch(e){}
-    }
-  }catch(e){}
+  'use strict';
+  if(window.__fcRuntimeHealthInstalled)return;window.__fcRuntimeHealthInstalled=true;
 
-  /* Several historical UI upgrades each installed a 60-second Today timer.
-     Keep one timer only. */
-  for(const name of ['__fc4Timer','__fcPastFocusTimer','__fcCleanTodayTimer']){
+  /* Keep exactly one lightweight minute refresh for the active Today view. */
+  for(const name of ['__fc4Timer','__fcPastFocusTimer','__fcCleanTodayTimer','__fcUnifiedTodayTimer']){
     try{if(window[name])clearInterval(window[name]);window[name]=null}catch(e){}
   }
-  try{if(window.__fcUnifiedTodayTimer)clearInterval(window.__fcUnifiedTodayTimer)}catch(e){}
   window.__fcUnifiedTodayTimer=setInterval(()=>{
-    try{if(document.getElementById('today')?.classList.contains('active')&&typeof renderToday==='function')renderToday()}catch(e){}
+    try{if(document.getElementById('today')?.classList.contains('active'))window.__fcV9?.render?.('today',true)}catch(e){}
   },60000);
 
-  /* Collapse bursts of identical state-sync requests caused by layered historical render/save wrappers. */
+  /* Collapse bursts of push-state synchronization into one request. */
   try{
     if(typeof window.syncPush==='function'&&!window.__fcSyncPushDeduped){
       window.__fcSyncPushDeduped=true;
@@ -44,12 +32,16 @@
     }
   }catch(e){console.error('fc_sync_dedupe',e)}
 
-  /* pro-ui is loaded after the secure transport layer and defines its own opener;
-     restore the authenticated opener as the final authority. */
-  try{window.fcSecureTransportRefresh?.()}catch(e){}
-
-  /* Prompt an installed Home-Screen app to pick up the current service worker. */
+  /* Ask an installed Home-Screen app to check for the current service worker. */
   try{navigator.serviceWorker?.getRegistration('./').then(r=>r?.update()).catch(()=>{})}catch(e){}
 
-  window.__fcRuntimeHealth={legacyPushDisabled:true,unifiedTodayTimer:true,syncPushDeduped:true,secureDocumentOpener:true,interactionRepair:false,installedAt:new Date().toISOString()};
+  window.__fcRuntimeHealth={
+    version:2,
+    minimalRuntime:!!window.__fcCoreRuntime,
+    legacyBundle:false,
+    unifiedTodayTimer:true,
+    syncPushDeduped:!!window.__fcSyncPushDeduped,
+    cloudState:window.__fcCloudState?.health?.().status||'unknown',
+    installedAt:new Date().toISOString()
+  };
 })();

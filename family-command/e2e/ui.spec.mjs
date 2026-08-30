@@ -61,6 +61,17 @@ async function runViewport(browser,name,width,height){
   assert.ok(await textVisible(page,'Vergangener Testtermin'));
   assert.ok(await textVisible(page,'Vergangen'));
 
+  /* Standalone homework-originals flow must no longer depend on the old V6 menu. */
+  await appClick(page,'homework');
+  await page.locator('#homework [data-edit-hw]').first().click();
+  await page.waitForSelector('#fc9Modal');
+  await page.getByRole('button',{name:'Originale anzeigen'}).click();
+  await page.waitForSelector('#fcHwOriginalModal');
+  const hwOriginals=await page.evaluate(()=>({version:window.fcHomeworkOriginals?.version||'',legacyEntryIsStandalone:window.v6HomeworkMenu===window.fcHomeworkOriginals?.open}));
+  assert.equal(hwOriginals.version,'2.1.0');
+  assert.equal(hwOriginals.legacyEntryIsStandalone,true,'homework original compatibility entry must point to standalone V9 dialog');
+  await page.locator('#fcHwOriginalModal .fc-hwo-close').click();
+
   await appClick(page,'tomorrow');
   assert.ok(await textVisible(page,'Morgen erledigen'));
   assert.ok(await textVisible(page,'Testaufgabe für morgen'));
@@ -92,6 +103,15 @@ async function runViewport(browser,name,width,height){
   const weekShare=await page.evaluate(()=>({share:window.__fcLastShare,bytes:Number(document.documentElement.dataset.fcPrintPdfBytes||0),kind:document.documentElement.dataset.fcPrintPdfKind||''}));
   assert.equal(weekShare.kind,'week');assert.ok(weekShare.bytes>1000);
   await page.locator('[data-close-print]').click();
+
+  /* Event deletion must redraw through V9 only, without a V8 shell dependency. */
+  const deleteHealth=await page.evaluate(()=>window.__fcDeleteHealth||null);
+  assert.equal(deleteHealth?.v9Native,true,'event deletion must be V9-native');
+  await page.evaluate(()=>window.removeEvent('visit-fixture'));
+  await page.waitForSelector('#fcDeleteConfirm');
+  await page.locator('#fcDeleteConfirm .fc-delete-yes').click();
+  await page.waitForSelector('#fcDeleteConfirm',{state:'detached'});
+  assert.equal(await page.evaluate(()=>data.events.some(e=>e.id==='visit-fixture')),false,'deleted event removed from state');
 
   const health=await page.evaluate(()=>window.__fcV9.health());
   assert.deepEqual(health.dup,[]);assert.equal(health.overflow,false);assert.equal(health.tomorrowTodos.length,1);
