@@ -9,13 +9,14 @@ let swreg=null;
 function clone(v){return JSON.parse(JSON.stringify(v))}
 function emptyState(){return{version:APP_VERSION,people:[],schedules:{},reminders:[],events:[],todos:[],homework:[],pendencies:[],common:{school:{},care:[]}}}
 function validState(v){return !!v&&typeof v==='object'&&!Array.isArray(v)&&Array.isArray(v.people)&&Array.isArray(v.events)&&v.schedules&&typeof v.schedules==='object'}
+function localTest(){try{return /^(localhost|127\.0\.0\.1)$/.test(location.hostname)&&localStorage.getItem('fc-private-access-v1')==='test'}catch(e){return false}}
 function load(){try{const v=JSON.parse(localStorage.getItem(STORE)||'null');if(validState(v)){v.version=APP_VERSION;return v}}catch(e){}const v=emptyState();try{localStorage.setItem(STORE,JSON.stringify(v))}catch(e){}return v}
 var data=load();
 
 function save(){data.version=APP_VERSION;try{localStorage.setItem(STORE,JSON.stringify(data))}catch(e){console.error('fc_local_save',e)}try{if(typeof syncPush==='function')syncPush()}catch(e){}return data}
 function person(id){return(data.people||[]).find(p=>String(p.id)===String(id))||null}
 function iso(d){return `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`}
-function todayISO(){if((location.hostname==='localhost'||location.hostname==='127.0.0.1')&&new URLSearchParams(location.search).get('access')==='test')return'2026-08-28';return iso(new Date())}
+function todayISO(){return localTest()?'2026-08-28':iso(new Date())}
 function fmtDate(s,o={}){if(!s)return'';try{return new Intl.DateTimeFormat('de-CH',{day:'2-digit',month:'2-digit',year:o.year?'numeric':undefined,weekday:o.weekday?'short':undefined}).format(new Date(String(s)+'T12:00:00'))}catch(e){return String(s)}}
 function scheduleFor(id,day){return data.schedules?.[id]?.[day]||[]}
 function remindersFor(day){return(data.reminders||[]).filter(r=>(r.days||[]).map(Number).includes(Number(day)))}
@@ -40,4 +41,4 @@ function homeworkTasks(){return(data.homework||[]).map(h=>({id:`hw-${h.id}`,pers
 function todoTasks(){return(data.todos||[]).filter(t=>!t.archived).map(t=>({id:`todo-${t.id||t.clientRef||t.sourceCommandId}`,personId:t.personId||'',title:t.title||'To-do',date:t.date||'',note:t.note||'',done:!!t.done}))}
 function pushSnapshot(){const rules=[];for(const[pid,days]of Object.entries(data.schedules||{}))for(const[day,slots]of Object.entries(days||{}))for(const s of(Array.isArray(slots)?slots:[]))rules.push({id:`${pid}-${day}-${s.start||''}`,personId:pid,title:s.label||'',day:Number(day),time:s.depart||s.start||'',start:s.start||'',end:s.end||'',note:s.note||''});return{people:(data.people||[]).map(p=>({id:p.id,name:p.name,color:p.color})),settings:{travel:0,prep:0,pickup:0,evening:'19:00'},events:(data.events||[]).map(e=>({id:e.id,personId:(e.personIds||[]).join(','),title:e.title,date:e.date,endDate:e.endDate||'',time:e.time||'',end:e.end||'',note:e.note||'',reminderLead:Number.isFinite(Number(e.reminderLead))?Number(e.reminderLead):0})),tasks:[...reminderTasks(),...homeworkTasks(),...todoTasks()],rules}}
 
-window.__fcCoreRuntime={version:'1.0.0',store:STORE,validState,emptyState,health:()=>({version:'1.0.0',people:(data.people||[]).length,events:(data.events||[]).length,todos:(data.todos||[]).length,legacyBundle:false})};
+window.__fcCoreRuntime={version:'1.1.0',store:STORE,validState,emptyState,localTest,health:()=>({version:'1.1.0',people:(data.people||[]).length,events:(data.events||[]).length,todos:(data.todos||[]).length,legacyBundle:false})};
