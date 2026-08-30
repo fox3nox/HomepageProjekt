@@ -80,9 +80,20 @@ async function runViewport(browser,name,width,height){
   await page.waitForSelector('#fc9Modal');
   await page.getByRole('button',{name:'Originale anzeigen'}).click();
   await page.waitForSelector('#fcHwOriginalModal');
-  const hwOriginals=await page.evaluate(()=>({version:window.fcHomeworkOriginals?.version||'',legacyEntryIsStandalone:window.v6HomeworkMenu===window.fcHomeworkOriginals?.open}));
-  assert.equal(hwOriginals.version,'2.1.0');
-  assert.equal(hwOriginals.legacyEntryIsStandalone,true,'homework original compatibility entry must point to standalone V9 dialog');
+  const hwOriginals=await page.evaluate(()=>({
+    version:window.fcHomeworkOriginals?.version||'',
+    v9Version:window.__fcV9?.version||'',
+    oldGlobals:{
+      homeworkMenu:typeof window.v6HomeworkMenu,
+      openHomework:typeof window.v6OpenHomework,
+      editHomework:typeof window.v6EditHomework,
+      editEvent:typeof window.v6EditEvent,
+      v8Shell:typeof window.__fcV8Shell
+    }
+  }));
+  assert.equal(hwOriginals.version,'3.0.0');
+  assert.equal(hwOriginals.v9Version,'9.9.0');
+  assert.deepEqual(hwOriginals.oldGlobals,{homeworkMenu:'undefined',openHomework:'undefined',editHomework:'undefined',editEvent:'undefined',v8Shell:'undefined'});
   await page.locator('#fcHwOriginalModal .fc-hwo-close').click();
 
   await appClick(page,'tomorrow');
@@ -156,7 +167,7 @@ async function runViewport(browser,name,width,height){
   assert.deepEqual(unexpectedExternal,[],'unexpected external Supabase calls: '+unexpectedExternal.join(' | '));
   assert.equal(errors.length,0,'browser errors: '+errors.join(' | '));
   await context.close();
-  return{name,width,height,boot,timings,runtime,selfTest,backupHealth,backendCalls,dayShare,weekShare};
+  return{name,width,height,boot,timings,runtime,selfTest,backupHealth,backendCalls,hwOriginals,dayShare,weekShare};
 }
 
 let browser;
