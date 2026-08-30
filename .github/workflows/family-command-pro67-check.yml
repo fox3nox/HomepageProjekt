@@ -30,30 +30,39 @@ jobs:
           node --check family-command/print-planner-v2.js
           node --check family-command/sw.js
           node --check family-command/e2e/mock-private-core.js
+          node --check family-command/e2e/mock-private-rules.js
           node --check family-command/e2e/ui.spec.mjs
-      - name: V9 architecture regression
+      - name: V9.3 architecture and privacy regression
         run: |
-          grep -q "20260829-v920" family-command/index.html
+          grep -q "20260830-v930" family-command/index.html
           grep -q "v9-clean-ok" family-command/index.html
           grep -q "window.__fcV9Boot=true" family-command/index.html
           grep -q "executePrivate" family-command/index.html
+          grep -q "family-command-private-config" family-command/index.html
+          grep -q "PRIVATE_RULES_VERSION='2026-08-30-v1'" family-command/index.html
+          grep -q "FC_PRIVATE_RULES" family-command/app-data-rules.js
+          grep -q "FC_PRIVATE_RULES" family-command/v9-data.js
+          grep -q "generic private schedule/push rules bridge" family-command/app-data-rules.js
+          grep -q "generic idempotent private-data mutation engine" family-command/v9-data.js
           grep -q "v9-app.js" family-command/index.html
-          grep -q "v9-data.js" family-command/index.html
           grep -q "v9-professional.js" family-command/index.html
           grep -q "v9-professional.css" family-command/index.html
           grep -q "Familienzentrale" family-command/index.html
           grep -q '"short_name":"Familie"' family-command/manifest.webmanifest
           grep -q "Vergangene Termine" family-command/v9-professional.js
-          grep -q "family-command-v42" family-command/sw.js
+          grep -q "family-command-v43" family-command/sw.js
           grep -q "print-planner-v2.js" family-command/sw.js
           grep -q "responsive Tages-/Wochenplan" family-command/print-planner-v2.js
           grep -q "PDF / Drucken" family-command/print-planner-v2.js
           grep -q "application/pdf" family-command/print-planner-v2.js
-          grep -q "Fruchtfliegenfalle für meine Frau in der LANDI kaufen" family-command/v9-data.js
           grep -q "Morgen erledigen" family-command/v9-app.js
           grep -q "window.__fcV9" family-command/v9-app.js
           test -s family-command/apple-touch-icon.png
           test -s family-command/icon-192.png
+          ! grep -qi "Fruchtfliegenfalle" family-command/v9-data.js
+          ! grep -qi "Kaffee bei Tanja" family-command/v9-data.js
+          ! grep -qi "Fruchtfliegenfalle" family-command/app-data-rules.js
+          ! grep -qi "Tagesschule holt Eliyah" family-command/app-data-rules.js
           ! grep -q "todo-print-addon.js" family-command/index.html
           ! grep -q "screen-redesign-v6.js" family-command/index.html
           ! grep -q "today-relevance.js" family-command/index.html
@@ -65,8 +74,6 @@ jobs:
           ! grep -q "v8-ui.js" family-command/index.html
           ! grep -q "ignoreSearch:true" family-command/sw.js
           grep -q "async function navigation" family-command/sw.js
-          grep -q "13:15" family-command/app-data-rules.js
-          grep -q "Tagesschule holt Eliyah" family-command/app-data-rules.js
       - name: Validate PWA icon files
         run: |
           python3 - <<'PY'
