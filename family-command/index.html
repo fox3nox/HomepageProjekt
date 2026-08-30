@@ -9,9 +9,9 @@
   <meta name="apple-mobile-web-app-title" content="Familie">
   <meta name="format-detection" content="telephone=no">
   <title>Familienzentrale</title>
-  <link rel="manifest" href="./manifest.webmanifest?v=20260829-v920">
-  <link rel="icon" href="./icon.svg?v=20260829-v920" type="image/svg+xml">
-  <link rel="apple-touch-icon" sizes="180x180" href="./apple-touch-icon.png?v=20260829-v920">
+  <link rel="manifest" href="./manifest.webmanifest?v=20260830-v930">
+  <link rel="icon" href="./icon.svg?v=20260830-v930" type="image/svg+xml">
+  <link rel="apple-touch-icon" sizes="180x180" href="./apple-touch-icon.png?v=20260830-v930">
   <style>
     html,body{margin:0;min-height:100%;background:#f6f8fb;color-scheme:light}
     #fcApp{visibility:hidden}
@@ -19,15 +19,18 @@
   </style>
 </head>
 <body>
-  <div id="fcBoot" class="fc9-boot"><div class="fc9-boot-box"><div class="fc9-boot-brand"><div class="fc9-boot-mark"><img src="./apple-touch-icon.png?v=20260829-v920" alt=""></div><span>Familienzentrale</span></div><div class="fc9-boot-bar"><i></i></div><p>Deine Familienübersicht wird vorbereitet …</p></div></div>
+  <div id="fcBoot" class="fc9-boot"><div class="fc9-boot-box"><div class="fc9-boot-brand"><div class="fc9-boot-mark"><img src="./apple-touch-icon.png?v=20260830-v930" alt=""></div><span>Familienzentrale</span></div><div class="fc9-boot-bar"><i></i></div><p>Deine Familienübersicht wird vorbereitet …</p></div></div>
   <div class="app" id="fcApp"></div>
   <div class="toast" id="toast" role="status" aria-live="polite" aria-atomic="true"></div>
   <script>
   (()=>{
     'use strict';
     window.__fcManagedBoot=true;window.__fcV9Boot=true;
-    const STORE='fc-private-access-v1',COOKIE='fc_private_access',PRIVATE_APP='https://lmrvapstojcecljjdgds.supabase.co/functions/v1/family-command-private-app',params=new URLSearchParams(location.search);
-    const VERSION='20260829-v920',PRIVATE_CODE_VERSION='family-command-app-v3-managed1',PRIVATE_CACHE='fc-private-app-code-v2';
+    const STORE='fc-private-access-v1',COOKIE='fc_private_access',params=new URLSearchParams(location.search);
+    const PRIVATE_APP='https://lmrvapstojcecljjdgds.supabase.co/functions/v1/family-command-private-app';
+    const PRIVATE_CONFIG='https://lmrvapstojcecljjdgds.supabase.co/functions/v1/family-command-private-config';
+    const VERSION='20260830-v930',PRIVATE_CODE_VERSION='family-command-app-v3-managed1',PRIVATE_CACHE='fc-private-app-code-v2';
+    const PRIVATE_RULES_VERSION='2026-08-30-v1',PRIVATE_RULES_CACHE='fc-private-rules-code-v1';
     const CRITICAL=['event-details.js','chat-command-sync.js','app-data-rules.js','v9-data.js','event-delete-fix.js','multi-link-ui.js','v9-app.js','v9-professional.js','homework-originals.js'];
     const DEFERRED=['push-v2.js','runtime-health.js','family-ai-v2.js','ai-budget-guard.js','family-ai-original-links.js','print-planner-v2.js','backup-manager.js','app-selftest-v6.js'];
     const NO_OBSERVER=new Set(['event-details.js']);
@@ -64,9 +67,10 @@
     }
     function executeCritical(file,code){code=normalizeCritical(file,code);const nativeMO=window.MutationObserver;if(NO_OBSERVER.has(file))window.MutationObserver=class{observe(){}disconnect(){}takeRecords(){return[]}};try{execute(code,'./'+file+'?v='+VERSION)}finally{window.MutationObserver=nativeMO}}
     function executeDeferred(file,code){const protectedNames=['openScreen','renderToday','renderTomorrow','renderWeek','renderEvents','renderHomeworkScreen','renderMore','renderPeople'],before={};for(const n of protectedNames)before[n]=window[n];try{execute(code,'./'+file+'?v='+VERSION)}finally{if(window.__fcV9){for(const n of protectedNames)if(before[n])window[n]=before[n]}}}
-    function readPrivateCache(){try{const x=JSON.parse(localStorage.getItem(PRIVATE_CACHE)||'null');return x&&x.version===PRIVATE_CODE_VERSION&&typeof x.code==='string'?x.code:''}catch(e){return''}}
-    function writePrivateCache(code){try{localStorage.setItem(PRIVATE_CACHE,JSON.stringify({version:PRIVATE_CODE_VERSION,code,at:Date.now()}))}catch(e){}}
+    function readCache(storageKey,version){try{const x=JSON.parse(localStorage.getItem(storageKey)||'null');return x&&x.version===version&&typeof x.code==='string'?x.code:''}catch(e){return''}}
+    function writeCache(storageKey,version,code){try{localStorage.setItem(storageKey,JSON.stringify({version,code,at:Date.now()}))}catch(e){}}
     function fetchPrivate(){return browserFetch(PRIVATE_APP+'?v='+PRIVATE_CODE_VERSION,{cache:'no-store',headers:{'x-fc-access':key}}).then(async r=>{if(!r.ok)throw new Error('Privater App-Kern nicht erreichbar ('+r.status+').');return r.text()})}
+    function fetchPrivateRules(){return browserFetch(PRIVATE_CONFIG+'?v='+encodeURIComponent(PRIVATE_RULES_VERSION),{cache:'no-store',headers:{'x-fc-access':key}}).then(async r=>{if(!r.ok)throw new Error('Private Familienkonfiguration nicht erreichbar ('+r.status+').');return r.text()})}
     async function loadCss(){for(const file of ['v9.css','v9-professional.css'])await new Promise((resolve,reject)=>{const l=document.createElement('link');l.rel='stylesheet';l.href='./'+file+'?v='+VERSION;l.onload=resolve;l.onerror=reject;document.head.appendChild(l)})}
     function idle(fn,delay=0){setTimeout(()=>{'requestIdleCallback'in window?requestIdleCallback(fn,{timeout:2200}):setTimeout(fn,40)},delay)}
     async function loadExtras(){
@@ -80,14 +84,24 @@
     }
     window.__fcLoadExtrasNow=loadExtras;
     async function boot(){
-      const start=performance.now(),cachedPrivate=readPrivateCache(),freshPrivate=fetchPrivate(),downloads=new Map(CRITICAL.map(file=>[file,fetchText('./'+file+'?v='+VERSION)]));
-      const privateCode=cachedPrivate||await freshPrivate;executePrivate(privateCode,cachedPrivate?'family-command-private-app.cached.js':'family-command-private-app.js');
+      const start=performance.now();
+      const cachedPrivate=readCache(PRIVATE_CACHE,PRIVATE_CODE_VERSION),cachedRules=readCache(PRIVATE_RULES_CACHE,PRIVATE_RULES_VERSION);
+      const freshPrivate=fetchPrivate(),freshRules=fetchPrivateRules();
+      const downloads=new Map(CRITICAL.map(file=>[file,fetchText('./'+file+'?v='+VERSION)]));
+      const privateCode=cachedPrivate||await freshPrivate;
+      executePrivate(privateCode,cachedPrivate?'family-command-private-app.cached.js':'family-command-private-app.js');
+      const rulesCode=cachedRules||await freshRules;
+      execute(rulesCode,cachedRules?'family-command-private-config.cached.js':'family-command-private-config.js');
+      if(!window.FC_PRIVATE_RULES)throw new Error('Private Familienkonfiguration fehlt.');
+      document.documentElement.dataset.fcPrivateRules=String(window.FC_PRIVATE_RULES.version||'ready');
       await loadCss();
       for(const file of CRITICAL)executeCritical(file,await downloads.get(file));
       if(!window.__fcV9)throw new Error('V9-Oberfläche konnte nicht gestartet werden.');
       document.documentElement.dataset.fcBoot='v9-clean-ok';document.documentElement.dataset.fcBootMs=String(Math.round(performance.now()-start));
       await frame();document.getElementById('fcApp').style.visibility='visible';document.getElementById('fcBoot')?.remove();document.documentElement.dataset.fcReady='1';
-      freshPrivate.then(writePrivateCache).catch(e=>console.error('fc_private_refresh',e));idle(()=>loadExtras(),3500);
+      freshPrivate.then(code=>writeCache(PRIVATE_CACHE,PRIVATE_CODE_VERSION,code)).catch(e=>console.error('fc_private_refresh',e));
+      freshRules.then(code=>writeCache(PRIVATE_RULES_CACHE,PRIVATE_RULES_VERSION,code)).catch(e=>console.error('fc_private_rules_refresh',e));
+      idle(()=>loadExtras(),3500);
     }
     boot().catch(e=>{console.error('family_command_v9_boot',e);fatal(e?.message)});
   })();
