@@ -75,6 +75,31 @@ async function runViewport(browser,name,width,height){
   assert.ok(await textVisible(page,'Vergangener Testtermin'));
   assert.ok(await textVisible(page,'Vergangen'));
 
+  /* Event details and original picker are V9-native and need no DOM enhancers. */
+  const eventRow=page.locator('#events [data-event]').filter({hasText:'Betreuungstermin'}).first();
+  assert.ok(await eventRow.isVisible());
+  await eventRow.click();
+  await page.waitForSelector('#fcEventDetails .fc-detail-sheet');
+  assert.ok(await page.locator('#fcEventDetails').getByText('Betreuungstermin',{exact:false}).first().isVisible());
+  const eventDetailsHealth=await page.evaluate(()=>window.__fcEventDetailsHealth||null);
+  assert.equal(eventDetailsHealth?.v9Native,true);
+  assert.equal(eventDetailsHealth?.mutationObserver,false);
+  assert.equal(eventDetailsHealth?.renderWrappers,false);
+  assert.equal(eventDetailsHealth?.legacySelectors,false);
+  assert.equal(await page.locator('#fcEventDetails [class*="pro-"]').count(),0);
+  const detailGeom=await page.evaluate(()=>({vw:innerWidth,scrollW:document.getElementById('fcEventDetails')?.scrollWidth||0}));
+  assert.ok(detailGeom.scrollW<=detailGeom.vw+1,`event detail overflow: ${JSON.stringify(detailGeom)}`);
+  await page.locator('#fcEventDetails .fc-detail-pick').click();
+  await page.waitForSelector('#fcDocPicker .fc-picker-sheet');
+  assert.equal(await page.locator('#fcDocPicker [class*="pro-"]').count(),0);
+  assert.ok(await page.getByText('Noch kein anderes Original gespeichert.',{exact:false}).last().isVisible());
+  const pickerGeom=await page.evaluate(()=>({vw:innerWidth,scrollW:document.getElementById('fcDocPicker')?.scrollWidth||0}));
+  assert.ok(pickerGeom.scrollW<=pickerGeom.vw+1,`event picker overflow: ${JSON.stringify(pickerGeom)}`);
+  await page.locator('#fcDocPicker .fc-picker-close').click();
+  await page.waitForSelector('#fcDocPicker',{state:'detached'});
+  await page.locator('#fcEventDetails .fc-detail-close').click();
+  await page.waitForSelector('#fcEventDetails',{state:'detached'});
+
   await appClick(page,'homework');
   await page.locator('#homework [data-edit-hw]').first().click();
   await page.waitForSelector('#fc9Modal');
@@ -167,7 +192,7 @@ async function runViewport(browser,name,width,height){
   assert.deepEqual(unexpectedExternal,[],'unexpected external Supabase calls: '+unexpectedExternal.join(' | '));
   assert.equal(errors.length,0,'browser errors: '+errors.join(' | '));
   await context.close();
-  return{name,width,height,boot,timings,runtime,selfTest,backupHealth,backendCalls,hwOriginals,dayShare,weekShare};
+  return{name,width,height,boot,timings,runtime,selfTest,backupHealth,eventDetailsHealth,backendCalls,hwOriginals,dayShare,weekShare};
 }
 
 let browser;
