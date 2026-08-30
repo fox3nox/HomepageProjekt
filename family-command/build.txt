@@ -1,3 +1,4 @@
 Familienzentrale personal build
 2026-08-30 v9.14-document-integrity
+2026-08-30 v9.16-document-list-dedupe
 private family workspace
