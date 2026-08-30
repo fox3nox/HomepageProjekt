@@ -1,8 +1,8 @@
-/* Familienzentrale V9.13 · native readable document viewer */
+/* Familienzentrale V9.14 · native readable document viewer */
 (()=>{
   'use strict';
   if(window.__fcDocumentViewerInstalled)return;window.__fcDocumentViewerInstalled=true;
-  const VERSION='1.0.0';
+  const VERSION='1.1.0';
   const DOC_BASE='https://lmrvapstojcecljjdgds.supabase.co/functions/v1/family-command-documents';
   const MODAL='fcDocumentViewer';
   const esc=s=>String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
@@ -18,12 +18,12 @@
     function active(k){mode=k;tabs.forEach(b=>b.classList.toggle('active',b.dataset.mode===k));toolbar.hidden=k!=='original'||String(original?.mimeType||'').includes('pdf')}
     function applyZoom(){zoom=Math.max(1,Math.min(3,zoom));const img=body.querySelector('.fc-dv-original-img');if(img){img.style.width=Math.round(zoom*100)+'%';img.style.maxWidth='none'}const l=m.querySelector('[data-zoom-label]');if(l)l.textContent=Math.round(zoom*100)+' %'}
     async function loadReadable(){if(readable)return readable;const r=await request('/readable?id='+encodeURIComponent(id));if(!r.ok)throw new Error('no readable');const j=await r.json();if(!j?.content)throw new Error('no readable');readable=j;title(j.title);return j}
-    async function loadOriginal(){if(original)return original;const r=await request('/file?id='+encodeURIComponent(id)+'&json=1');if(!r.ok)throw new Error('original failed');const j=await r.json();if(!j?.url)throw new Error('original failed');original=j;title(j.title);return j}
+    async function loadOriginal(){if(original)return original;const r=await request('/file?id='+encodeURIComponent(id)+'&json=1&original=1');if(!r.ok)throw new Error('original failed');const j=await r.json();if(!j?.url)throw new Error('original failed');original=j;title(j.title);return j}
     async function showReadable(){active('readable');body.innerHTML='<div class="fc-dv-loading">Lesefassung wird geladen …</div>';try{const j=await loadReadable();if(mode!=='readable')return;body.innerHTML=readableHtml(j.content);body.scrollTop=0}catch(e){tabs.find(b=>b.dataset.mode==='readable')?.setAttribute('disabled','');await showOriginal()}}
     async function showOriginal(){active('original');body.innerHTML='<div class="fc-dv-loading">Original wird geladen …</div>';try{const j=await loadOriginal();if(mode!=='original')return;const mime=String(j.mimeType||'');toolbar.hidden=mime.includes('pdf');if(mime.includes('pdf')){body.innerHTML=`<iframe class="fc-dv-pdf" src="${esc(j.url)}" title="Original PDF"></iframe>`}else{body.innerHTML=`<div class="fc-dv-original-stage"><img class="fc-dv-original-img" src="${esc(j.url)}" alt="${esc(j.title||'Originaldokument')}"></div>`;zoom=1;applyZoom()}body.scrollTop=0}catch(e){body.innerHTML='<div class="fc-dv-empty">Das Original konnte nicht geladen werden.</div>'}}
     tabs.forEach(b=>b.onclick=()=>b.dataset.mode==='original'?showOriginal():showReadable());m.querySelector('[data-zoom-in]').onclick=()=>{zoom+=.25;applyZoom()};m.querySelector('[data-zoom-out]').onclick=()=>{zoom-=.25;applyZoom()};m.querySelector('[data-fit]').onclick=()=>{zoom=1;applyZoom()};
     await showReadable();return m
   }
   window.fcOpenOriginal=open;
-  window.__fcDocumentViewerHealth={version:VERSION,v9Native:true,readable:true,original:true,zoom:true,legacyWrapper:false};
+  window.__fcDocumentViewerHealth={version:VERSION,v9Native:true,readable:true,original:true,originalPath:true,zoom:true,legacyWrapper:false};
 })();
