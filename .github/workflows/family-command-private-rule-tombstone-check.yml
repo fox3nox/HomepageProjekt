@@ -1,0 +1,26 @@
+name: Family Command private rule tombstone regression
+on:
+  push:
+    branches: [main]
+    paths:
+      - 'family-command/v9-data.js'
+      - 'family-command/e2e/private-rule-tombstone.spec.mjs'
+      - '.github/workflows/family-command-private-rule-tombstone-check.yml'
+  pull_request:
+    branches: [main]
+    paths:
+      - 'family-command/v9-data.js'
+      - 'family-command/e2e/private-rule-tombstone.spec.mjs'
+      - '.github/workflows/family-command-private-rule-tombstone-check.yml'
+jobs:
+  check:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@v4
+      - name: JavaScript syntax
+        run: |
+          node --check family-command/v9-data.js
+          node --check family-command/e2e/private-rule-tombstone.spec.mjs
+      - name: Old private upsert cannot resurrect deleted todo
+        run: node family-command/e2e/private-rule-tombstone.spec.mjs
