@@ -1,4 +1,4 @@
-/* Familienzentrale · generic private schedule/push rules bridge · V9.3 · 2026-08-30 */
+/* Familienzentrale · generic private schedule/push/UI rules bridge · V9.18 · 2026-08-31 */
 (()=>{
   'use strict';
   if(window.__fcDataRulesInstalled)return;
@@ -8,6 +8,7 @@
   const D=()=>{try{return typeof data!=='undefined'&&data?data:{}}catch(_){return{}}};
   const dayOf=date=>{try{return new Date(String(date)+'T12:00:00').getDay()}catch(_){return-1}};
   const includes=(arr,v)=>!Array.isArray(arr)||!arr.length||arr.map(String).includes(String(v));
+  const mins=v=>{const m=String(v||'').match(/^(\d{1,2}):(\d{2})/);return m?(Number(m[1])*60+Number(m[2])):null};
 
   function persist(){try{if(typeof save==='function')save()}catch(e){console.error('fc_rules_save',e)}}
 
@@ -90,8 +91,51 @@
     return true;
   }
 
+  function normalizeFileInputs(root=document){
+    try{
+      root.querySelectorAll?.('input[type="file"]').forEach(input=>{
+        if(input.hasAttribute('capture'))input.removeAttribute('capture');
+        const accept=String(input.getAttribute('accept')||'');
+        if(!/application\/pdf|\.pdf/i.test(accept))input.setAttribute('accept',[accept,'application/pdf','.pdf'].filter(Boolean).join(','));
+      });
+    }catch(e){console.error('fc_file_picker_guard',e)}
+  }
+
+  function scheduleLabel(slot){return String(slot?.label||'').replace(/^Schule\s*·\s*/i,'').trim()}
+  function relevantSlot(pid,day,live){
+    const slots=[...((D().schedules?.[pid]?.[day])||[])].sort((a,b)=>String(a?.start||'').localeCompare(String(b?.start||'')));
+    if(!slots.length)return null;
+    if(!live)return slots[0];
+    const n=new Date(),cur=n.getHours()*60+n.getMinutes();
+    return slots.find(s=>{const end=mins(s?.end);return end===null||end>=cur})||null;
+  }
+  function decorateScheduleRows(){
+    const people=Array.isArray(D().people)?D().people:[];
+    for(const [screen,offset,live] of [['today',0,true],['tomorrow',1,false]]){
+      const root=document.getElementById(screen);if(!root)continue;
+      const d=new Date();d.setDate(d.getDate()+offset);const day=d.getDay();
+      root.querySelectorAll('.fc9-person').forEach(row=>{
+        const name=String(row.querySelector('b')?.textContent||'').trim(),p=people.find(x=>String(x?.name||'').trim()===name),sub=row.querySelector('span');
+        if(!p||!sub)return;
+        const slot=relevantSlot(p.id,day,live),label=scheduleLabel(slot);
+        const old=String(sub.dataset.fcScheduleSpecial||'');
+        if(old&&sub.textContent?.endsWith(' · '+old))sub.textContent=sub.textContent.slice(0,-(' · '+old).length);
+        sub.dataset.fcScheduleSpecial='';
+        if(!label||/^(Schule|Kindergarten)$/i.test(label))return;
+        sub.append(document.createTextNode(' · '+label));sub.dataset.fcScheduleSpecial=label;
+      });
+    }
+  }
+  function installUiGuards(){
+    let queued=false;
+    const run=()=>{queued=false;normalizeFileInputs();decorateScheduleRows()};
+    const queue=()=>{if(queued)return;queued=true;queueMicrotask(run)};
+    const obs=new MutationObserver(queue);obs.observe(document.documentElement,{childList:true,subtree:true});queue();return obs;
+  }
+
   const changed=applyScheduleRules();
   if(changed)persist();
   const pushWrapped=installPushBridge();
-  window.__fcDataRulesHealth={version:5,privateConfigVersion:String(cfg().version||''),scheduleChanged:changed,pushWrapped,managedBoot:!!window.__fcManagedBoot,installedAt:new Date().toISOString()};
+  const uiObserver=installUiGuards();
+  window.__fcDataRulesHealth={version:6,privateConfigVersion:String(cfg().version||''),scheduleChanged:changed,pushWrapped,iosFilePickerGuard:true,scheduleLabelsVisible:true,uiObserver:!!uiObserver,managedBoot:!!window.__fcManagedBoot,installedAt:new Date().toISOString()};
 })();
