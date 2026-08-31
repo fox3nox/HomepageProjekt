@@ -61,4 +61,30 @@ const shell=x=>({people:[],events:[],todos:[],homework:[],reminders:[],pendencie
   assert.equal(merge(base,remote,local).events.length,0);
 }
 
-console.log('V9.19 three-way cloud merge regression: OK');
+// V9.23: a saved deletion receives a tombstone before the state is persisted.
+{
+  const before=shell({todos:[{id:'fruit-fly',clientRef:'chat-fruit',title:'Fruchtfliegenfalle',done:true,completedAt:'2026-08-31T17:00:00Z'}]});
+  const after=shell({todos:[]});
+  window.__fcCloudState.applyDeletionMarks(before,after);
+  assert.ok(after._syncDeleted?.todos?.['fruit-fly'],'deleted todo must receive a tombstone');
+}
+
+// V9.23: a stale device may still contain or even modify the old todo; the cloud tombstone must win.
+{
+  const base=shell({todos:[{id:'fruit-fly',clientRef:'chat-fruit',title:'Fruchtfliegenfalle',done:true,completedAt:'2026-08-31T17:00:00Z'}]});
+  const remote=shell({todos:[],_syncDeleted:{todos:{'fruit-fly':'2026-08-31T17:05:00Z'}}});
+  const local=shell({todos:[{id:'fruit-fly',clientRef:'chat-fruit',title:'Fruchtfliegenfalle LANDI',done:false,completedAt:''}]});
+  const out=merge(base,remote,local);
+  assert.equal(out.todos.length,0,'stale todo must not resurrect after a canonical deletion');
+  assert.equal(out._syncDeleted.todos['fruit-fly'],'2026-08-31T17:05:00Z');
+}
+
+// A tombstone also suppresses a stale record matched only through clientRef.
+{
+  const base=shell({todos:[]});
+  const remote=shell({_syncDeleted:{todos:{'chat-fruit':'2026-08-31T17:05:00Z'}}});
+  const local=shell({todos:[{id:'old-device-id',clientRef:'chat-fruit',title:'Fruchtfliegenfalle',done:false}]});
+  assert.equal(merge(base,remote,local).todos.length,0);
+}
+
+console.log('V9.23 three-way cloud merge + delete tombstone regression: OK');
