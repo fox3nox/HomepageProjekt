@@ -8,4 +8,5 @@ Familienzentrale personal build
 2026-08-31 v9.21-sync-status-lifecycle
 2026-08-31 v9.22-smart-documents
 2026-08-31 v9.23-delete-tombstones
+2026-08-31 v9.24-chat-command-tombstones
 private family workspace

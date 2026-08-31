@@ -1,4 +1,4 @@
-/* Family Command · durable Chat → app bridge · V9.17 · 2026-08-31 */
+/* Family Command · durable Chat → app bridge · V9.24 · 2026-08-31 */
 (()=>{
   'use strict';
   if(window.__fcChatCommandSyncInstalled)return;window.__fcChatCommandSyncInstalled=true;
@@ -10,6 +10,7 @@
   function read(key,fallback){try{const v=JSON.parse(localStorage.getItem(key)||'null');return v??fallback}catch(e){return fallback}}
   function write(key,v){try{localStorage.setItem(key,JSON.stringify(v))}catch(e){}}
   function dismissed(){return new Set(read(DISMISSED,[]).map(String))}
+  function cloudDeleted(){try{return new Set(Object.keys(data?._syncDeleted?.todos||{}).map(String))}catch(e){return new Set()}}
   function cacheRows(){return Array.isArray(read(CACHE,[]))?read(CACHE,[]):[]}
   function saveCache(rows){write(CACHE,rows.slice(-100))}
   function todos(){try{if(!Array.isArray(data.todos))data.todos=[];return data.todos}catch(e){return[]}}
@@ -20,8 +21,10 @@
   function identities(t){const out=[String(t?.id||''),String(t?.sourceCommandId||''),String(t?.clientRef||'')].filter(Boolean);if(!out.length&&t?.date&&t?.title)out.push(`${t.date}|${t.title}`);return [...new Set(out)]}
   function keyOf(t){return identities(t)[0]||''}
   function sameTodo(a,b){const aa=new Set(identities(a));return identities(b).some(k=>aa.has(k))}
+  function isBlocked(t){const ids=identities(t),dead=dismissed(),cloud=cloudDeleted();return SUPERSEDED.has(String(t?.clientRef||''))||ids.some(k=>dead.has(k)||cloud.has(k))}
+  function purgeBlockedCache(){const rows=cacheRows(),kept=rows.filter(x=>!isBlocked(normalizeTodo(x)));if(kept.length!==rows.length)saveCache(kept);return kept}
   function mergeIntoData(incoming){
-    const rows=todos(),dead=dismissed(),k=keyOf(incoming);if(!k||dead.has(k)||SUPERSEDED.has(incoming.clientRef))return false;
+    const rows=todos();if(isBlocked(incoming))return false;
     let t=rows.find(x=>sameTodo(x,incoming));let changed=false;
     if(!t){const max=Math.max(0,...rows.map(x=>Number(x.order||0)));t={...incoming,order:incoming.order||max+10};rows.push(t);return true}
     for(const f of ['title','date','section','priority','sourceCommandId','clientRef'])if(incoming[f]!==undefined&&t[f]!==incoming[f]){t[f]=incoming[f];changed=true}
@@ -29,21 +32,21 @@
     return changed;
   }
   function upsertCache(incoming){
-    const rows=cacheRows().filter(x=>!SUPERSEDED.has(String(x.clientRef||''))),i=rows.findIndex(x=>sameTodo(x,incoming));
+    let rows=purgeBlockedCache();if(isBlocked(incoming))return rows;
+    const i=rows.findIndex(x=>sameTodo(x,incoming));
     if(i>=0){const prev=normalizeTodo(rows[i]);rows[i]={...prev,...incoming,done:prev.done||incoming.done,completedAt:prev.completedAt||incoming.completedAt}}
     else rows.push(incoming);
     saveCache(rows);return rows
   }
-  function hydrateLocal(){let changed=repairCompletionInvariant();const dead=dismissed();for(const raw of cacheRows()){const t=normalizeTodo(raw),k=keyOf(t);if(!k||dead.has(k)||SUPERSEDED.has(t.clientRef))continue;changed=mergeIntoData(t)||changed}return changed}
+  function hydrateLocal(){let changed=repairCompletionInvariant();for(const raw of purgeBlockedCache()){const t=normalizeTodo(raw);if(isBlocked(t))continue;changed=mergeIntoData(t)||changed}return changed}
   function allMerged(){
-    repairCompletionInvariant();
-    const dead=dismissed(),canonical=todos().map(normalizeTodo).filter(t=>!SUPERSEDED.has(t.clientRef)),out=[];
+    repairCompletionInvariant();purgeBlockedCache();const canonical=todos().map(normalizeTodo).filter(t=>!isBlocked(t)),out=[];
     for(const raw of cacheRows()){
-      const t=normalizeTodo(raw),k=keyOf(t);if(!k||dead.has(k)||SUPERSEDED.has(t.clientRef))continue;
+      const t=normalizeTodo(raw);if(isBlocked(t))continue;
       if(canonical.some(c=>sameTodo(c,t)))continue;
       if(!out.some(x=>sameTodo(x,t)))out.push(t);
     }
-    for(const t of canonical){const k=keyOf(t);if(!k||dead.has(k))continue;const i=out.findIndex(x=>sameTodo(x,t));if(i>=0)out[i]={...out[i],...t};else out.push(t)}
+    for(const t of canonical){if(isBlocked(t))continue;const i=out.findIndex(x=>sameTodo(x,t));if(i>=0)out[i]={...out[i],...t};else out.push(t)}
     return out
   }
   function getTodosFor(date,{includeOverdue=false,includeDone=false}={}){return allMerged().filter(t=>!t.archived&&(includeDone||!t.done)&&(String(t.date)===String(date)||(includeOverdue&&!t.done&&String(t.date)<String(date)))).sort((a,b)=>Number(!!b.priority)-Number(!!a.priority)||Number(a.order||0)-Number(b.order||0)||String(a.createdAt).localeCompare(String(b.createdAt)))}
@@ -53,16 +56,16 @@
   async function sync(){
     try{
       if(typeof data==='undefined'||!data||!accessKey())return false;
-      let changed=repairCompletionInvariant();
+      let changed=repairCompletionInvariant();purgeBlockedCache();
       const r=await request(),j=await r.json().catch(()=>({}));if(!r.ok||!j.ok||!Array.isArray(j.commands))return false;
       const ids=[];
-      for(const cmd of j.commands){const t=fromCommand(cmd);if(!t)continue;upsertCache(t);changed=mergeIntoData(t)||changed;ids.push(String(cmd.id))}
+      for(const cmd of j.commands){const t=fromCommand(cmd);if(!t)continue;ids.push(String(cmd.id));if(isBlocked(t))continue;upsertCache(t);changed=mergeIntoData(t)||changed}
       if(changed){try{if(typeof save==='function')save()}catch(e){console.error('fc_chat_save',e)}refreshVisible()}
       if(ids.length)await request({method:'POST',headers:{'content-type':'application/json'},body:JSON.stringify({ids})});return changed;
     }catch(e){console.error('fc_chat_command_sync',e);return false}
   }
 
   const hydrated=hydrateLocal();if(hydrated){try{if(typeof save==='function')save()}catch(e){}queueMicrotask(refreshVisible)}
-  window.__fcChatCommandSync={version:5,sync,hydrateLocal,getTodosFor,dismiss,all:allMerged,cacheKey:CACHE,canonicalTodos:true,completionInvariant:true};
+  window.__fcChatCommandSync={version:6,sync,hydrateLocal,getTodosFor,dismiss,all:allMerged,cacheKey:CACHE,canonicalTodos:true,completionInvariant:true,cloudDeleteTombstones:true};
   queueMicrotask(sync);document.addEventListener('visibilitychange',()=>{if(document.visibilityState==='visible')sync()});window.addEventListener('pageshow',()=>sync());
 })();

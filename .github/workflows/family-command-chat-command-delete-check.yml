@@ -1,0 +1,21 @@
+name: Family Command chat command deletion regression
+on:
+  push:
+    branches: [main]
+    paths:
+      - 'family-command/chat-command-sync.js'
+      - 'family-command/e2e/chat-command-delete.spec.mjs'
+      - '.github/workflows/family-command-chat-command-delete-check.yml'
+  pull_request:
+    branches: [main]
+    paths:
+      - 'family-command/chat-command-sync.js'
+      - 'family-command/e2e/chat-command-delete.spec.mjs'
+      - '.github/workflows/family-command-chat-command-delete-check.yml'
+jobs:
+  check:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - run: node --check family-command/chat-command-sync.js
+      - run: node family-command/e2e/chat-command-delete.spec.mjs
