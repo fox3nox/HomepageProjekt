@@ -1,0 +1,30 @@
+name: Family Command sync status regression
+on:
+  push:
+    branches: [main]
+    paths:
+      - 'family-command/cloud-state.js'
+      - 'family-command/e2e/sync-status.spec.mjs'
+      - '.github/workflows/family-command-sync-status-check.yml'
+  pull_request:
+    branches: [main]
+    paths:
+      - 'family-command/cloud-state.js'
+      - 'family-command/e2e/sync-status.spec.mjs'
+      - '.github/workflows/family-command-sync-status-check.yml'
+jobs:
+  sync-status:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+      - name: Syntax
+        run: |
+          node --check family-command/cloud-state.js
+          node --check family-command/e2e/sync-status.spec.mjs
+      - name: Install Playwright WebKit
+        run: |
+          npm install --no-save --package-lock=false playwright@1.57.0
+          npx playwright install --with-deps webkit
+      - name: iPhone sync status regression
+        run: node family-command/e2e/sync-status.spec.mjs
