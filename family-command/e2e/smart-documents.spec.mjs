@@ -15,7 +15,7 @@ try{
  await context.addInitScript({content:seed});
  const page=await context.newPage();
  await page.route('**/family-command-documents/list',async route=>route.fulfill({status:200,contentType:'application/json',body:JSON.stringify({ok:true,documents:[{id:'doc-j',person_id:'jayden',title:'Jayden · Elternbrief',mime_type:'application/pdf',created_at:'2026-08-30T10:00:00Z',links:[{source_kind:'person',source_id:'jayden'}]},{id:'doc-f',person_id:'fynn',title:'Fynn · Wochenplan',mime_type:'image/jpeg',created_at:'2026-08-31T10:00:00Z',links:[{source_kind:'person',source_id:'fynn'}]},...(uploaded?[{id:'doc-new',person_id:'fynn',title:'Fynn · Wochenblatt',mime_type:'image/png',created_at:'2026-08-31T19:00:00Z',links:[{source_kind:'person',source_id:'fynn'}]}]:[])]})}));
- await page.route('**/family-command-ai-budgeted/document',async route=>route.fulfill({status:200,contentType:'application/json',body:JSON.stringify({ok:true,parsed:{summary:'Wochenblatt Schule',items:[{type:'event',personId:'fynn',title:'Telefongespräch',subject:'',date:'2026-09-08',time:'10:00',endDate:'',end:'',note:'',reminderLead:30,confidence:.99},{type:'homework',personId:'fynn',title:'2er- und 4er-Reihe aufsagen',subject:'Math',date:'2026-09-04',time:'',endDate:'',end:'',note:'Freiwillig',reminderLead:-1,confidence:.98},{type:'event',personId:'jayden',title:'Unsicherer Termin',subject:'',date:'2026-09-11',time:'',endDate:'',end:'',note:'',reminderLead:30,confidence:.5}]}})}));
+ await page.route('**/family-command-ai-budgeted/document',async route=>route.fulfill({status:200,contentType:'application/json',body:JSON.stringify({ok:true,parsed:{summary:'Wochenblatt Schule',items:[{type:'event',personId:'fynn',title:'Telefongespräch',subject:'',date:'2026-09-08',time:'10:00',endDate:'',end:'',note:'',reminderLead:30,confidence:.99},{type:'homework',personId:'fynn',title:'2er- und 4er-Reihe aufsagen',subject:'Math',date:'2026-09-04',time:'',endDate:'',end:'',note:'Freiwillig',reminderLead:-1,confidence:.98},{type:'event',personId:'jayden',title:'Manuell korrigierter Termin',subject:'',date:'2026-09-12',time:'09:00',endDate:'',end:'',note:'',reminderLead:30,confidence:.99},{type:'event',personId:'jayden',title:'Unsicherer Termin',subject:'',date:'2026-09-11',time:'',endDate:'',end:'',note:'',reminderLead:30,confidence:.5}]}})}));
  await page.route('**/family-command-documents/upload',async route=>{uploaded=true;await route.fulfill({status:200,contentType:'application/json',body:JSON.stringify({ok:true,document:{id:'doc-new',person_id:'fynn',title:'Fynn · Wochenblatt',mime_type:'image/png',created_at:'2026-08-31T19:00:00Z',links:[{source_kind:'person',source_id:'fynn'}]}})})});
  await page.route('**/family-command-documents/link',async route=>route.fulfill({status:200,contentType:'application/json',body:JSON.stringify({ok:true})}));
  await page.goto(BASE+'/?access=test',{waitUntil:'domcontentloaded',timeout:15000});
@@ -27,14 +27,18 @@ try{
  await page.click('[data-doc-filter="fynn"]');
  assert.equal(await page.locator('[data-doc]').count(),1,'Fynn filter must only show Fynn documents');
  assert.match(await page.locator('[data-doc]').innerText(),/Fynn/);
+ await page.check('[data-doc-person][value="fynn"]');
  await page.setInputFiles('[data-doc-file]',{name:'wochenblatt.png',mimeType:'image/png',buffer:Buffer.from('89504e470d0a1a0a','hex')});
  await page.click('[data-doc-upload]');
  await page.waitForFunction(()=>document.querySelector('[data-doc-status]')?.textContent.includes('Gespeichert'),{timeout:10000});
  const state=await page.evaluate(()=>({events:window.data.events,homework:window.data.homework,health:window.__fcSmartDocumentsHealth}));
  assert.equal(state.events.filter(e=>e.title==='Telefongespräch'&&e.date==='2026-09-08').length,1,'existing event must not be duplicated');
- assert.equal(state.homework.filter(h=>h.title==='2er- und 4er-Reihe aufsagen'&&h.personId==='fynn').length,1,'high-confidence homework must be created');
+ assert.equal(state.homework.filter(h=>h.title==='2er- und 4er-Reihe aufsagen'&&h.personId==='fynn').length,1,'high-confidence homework must be created for manual assignment');
+ const corrected=state.events.find(e=>e.title==='Manuell korrigierter Termin');
+ assert.deepEqual(corrected?.personIds,['fynn'],'manual Fynn selection must override AI Jayden assignment');
  assert.equal(state.events.some(e=>e.title==='Unsicherer Termin'),false,'low-confidence extraction must not be auto-created');
  assert.equal(state.health.confidenceThreshold,.85);
+ assert.equal(state.health.manualOverride,true);
  await browser.close();
  console.log('smart documents regression: ok');
 } finally {server.kill('SIGTERM')}

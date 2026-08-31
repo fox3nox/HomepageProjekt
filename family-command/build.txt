@@ -10,4 +10,5 @@ Familienzentrale personal build
 2026-08-31 v9.23-delete-tombstones
 2026-08-31 v9.24-chat-command-tombstones
 2026-08-31 v9.25-private-rule-tombstone-guard
+2026-08-31 v9.26-full-audit-hardening
 private family workspace

@@ -61,15 +61,26 @@ const shell=x=>({people:[],events:[],todos:[],homework:[],reminders:[],pendencie
   assert.equal(merge(base,remote,local).events.length,0);
 }
 
-// V9.23: a saved deletion receives a tombstone before the state is persisted.
+// V9.26: a saved deletion receives tombstones for every durable identity.
 {
-  const before=shell({todos:[{id:'fruit-fly',clientRef:'chat-fruit',title:'Fruchtfliegenfalle',done:true,completedAt:'2026-08-31T17:00:00Z'}]});
+  const before=shell({todos:[{id:'fruit-fly',clientRef:'chat-fruit',sourceCommandId:'cmd-fruit',title:'Fruchtfliegenfalle',done:true,completedAt:'2026-08-31T17:00:00Z'}]});
   const after=shell({todos:[]});
   window.__fcCloudState.applyDeletionMarks(before,after);
-  assert.ok(after._syncDeleted?.todos?.['fruit-fly'],'deleted todo must receive a tombstone');
+  for(const id of ['fruit-fly','chat-fruit','cmd-fruit'])assert.ok(after._syncDeleted?.todos?.[id],`deleted todo must tombstone ${id}`);
 }
 
-// V9.23: a stale device may still contain or even modify the old todo; the cloud tombstone must win.
+// V9.26: an older backup/state may not erase deletion history already known on this device.
+{
+  const before=shell({todos:[{id:'old',clientRef:'old-ref',sourceCommandId:'old-cmd',title:'Old'}],_syncDeleted:{todos:{'previous-delete':'2026-08-30T00:00:00Z'},events:{'deleted-event':'2026-08-30T00:00:00Z'}}});
+  const restored=shell({todos:[],_syncDeleted:{todos:{'backup-delete':'2026-08-29T00:00:00Z'}}});
+  window.__fcCloudState.applyDeletionMarks(before,restored);
+  assert.ok(restored._syncDeleted.todos['previous-delete'],'previous todo tombstone must survive restore');
+  assert.ok(restored._syncDeleted.todos['backup-delete'],'backup tombstone must remain');
+  assert.ok(restored._syncDeleted.events['deleted-event'],'other collection tombstones must survive restore');
+  for(const id of ['old','old-ref','old-cmd'])assert.ok(restored._syncDeleted.todos[id],`restored deletion must tombstone ${id}`);
+}
+
+// A stale device may still contain or even modify the old todo; the cloud tombstone must win.
 {
   const base=shell({todos:[{id:'fruit-fly',clientRef:'chat-fruit',title:'Fruchtfliegenfalle',done:true,completedAt:'2026-08-31T17:00:00Z'}]});
   const remote=shell({todos:[],_syncDeleted:{todos:{'fruit-fly':'2026-08-31T17:05:00Z'}}});
@@ -87,4 +98,8 @@ const shell=x=>({people:[],events:[],todos:[],homework:[],reminders:[],pendencie
   assert.equal(merge(base,remote,local).todos.length,0);
 }
 
-console.log('V9.23 three-way cloud merge + delete tombstone regression: OK');
+const health=window.__fcCloudState.health();
+assert.equal(health.allIdentityTombstones,true);
+assert.equal(health.preservesDeleteHistory,true);
+assert.equal(health.canonicalWriteAck,true);
+console.log('V9.26 three-way cloud merge + durable delete history regression: OK');
