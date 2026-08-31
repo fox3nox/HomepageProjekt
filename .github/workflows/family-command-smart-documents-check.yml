@@ -1,0 +1,35 @@
+name: Family Command smart documents regression
+on:
+  push:
+    branches: [main]
+    paths:
+      - 'family-command/smart-documents.js'
+      - 'family-command/document-viewer.js'
+      - 'family-command/sw.js'
+      - 'family-command/e2e/smart-documents.spec.mjs'
+      - '.github/workflows/family-command-smart-documents-check.yml'
+  pull_request:
+    branches: [main]
+    paths:
+      - 'family-command/smart-documents.js'
+      - 'family-command/document-viewer.js'
+      - 'family-command/sw.js'
+      - 'family-command/e2e/smart-documents.spec.mjs'
+      - '.github/workflows/family-command-smart-documents-check.yml'
+jobs:
+  smart-documents:
+    runs-on: ubuntu-latest
+    timeout-minutes: 12
+    steps:
+      - uses: actions/checkout@v4
+      - name: Syntax
+        run: |
+          node --check family-command/smart-documents.js
+          node --check family-command/document-viewer.js
+          node --check family-command/e2e/smart-documents.spec.mjs
+      - name: Install Playwright WebKit
+        run: |
+          npm install --no-save --package-lock=false playwright@1.57.0
+          npx playwright install --with-deps webkit
+      - name: iPhone smart documents regression
+        run: node family-command/e2e/smart-documents.spec.mjs
