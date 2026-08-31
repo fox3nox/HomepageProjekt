@@ -1,4 +1,4 @@
-/* Familienzentrale V9.4 · canonical Supabase state + local offline cache */
+/* Familienzentrale V9.18 · canonical Supabase state + local offline cache */
 (()=>{
 'use strict';
 if(window.__fcCloudStateInstalled)return;
@@ -16,9 +16,11 @@ function deviceId(){try{let id=localStorage.getItem(DEVICE)||'';if(!id){id='web-
 function current(){try{return typeof data!=='undefined'&&data&&typeof data==='object'?data:null}catch(_){return null}}
 function valid(s){return !!s&&typeof s==='object'&&!Array.isArray(s)&&Array.isArray(s.people)&&Array.isArray(s.events)&&s.schedules&&typeof s.schedules==='object'}
 function replaceState(next){const cur=current();if(!cur||!valid(next))return false;Object.keys(cur).forEach(k=>delete cur[k]);Object.assign(cur,clone(next));try{rawSave?.()}catch(e){console.error('fc_cloud_local_save',e)}return true}
-function keyOf(x){return String(x?.id||x?.clientRef||x?.sourceCommandId||'')}
-function mergeArray(remote=[],local=[]){const map=new Map();for(const x of Array.isArray(remote)?remote:[]){const k=keyOf(x);if(k)map.set(k,clone(x))}for(const x of Array.isArray(local)?local:[]){const k=keyOf(x);if(k)map.set(k,{...(map.get(k)||{}),...clone(x)})}return[...map.values()]}
-function mergeStates(remote,local){const out={...clone(remote||{}),...clone(local||{})};for(const k of ['people','events','todos','homework','reminders','pendencies'])out[k]=mergeArray(remote?.[k],local?.[k]);out.schedules=clone(local?.schedules||remote?.schedules||{});out.common={...(remote?.common||{}),...(local?.common||{})};return out}
+function identities(x){const out=[String(x?.id||''),String(x?.clientRef||''),String(x?.sourceCommandId||'')].filter(Boolean);return [...new Set(out)]}
+function sameRecord(a,b){const aa=new Set(identities(a));return identities(b).some(k=>aa.has(k))}
+function mergeTodo(remote,local){const r=clone(remote||{}),l=clone(local||{}),out={...r,...l};const completed=!!r.done||!!l.done||!!String(r.completedAt||'').trim()||!!String(l.completedAt||'').trim();if(completed){out.done=true;out.completedAt=String(l.completedAt||r.completedAt||'')}return out}
+function mergeArray(remote=[],local=[],kind=''){const out=(Array.isArray(remote)?remote:[]).filter(Boolean).map(clone);for(const raw of Array.isArray(local)?local:[]){if(!raw)continue;const x=clone(raw),i=out.findIndex(r=>sameRecord(r,x));if(i<0){out.push(x);continue}out[i]=kind==='todos'?mergeTodo(out[i],x):{...out[i],...x}}return out}
+function mergeStates(remote,local){const out={...clone(remote||{}),...clone(local||{})};for(const k of ['people','events','todos','homework','reminders','pendencies'])out[k]=mergeArray(remote?.[k],local?.[k],k);out.schedules=clone(local?.schedules||remote?.schedules||{});out.common={...(remote?.common||{}),...(local?.common||{})};return out}
 function notifyRender(){try{window.__fcV9?.invalidate?.(['today','tomorrow','events','homework','more','people'])}catch(_){}try{const screen=window.__fcV9?.state?.screen||document.querySelector('.fc9-screen.active')?.id;if(screen)window.__fcV9?.render?.(screen,true)}catch(_){}}
 
 async function request(method='GET',body=null){const headers=new Headers();headers.set('x-fc-access',accessKey());if(body!==null)headers.set('content-type','application/json');const r=await fetch(BASE,{method,headers,body:body===null?undefined:JSON.stringify(body),cache:'no-store'}),j=await r.json().catch(()=>({}));return{r,j}}
@@ -53,7 +55,7 @@ async function bootstrap(){
   }catch(e){lastError=e?.message||String(e);status='offline-cache';console.error('fc_cloud_bootstrap',e);schedule('bootstrap-retry',1800);return{ok:false,source:'local-cache',error:lastError}}
 }
 
-function health(){return{version:'2.0.0',status,revision,lastSync,lastError,busy,pending,deviceId:deviceId(),canonical:true,localCache:true}}
-window.__fcCloudState={version:'2.0.0',bootstrap,pushNow,schedule,health,mergeStates,get revision(){return revision}};
+function health(){return{version:'2.1.0',status,revision,lastSync,lastError,busy,pending,deviceId:deviceId(),canonical:true,localCache:true,identityMerge:true,completionInvariant:true}}
+window.__fcCloudState={version:'2.1.0',bootstrap,pushNow,schedule,health,mergeStates,get revision(){return revision}};
 document.addEventListener('visibilitychange',()=>{if(document.visibilityState==='visible'&&status==='offline-cache')pushNow('visibility')});
 })();
