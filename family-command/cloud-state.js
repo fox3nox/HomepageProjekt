@@ -1,4 +1,4 @@
-/* Familienzentrale V9.20 · canonical Supabase state + three-way offline merge + visible sync status */
+/* Familienzentrale V9.21 · canonical Supabase state + three-way offline merge + lifecycle-safe visible sync status */
 (()=>{
 'use strict';
 if(window.__fcCloudStateInstalled)return;
@@ -22,7 +22,7 @@ function identities(x){return [...new Set([String(x?.id||''),String(x?.clientRef
 function sameRecord(a,b){const aa=new Set(identities(a));return identities(b).some(k=>aa.has(k))}
 function completed(x){return !!x?.done||!!String(x?.completedAt||'').trim()}
 
-function health(){return{version:'2.3.0',status,revision,lastSync,lastError,busy,pending,deviceId:deviceId(),canonical:true,localCache:true,identityMerge:true,completionInvariant:true,threeWayMerge:true,lastConflictCount,visibleSyncStatus:true}}
+function health(){return{version:'2.3.1',status,revision,lastSync,lastError,busy,pending,deviceId:deviceId(),canonical:true,localCache:true,identityMerge:true,completionInvariant:true,threeWayMerge:true,lastConflictCount,visibleSyncStatus:true,v9ReadyRecovery:true}}
 function statusView(){
   if(status==='syncing'||status==='queued')return{label:'↻ Speichert…',tone:'busy',title:'Änderungen werden mit Supabase synchronisiert.'};
   if(status==='offline-cache')return{label:'⚠ Offline',tone:'offline',title:'Änderungen bleiben lokal gespeichert und werden später erneut synchronisiert.'};
@@ -31,12 +31,12 @@ function statusView(){
   return{label:'• Verbinden…',tone:'idle',title:'Synchronisationsstatus wird geprüft.'};
 }
 function ensureSyncUi(){
-  if(!document?.querySelector)return null;
+  if(typeof document==='undefined'||typeof document.querySelector!=='function')return null;
   const brand=document.querySelector('.fc9-brand');
   if(!brand){if(uiRetry<30){uiRetry++;setTimeout(ensureSyncUi,100)}return null}
   uiRetry=0;
   if(!document.getElementById('fc-cloud-status-style')){const s=document.createElement('style');s.id='fc-cloud-status-style';s.textContent='.fc-cloud-status{display:inline-flex!important;align-items:center;width:max-content;max-width:100%;margin-top:2px!important;padding:1px 5px;border-radius:999px;font-size:8px!important;font-weight:800;line-height:1.45;letter-spacing:.01em;overflow:visible!important;text-overflow:clip!important}.fc-cloud-status[data-tone="ok"]{color:#168b68!important;background:#eaf7f2}.fc-cloud-status[data-tone="busy"]{color:#5268c9!important;background:#eef2ff}.fc-cloud-status[data-tone="offline"]{color:#a34842!important;background:#fff0ee}.fc-cloud-status[data-tone="local"],.fc-cloud-status[data-tone="idle"]{color:#7a8798!important;background:#eef1f5}';document.head.appendChild(s)}
-  let el=document.getElementById('fcCloudStatus');if(!el){el=document.createElement('span');el.id='fcCloudStatus';el.className='fc-cloud-status';el.setAttribute('role','status');el.setAttribute('aria-live','polite');brand.appendChild(el)}return el;
+  let el=document.getElementById('fcCloudStatus');if(!el){el=document.createElement('span');el.id='fcCloudStatus';el.className='fc-cloud-status';el.setAttribute('role','status');el.setAttribute('aria-live','polite');el.setAttribute('aria-atomic','true');brand.appendChild(el)}return el;
 }
 function renderSyncUi(){const el=ensureSyncUi();if(!el)return;const v=statusView();el.textContent=v.label;el.dataset.tone=v.tone;el.title=v.title;el.setAttribute('aria-label','Cloud-Status: '+v.label.replace(/[↻⚠✓•]/g,'').trim())}
 function renderTransientUiStatus(next){const keep=status;status=next;renderSyncUi();status=keep}
@@ -89,10 +89,13 @@ async function bootstrap(){
   try{const remote=await pull();revision=Number(remote.revision||0);if(valid(remote.state)){replaceState(remote.state);baseState=clone(remote.state);lastSync=Date.now();setStatus('synced','');return{ok:true,source:'cloud',revision}}const ok=await write(clone(current()),0);return{ok,source:'local-bootstrap',revision}}
   catch(e){setStatus('offline-cache',e?.message||String(e));console.error('fc_cloud_bootstrap',e);schedule('bootstrap-retry',1800);return{ok:false,source:'local-cache',error:lastError}}
 }
-window.__fcCloudState={version:'2.3.0',bootstrap,pushNow,schedule,health,mergeStates,renderSyncUi,get revision(){return revision}};
+window.__fcCloudState={version:'2.3.1',bootstrap,pushNow,schedule,health,mergeStates,renderSyncUi,get revision(){return revision}};
 if(typeof window.addEventListener==='function'){
   window.addEventListener('online',()=>{if(status==='offline-cache'||status==='local-only')pushNow('online')});
   window.addEventListener('offline',()=>setStatus('offline-cache',lastError||'Keine Netzwerkverbindung.'));
 }
-if(typeof document?.addEventListener==='function')document.addEventListener('visibilitychange',()=>{renderSyncUi();if(document.visibilityState==='visible'&&status==='offline-cache')pushNow('visibility')});
+if(typeof document!=='undefined'&&typeof document.addEventListener==='function'){
+  document.addEventListener('fc:v9-ready',renderSyncUi);
+  document.addEventListener('visibilitychange',()=>{renderSyncUi();if(document.visibilityState==='visible'&&status==='offline-cache')pushNow('visibility')});
+}
 })();

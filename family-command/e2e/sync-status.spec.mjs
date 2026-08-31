@@ -15,9 +15,14 @@ try{
   const context=await browser.newContext({viewport:{width:390,height:844},isMobile:true,hasTouch:true,serviceWorkers:'block'});
   await context.addInitScript({content:seed});
   const page=await context.newPage();
+  // Delay the V9 shell beyond cloud-state's bounded startup polling. The status must still attach on fc:v9-ready.
+  await page.route('**/v9-app.js?*',async route=>{await sleep(3500);await route.continue()});
   await page.goto(BASE+'/?access=test',{waitUntil:'domcontentloaded',timeout:15000});
   await page.waitForFunction(()=>document.documentElement.dataset.fcReady==='1'&&window.__fcCloudState?.health?.().visibleSyncStatus===true,{timeout:10000});
   await page.waitForSelector('#fcCloudStatus',{state:'visible',timeout:5000});
+  const lifecycle=await page.evaluate(()=>window.__fcCloudState?.health?.());
+  assert.equal(lifecycle?.v9ReadyRecovery,true,'cloud status must recover when the V9 shell appears after startup polling');
+  assert.equal(await page.locator('#fcCloudStatus').getAttribute('aria-atomic'),'true','screen readers must announce one complete status');
   assert.match((await page.locator('#fcCloudStatus').innerText()).trim(),/Gesichert/,'initial cloud status must show Gesichert');
 
   await page.evaluate(()=>window.__fcCloudState.schedule('e2e-status',1500));
