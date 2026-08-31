@@ -1,4 +1,4 @@
-/* Familienzentrale V9.3 · generic idempotent private-data mutation engine */
+/* Familienzentrale V9.25 · generic idempotent private-data mutation engine with tombstone guard */
 (()=>{
 'use strict';
 if(window.__fcV9DataInstalled)return;
@@ -22,6 +22,11 @@ function match(row,selector={}){
 function matchAny(row,list){return Array.isArray(list)&&list.length?list.some(s=>match(row,s)):false}
 function ensureCollection(name){const state=D();if(!Array.isArray(state[name]))state[name]=[];return state[name]}
 function assignChanged(target,value){let changed=false;for(const [k,v] of Object.entries(value||{})){if(!equalValue(target[k],v)){target[k]=v;changed=true}}return changed}
+function identities(row){return [...new Set([String(row?.id||''),String(row?.clientRef||''),String(row?.sourceCommandId||'')].filter(Boolean))]}
+function tombstones(collection){const state=D();const raw=state?._syncDeleted?.[collection];return raw&&typeof raw==='object'&&!Array.isArray(raw)?new Set(Object.keys(raw).map(String)):new Set()}
+function isTombstoned(collection,row){const dead=tombstones(collection);return identities(row).some(k=>dead.has(k))}
+function ruleCandidate(rule){return {...(rule?.match||{}),...(Array.isArray(rule?.matchAny)&&rule.matchAny.length?rule.matchAny[0]:{}),...(rule?.value||{})}}
+function purgeTombstonedCollection(collection){const state=D(),rows=ensureCollection(collection),dead=tombstones(collection);if(!dead.size)return false;const kept=rows.filter(row=>!identities(row).some(k=>dead.has(k)));if(kept.length===rows.length)return false;state[collection]=kept;return true}
 
 function applyRemove(rule){
   const state=D(),rows=ensureCollection(rule.collection),before=rows.length;
@@ -30,8 +35,11 @@ function applyRemove(rule){
 }
 
 function applyUpsert(rule){
+  const candidate=ruleCandidate(rule);
+  if(isTombstoned(rule.collection,candidate))return false;
   const rows=ensureCollection(rule.collection),selectors=Array.isArray(rule.matchAny)?rule.matchAny:[],selector=rule.match||null;
   let row=rows.find(x=>(selector&&match(x,selector))||matchAny(x,selectors)),changed=false;
+  if(row&&isTombstoned(rule.collection,row))return false;
   if(!row){
     row={};
     if(rule.collection==='todos'){
@@ -43,7 +51,7 @@ function applyUpsert(rule){
 }
 
 function applyDedupe(rule){
-  const state=D(),rows=ensureCollection(rule.collection),matches=rows.filter(x=>match(x,rule.match||{}));
+  const state=D(),rows=ensureCollection(rule.collection),matches=rows.filter(x=>match(x,rule.match||{})&&!isTombstoned(rule.collection,x));
   if(matches.length<2)return false;
   const canonical=matches.find(x=>String(x?.id||'')===String(rule.canonicalId||''))||matches[0];
   for(const field of (rule.preferLongest||[])){
@@ -65,11 +73,13 @@ function applyRule(rule){
 
 function applyAll(){
   let changed=false,count=0;
+  const collections=new Set((cfg().mutations||[]).map(r=>r?.collection).filter(Boolean));
+  for(const collection of collections){if(purgeTombstonedCollection(collection)){changed=true;count++}}
   for(const rule of (cfg().mutations||[])){try{if(applyRule(rule)){changed=true;count++}}catch(e){console.error('fc9_private_rule',rule?.op,rule?.collection,e)}}
   if(changed)persist();
   return{changed,count};
 }
 
 const result=applyAll();
-window.__fcV9Data={version:3,privateConfigVersion:String(cfg().version||''),applyAll,changed:result.changed,appliedMutations:result.count};
+window.__fcV9Data={version:4,privateConfigVersion:String(cfg().version||''),applyAll,changed:result.changed,appliedMutations:result.count,tombstoneGuard:true};
 })();
