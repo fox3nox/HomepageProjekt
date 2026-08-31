@@ -31,6 +31,7 @@ function statusView(){
   return{label:'• Verbinden…',tone:'idle',title:'Synchronisationsstatus wird geprüft.'};
 }
 function ensureSyncUi(){
+  if(!document?.querySelector)return null;
   const brand=document.querySelector('.fc9-brand');
   if(!brand){if(uiRetry<30){uiRetry++;setTimeout(ensureSyncUi,100)}return null}
   uiRetry=0;
@@ -38,7 +39,7 @@ function ensureSyncUi(){
   let el=document.getElementById('fcCloudStatus');if(!el){el=document.createElement('span');el.id='fcCloudStatus';el.className='fc-cloud-status';el.setAttribute('role','status');el.setAttribute('aria-live','polite');brand.appendChild(el)}return el;
 }
 function renderSyncUi(){const el=ensureSyncUi();if(!el)return;const v=statusView();el.textContent=v.label;el.dataset.tone=v.tone;el.title=v.title;el.setAttribute('aria-label','Cloud-Status: '+v.label.replace(/[↻⚠✓•]/g,'').trim())}
-function setStatus(next,error){status=next;if(error!==undefined)lastError=error||'';renderSyncUi();try{window.dispatchEvent(new CustomEvent('fc:cloud-status',{detail:health()}))}catch(_){}}
+function setStatus(next,error){status=next;if(error!==undefined)lastError=error||'';renderSyncUi();try{window.dispatchEvent?.(new CustomEvent('fc:cloud-status',{detail:health()}))}catch(_){}}
 
 function mergeValue(base,remote,local,path=''){
   if(eq(local,base))return clone(remote);
@@ -83,7 +84,9 @@ async function bootstrap(){
   catch(e){setStatus('offline-cache',e?.message||String(e));console.error('fc_cloud_bootstrap',e);schedule('bootstrap-retry',1800);return{ok:false,source:'local-cache',error:lastError}}
 }
 window.__fcCloudState={version:'2.3.0',bootstrap,pushNow,schedule,health,mergeStates,renderSyncUi,get revision(){return revision}};
-window.addEventListener('online',()=>{if(status==='offline-cache'||status==='local-only')pushNow('online')});
-window.addEventListener('offline',()=>setStatus('offline-cache',lastError||'Keine Netzwerkverbindung.'));
-document.addEventListener('visibilitychange',()=>{renderSyncUi();if(document.visibilityState==='visible'&&status==='offline-cache')pushNow('visibility')});
+if(typeof window.addEventListener==='function'){
+  window.addEventListener('online',()=>{if(status==='offline-cache'||status==='local-only')pushNow('online')});
+  window.addEventListener('offline',()=>setStatus('offline-cache',lastError||'Keine Netzwerkverbindung.'));
+}
+if(typeof document?.addEventListener==='function')document.addEventListener('visibilitychange',()=>{renderSyncUi();if(document.visibilityState==='visible'&&status==='offline-cache')pushNow('visibility')});
 })();
