@@ -1,0 +1,26 @@
+name: Family Command cloud merge regression
+on:
+  push:
+    branches: [main]
+    paths:
+      - 'family-command/cloud-state.js'
+      - 'family-command/e2e/cloud-state-merge.spec.mjs'
+      - '.github/workflows/family-command-cloud-merge-check.yml'
+  pull_request:
+    branches: [main]
+    paths:
+      - 'family-command/cloud-state.js'
+      - 'family-command/e2e/cloud-state-merge.spec.mjs'
+      - '.github/workflows/family-command-cloud-merge-check.yml'
+jobs:
+  three-way-merge:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@v4
+      - name: Syntax
+        run: |
+          node --check family-command/cloud-state.js
+          node --check family-command/e2e/cloud-state-merge.spec.mjs
+      - name: Three-way merge regression
+        run: node family-command/e2e/cloud-state-merge.spec.mjs
