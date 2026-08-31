@@ -6,4 +6,5 @@ Familienzentrale personal build
 2026-08-31 v9.19-three-way-cloud-merge
 2026-08-31 v9.20-visible-sync-status
 2026-08-31 v9.21-sync-status-lifecycle
+2026-08-31 v9.22-smart-documents
 private family workspace
