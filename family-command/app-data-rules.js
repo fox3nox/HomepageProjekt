@@ -117,12 +117,12 @@
       root.querySelectorAll('.fc9-person').forEach(row=>{
         const name=String(row.querySelector('b')?.textContent||'').trim(),p=people.find(x=>String(x?.name||'').trim()===name),sub=row.querySelector('span');
         if(!p||!sub)return;
-        const slot=relevantSlot(p.id,day,live),label=scheduleLabel(slot);
-        const old=String(sub.dataset.fcScheduleSpecial||'');
-        if(old&&sub.textContent?.endsWith(' · '+old))sub.textContent=sub.textContent.slice(0,-(' · '+old).length);
+        const slot=relevantSlot(p.id,day,live),label=scheduleLabel(slot),old=String(sub.dataset.fcScheduleSpecial||''),suffix=label?' · '+label:'';
+        if(old===label&&(!label||String(sub.textContent||'').endsWith(suffix)))return;
+        if(old&&String(sub.textContent||'').endsWith(' · '+old))sub.textContent=String(sub.textContent||'').slice(0,-(' · '+old).length);
         sub.dataset.fcScheduleSpecial='';
         if(!label||/^(Schule|Kindergarten)$/i.test(label))return;
-        sub.append(document.createTextNode(' · '+label));sub.dataset.fcScheduleSpecial=label;
+        sub.append(document.createTextNode(suffix));sub.dataset.fcScheduleSpecial=label;
       });
     }
   }
