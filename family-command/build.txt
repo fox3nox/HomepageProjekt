@@ -2,4 +2,5 @@ Familienzentrale personal build
 2026-08-30 v9.14-document-integrity
 2026-08-30 v9.16-document-list-dedupe
 2026-08-31 v9.17-todo-completion-invariant
+2026-08-31 v9.18-cloud-merge-hardening
 private family workspace
