@@ -11,16 +11,14 @@ const STYLE=`
   #today .fc9-pagehead{padding:0 2px 0!important}
   #today .fc9-pagehead .fc9-date{font-size:11.5px!important;margin-bottom:0!important;color:#78879d!important}
   #today .fc9-pagehead h1{font-size:31px!important;line-height:1!important}
-
   #today .fc31-summary{display:grid;grid-template-columns:repeat(3,1fr);gap:0;margin:0;border:1px solid #e1e7f0;border-radius:14px;background:#fff;overflow:hidden;box-shadow:0 3px 12px rgba(34,56,96,.035)}
   #today .fc31-stat{min-height:40px;padding:6px 9px;display:flex;align-items:center;justify-content:center;gap:5px;background:#fff;cursor:pointer;-webkit-tap-highlight-color:transparent}
-  #today .fc31-stat+ .fc31-stat{border-left:1px solid #e8edf4}
+  #today .fc31-stat+.fc31-stat{border-left:1px solid #e8edf4}
   #today .fc31-stat strong{font-size:15.5px;line-height:1;color:#16243d}
   #today .fc31-stat span{margin:0;font-size:8px;font-weight:850;color:#7c8ba0;text-transform:uppercase;letter-spacing:.065em;white-space:nowrap}
   #today .fc31-stat.urgent{background:#fff7ed}
   #today .fc31-stat.urgent strong,#today .fc31-stat.urgent span{color:#cc620e}
   #today .fc31-stat:active{background:#f3f6fa}
-
   #today .fc9-focus{min-height:0!important;padding:8px 11px!important;border-radius:13px!important;display:flex!important;align-items:center!important;box-shadow:none!important;background:#f1f5fb!important;border-color:#e1e7f0!important}
   #today .fc9-focus small{font-size:7px!important}
   #today .fc9-focus b{font-size:11.8px!important;line-height:1.2!important}
@@ -29,7 +27,6 @@ const STYLE=`
   #today .fc31-focus-done{min-height:34px!important;padding:7px 10px!important;opacity:.84}
   #today .fc31-focus-done small,#today .fc31-focus-done p{display:none!important}
   #today .fc31-focus-done b:before{content:'✓ ';color:#168561;font-weight:900}
-
   #today .fc9-section{gap:5px!important;margin-top:1px}
   #today .fc9-section-head{min-height:27px!important;padding:0 2px!important;align-items:center!important}
   #today .fc9-section-head h2{font-size:13.2px!important;letter-spacing:-.015em!important}
@@ -49,7 +46,6 @@ const STYLE=`
   #today .fc9-event .fc9-row-main b{color:#16243d!important}
   #today .fc9-event .fc9-row-main span{display:block;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:100%}
   #today .fc9-chevron{font-size:18px!important}
-
   #today .fc9-tomorrow-top{padding:8px 10px!important}
   #today .fc9-tomorrow-top b{font-size:11px!important}#today .fc9-tomorrow-top span{font-size:8.5px!important}
   #today .fc9-mini{padding:7px 10px!important;min-height:44px!important}
@@ -70,7 +66,9 @@ function bindSummary(summary){
 }
 function enhanceToday(){
   if(innerWidth>719)return;
-  const page=document.querySelector('#today .fc9-page');if(!page)return;
+  const root=document.getElementById('today');
+  if(!root||!root.classList.contains('active'))return;
+  const page=root.querySelector('.fc9-page');if(!page)return;
   ensureStyle();
   const todos=[...page.querySelectorAll('[data-todo]')],important=todos.filter(x=>x.querySelector('.fc9-priority')).length,events=page.querySelectorAll('[data-event]').length;
   let summary=page.querySelector('.fc31-summary');
@@ -91,7 +89,15 @@ function enhanceToday(){
   document.documentElement.dataset.fcIphoneDensity='v32';
 }
 let queued=false;function schedule(){if(queued)return;queued=true;requestAnimationFrame(()=>{queued=false;enhanceToday()})}
-let observer=null;function installDashboard(){ensureStyle();const root=document.getElementById('today');if(root&&!observer){observer=new MutationObserver(schedule);observer.observe(root,{childList:true,subtree:true})}schedule();window.addEventListener('resize',schedule,{passive:true});window.addEventListener('pageshow',schedule,{passive:true})}
+let observer=null;function installDashboard(){
+  ensureStyle();
+  const root=document.getElementById('today');
+  if(root&&!observer){observer=new MutationObserver(()=>{if(root.classList.contains('active'))schedule()});observer.observe(root,{childList:true,subtree:true})}
+  schedule();
+  window.addEventListener('resize',schedule,{passive:true});
+  window.addEventListener('pageshow',schedule,{passive:true});
+  document.addEventListener('click',e=>{if(e.target.closest?.('.fc9-nav button[data-screen="today"]'))schedule()},{passive:true});
+}
 document.addEventListener('fc:v9-ready',()=>{brand();installDashboard()},{once:true});
 if(document.documentElement.dataset.fcV9Ready==='1'){brand();installDashboard()}
 window.__fcProfessional={version:'9.32.0',brand,enhanceToday,shortName:SHORT,renderWrappers:false,calendarPostProcessor:false};
