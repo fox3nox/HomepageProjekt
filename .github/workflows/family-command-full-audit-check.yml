@@ -24,16 +24,17 @@ jobs:
       - name: Boot, cache and private-config invariants
         run: |
           set -euo pipefail
-          grep -q "const VERSION='20260901-v9350'" family-command/index.html
-          grep -q "PRIVATE_RULES_VERSION='2026-08-31-v2'" family-command/index.html
-          grep -q "smart-documents.js" family-command/index.html
-          grep -q "reference-mobile-v35.js" family-command/index.html
-          grep -Eq "const CACHE='family-command-v(68|69|70|71|72|73|74|75|76)'" family-command/sw.js
-          grep -q "reference-dashboard-v36.js" family-command/sw.js
-          grep -q "reference-dashboard-v36.css" family-command/sw.js
-          grep -q "global-design-v37.css" family-command/sw.js
-          grep -q "global-design-v37.css" family-command/reference-mobile-v35.js
-          grep -q "v9.26-full-audit-hardening" family-command/build.txt
+          check(){ label="$1"; shift; if "$@"; then echo "ok: $label"; else echo "FAILED: $label"; exit 1; fi; }
+          check "boot version" grep -q "const VERSION='20260901-v9350'" family-command/index.html
+          check "private rules version" grep -q "PRIVATE_RULES_VERSION='2026-08-31-v2'" family-command/index.html
+          check "smart documents wired" grep -q "smart-documents.js" family-command/index.html
+          check "reference loader wired" grep -q "reference-mobile-v35.js" family-command/index.html
+          check "supported PWA cache" grep -Eq "const CACHE='family-command-v(68|69|70|71|72|73|74|75|76)'" family-command/sw.js
+          check "reference dashboard JS cached" grep -q "reference-dashboard-v36.js" family-command/sw.js
+          check "reference dashboard CSS cached" grep -q "reference-dashboard-v36.css" family-command/sw.js
+          check "global design cached" grep -q "global-design-v37.css" family-command/sw.js
+          check "global design loaded" grep -q "global-design-v37.css" family-command/reference-mobile-v35.js
+          check "audit hardening marker" grep -q "v9.26-full-audit-hardening" family-command/build.txt
       - name: Canonical state integrity invariants
         run: |
           set -euo pipefail
