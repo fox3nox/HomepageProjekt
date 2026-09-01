@@ -22,6 +22,6 @@ jobs:
       - name: Install Playwright WebKit
         run: |
           npm install --no-save --package-lock=false playwright@1.55.0
-          npx playwright install webkit
+          npx playwright install --with-deps webkit
       - name: Responsive dashboard regression
         run: node family-command/e2e/dashboard-redesign.spec.mjs
