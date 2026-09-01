@@ -18,12 +18,12 @@ try{
   await page.goto(BASE+'/?access=test',{waitUntil:'domcontentloaded',timeout:15000});
   await page.waitForFunction(()=>document.documentElement.dataset.fcReady==='1'&&window.__fcV9,{timeout:10000});
   await page.evaluate(()=>{
-    const d=new Date(),iso=`${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`;
-    window.data.todos=[
+    const iso=typeof todayISO==='function'?todayISO():(()=>{const d=new Date();return `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`})();
+    data.todos=[
       {id:'ux-important',date:iso,title:'Geschenk heute kaufen',priority:true,done:false,section:'day',createdAt:new Date().toISOString()},
       {id:'ux-normal',date:iso,title:'Normale Aufgabe',priority:false,done:false,section:'day',createdAt:new Date().toISOString()}
     ];
-    window.save?.();
+    save?.();
     window.renderToday?.();
   });
   await page.waitForSelector('#today [data-todo="ux-important"]');
@@ -31,8 +31,7 @@ try{
     const todo=document.querySelector('#today .fc9-section:has([data-todo])');
     const people=document.querySelector('#today .fc9-section:has(.fc9-person-list)');
     const important=document.querySelector('#today [data-todo="ux-important"]');
-    const active=document.querySelector('.fc9-nav button.active');
-    return {todoTop:todo?.getBoundingClientRect().top,peopleTop:people?.getBoundingClientRect().top,importantBg:getComputedStyle(important).backgroundImage,activeBg:getComputedStyle(active).backgroundColor,overflow:document.documentElement.scrollWidth>document.documentElement.clientWidth+1};
+    return {todoTop:todo?.getBoundingClientRect().top,peopleTop:people?.getBoundingClientRect().top,importantBg:getComputedStyle(important).backgroundImage,overflow:document.documentElement.scrollWidth>document.documentElement.clientWidth+1};
   });
   assert.ok(Number.isFinite(layout.todoTop)&&Number.isFinite(layout.peopleTop),'Today sections must render');
   assert.ok(layout.todoTop<layout.peopleTop,'Actionable To-dos must appear before routine child schedule');
