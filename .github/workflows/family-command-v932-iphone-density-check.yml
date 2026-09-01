@@ -1,0 +1,27 @@
+name: Family Command V9.32 iPhone density regression
+on:
+  pull_request:
+    paths:
+      - 'family-command/v9-professional.js'
+      - 'family-command/e2e/iphone-density.spec.mjs'
+      - 'family-command/sw.js'
+      - '.github/workflows/family-command-v932-iphone-density-check.yml'
+  push:
+    branches: [main]
+    paths:
+      - 'family-command/v9-professional.js'
+      - 'family-command/e2e/iphone-density.spec.mjs'
+      - 'family-command/sw.js'
+      - '.github/workflows/family-command-v932-iphone-density-check.yml'
+jobs:
+  iphone-density:
+    runs-on: ubuntu-latest
+    timeout-minutes: 12
+    steps:
+      - uses: actions/checkout@v4
+      - name: Install Playwright WebKit
+        run: |
+          npm install --no-save --package-lock=false playwright@1.55.0
+          npx playwright install --with-deps webkit
+      - name: V9.32 iPhone density regression
+        run: node family-command/e2e/iphone-density.spec.mjs
