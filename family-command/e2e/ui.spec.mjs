@@ -101,8 +101,11 @@ async function runViewport(browser,name,width,height){
   await page.locator('#fcEventEditNote').fill('V9.12 Edit-Test');
   await page.locator('#fcEventEdit .fc-event-edit-save').click();
   await page.waitForSelector('#fcEventEdit',{state:'detached'});
-  await page.waitForFunction(()=>data.events.find(e=>e.id==='care-fixture')?.title==='Betreuungstermin bearbeitet');
-  assert.ok(await page.locator('#fcEventDetails').getByText('Betreuungstermin bearbeitet',{exact:false}).first().isVisible());
+  await page.waitForSelector('#fcEventDetails .fc-detail-sheet');
+  await page.locator('#fcEventDetails').getByText('Betreuungstermin bearbeitet',{exact:false}).first().waitFor({state:'visible',timeout:10000});
+  const persistedEdit=await page.evaluate(()=>{try{return JSON.parse(localStorage.getItem('family-command-personal-v4')||'{}').events?.find(e=>e.id==='care-fixture')||null}catch{return null}});
+  assert.equal(persistedEdit?.title,'Betreuungstermin bearbeitet','edited event title must be persisted');
+  assert.equal(persistedEdit?.note,'V9.12 Edit-Test','edited event note must be persisted');
 
   await page.locator('#fcEventDetails .fc-detail-pick').click();
   await page.waitForSelector('#fcDocPicker .fc-picker-sheet');
