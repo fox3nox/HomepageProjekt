@@ -29,10 +29,11 @@ jobs:
           grep -q "smart-documents.js" family-command/index.html
           grep -q "reference-mobile-v35.js" family-command/index.html
           grep -q "reference-mobile-v35.css" family-command/index.html
-          grep -Eq "const CACHE='family-command-v(68|69|70|71|72|73|74)'" family-command/sw.js
+          grep -Eq "const CACHE='family-command-v(68|69|70|71|72|73|74|75)'" family-command/sw.js
           grep -q "smart-documents.js" family-command/sw.js
           grep -q "reference-mobile-v35.js" family-command/sw.js
-          grep -q "reference-mobile-v35.css" family-command/sw.js
+          grep -q "reference-dashboard-v36.js" family-command/sw.js
+          grep -q "reference-dashboard-v36.css" family-command/sw.js
           grep -q "v9.26-full-audit-hardening" family-command/build.txt
       - name: Canonical state integrity invariants
         run: |
