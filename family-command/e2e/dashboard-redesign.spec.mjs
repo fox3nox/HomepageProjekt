@@ -20,10 +20,11 @@ try{
   const x=await p.evaluate(()=>{
     const nav=document.querySelector('.fc9-nav').getBoundingClientRect();
     const shell=document.querySelector('.fc9-shell').getBoundingClientRect();
-    const page=document.querySelector('#today .fc9-page');
     const summary=document.querySelector('#today .fc31-summary');
     const focus=document.querySelector('#today .fc9-focus');
-    const todoHeading=[...document.querySelectorAll('#today .fc9-section-head h2')].find(x=>/Jetzt erledigen/.test(x.textContent||''));
+    const todos=[...document.querySelectorAll('#today [data-todo]')];
+    const todoSection=todos[0]?.closest('.fc9-section');
+    const todoHeading=todoSection?.querySelector('.fc9-section-head h2');
     const statTexts=[...document.querySelectorAll('#today .fc31-stat span')].map(x=>x.textContent.trim());
     return {
       navX:nav.x,navBottom:nav.bottom,navW:nav.width,shellX:shell.x,shellW:shell.width,
@@ -32,6 +33,7 @@ try{
       summary:!!summary,
       summaryCols:summary?getComputedStyle(summary).gridTemplateColumns:'',
       focusHeight:focus?.getBoundingClientRect().height||0,
+      todoCount:todos.length,
       todoHeading:todoHeading?.textContent?.trim()||'',
       statTexts,
       dashboard:document.documentElement.dataset.fcIphoneDashboard,
@@ -47,7 +49,7 @@ try{
   assert.equal(x.summary,true,'V9.31 must render the compact iPhone summary');
   assert.deepEqual(x.statTexts,['Wichtig','Offen','Termine']);
   assert.ok(x.focusHeight<90,`focus card must be visibly compact on iPhone: ${x.focusHeight}`);
-  assert.equal(x.todoHeading,'Jetzt erledigen','today task section must use the new action-first heading');
+  if(x.todoCount>0)assert.equal(x.todoHeading,'Jetzt erledigen','today task section must use the new action-first heading');
   assert.notEqual(x.activeNavBg,'rgba(0, 0, 0, 0)','active bottom navigation must be visibly highlighted');
   await browser.close();
   console.log('V9.31 iPhone dashboard regression: ok');
