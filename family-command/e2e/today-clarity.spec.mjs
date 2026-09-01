@@ -19,10 +19,16 @@ try{
   await page.waitForFunction(()=>document.documentElement.dataset.fcReady==='1'&&window.__fcV9,{timeout:10000});
   await page.evaluate(()=>{
     const iso=typeof todayISO==='function'?todayISO():(()=>{const d=new Date();return `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`})();
+    const day=new Date(`${iso}T12:00:00`).getDay();
     data.todos=[
       {id:'ux-important',date:iso,title:'Geschenk heute kaufen',priority:true,done:false,section:'day',createdAt:new Date().toISOString()},
       {id:'ux-normal',date:iso,title:'Normale Aufgabe',priority:false,done:false,section:'day',createdAt:new Date().toISOString()}
     ];
+    // Make the routine section deterministic regardless of runner clock or weekday.
+    for(const p of (data.people||[]).filter(p=>p.id!=='oli')){
+      data.schedules[p.id]??={};
+      data.schedules[p.id][day]=[{start:'00:00',end:'23:59',label:'Test-Routine'}];
+    }
     save?.();
     window.renderToday?.();
   });
@@ -36,7 +42,7 @@ try{
   assert.ok(Number.isFinite(layout.todoTop)&&Number.isFinite(layout.peopleTop),'Today sections must render');
   assert.ok(layout.todoTop<layout.peopleTop,'Actionable To-dos must appear before routine child schedule');
   assert.match(layout.importantBg,/gradient/i,'Priority To-do must receive visible emphasis');
-  assert.equal(layout.overflow,false,'V9.27 must not introduce horizontal overflow');
+  assert.equal(layout.overflow,false,'V9.27+ must not introduce horizontal overflow');
   await browser.close();
   console.log('today clarity regression: ok');
 } finally {
