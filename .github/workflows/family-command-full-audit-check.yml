@@ -27,7 +27,7 @@ jobs:
           grep -q "const VERSION='20260831-v9260'" family-command/index.html
           grep -q "PRIVATE_RULES_VERSION='2026-08-31-v2'" family-command/index.html
           grep -q "smart-documents.js" family-command/index.html
-          grep -Eq "const CACHE='family-command-v(68|69|70|71|72)'" family-command/sw.js
+          grep -Eq "const CACHE='family-command-v(68|69|70|71|72|73)'" family-command/sw.js
           grep -q "smart-documents.js" family-command/sw.js
           grep -q "v9.26-full-audit-hardening" family-command/build.txt
       - name: Canonical state integrity invariants
