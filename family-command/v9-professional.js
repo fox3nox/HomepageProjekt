@@ -37,9 +37,30 @@ const STYLE=`
   .fc9-main{padding-top:12px!important}
 }`;
 function ensureStyle(){if(document.getElementById('fc31-style'))return;const s=document.createElement('style');s.id='fc31-style';s.textContent=STYLE;document.head.appendChild(s)}
-function enhanceToday(){if(innerWidth>719)return;const page=document.querySelector('#today .fc9-page');if(!page)return;ensureStyle();page.querySelector('.fc31-summary')?.remove();const todos=[...page.querySelectorAll('[data-todo]')],important=todos.filter(x=>x.querySelector('.fc9-priority')).length,events=page.querySelectorAll('[data-event]').length;const summary=document.createElement('div');summary.className='fc31-summary';summary.innerHTML=`<div class="fc31-stat ${important?'urgent':''}"><strong>${important}</strong><span>Wichtig</span></div><div class="fc31-stat"><strong>${todos.length}</strong><span>Offen</span></div><div class="fc31-stat"><strong>${events}</strong><span>Termine</span></div>`;page.querySelector('.fc9-pagehead')?.after(summary);const focus=page.querySelector('.fc9-focus');if(focus)focus.classList.toggle('fc31-focus-done',/Keine zeitkritischen Punkte mehr/i.test(focus.textContent||''));for(const sec of page.querySelectorAll('.fc9-section')){const h=sec.querySelector('.fc9-section-head h2');if(!h)continue;if(sec.querySelector('[data-todo]'))h.textContent='Jetzt erledigen';else if(sec.querySelector('[data-event]'))h.textContent='Heute im Kalender';else if(sec.querySelector('.fc9-tomorrow'))h.textContent='Morgen';}document.documentElement.dataset.fcIphoneDashboard='v31'}
+function setText(el,value){const text=String(value);if(el&&el.textContent!==text)el.textContent=text}
+function enhanceToday(){
+  if(innerWidth>719)return;
+  const page=document.querySelector('#today .fc9-page');if(!page)return;
+  ensureStyle();
+  const todos=[...page.querySelectorAll('[data-todo]')],important=todos.filter(x=>x.querySelector('.fc9-priority')).length,events=page.querySelectorAll('[data-event]').length;
+  let summary=page.querySelector('.fc31-summary');
+  if(!summary){
+    summary=document.createElement('div');summary.className='fc31-summary';
+    summary.innerHTML='<div class="fc31-stat" data-fc31="important"><strong>0</strong><span>Wichtig</span></div><div class="fc31-stat" data-fc31="open"><strong>0</strong><span>Offen</span></div><div class="fc31-stat" data-fc31="events"><strong>0</strong><span>Termine</span></div>';
+    page.querySelector('.fc9-pagehead')?.after(summary);
+  }
+  const importantStat=summary.querySelector('[data-fc31="important"]');importantStat?.classList.toggle('urgent',important>0);
+  setText(importantStat?.querySelector('strong'),important);setText(summary.querySelector('[data-fc31="open"] strong'),todos.length);setText(summary.querySelector('[data-fc31="events"] strong'),events);
+  const focus=page.querySelector('.fc9-focus');if(focus)focus.classList.toggle('fc31-focus-done',/Keine zeitkritischen Punkte mehr/i.test(focus.textContent||''));
+  for(const sec of page.querySelectorAll('.fc9-section')){
+    const h=sec.querySelector('.fc9-section-head h2');if(!h)continue;
+    let desired='';if(sec.querySelector('[data-todo]'))desired='Jetzt erledigen';else if(sec.querySelector('[data-event]'))desired='Heute im Kalender';else if(sec.querySelector('.fc9-tomorrow'))desired='Morgen';
+    if(desired&&h.textContent!==desired)h.textContent=desired;
+  }
+  document.documentElement.dataset.fcIphoneDashboard='v31';
+}
 let queued=false;function schedule(){if(queued)return;queued=true;requestAnimationFrame(()=>{queued=false;enhanceToday()})}
-function installDashboard(){ensureStyle();const root=document.getElementById('today');if(root)new MutationObserver(schedule).observe(root,{childList:true,subtree:true});schedule();window.addEventListener('resize',schedule,{passive:true});window.addEventListener('pageshow',schedule,{passive:true})}
+let observer=null;function installDashboard(){ensureStyle();const root=document.getElementById('today');if(root&&!observer){observer=new MutationObserver(schedule);observer.observe(root,{childList:true,subtree:true})}schedule();window.addEventListener('resize',schedule,{passive:true});window.addEventListener('pageshow',schedule,{passive:true})}
 document.addEventListener('fc:v9-ready',()=>{brand();installDashboard()},{once:true});
 if(document.documentElement.dataset.fcV9Ready==='1'){brand();installDashboard()}
 window.__fcProfessional={version:'9.31.0',brand,enhanceToday,shortName:SHORT,renderWrappers:false,calendarPostProcessor:false};
