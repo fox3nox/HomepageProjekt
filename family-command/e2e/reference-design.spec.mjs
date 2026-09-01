@@ -41,6 +41,7 @@ try {
     const firstTodo=document.querySelector('#today [data-todo]');
     const summary=document.querySelector('#today .fc31-summary');
     const pagehead=document.querySelector('#today .fc9-pagehead');
+    const taskNav=document.querySelector('.fc9-nav button[data-screen="homework"]');
     return {
       version:window.__fcProfessional.version,
       reference:document.documentElement.dataset.fcReferenceDesign,
@@ -60,7 +61,8 @@ try {
       familyHeading:family?.querySelector('h2')?.textContent?.trim()||'',
       tomorrowHeading:tomorrow?.querySelector('h2')?.textContent?.trim()||'',
       avatarCount:document.querySelectorAll('#today .fc33-avatar,#today .fc34-avatar').length,
-      taskBadge:document.querySelector('.fc9-nav button[data-screen="tasks"] .fc34-nav-badge')?.textContent?.trim()||'',
+      taskNavLabel:taskNav?.textContent?.trim()||'',
+      taskNavVisible:!!taskNav&&getComputedStyle(taskNav).display!=='none'&&taskNav.getBoundingClientRect().height>0,
       overflow:document.documentElement.scrollWidth<=document.documentElement.clientWidth+1,
       todoTop:todoSec?.getBoundingClientRect().top||0,
       overviewTop:overview?.getBoundingClientRect().top||0,
@@ -87,7 +89,8 @@ try {
   assert.equal(result.familyHeading,'Schule & Familie heute');
   assert.equal(result.tomorrowHeading,'Morgen – Vorschau');
   assert.ok(result.avatarCount>=3,'reference-style person avatars must remain visible');
-  assert.equal(result.taskBadge,'3','bottom navigation must expose all open tasks without a metric strip');
+  assert.equal(result.taskNavVisible,true,'the existing Aufgaben navigation must remain visible');
+  assert.match(result.taskNavLabel,/Aufgaben/,'the existing Aufgaben navigation must remain intact');
   assert.equal(result.overflow,true,'reference design must not overflow horizontally');
   assert.ok(result.todoTop>0&&result.todoTop<result.familyTop,'important tasks must stay above family/routine information');
   if(result.overviewTop)assert.ok(result.todoTop<result.overviewTop,'important tasks must stay above the daily overview');
