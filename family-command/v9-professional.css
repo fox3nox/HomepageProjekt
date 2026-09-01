@@ -1,4 +1,4 @@
-/* Familienzentrale V9.1 · professional polish */
+/* Familienzentrale V9.27 · calm priority-first mobile polish */
 .fc9-mark{overflow:hidden;background:#17265d!important;box-shadow:0 5px 14px rgba(27,45,101,.18)}
 .fc9-mark img{display:block;width:100%;height:100%;object-fit:cover}
 .fc9-brand b{letter-spacing:-.035em}
@@ -14,5 +14,37 @@
 .fc9-past-event .fc9-row-main b,.fc9-past-event .fc9-time{color:#68758a!important}
 .fc9-past-event .fc9-row-main span:not(.fc9-past-badge){color:#929cad!important}
 .fc9-past-badge{display:inline-flex!important;width:max-content;margin:0 0 3px!important;padding:2px 6px;border-radius:999px;background:#edf0f4;color:#78869a!important;font-size:7.5px!important;font-weight:900;letter-spacing:.05em;text-transform:uppercase}
-@media(max-width:390px){.fc9-brand b{font-size:15px}.fc9-brand span{font-size:9.5px}}
+
+/* V9.27: information hierarchy. Actionable items precede routine schedule on Heute. */
+#today .fc9-pagehead{order:0}
+#today .fc9-focus{order:1}
+#today .fc9-section:has([data-todo]){order:2}
+#today .fc9-section:has([data-hw]){order:3}
+#today .fc9-section:has([data-event]){order:4}
+#today .fc9-section:has(.fc9-person-list){order:5}
+#today .fc9-section:has(.fc9-tomorrow){order:6}
+
+/* Make high-priority tasks unmistakable without turning the whole UI red. */
+#today .fc9-row:has(.fc9-priority){background:linear-gradient(90deg,#fff8f2 0,#fff 46%);box-shadow:inset 3px 0 0 #d97914}
+#today .fc9-row:has(.fc9-priority) .fc9-priority{color:#a85708}
+#today .fc9-section:has(.fc9-priority) .fc9-section-head h2::after{content:' · wichtig';color:#a85708;font-size:9px;font-weight:850;letter-spacing:0}
+
+/* Quieter routine blocks; the eye lands on action first. */
+#today .fc9-section:has(.fc9-person-list){margin-top:1px}
+#today .fc9-section:has(.fc9-person-list) .fc9-card{box-shadow:none;background:#fbfcfd}
+#today .fc9-section:has(.fc9-person-list) .fc9-person{min-height:53px;padding-block:8px;background:#fbfcfd}
+#today .fc9-section:has(.fc9-tomorrow){margin-top:2px}
+#today .fc9-tomorrow{box-shadow:none;background:#fafbfd}
+#today .fc9-mini{padding-block:7px}
+
+/* Denser headings and clearer touch targets without reducing accessibility. */
+#today .fc9-section-head h2{font-size:14px}
+#today .fc9-section-head button{min-height:40px;padding-inline:5px}
+#today .fc9-page{gap:11px}
+#today .fc9-focus{box-shadow:0 5px 16px rgba(45,66,119,.05)}
+.fc9-nav button{border-radius:12px}
+.fc9-nav button.active{background:#f1f4f9}
+.fc9-nav button.active svg{stroke-width:2.05}
+
+@media(max-width:390px){.fc9-brand b{font-size:15px}.fc9-brand span{font-size:9.5px}#today .fc9-page{gap:10px}}
 @media(prefers-reduced-motion:reduce){.fc9-past-arrow{transition:none}}
