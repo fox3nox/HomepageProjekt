@@ -1,50 +1,49 @@
-/* Familienzentrale V9.27 · calm priority-first mobile polish */
-.fc9-mark{overflow:hidden;background:#17265d!important;box-shadow:0 5px 14px rgba(27,45,101,.18)}
+/* Familienzentrale V9.30 · airy dashboard redesign inspired by the approved mockup */
+:root{--fc9-bg:#f7f9fc;--fc9-surface:#fff;--fc9-soft:#f1f5fb;--fc9-text:#13213b;--fc9-sub:#677793;--fc9-muted:#8a98ad;--fc9-line:#e3e9f2;--fc9-blue:#2f6cf6;--fc9-blue-soft:#eef4ff;--fc9-red:#b83d49;--fc9-green:#168b68;--fc9-shadow:0 10px 34px rgba(34,56,96,.065);--fc9-r:19px}
+.fc9-mark{overflow:hidden;background:#17265d!important;box-shadow:0 7px 18px rgba(27,45,101,.18)}
 .fc9-mark img{display:block;width:100%;height:100%;object-fit:cover}
-.fc9-brand b{letter-spacing:-.035em}
-.fc9-past-wrap{display:grid;gap:9px;margin-top:1px}
-.fc9-past-toggle{width:100%;min-height:48px;padding:0 14px;border:1px solid var(--fc9-line);border-radius:15px;background:#fff;color:#64748b;display:flex;align-items:center;justify-content:space-between;gap:12px;font-size:10.5px;font-weight:800;box-shadow:0 4px 14px rgba(26,42,67,.035)}
-.fc9-past-toggle.open{color:#3f4c62;background:#f8fafc}
-.fc9-past-arrow{font-size:18px;line-height:1;transition:transform .18s ease}
-.fc9-past-toggle.open .fc9-past-arrow{transform:rotate(180deg)}
-.fc9-past-list{display:grid;gap:10px}
-.fc9-past-list[hidden]{display:none!important}
-.fc9-past-section{opacity:.68}
-.fc9-past-event{background:#f7f8fb!important;border-left-color:#a5afbf!important}
-.fc9-past-event .fc9-row-main b,.fc9-past-event .fc9-time{color:#68758a!important}
-.fc9-past-event .fc9-row-main span:not(.fc9-past-badge){color:#929cad!important}
-.fc9-past-badge{display:inline-flex!important;width:max-content;margin:0 0 3px!important;padding:2px 6px;border-radius:999px;background:#edf0f4;color:#78869a!important;font-size:7.5px!important;font-weight:900;letter-spacing:.05em;text-transform:uppercase}
+.fc9-brand b{letter-spacing:-.035em}.fc9-brand span{color:#8a98ad}
+.fc9-card{border-color:#e2e8f1;box-shadow:var(--fc9-shadow)}
+.fc9-row{min-height:62px;padding:12px 14px}.fc9-row-main b{font-size:13px}.fc9-row-main span{font-size:10px}.fc9-time{font-size:12px;color:#2d3e5e}.fc9-priority{color:#ee6b18;font-size:8px;letter-spacing:.08em}
+.fc9-section{gap:8px}.fc9-section-head h2{font-size:15px}.fc9-section-head button{font-weight:750;color:#6d7c92}
+.fc9-pagehead h1{font-size:31px}.fc9-pagehead p{font-size:11.5px}
+.fc9-focus{border-color:#dce5f6;background:#fff;box-shadow:var(--fc9-shadow);padding:15px 16px;min-height:82px}.fc9-focus small{color:#6379d4}.fc9-focus b{font-size:16px}.fc9-focus p{font-size:10.5px}
+.fc9-person-list{box-shadow:none}.fc9-person{min-height:64px;padding:11px 13px;background:#fff;border-left-width:3px}.fc9-person b{font-size:12.5px}.fc9-person span{font-size:10px}.fc9-person-time{font-size:11.5px}
+.fc9-tomorrow{box-shadow:none}.fc9-mini{padding:10px 13px}.fc9-mini b{font-size:11.5px}.fc9-mini small{font-size:9.5px}
+.fc9-more-grid{gap:10px}.fc9-tile{min-height:92px;border-radius:17px;box-shadow:0 6px 18px rgba(34,56,96,.045)}.fc9-tile b{font-size:12px}
+.fc9-icon{border-radius:15px;box-shadow:0 4px 14px rgba(34,56,96,.035)}.fc9-icon.ai{background:#edf3ff;color:#3968de}
 
-/* V9.27: information hierarchy. Actionable items precede routine schedule on Heute. */
-#today .fc9-pagehead{order:0}
-#today .fc9-focus{order:1}
-#today .fc9-section:has([data-todo]){order:2}
-#today .fc9-section:has([data-hw]){order:3}
-#today .fc9-section:has([data-event]){order:4}
-#today .fc9-section:has(.fc9-person-list){order:5}
-#today .fc9-section:has(.fc9-tomorrow){order:6}
+/* Priority hierarchy on Heute */
+#today .fc9-pagehead{order:0}#today .fc9-focus{order:1}#today .fc9-section:has([data-todo]){order:2}#today .fc9-section:has([data-hw]){order:3}#today .fc9-section:has([data-event]){order:4}#today .fc9-section:has(.fc9-person-list){order:5}#today .fc9-section:has(.fc9-tomorrow){order:6}
+#today .fc9-row:has(.fc9-priority){background:linear-gradient(90deg,#fff9f2 0,#fff 48%);box-shadow:inset 3px 0 0 #f08a2d}
+#today .fc9-section:has(.fc9-priority) .fc9-section-head h2::after{content:' · wichtig';color:#c56412;font-size:9px;font-weight:850}
+#today .fc9-page{gap:13px}
 
-/* Make high-priority tasks unmistakable without turning the whole UI red. */
-#today .fc9-row:has(.fc9-priority){background:linear-gradient(90deg,#fff8f2 0,#fff 46%);box-shadow:inset 3px 0 0 #d97914}
-#today .fc9-row:has(.fc9-priority) .fc9-priority{color:#a85708}
-#today .fc9-section:has(.fc9-priority) .fc9-section-head h2::after{content:' · wichtig';color:#a85708;font-size:9px;font-weight:850;letter-spacing:0}
+/* Calm archive treatment */
+.fc9-past-wrap{display:grid;gap:9px}.fc9-past-toggle{width:100%;min-height:48px;padding:0 14px;border:1px solid var(--fc9-line);border-radius:15px;background:#fff;color:#64748b;display:flex;align-items:center;justify-content:space-between;gap:12px;font-size:10.5px;font-weight:800;box-shadow:0 4px 14px rgba(26,42,67,.035)}.fc9-past-toggle.open{color:#3f4c62;background:#f8fafc}.fc9-past-arrow{font-size:18px;line-height:1;transition:transform .18s ease}.fc9-past-toggle.open .fc9-past-arrow{transform:rotate(180deg)}.fc9-past-list{display:grid;gap:10px}.fc9-past-list[hidden]{display:none!important}.fc9-past-section{opacity:.68}.fc9-past-event{background:#f7f8fb!important;border-left-color:#a5afbf!important}.fc9-past-event .fc9-row-main b,.fc9-past-event .fc9-time{color:#68758a!important}.fc9-past-event .fc9-row-main span:not(.fc9-past-badge){color:#929cad!important}
 
-/* Quieter routine blocks; the eye lands on action first. */
-#today .fc9-section:has(.fc9-person-list){margin-top:1px}
-#today .fc9-section:has(.fc9-person-list) .fc9-card{box-shadow:none;background:#fbfcfd}
-#today .fc9-section:has(.fc9-person-list) .fc9-person{min-height:53px;padding-block:8px;background:#fbfcfd}
-#today .fc9-section:has(.fc9-tomorrow){margin-top:2px}
-#today .fc9-tomorrow{box-shadow:none;background:#fafbfd}
-#today .fc9-mini{padding-block:7px}
+/* Mobile: polished command-center feel */
+.fc9-nav button{border-radius:13px}.fc9-nav button.active{background:#f1f5fb}.fc9-nav button.active svg{stroke-width:2.05}
+@media(max-width:719px){
+  .fc9-main{padding:16px 14px 24px}.fc9-topbar-in{padding-inline:15px}.fc9-page{gap:14px}.fc9-pagehead{padding-top:2px}.fc9-card{border-radius:19px}.fc9-section-head{padding-inline:2px}.fc9-row{padding-inline:13px}.fc9-nav{box-shadow:0 -8px 25px rgba(35,54,85,.035)}
+}
 
-/* Denser headings and clearer touch targets without reducing accessibility. */
-#today .fc9-section-head h2{font-size:14px}
-#today .fc9-section-head button{min-height:40px;padding-inline:5px}
-#today .fc9-page{gap:11px}
-#today .fc9-focus{box-shadow:0 5px 16px rgba(45,66,119,.05)}
-.fc9-nav button{border-radius:12px}
-.fc9-nav button.active{background:#f1f4f9}
-.fc9-nav button.active svg{stroke-width:2.05}
-
-@media(max-width:390px){.fc9-brand b{font-size:15px}.fc9-brand span{font-size:9.5px}#today .fc9-page{gap:10px}}
+/* Desktop/tablet dashboard: sidebar + broad content canvas, matching the approved mockup. */
+@media(min-width:720px){
+  body{background:#f5f7fb!important}.app{background:#f5f7fb!important}.fc9-shell{padding:0 0 0 222px;min-height:100vh}
+  .fc9-topbar{position:sticky;top:0;margin-left:0;background:rgba(247,249,252,.9);border-bottom:1px solid #e4eaf2}
+  .fc9-topbar-in{width:min(100%,1160px);min-height:76px;padding:12px 24px;gap:12px}.fc9-mark{width:42px;height:42px;border-radius:13px}.fc9-brand b{font-size:18px}.fc9-brand span{font-size:10.5px}.fc9-head-actions{gap:9px}.fc9-icon{width:46px;height:46px}
+  .fc9-main{width:min(100%,1160px);margin:0 auto;padding:22px 24px 42px}.fc9-page{gap:16px}.fc9-pagehead h1{font-size:34px}.fc9-pagehead p{font-size:12px}.fc9-section-head h2{font-size:16px}
+  .fc9-nav{position:fixed;left:0;top:0;bottom:0;right:auto;width:222px;padding:92px 14px 20px;background:#fff;border-top:0;border-right:1px solid #e3e9f2;box-shadow:8px 0 30px rgba(31,49,81,.035);backdrop-filter:none;-webkit-backdrop-filter:none}
+  .fc9-nav::before{content:'FAMILIENZENTRALE\A Alles im Blick. Alles im Griff.';white-space:pre;position:absolute;top:25px;left:20px;color:#13213b;font-size:14px;font-weight:900;line-height:1.25;letter-spacing:-.02em}.fc9-nav::after{content:' ';position:absolute;top:20px;left:16px;width:0;height:0}
+  .fc9-nav-in{width:100%;display:grid;grid-template-columns:1fr;gap:7px}.fc9-nav button{min-height:48px;padding:0 13px;display:grid;grid-template-columns:24px 1fr;place-items:center start;align-content:center;gap:11px;border-radius:12px;font-size:11px;text-align:left}.fc9-nav svg{width:20px;height:20px}.fc9-nav button.active{color:#1f5cdb;background:#edf4ff}
+  #today .fc9-page{grid-template-columns:minmax(0,1.55fr) minmax(280px,.85fr);align-items:start}
+  #today .fc9-pagehead,#today .fc9-focus,#today .fc9-section:has([data-todo]),#today .fc9-section:has([data-hw]){grid-column:1/-1}
+  #today .fc9-section:has([data-event]){grid-column:1/2}#today .fc9-section:has(.fc9-person-list){grid-column:1/2}#today .fc9-section:has(.fc9-tomorrow){grid-column:2/3;grid-row:5/span 2}
+  #today .fc9-focus{min-height:92px}
+  #today .fc9-section:has(.fc9-tomorrow) .fc9-card{position:sticky;top:96px}
+  .fc9-more-grid{grid-template-columns:repeat(4,1fr)}
+  .fc9-modal{align-items:center}.fc9-sheet{width:min(100%,620px);border-radius:24px}
+}
+@media(min-width:1120px){.fc9-main{padding-top:26px}#today .fc9-page{grid-template-columns:minmax(0,1.7fr) minmax(330px,.9fr)}}
 @media(prefers-reduced-motion:reduce){.fc9-past-arrow{transition:none}}
