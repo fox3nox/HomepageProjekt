@@ -37,20 +37,22 @@ try{
       todoHeading:todoHeading?.textContent?.trim()||'',
       statTexts,
       dashboard:document.documentElement.dataset.fcIphoneDashboard,
+      reference:document.documentElement.dataset.fcReferenceDesign,
       activeNavBg:getComputedStyle(document.querySelector('.fc9-nav button.active')).backgroundColor
     };
   });
-  console.log('iphone-v31',JSON.stringify(x));
+  console.log('iphone-v33',JSON.stringify(x));
   assert.ok(x.navX<=1&&Math.abs(x.navW-x.innerW)<=2,`mobile nav width ${JSON.stringify(x)}`);
   assert.ok(Math.abs(x.navBottom-x.innerH)<=2,`mobile nav bottom ${JSON.stringify(x)}`);
   assert.ok(x.shellX<=1&&Math.abs(x.shellW-x.innerW)<=2,`mobile shell ${JSON.stringify(x)}`);
   assert.equal(x.overflow,true,`mobile overflow ${JSON.stringify(x)}`);
   assert.equal(x.dashboard,'v31');
-  assert.equal(x.summary,true,'V9.31 must render the compact iPhone summary');
+  assert.equal(x.reference,'v33');
+  assert.equal(x.summary,true,'compact iPhone summary must remain available');
   assert.deepEqual(x.statTexts,['Wichtig','Offen','Termine']);
-  assert.ok(x.focusHeight<90,`focus card must be visibly compact on iPhone: ${x.focusHeight}`);
-  if(x.todoCount>0)assert.equal(x.todoHeading,'Jetzt erledigen','today task section must use the new action-first heading');
+  assert.ok(x.focusHeight<90,`focus card must stay compact on iPhone: ${x.focusHeight}`);
+  if(x.todoCount>0)assert.equal(x.todoHeading,'Heute – Das Wichtigste zuerst','today task section must follow the V9.33 reference hierarchy');
   assert.notEqual(x.activeNavBg,'rgba(0, 0, 0, 0)','active bottom navigation must be visibly highlighted');
   await browser.close();
-  console.log('V9.31 iPhone dashboard regression: ok');
+  console.log('V9.33 iPhone dashboard regression: ok');
 } finally {server.kill('SIGTERM')}

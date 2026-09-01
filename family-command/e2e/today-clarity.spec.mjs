@@ -24,27 +24,29 @@ try{
       {id:'ux-important',date:iso,title:'Geschenk heute kaufen',priority:true,done:false,section:'day',createdAt:new Date().toISOString()},
       {id:'ux-normal',date:iso,title:'Normale Aufgabe',priority:false,done:false,section:'day',createdAt:new Date().toISOString()}
     ];
-    // Make the routine section deterministic regardless of runner clock or weekday.
-    for(const p of (data.people||[]).filter(p=>p.id!=='oli')){
-      data.schedules[p.id]??={};
-      data.schedules[p.id][day]=[{start:'00:00',end:'23:59',label:'Test-Routine'}];
-    }
-    save?.();
-    window.renderToday?.();
+    for(const p of (data.people||[]).filter(p=>p.id!=='oli')){data.schedules[p.id]??={};data.schedules[p.id][day]=[{start:'00:00',end:'23:59',label:'Test-Routine'}]}
+    save?.();window.renderToday?.();
   });
   await page.waitForSelector('#today [data-todo="ux-important"]');
+  await page.waitForFunction(()=>document.documentElement.dataset.fcReferenceDesign==='v33');
   const layout=await page.evaluate(()=>{
     const todo=document.querySelector('#today .fc9-section:has([data-todo])');
     const people=document.querySelector('#today .fc9-section:has(.fc9-person-list)');
     const important=document.querySelector('#today [data-todo="ux-important"]');
-    return {todoTop:todo?.getBoundingClientRect().top,peopleTop:people?.getBoundingClientRect().top,importantBg:getComputedStyle(important).backgroundImage,overflow:document.documentElement.scrollWidth>document.documentElement.clientWidth+1};
+    const priority=important?.querySelector('.fc9-priority');
+    return {
+      todoTop:todo?.getBoundingClientRect().top,
+      peopleTop:people?.getBoundingClientRect().top,
+      priorityVisible:!!priority&&getComputedStyle(priority).display!=='none'&&priority.getBoundingClientRect().height>0,
+      priorityText:priority?.textContent?.trim()||'',
+      overflow:document.documentElement.scrollWidth>document.documentElement.clientWidth+1
+    };
   });
   assert.ok(Number.isFinite(layout.todoTop)&&Number.isFinite(layout.peopleTop),'Today sections must render');
   assert.ok(layout.todoTop<layout.peopleTop,'Actionable To-dos must appear before routine child schedule');
-  assert.match(layout.importantBg,/gradient/i,'Priority To-do must receive visible emphasis');
-  assert.equal(layout.overflow,false,'V9.27+ must not introduce horizontal overflow');
+  assert.equal(layout.priorityVisible,true,'Priority To-do must keep a visible emphasis');
+  assert.equal(layout.priorityText,'WICHTIG');
+  assert.equal(layout.overflow,false,'V9.33 must not introduce horizontal overflow');
   await browser.close();
   console.log('today clarity regression: ok');
-} finally {
-  server.kill('SIGTERM');
-}
+} finally {server.kill('SIGTERM')}
