@@ -1,0 +1,15 @@
+import assert from 'node:assert/strict';
+import { readFileSync } from 'node:fs';
+const html=readFileSync('family-command/index.html','utf8');
+const sw=readFileSync('family-command/sw.js','utf8');
+const css=readFileSync('family-command/reference-mobile-v35.css','utf8');
+const js=readFileSync('family-command/reference-mobile-v35.js','utf8');
+assert.match(html,/reference-mobile-v35\.css/);
+assert.match(html,/reference-mobile-v35\.js/);
+assert.match(html,/20260901-v9350/);
+assert.match(sw,/family-command-v74/);
+assert.match(css,/fc35-daybar/);
+assert.match(css,/fc35-school-section/);
+assert.match(js,/fcReferenceLayout='v35'/);
+assert.doesNotMatch(js,/\bdata\s*\.\s*(todos|events|homework|people|schedules)\s*=/,'reference layer must not assign family data collections');
+console.log('V9.35 reference smoke: ok');
