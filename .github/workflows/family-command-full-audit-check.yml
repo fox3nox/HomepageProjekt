@@ -24,11 +24,15 @@ jobs:
       - name: Boot, cache and private-config invariants
         run: |
           set -euo pipefail
-          grep -q "const VERSION='20260831-v9260'" family-command/index.html
+          grep -q "const VERSION='20260901-v9350'" family-command/index.html
           grep -q "PRIVATE_RULES_VERSION='2026-08-31-v2'" family-command/index.html
           grep -q "smart-documents.js" family-command/index.html
-          grep -Eq "const CACHE='family-command-v(68|69|70|71|72|73)'" family-command/sw.js
+          grep -q "reference-mobile-v35.js" family-command/index.html
+          grep -q "reference-mobile-v35.css" family-command/index.html
+          grep -Eq "const CACHE='family-command-v(68|69|70|71|72|73|74)'" family-command/sw.js
           grep -q "smart-documents.js" family-command/sw.js
+          grep -q "reference-mobile-v35.js" family-command/sw.js
+          grep -q "reference-mobile-v35.css" family-command/sw.js
           grep -q "v9.26-full-audit-hardening" family-command/build.txt
       - name: Canonical state integrity invariants
         run: |
@@ -43,6 +47,6 @@ jobs:
       - name: Production feature wiring
         run: |
           set -euo pipefail
-          for f in core-runtime.js cloud-state.js document-viewer.js smart-documents.js event-details.js chat-command-sync.js app-data-rules.js v9-data.js event-delete-fix.js multi-link-ui.js v9-app.js v9-professional.js homework-originals.js; do grep -q "$f" family-command/index.html || { echo "critical module not wired: $f"; exit 1; }; done
+          for f in core-runtime.js cloud-state.js document-viewer.js smart-documents.js event-details.js chat-command-sync.js app-data-rules.js v9-data.js event-delete-fix.js multi-link-ui.js v9-app.js v9-professional.js reference-mobile-v35.js homework-originals.js; do grep -q "$f" family-command/index.html || { echo "critical module not wired: $f"; exit 1; }; done
           for f in push-v2.js runtime-health.js family-ai-v2.js ai-budget-guard.js family-ai-original-links.js print-planner-v2.js backup-manager.js app-selftest-v9.js; do grep -q "$f" family-command/index.html || { echo "deferred module not wired: $f"; exit 1; }; done
           ! grep -q "family-command-private-app" family-command/index.html
