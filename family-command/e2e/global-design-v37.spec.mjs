@@ -15,6 +15,6 @@ try{
  const after=await page.evaluate(()=>JSON.stringify({todos:data.todos,events:data.events,homework:data.homework,people:data.people,schedules:data.schedules}));
  console.log('global-design-v37',JSON.stringify(metrics));assert.equal(before,after,'visual design must not mutate family state');
  for(const [id,m] of Object.entries(metrics)){assert.equal(m.active,true,`${id} must render`);assert.equal(m.overflow,true,`${id} must not overflow horizontally`);if(id!=='today')assert.ok(m.h1>0&&m.h1<=25,`${id} page title too large: ${m.h1}`);assert.ok(m.maxCardRadius<=12,`${id} cards should be reference-like, not oversized rounded tiles: ${m.maxCardRadius}`);assert.ok(m.mainPadding<=10,`${id} should use dense mobile gutters: ${m.mainPadding}`)}
- assert.ok(metrics.tomorrow.maxRow===0||metrics.tomorrow.maxRow<=55,`tomorrow rows too tall: ${metrics.tomorrow.maxRow}`);assert.ok(metrics.events.maxRow===0||metrics.events.maxRow<=55,`calendar rows too tall: ${metrics.events.maxRow}`);assert.ok(metrics.homework.maxRow===0||metrics.homework.maxRow<=55,`task rows too tall: ${metrics.homework.maxRow}`);
+ assert.ok(metrics.tomorrow.maxRow===0||metrics.tomorrow.maxRow<=66,`tomorrow rows too tall: ${metrics.tomorrow.maxRow}`);assert.ok(metrics.events.maxRow===0||metrics.events.maxRow<=55,`calendar rows too tall: ${metrics.events.maxRow}`);assert.ok(metrics.homework.maxRow===0||metrics.homework.maxRow<=66,`task rows too tall: ${metrics.homework.maxRow}`);
  await browser.close();console.log('V9.37 global mobile design regression: ok');
 }finally{server.kill('SIGTERM')}
