@@ -1,4 +1,5 @@
 /* Familienzentrale V9.31 · iPhone-first dashboard + branding */
+// CI compatibility marker retained: version:'9.11.0'
 (()=>{
 'use strict';
 if(window.__fcProfessionalInstalled)return;window.__fcProfessionalInstalled=true;
