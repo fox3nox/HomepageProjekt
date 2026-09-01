@@ -1,0 +1,30 @@
+name: Family Command today clarity regression
+on:
+  push:
+    branches: [main]
+    paths:
+      - 'family-command/v9-professional.css'
+      - 'family-command/v9-app.js'
+      - 'family-command/e2e/today-clarity.spec.mjs'
+      - '.github/workflows/family-command-today-clarity-check.yml'
+  pull_request:
+    branches: [main]
+    paths:
+      - 'family-command/v9-professional.css'
+      - 'family-command/v9-app.js'
+      - 'family-command/e2e/today-clarity.spec.mjs'
+      - '.github/workflows/family-command-today-clarity-check.yml'
+jobs:
+  today-clarity:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+      - name: Syntax
+        run: node --check family-command/e2e/today-clarity.spec.mjs
+      - name: Install Playwright WebKit
+        run: |
+          npm install --no-save --package-lock=false playwright@1.57.0
+          npx playwright install --with-deps webkit
+      - name: iPhone Today clarity regression
+        run: node family-command/e2e/today-clarity.spec.mjs
