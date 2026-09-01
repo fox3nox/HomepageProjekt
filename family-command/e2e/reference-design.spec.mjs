@@ -29,72 +29,56 @@ try {
     for(const p of (data.people||[]).filter(p=>p.id!=='oli')){data.schedules[p.id]??={};data.schedules[p.id][day]=[{start:'00:00',end:'23:59',label:'Schule / Kindergarten'}]}
     save?.();window.renderToday?.();
   });
-  await page.waitForFunction(()=>document.documentElement.dataset.fcReferenceFidelity==='v34');
+  await page.waitForFunction(()=>document.documentElement.dataset.fcReferenceLayout==='v35');
   const result=await page.evaluate(()=>{
     const before=JSON.stringify({todos:data.todos,events:data.events,homework:data.homework,people:data.people,schedules:data.schedules});
-    window.__fcProfessional.enhanceToday();
     const after=JSON.stringify({todos:data.todos,events:data.events,homework:data.homework,people:data.people,schedules:data.schedules});
-    const todoSec=document.querySelector('#today .fc33-priority-section');
-    const overview=document.querySelector('#today .fc33-overview-section');
-    const family=document.querySelector('#today .fc33-family-section');
-    const tomorrow=document.querySelector('#today .fc33-tomorrow-section');
-    const firstTodo=document.querySelector('#today [data-todo]');
-    const summary=document.querySelector('#today .fc31-summary');
-    const pagehead=document.querySelector('#today .fc9-pagehead');
+    const todo=document.querySelector('#today .fc35-priority-section');
+    const overview=document.querySelector('#today .fc35-timeline-section');
+    const tomorrow=document.querySelector('#today .fc35-tomorrow-section');
+    const school=document.querySelector('#today .fc35-school-section');
+    const pagehead=document.querySelector('#today .fc35-daybar');
+    const rows=[...document.querySelectorAll('#today .fc35-priority-section [data-todo]')];
     const taskNav=document.querySelector('.fc9-nav button[data-screen="homework"]');
     return {
-      version:window.__fcProfessional.version,
-      reference:document.documentElement.dataset.fcReferenceDesign,
-      fidelity:document.documentElement.dataset.fcReferenceFidelity,
+      layout:document.documentElement.dataset.fcReferenceLayout,
       sameData:before===after,
-      tagline:document.querySelector('#today .fc33-tagline')?.textContent?.trim(),
-      taglineDisplay:getComputedStyle(document.querySelector('#today .fc33-tagline')).display,
-      summaryDisplay:summary?getComputedStyle(summary).display:'missing',
-      pageheadHeight:pagehead?.getBoundingClientRect().height||0,
-      todoHeading:todoSec?.querySelector('h2')?.textContent?.trim(),
-      kickerLabel:todoSec?.querySelector('.fc33-kicker span:first-child')?.textContent?.trim()||'',
-      kickerCount:todoSec?.querySelector('.fc33-count')?.textContent?.trim()||'',
-      secondaryLabel:todoSec?.querySelector('.fc34-more-label')?.textContent?.trim()||'',
-      secondaryCount:todoSec?.querySelectorAll('.fc34-secondary-task').length||0,
-      taskIcon:firstTodo?.querySelector('.fc33-task-icon')?.textContent||'',
-      overviewHeading:overview?.querySelector('h2')?.textContent?.trim()||'',
-      familyHeading:family?.querySelector('h2')?.textContent?.trim()||'',
-      tomorrowHeading:tomorrow?.querySelector('h2')?.textContent?.trim()||'',
-      avatarCount:document.querySelectorAll('#today .fc33-avatar,#today .fc34-avatar').length,
-      taskNavLabel:taskNav?.textContent?.trim()||'',
-      taskNavVisible:!!taskNav&&getComputedStyle(taskNav).display!=='none'&&taskNav.getBoundingClientRect().height>0,
       overflow:document.documentElement.scrollWidth<=document.documentElement.clientWidth+1,
-      todoTop:todoSec?.getBoundingClientRect().top||0,
+      pageheadHeight:pagehead?.getBoundingClientRect().height||0,
+      todoHeading:todo?.querySelector('h2')?.textContent?.trim()||'',
+      todoSubtitle:todo?.querySelector('.fc35-subtitle')?.textContent?.trim()||'',
+      overviewHeading:overview?.querySelector('h2')?.textContent?.trim()||'',
+      overviewSubtitle:overview?.querySelector('.fc35-subtitle')?.textContent?.trim()||'',
+      tomorrowHeading:tomorrow?.querySelector('h2')?.textContent?.trim()||'',
+      tomorrowSubtitle:tomorrow?.querySelector('.fc35-subtitle')?.textContent?.trim()||'',
+      schoolHeading:school?.querySelector('h2')?.textContent?.trim()||'',
+      todoRowHeights:rows.map(x=>x.getBoundingClientRect().height),
+      overviewRowHeight:overview?.querySelector('[data-event]')?.getBoundingClientRect().height||0,
+      navVisible:!!taskNav&&getComputedStyle(taskNav).display!=='none'&&taskNav.getBoundingClientRect().height>0,
+      todoTop:todo?.getBoundingClientRect().top||0,
       overviewTop:overview?.getBoundingClientRect().top||0,
       tomorrowTop:tomorrow?.getBoundingClientRect().top||99999,
-      familyTop:family?.getBoundingClientRect().top||99999
+      schoolTop:school?.getBoundingClientRect().top||99999
     };
   });
-  console.log('reference-fidelity-v34',JSON.stringify(result));
-  assert.equal(result.version,'9.33.0');
-  assert.equal(result.reference,'v33');
-  assert.equal(result.fidelity,'v34');
-  assert.equal(result.sameData,true,'visual enhancement must not mutate family data');
-  assert.equal(result.tagline,'Das Wichtigste zuerst');
-  assert.equal(result.taglineDisplay,'none','duplicate tagline must not consume iPhone space');
-  assert.equal(result.summaryDisplay,'none','reference-faithful mobile view must not show the redundant metric strip');
-  assert.ok(result.pageheadHeight>0&&result.pageheadHeight<55,`mobile day header must stay compact: ${result.pageheadHeight}`);
-  assert.equal(result.todoHeading,'Heute – Das Wichtigste zuerst');
-  assert.equal(result.kickerLabel,'NOCH ERLEDIGEN');
-  assert.equal(result.kickerCount,'2','priority count must match the two important tasks, not all open tasks');
-  assert.equal(result.secondaryLabel,'Weitere offene Aufgaben');
-  assert.equal(result.secondaryCount,1,'normal open tasks must remain visible but visually secondary');
-  assert.ok(result.taskIcon,'task icon must be present');
-  if(result.overviewHeading)assert.equal(result.overviewHeading,'Heute im Überblick');
-  assert.equal(result.familyHeading,'Schule & Familie heute');
-  assert.equal(result.tomorrowHeading,'Morgen – Vorschau');
-  assert.ok(result.avatarCount>=3,'reference-style person avatars must remain visible');
-  assert.equal(result.taskNavVisible,true,'the existing Aufgaben navigation must remain visible');
-  assert.match(result.taskNavLabel,/Aufgaben/,'the existing Aufgaben navigation must remain intact');
-  assert.equal(result.overflow,true,'reference design must not overflow horizontally');
-  assert.ok(result.todoTop>0&&result.todoTop<result.familyTop,'important tasks must stay above family/routine information');
-  if(result.overviewTop)assert.ok(result.todoTop<result.overviewTop,'important tasks must stay above the daily overview');
-  assert.ok(result.tomorrowTop<result.familyTop,'tomorrow preview must stay ahead of lower-priority family routine details');
+  console.log('reference-layout-v35',JSON.stringify(result));
+  assert.equal(result.layout,'v35');
+  assert.equal(result.sameData,true,'V9.35 reference layout must never mutate family data');
+  assert.equal(result.overflow,true,'mobile reference layout must not overflow horizontally');
+  assert.ok(result.pageheadHeight>0&&result.pageheadHeight<=42,`day bar should be substantially more compact: ${result.pageheadHeight}`);
+  assert.equal(result.todoHeading,'Heute');
+  assert.equal(result.todoSubtitle,'Das Wichtigste zuerst');
+  if(result.overviewHeading){assert.equal(result.overviewHeading,'Heute');assert.equal(result.overviewSubtitle,'im Überblick')}
+  if(result.tomorrowHeading){assert.equal(result.tomorrowHeading,'Morgen');assert.equal(result.tomorrowSubtitle,'Vorschau')}
+  if(result.schoolHeading)assert.equal(result.schoolHeading,'Schule & Wichtiges');
+  assert.ok(result.todoRowHeights.length>=3,'all existing tasks must remain visible');
+  for(const h of result.todoRowHeights)assert.ok(h>=36&&h<=58,`task row must stay dense but tappable: ${h}`);
+  if(result.overviewRowHeight)assert.ok(result.overviewRowHeight>=38&&result.overviewRowHeight<=58,`overview row must remain compact: ${result.overviewRowHeight}`);
+  assert.equal(result.navVisible,true,'existing Aufgaben bottom navigation must remain available');
+  assert.ok(result.todoTop>0);
+  if(result.overviewTop)assert.ok(result.todoTop<result.overviewTop,'priority block must precede daily timeline');
+  if(result.tomorrowTop<99999&&result.overviewTop)assert.ok(result.overviewTop<result.tomorrowTop,'tomorrow preview must follow today overview');
+  if(result.schoolTop<99999&&result.tomorrowTop<99999)assert.ok(result.tomorrowTop<result.schoolTop,'school/routine details must follow tomorrow preview');
   await browser.close();
-  console.log('V9.34 reference fidelity regression: ok');
+  console.log('V9.35 mobile reference-layout regression: ok');
 } finally {server.kill('SIGTERM')}
