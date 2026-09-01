@@ -1,0 +1,25 @@
+name: Family Command dashboard redesign regression
+on:
+  pull_request:
+    paths:
+      - 'family-command/v9-professional.css'
+      - 'family-command/e2e/dashboard-redesign.spec.mjs'
+      - 'family-command/sw.js'
+      - '.github/workflows/family-command-dashboard-redesign-check.yml'
+  push:
+    branches: [main]
+    paths:
+      - 'family-command/v9-professional.css'
+      - 'family-command/e2e/dashboard-redesign.spec.mjs'
+      - 'family-command/sw.js'
+      - '.github/workflows/family-command-dashboard-redesign-check.yml'
+jobs:
+  dashboard-redesign:
+    runs-on: ubuntu-latest
+    timeout-minutes: 12
+    steps:
+      - uses: actions/checkout@v4
+      - name: Install Playwright WebKit
+        run: npx --yes playwright@1.55.0 install --with-deps webkit
+      - name: Responsive dashboard regression
+        run: npx --yes -p playwright@1.55.0 node family-command/e2e/dashboard-redesign.spec.mjs
