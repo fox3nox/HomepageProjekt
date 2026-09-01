@@ -31,6 +31,7 @@ try{
  await page.setInputFiles('[data-doc-file]',{name:'wochenblatt.png',mimeType:'image/png',buffer:Buffer.from('89504e470d0a1a0a','hex')});
  await page.click('[data-doc-upload]');
  await page.waitForFunction(()=>document.querySelector('[data-doc-status]')?.textContent.includes('Gespeichert'),{timeout:10000});
+ await page.waitForFunction(()=>window.data?.homework?.some(h=>h.title==='2er- und 4er-Reihe aufsagen'&&h.personId==='fynn')&&window.data?.events?.some(e=>e.title==='Manuell korrigierter Termin'&&Array.isArray(e.personIds)&&e.personIds.length===1&&e.personIds[0]==='fynn'),{timeout:10000});
  const state=await page.evaluate(()=>({events:window.data.events,homework:window.data.homework,health:window.__fcSmartDocumentsHealth}));
  assert.equal(state.events.filter(e=>e.title==='Telefongespräch'&&e.date==='2026-09-08').length,1,'existing event must not be duplicated');
  assert.equal(state.homework.filter(h=>h.title==='2er- und 4er-Reihe aufsagen'&&h.personId==='fynn').length,1,'high-confidence homework must be created for manual assignment');
