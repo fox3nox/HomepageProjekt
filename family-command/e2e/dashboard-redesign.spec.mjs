@@ -16,32 +16,41 @@ try{
   const p=await mobile.newPage();
   await p.goto(BASE+'/?access=test',{waitUntil:'domcontentloaded'});
   await p.waitForFunction(()=>document.documentElement.dataset.fcReady==='1');
+  await p.waitForFunction(()=>document.documentElement.dataset.fcIphoneDashboard==='v31');
   const x=await p.evaluate(()=>{
     const nav=document.querySelector('.fc9-nav').getBoundingClientRect();
     const shell=document.querySelector('.fc9-shell').getBoundingClientRect();
-    const page=document.querySelector('#today .fc9-page');
-    const sections=[...page.children].map((el,i)=>({i,order:Number(getComputedStyle(el).order||0),todo:!!el.querySelector('[data-todo]'),hw:!!el.querySelector('[data-hw]'),event:!!el.querySelector('[data-event]'),people:!!el.querySelector('.fc9-person-list'),tomorrow:!!el.querySelector('.fc9-tomorrow')}));
-    const important=document.querySelector('#today .fc9-row .fc9-priority')?.closest('.fc9-row');
-    const impStyle=important?getComputedStyle(important):null;
+    const summary=document.querySelector('#today .fc31-summary');
+    const focus=document.querySelector('#today .fc9-focus');
+    const todos=[...document.querySelectorAll('#today [data-todo]')];
+    const todoSection=todos[0]?.closest('.fc9-section');
+    const todoHeading=todoSection?.querySelector('.fc9-section-head h2');
+    const statTexts=[...document.querySelectorAll('#today .fc31-stat span')].map(x=>x.textContent.trim());
     return {
       navX:nav.x,navBottom:nav.bottom,navW:nav.width,shellX:shell.x,shellW:shell.width,
       innerW:innerWidth,innerH:innerHeight,
       overflow:document.documentElement.scrollWidth<=document.documentElement.clientWidth+1,
-      sections,
-      importantBg:impStyle?.backgroundImage||'',
+      summary:!!summary,
+      summaryCols:summary?getComputedStyle(summary).gridTemplateColumns:'',
+      focusHeight:focus?.getBoundingClientRect().height||0,
+      todoCount:todos.length,
+      todoHeading:todoHeading?.textContent?.trim()||'',
+      statTexts,
+      dashboard:document.documentElement.dataset.fcIphoneDashboard,
       activeNavBg:getComputedStyle(document.querySelector('.fc9-nav button.active')).backgroundColor
     };
   });
-  console.log('iphone',JSON.stringify(x));
+  console.log('iphone-v31',JSON.stringify(x));
   assert.ok(x.navX<=1&&Math.abs(x.navW-x.innerW)<=2,`mobile nav width ${JSON.stringify(x)}`);
   assert.ok(Math.abs(x.navBottom-x.innerH)<=2,`mobile nav bottom ${JSON.stringify(x)}`);
   assert.ok(x.shellX<=1&&Math.abs(x.shellW-x.innerW)<=2,`mobile shell ${JSON.stringify(x)}`);
   assert.equal(x.overflow,true,`mobile overflow ${JSON.stringify(x)}`);
-  const todo=x.sections.find(s=>s.todo), event=x.sections.find(s=>s.event), people=x.sections.find(s=>s.people), tomorrow=x.sections.find(s=>s.tomorrow);
-  if(todo&&event) assert.ok(todo.order<event.order,'today to-dos must rank before normal events');
-  if(event&&people) assert.ok(event.order<people.order,'events must rank before routine person schedule');
-  if(people&&tomorrow) assert.ok(people.order<tomorrow.order,'tomorrow preview must remain after today routine');
+  assert.equal(x.dashboard,'v31');
+  assert.equal(x.summary,true,'V9.31 must render the compact iPhone summary');
+  assert.deepEqual(x.statTexts,['Wichtig','Offen','Termine']);
+  assert.ok(x.focusHeight<90,`focus card must be visibly compact on iPhone: ${x.focusHeight}`);
+  if(x.todoCount>0)assert.equal(x.todoHeading,'Jetzt erledigen','today task section must use the new action-first heading');
   assert.notEqual(x.activeNavBg,'rgba(0, 0, 0, 0)','active bottom navigation must be visibly highlighted');
   await browser.close();
-  console.log('iphone clarity redesign regression: ok');
+  console.log('V9.31 iPhone dashboard regression: ok');
 } finally {server.kill('SIGTERM')}
