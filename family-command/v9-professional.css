@@ -32,8 +32,8 @@
 @media(min-width:720px){
   body{background:#f5f7fb!important}.app{background:#f5f7fb!important}.fc9-shell{padding:0 0 0 222px;min-height:100vh}
   .fc9-topbar{position:sticky;top:0;margin-left:0;background:rgba(247,249,252,.9);border-bottom:1px solid #e4eaf2}
-  .fc9-topbar-in{width:min(100%,1160px);min-height:76px;padding:12px 24px;gap:12px}.fc9-mark{width:42px;height:42px;border-radius:13px}.fc9-brand b{font-size:18px}.fc9-brand span{font-size:10.5px}.fc9-head-actions{gap:9px}.fc9-icon{width:46px;height:46px}
-  .fc9-main{width:min(100%,1160px);margin:0 auto;padding:22px 24px 42px}.fc9-page{gap:16px}.fc9-pagehead h1{font-size:34px}.fc9-pagehead p{font-size:12px}.fc9-section-head h2{font-size:16px}
+  .fc9-topbar-in{width:100%!important;max-width:none!important;margin:0!important;min-height:76px;padding:12px 24px;gap:12px}.fc9-mark{width:42px;height:42px;border-radius:13px}.fc9-brand b{font-size:18px}.fc9-brand span{font-size:10.5px}.fc9-head-actions{gap:9px}.fc9-icon{width:46px;height:46px}
+  .fc9-main{width:100%!important;max-width:none!important;margin:0!important;padding:22px 24px 42px}.fc9-page{gap:16px}.fc9-pagehead h1{font-size:34px}.fc9-pagehead p{font-size:12px}.fc9-section-head h2{font-size:16px}
   .fc9-nav{position:fixed;left:0;top:0;bottom:0;right:auto;width:222px;padding:92px 14px 20px;background:#fff;border-top:0;border-right:1px solid #e3e9f2;box-shadow:8px 0 30px rgba(31,49,81,.035);backdrop-filter:none;-webkit-backdrop-filter:none}
   .fc9-nav::before{content:'FAMILIENZENTRALE\A Alles im Blick. Alles im Griff.';white-space:pre;position:absolute;top:25px;left:20px;color:#13213b;font-size:14px;font-weight:900;line-height:1.25;letter-spacing:-.02em}.fc9-nav::after{content:' ';position:absolute;top:20px;left:16px;width:0;height:0}
   .fc9-nav-in{width:100%;display:grid;grid-template-columns:1fr;gap:7px}.fc9-nav button{min-height:48px;padding:0 13px;display:grid;grid-template-columns:24px 1fr;place-items:center start;align-content:center;gap:11px;border-radius:12px;font-size:11px;text-align:left}.fc9-nav svg{width:20px;height:20px}.fc9-nav button.active{color:#1f5cdb;background:#edf4ff}
