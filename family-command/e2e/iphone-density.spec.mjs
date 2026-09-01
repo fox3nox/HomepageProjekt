@@ -29,8 +29,9 @@ try{
       density:document.documentElement.dataset.fcIphoneDensity,
       dashboard:document.documentElement.dataset.fcIphoneDashboard,
       reference:document.documentElement.dataset.fcReferenceDesign,
+      fidelity:document.documentElement.dataset.fcReferenceFidelity||'',
       summaryHeight:summary?.getBoundingClientRect().height||0,
-      summaryWidth:summary?.getBoundingClientRect().width||0,
+      summaryDisplay:summary?getComputedStyle(summary).display:'missing',
       focusHeight:focus?.getBoundingClientRect().height||0,
       rowHeight:firstRow?.getBoundingClientRect().height||0,
       statCount:stat.length,
@@ -41,25 +42,30 @@ try{
       professional:window.__fcProfessional?.version||''
     };
   });
-  console.log('iphone-density-v33',JSON.stringify(metrics));
+  console.log('iphone-density-v34',JSON.stringify(metrics));
   assert.equal(metrics.density,'v32');
   assert.equal(metrics.dashboard,'v31','V9.31 dashboard contract must remain available');
   assert.equal(metrics.reference,'v33');
   assert.equal(metrics.professional,'9.33.0');
   assert.equal(metrics.overflow,true);
-  assert.equal(metrics.statCount,3);
+  assert.equal(metrics.statCount,3,'summary controls remain in the DOM for compatibility even when visually removed');
   assert.deepEqual(metrics.statRoles,['button','button','button']);
   assert.deepEqual(metrics.statTab,[0,0,0]);
-  assert.ok(metrics.summaryHeight>30&&metrics.summaryHeight<=44,`summary must remain compact: ${metrics.summaryHeight}`);
+  if(metrics.fidelity==='v34'){
+    assert.equal(metrics.summaryDisplay,'none','V9.34 removes the redundant metric strip from the visible iPhone hierarchy');
+    assert.equal(metrics.summaryHeight,0,'hidden metric strip must consume no vertical space');
+  }else{
+    assert.ok(metrics.summaryHeight>30&&metrics.summaryHeight<=44,`summary must remain compact: ${metrics.summaryHeight}`);
+  }
   assert.ok(metrics.focusHeight<=58,`focus strip must not dominate the iPhone screen: ${metrics.focusHeight}`);
   if(metrics.rowHeight)assert.ok(metrics.rowHeight>=40&&metrics.rowHeight<=82,`first dashboard row has unexpected height: ${metrics.rowHeight}`);
   if(metrics.eventTextAlign!=='none')assert.equal(metrics.eventTextAlign,'left','calendar entries must scan left-to-right');
 
-  const eventStat=page.locator('#today [data-fc31="events"]');
-  await eventStat.click();
+  // Keep the old summary action contract without forcing a hidden legacy control back into the visible UI.
+  await page.locator('#today [data-fc31="events"]').evaluate(el=>el.click());
   await page.waitForFunction(()=>document.querySelector('#events')?.classList.contains('active'));
-  assert.equal(await page.locator('#events').evaluate(x=>x.classList.contains('active')),true,'Termine summary must open the calendar');
+  assert.equal(await page.locator('#events').evaluate(x=>x.classList.contains('active')),true,'legacy Termine summary action must still open the calendar');
 
   await browser.close();
-  console.log('V9.33 iPhone density regression: ok');
+  console.log('V9.34 iPhone density compatibility regression: ok');
 } finally {server.kill('SIGTERM')}
