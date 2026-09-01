@@ -1,0 +1,22 @@
+name: Family Command V9.33 reference design regression
+on:
+  push:
+    branches: [main]
+    paths:
+      - 'family-command/**'
+      - '.github/workflows/family-command-v933-reference-design-check.yml'
+  pull_request:
+    branches: [main]
+    paths:
+      - 'family-command/**'
+      - '.github/workflows/family-command-v933-reference-design-check.yml'
+jobs:
+  reference-design:
+    runs-on: ubuntu-latest
+    timeout-minutes: 8
+    steps:
+      - uses: actions/checkout@v4
+      - name: Install Playwright WebKit
+        run: npx --yes playwright@1.55.0 install --with-deps webkit
+      - name: V9.33 reference design regression
+        run: npx --yes -p playwright@1.55.0 node family-command/e2e/reference-design.spec.mjs
