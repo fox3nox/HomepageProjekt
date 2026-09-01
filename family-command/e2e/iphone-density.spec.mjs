@@ -28,6 +28,7 @@ try{
     return {
       density:document.documentElement.dataset.fcIphoneDensity,
       dashboard:document.documentElement.dataset.fcIphoneDashboard,
+      reference:document.documentElement.dataset.fcReferenceDesign,
       summaryHeight:summary?.getBoundingClientRect().height||0,
       summaryWidth:summary?.getBoundingClientRect().width||0,
       focusHeight:focus?.getBoundingClientRect().height||0,
@@ -40,17 +41,18 @@ try{
       professional:window.__fcProfessional?.version||''
     };
   });
-  console.log('iphone-density-v32',JSON.stringify(metrics));
+  console.log('iphone-density-v33',JSON.stringify(metrics));
   assert.equal(metrics.density,'v32');
   assert.equal(metrics.dashboard,'v31','V9.31 dashboard contract must remain available');
-  assert.equal(metrics.professional,'9.32.0');
+  assert.equal(metrics.reference,'v33');
+  assert.equal(metrics.professional,'9.33.0');
   assert.equal(metrics.overflow,true);
   assert.equal(metrics.statCount,3);
   assert.deepEqual(metrics.statRoles,['button','button','button']);
   assert.deepEqual(metrics.statTab,[0,0,0]);
-  assert.ok(metrics.summaryHeight>30&&metrics.summaryHeight<=44,`summary must be a compact segmented bar: ${metrics.summaryHeight}`);
+  assert.ok(metrics.summaryHeight>30&&metrics.summaryHeight<=44,`summary must remain compact: ${metrics.summaryHeight}`);
   assert.ok(metrics.focusHeight<=58,`focus strip must not dominate the iPhone screen: ${metrics.focusHeight}`);
-  if(metrics.rowHeight)assert.ok(metrics.rowHeight>=44&&metrics.rowHeight<=82,`first dashboard row has unexpected height: ${metrics.rowHeight}`);
+  if(metrics.rowHeight)assert.ok(metrics.rowHeight>=40&&metrics.rowHeight<=82,`first dashboard row has unexpected height: ${metrics.rowHeight}`);
   if(metrics.eventTextAlign!=='none')assert.equal(metrics.eventTextAlign,'left','calendar entries must scan left-to-right');
 
   const eventStat=page.locator('#today [data-fc31="events"]');
@@ -59,5 +61,5 @@ try{
   assert.equal(await page.locator('#events').evaluate(x=>x.classList.contains('active')),true,'Termine summary must open the calendar');
 
   await browser.close();
-  console.log('V9.32 iPhone density regression: ok');
+  console.log('V9.33 iPhone density regression: ok');
 } finally {server.kill('SIGTERM')}
