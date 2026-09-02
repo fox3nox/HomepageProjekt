@@ -24,6 +24,9 @@ jobs:
     timeout-minutes: 12
     steps:
       - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
       - name: Syntax and boot integration
         run: |
           node --check family-command/smart-documents.js
@@ -31,9 +34,20 @@ jobs:
           node --check family-command/e2e/smart-documents.spec.mjs
           grep -q "smart-documents.js" family-command/index.html
           grep -q "__fcSmartDocumentsHealth" family-command/smart-documents.js
-      - name: Install Playwright WebKit
-        run: |
-          npm install --no-save --package-lock=false playwright@1.57.0
-          npx playwright install --with-deps webkit
+      - name: Install Playwright
+        run: npm install --no-save playwright
+      - name: Install WebKit
+        run: npx playwright install --with-deps webkit
       - name: iPhone smart documents regression
-        run: node family-command/e2e/smart-documents.spec.mjs
+        id: smarttest
+        shell: bash
+        run: |
+          set -o pipefail
+          node family-command/e2e/smart-documents.spec.mjs 2>&1 | tee smart-documents-test.log
+      - name: Upload smart documents diagnostics
+        if: failure()
+        uses: actions/upload-artifact@v4
+        with:
+          name: smart-documents-diagnostics
+          path: smart-documents-test.log
+          if-no-files-found: error
