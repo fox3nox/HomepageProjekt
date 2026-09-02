@@ -16,12 +16,15 @@ on:
 jobs:
   iphone-dashboard:
     runs-on: ubuntu-latest
-    timeout-minutes: 12
+    timeout-minutes: 8
     steps:
       - uses: actions/checkout@v4
-      - name: Install Playwright WebKit
-        run: |
-          npm install --no-save --package-lock=false playwright@1.55.0
-          npx playwright install --with-deps webkit
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+      - name: Install Playwright
+        run: npm install --no-save playwright
+      - name: Install WebKit
+        run: npx playwright install --with-deps webkit
       - name: V9.31 iPhone dashboard regression
         run: node family-command/e2e/dashboard-redesign.spec.mjs
