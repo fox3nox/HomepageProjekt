@@ -14,6 +14,23 @@ try{
   const browser=await webkit.launch({headless:true});
   const context=await browser.newContext({viewport:{width:390,height:844},isMobile:true,hasTouch:true,serviceWorkers:'block'});
   const page=await context.newPage();
+
+  // Install the AI mock before any application script runs. WebKit may resolve a global fetch
+  // reference when a script is evaluated, so replacing window.fetch after boot is not reliable.
+  // This keeps the production code untouched while removing CORS/preflight/runner variability.
+  await page.addInitScript(payload=>{
+    const baseFetch=window.fetch.bind(window);
+    window.__smartDocAiCalls=0;
+    window.fetch=async(input,init)=>{
+      const url=String(input?.url||input||'');
+      if(url.includes('/family-command-ai-budgeted/document')){
+        window.__smartDocAiCalls++;
+        return new Response(JSON.stringify(payload),{status:200,headers:{'content-type':'application/json'}});
+      }
+      return baseFetch(input,init);
+    };
+  },aiPayload);
+
   await page.route('**/family-command-documents/list',route=>route.fulfill({status:200,contentType:'application/json',body:JSON.stringify({ok:true,documents:[{id:'doc-j',person_id:'jayden',title:'Jayden · Elternbrief',mime_type:'application/pdf',created_at:'2026-08-30T10:00:00Z',links:[{source_kind:'person',source_id:'jayden'}]},{id:'doc-f',person_id:'fynn',title:'Fynn · Wochenplan',mime_type:'image/jpeg',created_at:'2026-08-31T10:00:00Z',links:[{source_kind:'person',source_id:'fynn'}]},...(uploaded?[{id:'doc-new',person_id:'fynn',title:'Fynn · Wochenblatt',mime_type:'image/png',created_at:'2026-08-31T19:00:00Z',links:[{source_kind:'person',source_id:'fynn'}]}]:[])]})}));
   await page.route('**/family-command-documents/upload',async route=>{uploaded=true;await route.fulfill({status:200,contentType:'application/json',body:JSON.stringify({ok:true,document:{id:'doc-new',person_id:'fynn',title:'Fynn · Wochenblatt',mime_type:'image/png',created_at:'2026-08-31T19:00:00Z',links:[{source_kind:'person',source_id:'fynn'}]}})})});
   await page.route('**/family-command-documents/link',route=>route.fulfill({status:200,contentType:'application/json',body:JSON.stringify({ok:true})}));
@@ -27,34 +44,15 @@ try{
     window.save();
   },state);
 
-  // First isolation after the full application boot.
   await isolate();
-
   await page.click('[data-screen="more"]');
   await page.click('[data-feature="docs"]');
   await page.waitForSelector('text=Dokumentenzentrale',{timeout:20000});
 
   // Opening More/Documents can finish deferred render/persistence work. Re-assert the isolated
-  // E2E state only after that view is fully mounted so unrelated bootstrap state cannot race
-  // with Smart Documents. This changes test isolation only, never production behavior.
+  // E2E state only after that view is fully mounted so unrelated bootstrap state cannot race it.
   await isolate();
   await page.waitForTimeout(50);
-
-  // The app is served locally while its AI endpoint is cross-origin. Mock only that fetch inside
-  // the browser so WebKit CORS/preflight behavior cannot turn this product-logic regression into
-  // a runner/network test. All document list/upload/link requests still exercise fetch + routing.
-  await page.evaluate(payload=>{
-    const baseFetch=window.fetch.bind(window);
-    window.__smartDocAiCalls=0;
-    window.fetch=async(input,init)=>{
-      const url=String(input?.url||input||'');
-      if(url.includes('/family-command-ai-budgeted/document')){
-        window.__smartDocAiCalls++;
-        return new Response(JSON.stringify(payload),{status:200,headers:{'content-type':'application/json'}});
-      }
-      return baseFetch(input,init);
-    };
-  },aiPayload);
 
   assert.equal(await page.locator('[data-doc]').count(),2,'all filter must show both documents');
   await page.click('[data-doc-filter="fynn"]');
