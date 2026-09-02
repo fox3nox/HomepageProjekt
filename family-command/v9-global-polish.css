@@ -1,0 +1,183 @@
+/* Familienzentrale V9.43 · global visual polish across all primary surfaces */
+:root{
+  --fc43-navy:#10284f;
+  --fc43-blue:#1d6fdc;
+  --fc43-blue-soft:#edf5ff;
+  --fc43-green:#1f8f5f;
+  --fc43-orange:#d96f1a;
+  --fc43-red:#c7444d;
+  --fc43-bg:#f7f9fc;
+  --fc43-surface:#ffffff;
+  --fc43-soft:#f4f7fb;
+  --fc43-line:#e3e9f1;
+  --fc43-muted:#748399;
+  --fc43-shadow:0 7px 24px rgba(31,50,82,.055);
+}
+
+/* Shared shell, typography and touch targets */
+body,.app,.fc9-shell{background:var(--fc43-bg)!important}
+.fc9-topbar{background:rgba(247,249,252,.92)!important;border-bottom-color:rgba(227,233,241,.92)!important}
+.fc9-topbar-in{max-width:520px}
+.fc9-brand b{font-weight:860!important;color:var(--fc43-navy)!important}
+.fc9-brand span{color:#8190a4!important}
+.fc9-icon{border-color:var(--fc43-line)!important;background:#fff!important;color:#42536d!important;box-shadow:0 3px 12px rgba(31,50,82,.04)!important}
+.fc9-icon.ai{background:var(--fc43-blue-soft)!important;color:var(--fc43-blue)!important}
+.fc9-main{max-width:520px}
+.fc9-page{gap:14px}
+.fc9-pagehead{padding:3px 2px 1px!important}
+.fc9-pagehead h1{font-size:29px!important;line-height:1.04!important;color:var(--fc43-navy)!important;letter-spacing:-.045em!important}
+.fc9-pagehead p{font-size:11px!important;line-height:1.4!important;color:#76859a!important;max-width:34ch}
+.fc9-date{font-size:10px!important;color:#728198!important;letter-spacing:.01em}
+.fc9-primary{min-height:42px!important;border-radius:12px!important;background:var(--fc43-blue)!important;box-shadow:0 5px 14px rgba(29,111,220,.16);font-size:11px!important}
+.fc9-section{gap:8px}
+.fc9-section-head{padding:0 2px}
+.fc9-section-head h2{font-size:14px!important;line-height:1.2!important;color:#1b3155!important;font-weight:840!important}
+.fc9-section-head button,.fc9-link{min-height:32px!important;color:#64758d!important;font-size:9.5px!important;font-weight:760!important}
+.fc9-card{border-color:var(--fc43-line)!important;border-radius:18px!important;box-shadow:var(--fc43-shadow)!important}
+.fc9-empty{padding:14px!important;border-color:var(--fc43-line)!important;border-radius:15px!important;background:#fff!important;color:#738197!important;font-size:10.5px!important;line-height:1.45!important;box-shadow:0 4px 14px rgba(31,50,82,.025)}
+.fc9-row{min-height:58px!important;padding:10px 12px!important;gap:9px!important;border-bottom-color:#edf1f5!important}
+.fc9-row-main b{font-size:12px!important;line-height:1.28!important;color:#1a2d4c!important;font-weight:780!important}
+.fc9-row-main span{font-size:9px!important;line-height:1.35!important;color:#738197!important}
+.fc9-time{font-size:10.5px!important;color:#34547f!important;font-variant-numeric:tabular-nums}
+.fc9-chevron{color:#9aa6b7!important;font-size:17px!important}
+.fc9-danger{min-height:34px!important;font-size:9px!important;color:#a85058!important}
+.fc9-check i{border-color:#a8b5c5!important}
+.fc9-badge{font-size:7.5px!important;padding:3px 6px!important}
+
+/* Tomorrow: clear day-preview hierarchy */
+#tomorrow .fc9-pagehead{padding-bottom:3px!important;border-bottom:1px solid #edf1f5}
+#tomorrow .fc9-pagehead h1{font-size:30px!important}
+#tomorrow .fc9-pagehead p{margin-top:5px!important;color:#61718a!important}
+#tomorrow .fc9-section{background:transparent!important;border:0!important;box-shadow:none!important;overflow:visible!important}
+#tomorrow .fc9-section-head{min-height:auto!important;padding:0 2px!important;border:0!important}
+#tomorrow .fc9-person-list{overflow:hidden}
+#tomorrow .fc9-person{min-height:66px!important;padding:10px 12px!important;grid-template-columns:34px minmax(0,1fr) auto!important;border-left-width:3px!important}
+#tomorrow .fc9-person .fc9-dot{width:28px!important;height:28px!important;box-shadow:none!important;position:relative}
+#tomorrow .fc9-person .fc9-dot:after{content:'';position:absolute;inset:6px;border-radius:50%;background:#fff;opacity:.92}
+#tomorrow .fc9-person b{font-size:12px!important;color:#172d4d!important}
+#tomorrow .fc9-person span{font-size:9px!important}
+#tomorrow .fc9-person-time{font-size:11px!important;color:#294b74!important}
+#tomorrow .fc9-person-time small{font-size:7.5px!important;color:#8290a2!important}
+#tomorrow .fc9-row.fc9-event{border-left-width:4px!important}
+#tomorrow .fc9-empty{border-style:solid!important}
+
+/* Calendar / agenda: less boxy, stronger month navigation */
+#events .fc9-segment,#homework .fc9-segment{height:43px!important;padding:3px!important;background:#eef2f7!important;border-color:#e1e7ef!important;border-radius:13px!important}
+#events .fc9-segment button,#homework .fc9-segment button{font-size:10px!important;color:#68788e!important;font-weight:790!important}
+#events .fc9-segment button.active,#homework .fc9-segment button.active{background:#fff!important;color:#18345c!important;box-shadow:0 2px 9px rgba(31,50,82,.07)!important}
+#events .fc9-filters{gap:7px!important;padding:0 1px 2px!important}
+#events .fc9-filter{height:34px!important;padding:0 12px!important;border-radius:999px!important;font-size:9.5px!important;background:#fff!important}
+#events .fc9-filter.active{background:var(--fc43-blue)!important;border-color:var(--fc43-blue)!important;color:#fff!important;box-shadow:0 4px 12px rgba(29,111,220,.14)}
+#events .fc9-month{padding:2px 0 1px}
+#events .fc9-month button{width:40px!important;height:40px!important;border-radius:12px!important;border-color:var(--fc43-line)!important;box-shadow:0 3px 10px rgba(31,50,82,.035)}
+#events .fc9-month b{font-size:14px!important;color:#173052!important}
+#events .fc9-month span{font-size:8.5px!important;color:#8290a3!important}
+#events .fc9-day-label{margin:8px 2px 3px!important;font-size:9px!important;color:#6f7f95!important;text-transform:capitalize}
+#events .fc9-event{border-left-width:4px!important}
+#events .fc9-event .fc9-time{width:58px!important;color:var(--fc43-blue)!important;font-size:9.5px!important}
+#events .fc9-past-toggle{min-height:44px!important;border-radius:14px!important;background:#fff!important;border-color:var(--fc43-line)!important;font-size:10px!important;box-shadow:0 3px 12px rgba(31,50,82,.03)!important}
+#events .fc9-past-section{opacity:.72!important}
+#events .fc9-weekdays{gap:6px!important}
+#events .fc9-weekday{min-height:52px!important;border-radius:13px!important;font-size:8.5px!important;background:#fff!important;box-shadow:0 2px 8px rgba(31,50,82,.025)}
+#events .fc9-weekday b{font-size:10.5px!important}
+#events .fc9-weekday.active{background:var(--fc43-blue)!important;border-color:var(--fc43-blue)!important;color:#dcecff!important}
+
+/* Tasks: clearer open/done distinction and calmer action buttons */
+#homework .fc9-pagehead{align-items:flex-start!important}
+#homework .fc9-task-add{gap:6px!important}
+#homework .fc9-task-add button{height:38px!important;border-radius:11px!important;padding:0 10px!important;background:#fff!important;border-color:var(--fc43-line)!important;color:#345271!important;font-size:9px!important;box-shadow:0 3px 10px rgba(31,50,82,.035)}
+#homework .fc9-card.fc9-list{overflow:hidden}
+#homework .fc9-row{min-height:62px!important}
+#homework .fc9-row.done{background:#f8fafc!important}
+#homework .fc9-row.done .fc9-row-main{opacity:.58!important}
+#homework .fc9-row-main b{font-size:12px!important}
+#homework .fc9-task-meta{font-size:8.8px!important}
+#homework .fc9-badge.over{background:#fff1f2!important;color:#ae4650!important}
+
+/* More: stronger grouping and less generic tile grid */
+#more .fc9-more-grid{grid-template-columns:1fr 1fr!important;gap:9px!important}
+#more .fc9-tile{min-height:96px!important;padding:13px!important;border-radius:17px!important;border-color:var(--fc43-line)!important;background:#fff!important;box-shadow:0 5px 16px rgba(31,50,82,.04)!important;position:relative;overflow:hidden}
+#more .fc9-tile:after{content:'';position:absolute;left:0;right:0;bottom:0;height:3px;background:linear-gradient(90deg,rgba(29,111,220,.7),rgba(29,111,220,0));opacity:.42}
+#more .fc9-tile i{width:34px!important;height:34px!important;border-radius:11px!important;background:#f2f6fb!important;font-size:16px!important}
+#more .fc9-tile b{margin-top:9px!important;font-size:11.5px!important;color:#183153!important}
+#more .fc9-tile span{font-size:8.5px!important;color:#7c899b!important}
+#more .fc9-pend-row{min-height:58px!important}
+#more .fc9-amount{font-size:9.5px!important;color:#2e5f9b!important}
+
+/* People: convert the old inline-info cards into readable profile summaries */
+#people .fc9-page{gap:11px!important}
+#people .fc9-pagehead{margin-bottom:2px}
+#people .fc9-page>.fc9-card{padding:14px!important;border-left-width:4px!important;border-radius:18px!important;box-shadow:var(--fc43-shadow)!important}
+#people .fc9-page>.fc9-card>b{font-size:13px!important;color:#172f51!important;letter-spacing:-.015em}
+#people .fc9-page>.fc9-card>div{margin-top:7px!important;color:#6d7c91!important;font-size:9.5px!important;line-height:1.55!important}
+
+/* Sheets / forms: consistent, iOS-like editing experience */
+.fc9-modal{background:rgba(18,31,50,.34)!important;backdrop-filter:blur(8px)!important;-webkit-backdrop-filter:blur(8px)!important}
+.fc9-sheet{border-radius:24px 24px 20px 20px!important;padding:17px 16px 16px!important;box-shadow:0 26px 70px rgba(18,31,50,.24)!important}
+.fc9-sheet-head{align-items:center!important}
+.fc9-sheet-head small{font-size:7.5px!important;letter-spacing:.11em!important;color:#8491a2!important}
+.fc9-sheet-head h2{font-size:20px!important;color:#163052!important;letter-spacing:-.025em}
+.fc9-close{width:40px!important;height:40px!important;border-radius:12px!important;background:#f0f4f8!important;color:#53647a!important}
+.fc9-form{gap:11px!important;margin-top:15px!important}
+.fc9-field label{margin-bottom:5px!important;font-size:8px!important;letter-spacing:.06em!important;color:#6e7f94!important}
+.fc9-field input,.fc9-field textarea,.fc9-field select{min-height:47px!important;border-radius:12px!important;border-color:#dfe6ef!important;background:#fbfcfe!important;padding:10px 11px!important;color:#172e4e!important;font-size:11px!important;outline:none}
+.fc9-field input:focus,.fc9-field textarea:focus,.fc9-field select:focus{border-color:#92b9ed!important;box-shadow:0 0 0 3px rgba(29,111,220,.08)!important;background:#fff!important}
+.fc9-sheet-actions{gap:8px!important;margin-top:14px!important}
+.fc9-sheet-actions button{min-height:46px!important;border-radius:12px!important;font-size:10px!important}
+.fc9-sheet-actions .save{background:var(--fc43-blue)!important;border-color:var(--fc43-blue)!important;box-shadow:0 5px 14px rgba(29,111,220,.14)}
+.fc9-choice button{min-height:80px!important;border-radius:15px!important;background:#fbfcfe!important}
+
+/* Document viewer: visually align with the rest of the app */
+.fc-dv-modal{background:rgba(18,31,50,.38)!important;backdrop-filter:blur(10px)!important}
+.fc-dv-shell{background:var(--fc43-bg)!important}
+.fc-dv-head{border-bottom-color:var(--fc43-line)!important;padding-inline:15px!important}
+.fc-dv-head small{font-size:8px!important;color:#8290a2!important;letter-spacing:.1em!important}
+.fc-dv-head h1{font-size:18px!important;color:#173052!important;letter-spacing:-.02em}
+.fc-dv-close{width:38px!important;height:38px!important;background:#f0f4f8!important;color:#516178!important}
+.fc-dv-tabs{gap:5px!important;padding:8px 11px!important;border-bottom-color:var(--fc43-line)!important}
+.fc-dv-tabs button{min-height:40px!important;border-radius:11px!important;font-size:10px!important;background:#f5f7fa!important;border-color:#e1e7ef!important;color:#65758b!important}
+.fc-dv-tabs button.active{background:var(--fc43-blue)!important;border-color:var(--fc43-blue)!important;color:#fff!important}
+.fc-dv-toolbar{background:#f3f6fa!important;border-bottom-color:var(--fc43-line)!important}
+.fc-dv-toolbar button{border-color:#dfe6ef!important;border-radius:10px!important;color:#34516f!important}
+.fc-dv-readable{border-color:var(--fc43-line)!important;border-radius:18px!important;box-shadow:var(--fc43-shadow)!important}
+.fc-dv-readable-head h2{color:#173052!important;letter-spacing:-.025em}
+.fc-dv-callout{border-radius:13px!important}
+.fc-dv-table-wrap{border-radius:13px!important;border-color:#e1e7ef!important}
+
+/* Bottom navigation: precise and consistent across every screen */
+.fc9-nav{background:rgba(255,255,255,.97)!important;border-top-color:#e3e8ef!important;box-shadow:0 -4px 18px rgba(31,50,82,.035)!important}
+.fc9-nav button{font-size:8px!important;font-weight:720!important;color:#7d8b9e!important;border-radius:11px!important}
+.fc9-nav button.active{background:#f0f6ff!important;color:var(--fc43-blue)!important;font-weight:850!important}
+.fc9-nav svg{width:19px!important;height:19px!important;stroke-width:1.75!important}
+.fc9-nav button.active svg{stroke-width:2!important}
+
+@media(max-width:719px){
+  .fc9-main{padding:10px 11px calc(72px + env(safe-area-inset-bottom,0px))!important}
+  .fc9-page{gap:12px!important}
+  .fc9-pagehead h1{font-size:25px!important}
+  .fc9-section-head h2{font-size:13px!important}
+  .fc9-row{min-height:55px!important;padding:9px 10px!important}
+  .fc9-row-main b{font-size:11px!important}
+  .fc9-row-main span{font-size:8.4px!important}
+  .fc9-time{font-size:9.5px!important}
+  #tomorrow .fc9-page{gap:12px!important}
+  #tomorrow .fc9-pagehead{padding:6px 2px 8px!important}
+  #tomorrow .fc9-person{min-height:61px!important}
+  #events .fc9-pagehead,#homework .fc9-pagehead,#more .fc9-pagehead,#people .fc9-pagehead{padding-top:7px!important}
+  #events .fc9-event .fc9-time{width:54px!important}
+  #homework .fc9-pagehead{gap:9px!important}
+  #homework .fc9-task-add{max-width:142px;flex-wrap:wrap;justify-content:flex-end}
+  #homework .fc9-task-add button{height:34px!important}
+  #more .fc9-tile{min-height:90px!important;padding:12px!important}
+  .fc9-sheet{max-height:90dvh!important}
+  .fc-dv-body{padding:10px!important}
+}
+
+@media(min-width:720px){
+  .fc9-main,.fc9-topbar-in{width:min(100%,720px)!important;max-width:720px!important}
+  #more .fc9-more-grid{grid-template-columns:repeat(4,1fr)!important}
+}
+
+@media(prefers-reduced-motion:reduce){
+  *{scroll-behavior:auto!important;transition-duration:.01ms!important;animation-duration:.01ms!important}
+}
