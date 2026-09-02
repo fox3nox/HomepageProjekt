@@ -1,0 +1,1 @@
+V9.42 visual contract: avatar initials must be centered, readable and white; mobile shell must remain overflow-free; no canonical family data mutations from presentation rebuilds.

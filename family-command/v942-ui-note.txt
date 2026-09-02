@@ -1,0 +1,1 @@
+V9.42 approved mockup fidelity pass. Presentation-only changes; no family data, documents, cloud-state or Supabase logic changed.

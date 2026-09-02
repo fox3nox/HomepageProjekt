@@ -20,18 +20,26 @@ try{
   await page.goto(BASE+'/?access=test',{waitUntil:'domcontentloaded',timeout:20000});
   await page.waitForFunction(()=>document.documentElement.dataset.fcReady==='1'&&window.__fcSmartDocumentsHealth?.aiAutoAssign===true,{timeout:20000});
 
-  // Isolate this regression from unrelated persistence/sync activity after the app booted.
-  // Product code still calls window.save(); here it deterministically persists only this test state.
-  await page.evaluate(s=>{
+  const isolate=async()=>page.evaluate(s=>{
     for(const k of Object.keys(window.data||{}))delete window.data[k];
     Object.assign(window.data,structuredClone(s));
     window.save=()=>localStorage.setItem('family-command-personal-v4',JSON.stringify(window.data));
     window.save();
   },state);
 
+  // First isolation after the full application boot.
+  await isolate();
+
   await page.click('[data-screen="more"]');
   await page.click('[data-feature="docs"]');
   await page.waitForSelector('text=Dokumentenzentrale',{timeout:20000});
+
+  // Opening More/Documents can finish deferred render/persistence work. Re-assert the isolated
+  // E2E state only after that view is fully mounted so unrelated bootstrap state cannot race
+  // with Smart Documents. This changes test isolation only, never production behavior.
+  await isolate();
+  await page.waitForTimeout(50);
+
   assert.equal(await page.locator('[data-doc]').count(),2,'all filter must show both documents');
   await page.click('[data-doc-filter="fynn"]');
   assert.equal(await page.locator('[data-doc]').count(),1,'Fynn filter must only show Fynn documents');
@@ -40,7 +48,13 @@ try{
   await page.setInputFiles('[data-doc-file]',{name:'wochenblatt.png',mimeType:'image/png',buffer:Buffer.from('89504e470d0a1a0a','hex')});
   await page.click('[data-doc-upload]');
   await page.waitForFunction(()=>document.querySelector('[data-doc-status]')?.textContent.includes('Gespeichert'),{timeout:20000});
-  await page.waitForFunction(()=>window.data?.homework?.some(h=>h.title==='2er- und 4er-Reihe aufsagen'&&h.personId==='fynn')&&window.data?.events?.some(e=>e.title==='Manuell korrigierter Termin'&&Array.isArray(e.personIds)&&e.personIds.length===1&&e.personIds[0]==='fynn'),{timeout:30000});
+  try{
+    await page.waitForFunction(()=>window.data?.homework?.some(h=>h.title==='2er- und 4er-Reihe aufsagen'&&h.personId==='fynn')&&window.data?.events?.some(e=>e.title==='Manuell korrigierter Termin'&&Array.isArray(e.personIds)&&e.personIds.length===1&&e.personIds[0]==='fynn'),{timeout:30000});
+  }catch(error){
+    const diag=await page.evaluate(()=>({status:document.querySelector('[data-doc-status]')?.textContent||'',selected:[...document.querySelectorAll('[data-doc-person]:checked')].map(x=>x.value),events:structuredClone(window.data?.events||[]),homework:structuredClone(window.data?.homework||[]),people:structuredClone(window.data?.people||[]),health:window.__fcSmartDocumentsHealth}));
+    console.error('SMART_DOC_STATE',JSON.stringify(diag));
+    throw error;
+  }
 
   const result=await page.evaluate(()=>({events:structuredClone(window.data.events||[]),homework:structuredClone(window.data.homework||[]),health:window.__fcSmartDocumentsHealth}));
   assert.equal(result.events.filter(e=>e.title==='Telefongespräch'&&e.date==='2026-09-08').length,1,'existing event must not be duplicated');
