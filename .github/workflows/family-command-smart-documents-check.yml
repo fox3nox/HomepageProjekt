@@ -6,6 +6,7 @@ on:
       - 'family-command/index.html'
       - 'family-command/smart-documents.js'
       - 'family-command/document-viewer.js'
+      - 'family-command/ai-budget-guard.js'
       - 'family-command/sw.js'
       - 'family-command/e2e/smart-documents.spec.mjs'
       - '.github/workflows/family-command-smart-documents-check.yml'
@@ -15,6 +16,7 @@ on:
       - 'family-command/index.html'
       - 'family-command/smart-documents.js'
       - 'family-command/document-viewer.js'
+      - 'family-command/ai-budget-guard.js'
       - 'family-command/sw.js'
       - 'family-command/e2e/smart-documents.spec.mjs'
       - '.github/workflows/family-command-smart-documents-check.yml'
@@ -31,6 +33,7 @@ jobs:
         run: |
           node --check family-command/smart-documents.js
           node --check family-command/document-viewer.js
+          node --check family-command/ai-budget-guard.js
           node --check family-command/e2e/smart-documents.spec.mjs
           grep -q "smart-documents.js" family-command/index.html
           grep -q "__fcSmartDocumentsHealth" family-command/smart-documents.js
