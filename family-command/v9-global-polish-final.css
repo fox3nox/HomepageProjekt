@@ -1,20 +1,37 @@
-/* Familienzentrale V9.43 · final compact mobile layer */
+/* Familienzentrale V9.44 · authoritative final mobile layer */
 @media(max-width:719px){
-  #tomorrow .fc9-pagehead h1,#events .fc9-pagehead h1,#homework .fc9-pagehead h1,#more .fc9-pagehead h1,#people .fc9-pagehead h1{font-size:24px!important;line-height:1.05!important}
-  #tomorrow .fc9-card,#events .fc9-card,#homework .fc9-card,#more .fc9-card,#people .fc9-card,#more .fc9-tile{border-radius:14px!important}
-  #tomorrow .fc9-person-list,#events .fc9-past-toggle,#events .fc9-weekday,#homework .fc9-segment,#events .fc9-segment{border-radius:14px!important}
-  #tomorrow .fc9-person,#tomorrow .fc9-row,#events .fc9-row,#homework .fc9-row{min-height:54px!important;max-height:84px}
-  #tomorrow .fc9-pagehead{padding-top:4px!important}
-  #tomorrow .fc9-pagehead p,#events .fc9-pagehead p,#homework .fc9-pagehead p{font-size:9px!important}
-  #events .fc9-month button{width:38px!important;height:38px!important;border-radius:11px!important}
-  #events .fc9-filter{height:32px!important;padding:0 11px!important;font-size:9px!important}
+  /* Keep the final runtime-loaded layer aligned with the V9.44 design system. */
+  #today .fc9-pagehead h1,#tomorrow .fc9-pagehead h1,#events .fc9-pagehead h1,#homework .fc9-pagehead h1,#more .fc9-pagehead h1,#people .fc9-pagehead h1{font-size:28px!important;line-height:1!important;letter-spacing:-.052em!important;color:#102a52!important;font-weight:920!important}
+  #today .fc9-pagehead p,#tomorrow .fc9-pagehead p,#events .fc9-pagehead p,#homework .fc9-pagehead p,#more .fc9-pagehead p,#people .fc9-pagehead p{font-size:10.4px!important;line-height:1.42!important;color:#718097!important}
+
+  #today .fc9-card,#tomorrow .fc9-card,#events .fc9-card,#homework .fc9-card,#more .fc9-card,#people .fc9-card{border-radius:18px!important;border-color:#e2e9f2!important;box-shadow:0 8px 28px rgba(27,51,83,.065)!important}
+  #today .fc9-person-list,#tomorrow .fc9-person-list{border-radius:19px!important}
+  #today .fc9-person,#tomorrow .fc9-person,#events .fc9-row,#homework .fc9-row{min-height:61px!important;max-height:86px!important}
+
+  #events .fc9-segment,#homework .fc9-segment{height:44px!important;border-radius:14px!important;background:#edf2f7!important;border-color:#dfe7f0!important}
+  #events .fc9-segment button,#homework .fc9-segment button{border-radius:11px!important}
+  #events .fc9-month button{width:42px!important;height:42px!important;border-radius:13px!important;background:#fff!important;border-color:#e2e9f2!important}
+  #events .fc9-filter{height:35px!important;padding:0 13px!important;border-radius:999px!important;font-size:9.3px!important}
+  #events .fc9-past-toggle,#events .fc9-weekday{border-radius:15px!important}
+
   #homework .fc9-pagehead{grid-template-columns:minmax(0,1fr) auto!important;align-items:start!important}
-  #homework .fc9-task-add{max-width:148px!important;display:grid!important;grid-template-columns:1fr!important;gap:6px!important}
-  #homework .fc9-task-add button{height:34px!important;min-height:34px!important;padding:0 11px!important;border-radius:10px!important}
-  #more .fc9-tile{min-height:88px!important;padding:11px!important}
-  #more .fc9-tile i{width:32px!important;height:32px!important;border-radius:10px!important}
-  #more .fc9-tile b{font-size:11px!important;margin-top:7px!important}
-  #more .fc9-tile span{font-size:8px!important}
-  .fc9-sheet{border-radius:20px 20px 16px 16px!important}
-  .fc-dv-readable{border-radius:14px!important}
+  #homework .fc9-task-add{max-width:138px!important;display:flex!important;flex-wrap:wrap!important;justify-content:flex-end!important;gap:6px!important}
+  #homework .fc9-task-add button{height:34px!important;min-height:34px!important;padding:0 10px!important;border-radius:12px!important}
+
+  #more .fc9-more-grid{grid-template-columns:1fr 1fr!important;gap:10px!important}
+  #more .fc9-tile{min-height:106px!important;padding:14px!important;border-radius:20px!important;border:1px solid #e2e9f2!important;background:linear-gradient(180deg,#fff,#fbfcfe)!important;box-shadow:0 7px 22px rgba(30,53,82,.055)!important}
+  #more .fc9-tile i{width:38px!important;height:38px!important;border-radius:12px!important}
+  #more .fc9-tile b{font-size:12px!important;margin-top:11px!important;line-height:1.2!important;color:#183555!important}
+  #more .fc9-tile span{font-size:8.8px!important;line-height:1.35!important;color:#7d8b9d!important}
+
+  /* Always keep the iPhone navigation visibly above the device edge/home indicator. */
+  body .fc9-nav{left:8px!important;right:8px!important;bottom:max(8px,env(safe-area-inset-bottom,0px))!important;width:auto!important;height:auto!important;min-height:70px!important;padding:5px!important;border:1px solid rgba(218,226,237,.96)!important;border-radius:24px!important;background:rgba(255,255,255,.975)!important;box-shadow:0 14px 40px rgba(22,44,75,.16),0 2px 8px rgba(22,44,75,.05)!important;overflow:visible!important}
+  body .fc9-nav .fc9-nav-in{width:100%!important;max-width:none!important;min-height:60px!important;gap:3px!important}
+  body .fc9-nav button{height:auto!important;min-height:60px!important;border-radius:17px!important;padding:5px 2px!important;gap:4px!important;font-size:8.8px!important;color:#7c8ca0!important}
+  body .fc9-nav button.active{background:linear-gradient(145deg,#eef5ff,#e9f2ff)!important;color:#236fe8!important;box-shadow:inset 0 0 0 1px rgba(111,162,231,.10)!important}
+  body .fc9-nav button svg{width:20px!important;height:20px!important}
+  body .fc9-main{padding-bottom:calc(118px + env(safe-area-inset-bottom,0px))!important}
+
+  .fc9-sheet{border-radius:25px 25px 20px 20px!important}
+  .fc-dv-readable{border-radius:19px!important}
 }
