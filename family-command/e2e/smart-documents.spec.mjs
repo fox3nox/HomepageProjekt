@@ -14,6 +14,9 @@ try{
   const browser=await webkit.launch({headless:true});
   const context=await browser.newContext({viewport:{width:390,height:844},isMobile:true,hasTouch:true,serviceWorkers:'block'});
   const page=await context.newPage();
+  const browserConsole=[];
+  page.on('console',msg=>browserConsole.push(`${msg.type()}: ${msg.text()}`));
+  page.on('pageerror',error=>browserConsole.push(`pageerror: ${error?.stack||error}`));
 
   // Install the AI mock before any application script runs. WebKit may resolve a global fetch
   // reference when a script is evaluated, so replacing window.fetch after boot is not reliable.
@@ -62,12 +65,17 @@ try{
   await page.setInputFiles('[data-doc-file]',{name:'wochenblatt.png',mimeType:'image/png',buffer:Buffer.from('89504e470d0a1a0a','hex')});
   await page.click('[data-doc-upload]');
   await page.waitForFunction(()=>document.querySelector('[data-doc-status]')?.textContent.includes('Gespeichert'),{timeout:20000});
-  assert.equal(await page.evaluate(()=>window.__smartDocAiCalls),1,'document analysis fetch must be mocked exactly once');
+  const aiCalls=await page.evaluate(()=>window.__smartDocAiCalls);
+  if(aiCalls!==1){
+    const prediag=await page.evaluate(()=>{const i=document.querySelector('[data-doc-file]'),f=i?.files?.[0];return{status:document.querySelector('[data-doc-status]')?.textContent||'',selected:[...document.querySelectorAll('[data-doc-person]:checked')].map(x=>x.value),file:f?{name:f.name,type:f.type,size:f.size,ctor:f.constructor?.name}:null,fetchWrapped:typeof window.fetch==='function',aiCalls:window.__smartDocAiCalls||0}});
+    console.error('SMART_DOC_PRECHECK',JSON.stringify({...prediag,browserConsole}));
+  }
+  assert.equal(aiCalls,1,'document analysis fetch must be mocked exactly once');
   try{
     await page.waitForFunction(()=>window.data?.homework?.some(h=>h.title==='2er- und 4er-Reihe aufsagen'&&h.personId==='fynn')&&window.data?.events?.some(e=>e.title==='Manuell korrigierter Termin'&&Array.isArray(e.personIds)&&e.personIds.length===1&&e.personIds[0]==='fynn'),{timeout:30000});
   }catch(error){
     const diag=await page.evaluate(()=>({status:document.querySelector('[data-doc-status]')?.textContent||'',selected:[...document.querySelectorAll('[data-doc-person]:checked')].map(x=>x.value),events:structuredClone(window.data?.events||[]),homework:structuredClone(window.data?.homework||[]),people:structuredClone(window.data?.people||[]),health:window.__fcSmartDocumentsHealth,aiCalls:window.__smartDocAiCalls||0}));
-    console.error('SMART_DOC_STATE',JSON.stringify(diag));
+    console.error('SMART_DOC_STATE',JSON.stringify({...diag,browserConsole}));
     throw error;
   }
 
