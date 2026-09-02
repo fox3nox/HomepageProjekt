@@ -40,6 +40,11 @@ try{
   await page.goto(BASE+'/?access=test',{waitUntil:'domcontentloaded',timeout:20000});
   await page.waitForFunction(()=>document.documentElement.dataset.fcReady==='1'&&window.__fcSmartDocumentsHealth?.aiAutoAssign===true,{timeout:20000});
 
+  // The secure transport guard is deferred in production. Load it before upload so this regression
+  // always exercises the final fetch chain instead of racing the 3.5 s idle loader.
+  await page.evaluate(()=>window.__fcLoadExtrasNow());
+  await page.waitForFunction(()=>document.documentElement.dataset.fcExtras==='ready'&&Boolean(window.__fcAiBudgetGuard),{timeout:20000});
+
   const isolate=async()=>page.evaluate(s=>{
     for(const k of Object.keys(window.data||{}))delete window.data[k];
     Object.assign(window.data,structuredClone(s));
