@@ -1,0 +1,20 @@
+/* Familienzentrale V9.43 · final compact mobile layer */
+@media(max-width:719px){
+  #tomorrow .fc9-pagehead h1,#events .fc9-pagehead h1,#homework .fc9-pagehead h1,#more .fc9-pagehead h1,#people .fc9-pagehead h1{font-size:24px!important;line-height:1.05!important}
+  #tomorrow .fc9-card,#events .fc9-card,#homework .fc9-card,#more .fc9-card,#people .fc9-card,#more .fc9-tile{border-radius:14px!important}
+  #tomorrow .fc9-person-list,#events .fc9-past-toggle,#events .fc9-weekday,#homework .fc9-segment,#events .fc9-segment{border-radius:14px!important}
+  #tomorrow .fc9-person,#tomorrow .fc9-row,#events .fc9-row,#homework .fc9-row{min-height:54px!important;max-height:84px}
+  #tomorrow .fc9-pagehead{padding-top:4px!important}
+  #tomorrow .fc9-pagehead p,#events .fc9-pagehead p,#homework .fc9-pagehead p{font-size:9px!important}
+  #events .fc9-month button{width:38px!important;height:38px!important;border-radius:11px!important}
+  #events .fc9-filter{height:32px!important;padding:0 11px!important;font-size:9px!important}
+  #homework .fc9-pagehead{grid-template-columns:minmax(0,1fr) auto!important;align-items:start!important}
+  #homework .fc9-task-add{max-width:148px!important;display:grid!important;grid-template-columns:1fr!important;gap:6px!important}
+  #homework .fc9-task-add button{height:34px!important;min-height:34px!important;padding:0 11px!important;border-radius:10px!important}
+  #more .fc9-tile{min-height:88px!important;padding:11px!important}
+  #more .fc9-tile i{width:32px!important;height:32px!important;border-radius:10px!important}
+  #more .fc9-tile b{font-size:11px!important;margin-top:7px!important}
+  #more .fc9-tile span{font-size:8px!important}
+  .fc9-sheet{border-radius:20px 20px 16px 16px!important}
+  .fc-dv-readable{border-radius:14px!important}
+}
