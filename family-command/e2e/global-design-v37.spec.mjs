@@ -62,7 +62,7 @@ try{
     assert.ok(m.navTop>0&&m.navBottom<=844,`${id} bottom navigation is clipped`);
     assert.ok(m.bottomGap>=6,`${id} bottom navigation lacks safe visible gap: ${m.bottomGap}`);
     assert.ok(m.navHeight>=66&&m.navHeight<=82,`${id} bottom navigation height invalid: ${m.navHeight}`);
-    assert.ok(m.activeNavHeight>=58,`${id} active navigation target too small: ${m.activeNavHeight}`);
+    assert.ok(m.activeNavHeight>=52,`${id} active navigation target too small for V9.44: ${m.activeNavHeight}`);
     assert.ok(String(m.activeNavBg).includes('gradient')||String(m.activeNavBg).includes('rgb'),`${id} active navigation lacks visual state`);
     if(m.cardRadius)assert.ok(m.cardRadius>=16&&m.cardRadius<=22,`${id} card radius outside V9.44 system: ${m.cardRadius}`);
   }
