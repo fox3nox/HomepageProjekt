@@ -50,8 +50,14 @@ try{
     await page.screenshot({path:`${out}/v944-${id}.png`,fullPage:false});
   }
 
+  const schoolFocus=await page.evaluate(()=>({
+    headers:document.querySelectorAll('#today .fc38-th.is-today[aria-current="date"]').length,
+    cells:document.querySelectorAll('#today .fc38-schoolcell.is-today').length,
+    label:document.querySelector('#today .fc38-th.is-today em')?.textContent||'',
+    headerBg:getComputedStyle(document.querySelector('#today .fc38-th.is-today')).backgroundImage
+  }));
   const after=await page.evaluate(()=>JSON.stringify({todos:data.todos,events:data.events,homework:data.homework,people:data.people,schedules:data.schedules}));
-  console.log('global-design-v44',JSON.stringify(metrics));
+  console.log('global-design-v44',JSON.stringify({...metrics,schoolFocus}));
   assert.equal(before,after,'visual redesign must not mutate family state');
 
   for(const [id,m] of Object.entries(metrics)){
@@ -67,6 +73,10 @@ try{
     if(m.cardRadius)assert.ok(m.cardRadius>=16&&m.cardRadius<=22,`${id} card radius outside V9.44 system: ${m.cardRadius}`);
   }
 
+  assert.equal(schoolFocus.headers,1,'school grid must mark exactly one current weekday header');
+  assert.ok(schoolFocus.cells>=1,'school grid must visually carry the current weekday through the child rows');
+  assert.equal(schoolFocus.label,'HEUTE','current school day must have an explicit HEUTE label');
+  assert.ok(String(schoolFocus.headerBg).includes('gradient'),'current school day needs a visible highlighted background');
   assert.ok(metrics.tomorrow.maxRow===0||metrics.tomorrow.maxRow<=86,`tomorrow rows too tall: ${metrics.tomorrow.maxRow}`);
   assert.ok(metrics.events.maxRow===0||metrics.events.maxRow<=86,`calendar rows too tall: ${metrics.events.maxRow}`);
   assert.ok(metrics.homework.maxRow===0||metrics.homework.maxRow<=86,`task rows too tall: ${metrics.homework.maxRow}`);
