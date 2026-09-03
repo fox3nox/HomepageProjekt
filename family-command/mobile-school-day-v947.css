@@ -24,7 +24,7 @@
   .fc47-status small{font-size:9.5px;line-height:1.25;color:#7d8998;max-width:100%;overflow-wrap:anywhere}
   .fc47-child:has(.fc47-status b:first-child){isolation:isolate}
   .fc47-empty{padding:18px;text-align:center;color:#8291a4;font-size:12px}
-  .fc9-main{padding-bottom:calc(150px + env(safe-area-inset-bottom,0px))!important}
+  body .fc9-main{padding-bottom:150px!important;padding-bottom:calc(150px + env(safe-area-inset-bottom,0px))!important}
 }
 @media (max-width:390px){
   .fc47-child{grid-template-columns:42px minmax(0,.75fr) minmax(112px,1.25fr);gap:8px;padding:10px}
