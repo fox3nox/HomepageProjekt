@@ -17,8 +17,14 @@ try{
   const p=mobile.page;
   await p.waitForFunction(()=>document.documentElement.dataset.fcIphoneDashboard==='v31');
   await p.waitForFunction(()=>document.documentElement.dataset.fcMobileSchoolDay==='v47');
+  await p.waitForFunction(()=>document.documentElement.dataset.fcIphoneLayout==='v48');
   const x=await p.evaluate(()=>{
-    const nav=document.querySelector('.fc9-nav').getBoundingClientRect();
+    const navEl=document.querySelector('.fc9-nav');
+    const mainEl=document.querySelector('.fc9-main');
+    const topEl=document.querySelector('.fc9-topbar');
+    const nav=navEl.getBoundingClientRect();
+    const main=mainEl.getBoundingClientRect();
+    const top=topEl.getBoundingClientRect();
     const shell=document.querySelector('.fc9-shell').getBoundingClientRect();
     const schoolGrid=document.querySelector('.fc38-schoolgrid');
     const mobileSchool=document.querySelector('.fc47-school-mobile');
@@ -29,17 +35,31 @@ try{
     const todoHeading=todoSection?.querySelector('.fc9-section-head h2');
     const statTexts=[...document.querySelectorAll('#today .fc31-stat span')].map(x=>x.textContent.trim());
     const activeStyle=getComputedStyle(document.querySelector('.fc9-nav button.active'));
+    const navStyle=getComputedStyle(navEl),mainStyle=getComputedStyle(mainEl),bodyStyle=getComputedStyle(document.body);
+
+    const probe=document.createElement('div');
+    probe.className='fc38-line';
+    probe.innerHTML='<time>Ganztägig</time><span class="fc38-avatar" style="--person:#3478f6">J</span><div><strong>Probe</strong><span>Layout</span></div><i>›</i>';
+    document.querySelector('#today .fc38-dashboard')?.appendChild(probe);
+    const probeTime=probe.querySelector('time')?.getBoundingClientRect();
+    const probeAvatar=probe.querySelector('.fc38-avatar')?.getBoundingClientRect();
+    const allDayGap=probeTime&&probeAvatar?probeAvatar.left-probeTime.right:null;
+    probe.remove();
+
     return {
-      navX:nav.x,navBottom:nav.bottom,navW:nav.width,shellX:shell.x,shellW:shell.width,
+      navX:nav.x,navTop:nav.top,navBottom:nav.bottom,navW:nav.width,
+      mainTop:main.top,mainBottom:main.bottom,
+      topBottom:top.bottom,
+      shellX:shell.x,shellW:shell.width,shellH:shell.height,
       innerW:innerWidth,innerH:innerHeight,
       overflow:document.documentElement.scrollWidth<=document.documentElement.clientWidth+1,
+      rootVerticalFit:document.documentElement.scrollHeight<=innerHeight+1,
       legacySchoolDisplay:schoolGrid?getComputedStyle(schoolGrid).display:'missing',
       mobileSchoolDisplay:mobileSchool?getComputedStyle(mobileSchool).display:'missing',
       schoolTabs:document.querySelectorAll('.fc47-day').length,
       schoolRows:document.querySelectorAll('.fc47-child').length,
       selectedSchoolDays:document.querySelectorAll('.fc47-day.is-selected').length,
       summary:!!summary,
-      summaryCols:summary?getComputedStyle(summary).gridTemplateColumns:'',
       focusHeight:focus?.getBoundingClientRect().height||0,
       todoCount:todos.length,
       todoHeading:todoHeading?.textContent?.trim()||'',
@@ -48,14 +68,27 @@ try{
       reference:document.documentElement.dataset.fcReferenceDesign,
       polish:document.documentElement.dataset.fcGlobalPolish,
       schoolMode:document.documentElement.dataset.fcMobileSchoolDay,
+      iphoneLayout:document.documentElement.dataset.fcIphoneLayout,
+      navPosition:navStyle.position,
+      mainOverflowY:mainStyle.overflowY,
+      bodyOverflowY:bodyStyle.overflowY,
+      allDayGap,
       activeNavBg:activeStyle.backgroundImage!=='none'?activeStyle.backgroundImage:activeStyle.backgroundColor
     };
   });
-  console.log('iphone-v47',JSON.stringify(x));
-  assert.ok(x.navX>=7&&x.navX<=9&&Math.abs(x.navW-(x.innerW-16))<=3,`mobile floating nav width ${JSON.stringify(x)}`);
-  assert.ok(x.innerH-x.navBottom>=5&&x.innerH-x.navBottom<=10,`mobile floating nav safe gap ${JSON.stringify(x)}`);
+  console.log('iphone-v48',JSON.stringify(x));
+  assert.ok(x.navX>=7&&x.navX<=9&&Math.abs(x.navW-(x.innerW-16))<=3,`mobile tab bar width ${JSON.stringify(x)}`);
+  assert.ok(x.innerH-x.navBottom>=5&&x.innerH-x.navBottom<=10,`mobile tab bar safe gap ${JSON.stringify(x)}`);
+  assert.ok(x.mainBottom<=x.navTop+1,`main content viewport must end before bottom navigation ${JSON.stringify(x)}`);
+  assert.ok(x.topBottom<=x.mainTop+1,`top bar must not overlap main viewport ${JSON.stringify(x)}`);
+  assert.ok(Math.abs(x.shellH-x.innerH)<=2,`mobile shell must fit dynamic viewport ${JSON.stringify(x)}`);
   assert.ok(x.shellX<=1&&Math.abs(x.shellW-x.innerW)<=2,`mobile shell ${JSON.stringify(x)}`);
-  assert.equal(x.overflow,true,`mobile root overflow ${JSON.stringify(x)}`);
+  assert.equal(x.navPosition,'relative','mobile navigation must participate in layout instead of overlaying content');
+  assert.equal(x.mainOverflowY,'auto','main area must own vertical scrolling');
+  assert.equal(x.bodyOverflowY,'hidden','body must not scroll behind the fixed app chrome');
+  assert.equal(x.rootVerticalFit,true,'mobile root must not create a second vertical scroll area');
+  assert.equal(x.overflow,true,`mobile root horizontal overflow ${JSON.stringify(x)}`);
+  assert.ok(x.allDayGap!==null&&x.allDayGap>=4,`all-day label must not collide with avatar ${JSON.stringify(x)}`);
   assert.equal(x.legacySchoolDisplay,'none','legacy weekly school matrix must be hidden on iPhone');
   assert.notEqual(x.mobileSchoolDisplay,'none','mobile school-day view must be visible on iPhone');
   assert.equal(x.schoolTabs,5,'mobile school-day view must expose Monday to Friday');
@@ -65,6 +98,7 @@ try{
   assert.equal(x.reference,'v33');
   assert.equal(x.polish,'v47');
   assert.equal(x.schoolMode,'v47');
+  assert.equal(x.iphoneLayout,'v48');
   assert.equal(x.summary,true,'compact iPhone summary must remain available');
   assert.deepEqual(x.statTexts,['Wichtig','Offen','Termine']);
   assert.ok(x.focusHeight<90,`focus card must stay compact on iPhone: ${x.focusHeight}`);
@@ -79,22 +113,22 @@ try{
     const shell=document.querySelector('.fc9-shell').getBoundingClientRect();
     const nav=document.querySelector('.fc9-nav').getBoundingClientRect();
     const main=document.querySelector('.fc9-main').getBoundingClientRect();
-    const top=document.querySelector('.fc9-topbar').getBoundingClientRect();
     const navStyle=getComputedStyle(document.querySelector('.fc9-nav'));
     const navInStyle=getComputedStyle(document.querySelector('.fc9-nav-in'));
     const moreStyle=getComputedStyle(document.querySelector('#more .fc9-more-grid'));
     return {
-      innerW:innerWidth,shellW:shell.width,navX:nav.x,navW:nav.width,navH:nav.height,
-      mainX:main.x,mainW:main.width,topW:top.width,
+      innerW:innerWidth,shellW:shell.width,navX:nav.x,navW:nav.width,
+      mainX:main.x,mainW:main.width,
       rootOverflow:document.documentElement.scrollWidth<=document.documentElement.clientWidth+1,
       navPosition:navStyle.position,navDirection:navInStyle.flexDirection,
       moreCols:moreStyle.gridTemplateColumns,
       h1:parseFloat(getComputedStyle(document.querySelector('#more .fc9-pagehead h1')).fontSize),
       polish:document.documentElement.dataset.fcGlobalPolish,
+      iphoneLayout:document.documentElement.dataset.fcIphoneLayout,
       mobileSchoolPresent:Boolean(document.querySelector('.fc47-school-mobile'))
     };
   });
-  console.log('desktop-v47',JSON.stringify(d));
+  console.log('desktop-v48',JSON.stringify(d));
   assert.equal(d.rootOverflow,true,`desktop root overflow ${JSON.stringify(d)}`);
   assert.ok(Math.abs(d.shellW-d.innerW)<=2,'desktop shell must use full viewport width');
   assert.ok(d.navX<=1&&d.navW>=220&&d.navW<=228,`desktop navigation rail ${JSON.stringify(d)}`);
@@ -105,9 +139,10 @@ try{
   assert.ok(d.h1>=38,'desktop title hierarchy should scale up');
   assert.ok(d.moreCols.split(' ').length>=4,'wide desktop utility grid should use four columns');
   assert.equal(d.polish,'v47');
+  assert.equal(d.iphoneLayout,'v48');
   assert.equal(d.mobileSchoolPresent,false,'desktop must keep the weekly school matrix instead of injecting the mobile school-day view');
   await desktop.context.close();
 
   await browser.close();
-  console.log('V9.47 iPhone + desktop responsive regression: ok');
+  console.log('V9.48 iPhone + desktop responsive regression: ok');
 } finally {server.kill('SIGTERM')}
