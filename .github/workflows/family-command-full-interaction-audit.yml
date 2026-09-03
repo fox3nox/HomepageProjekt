@@ -1,0 +1,24 @@
+name: Family Command full interaction audit
+on:
+  pull_request:
+    branches: [main]
+    paths:
+      - 'family-command/**'
+      - '.github/workflows/family-command-full-interaction-audit.yml'
+  push:
+    branches: [main]
+    paths:
+      - 'family-command/**'
+      - '.github/workflows/family-command-full-interaction-audit.yml'
+jobs:
+  interaction-audit:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+      - name: Install Playwright WebKit
+        run: |
+          npm install --no-save --package-lock=false playwright@1.55.0
+          npx playwright install --with-deps webkit
+      - name: Full mobile interaction audit
+        run: node family-command/e2e/full-interaction-audit.spec.mjs
