@@ -1,0 +1,47 @@
+name: Family Command V9.58 unified design regression
+on:
+  pull_request:
+    branches: [main]
+    paths:
+      - 'family-command/v9-unified-design-v958.css'
+      - 'family-command/index.html'
+      - 'family-command/sw.js'
+      - 'family-command/e2e/visual-audit-v958.spec.mjs'
+      - '.github/workflows/family-command-v958-unified-design-check.yml'
+      - '.github/workflows/family-command-full-audit-check.yml'
+  push:
+    branches: [main]
+    paths:
+      - 'family-command/v9-unified-design-v958.css'
+      - 'family-command/index.html'
+      - 'family-command/sw.js'
+      - 'family-command/e2e/visual-audit-v958.spec.mjs'
+      - '.github/workflows/family-command-v958-unified-design-check.yml'
+      - '.github/workflows/family-command-full-audit-check.yml'
+jobs:
+  visual-design:
+    runs-on: ubuntu-latest
+    timeout-minutes: 12
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+      - name: Syntax and wiring
+        run: |
+          node --check family-command/e2e/visual-audit-v958.spec.mjs
+          grep -q "v9-unified-design-v958.css" family-command/index.html
+          grep -q "family-command-v95" family-command/sw.js
+      - name: Install Playwright
+        run: npm install --no-save playwright
+      - name: Install WebKit
+        run: npx playwright install --with-deps webkit
+      - name: Cross-screen visual audit
+        run: node family-command/e2e/visual-audit-v958.spec.mjs
+      - name: Upload visual audit screenshots
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: family-command-v958-visual-audit
+          path: family-command/e2e-artifacts-v958/*.png
+          if-no-files-found: warn
