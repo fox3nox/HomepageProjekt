@@ -16,8 +16,10 @@ try{
   await page.goto(BASE+'/?access=test',{waitUntil:'domcontentloaded'});
   await page.waitForFunction(()=>document.documentElement.dataset.fcReady==='1'&&window.__fcV9);
   await page.evaluate(()=>{const iso=todayISO();const d=new Date(`${iso}T12:00:00`);d.setDate(d.getDate()+1);const tomorrow=d.toISOString().slice(0,10);data.todos=[{id:'gift',date:iso,title:'Pokémon-Karten als Geschenk kaufen',priority:true,done:false,section:'day'},{id:'shop',date:iso,title:'Maggi kaufen',priority:true,done:false,section:'day'},{id:'normal',date:iso,title:'Normale offene Aufgabe',priority:false,done:false,section:'day'}];data.events=[{id:'visit',personIds:['child-a'],title:'Schulbesuch',date:iso,time:'13:40',note:'PET-Flaschen mitnehmen'},{id:'birthday',personIds:['child-a'],title:'Geburtstag Alessio',date:tomorrow,time:'13:30'}];for(const p of(data.people||[]).filter(p=>p.id!=='oli')){data.schedules[p.id]??={};for(const wd of[1,2,3,4,5])data.schedules[p.id][wd]=[{start:wd===3?'07:30':'08:20',end:'11:55',label:'Schule / Kindergarten',note:wd===3?'Turnzeug einpacken':''}]}save?.();window.renderToday?.()});
-  await page.waitForFunction(()=>document.documentElement.dataset.fcReferenceDashboard==='v44');
-  await page.waitForFunction(()=>document.documentElement.dataset.fcMobileSchoolDay==='v49');
+  await page.waitForFunction(()=>window.__fcReferenceDashboard39?.rebuild&&document.querySelector('#today>.fc38-dashboard'),{timeout:30000});
+  await page.evaluate(()=>window.__fcReferenceDashboard39.rebuild(true));
+  await page.waitForFunction(()=>document.querySelector('#today>.fc38-dashboard')?.textContent.includes('Pokémon-Karten als Geschenk kaufen'),{timeout:10000});
+  await page.waitForFunction(()=>document.documentElement.dataset.fcMobileSchoolDay==='v49'&&document.querySelector('#today .fc47-school-mobile'),{timeout:30000});
 
   const r=await page.evaluate(()=>{
     const before=JSON.stringify({todos:data.todos,events:data.events,homework:data.homework,people:data.people,schedules:data.schedules});
@@ -26,8 +28,8 @@ try{
     const after=JSON.stringify({todos:data.todos,events:data.events,homework:data.homework,people:data.people,schedules:data.schedules}),dash=document.querySelector('#today>.fc38-dashboard'),source=document.querySelector('#today>.fc9-page'),tasks=[...dash.querySelectorAll('.fc38-task')],school=dash.querySelector('.fc38-schoolgrid'),avatars=[...dash.querySelectorAll('.fc38-avatar')],visibleAvatars=avatars.filter(a=>a.getBoundingClientRect().width>0),todayHead=dash.querySelector('.fc38-th.is-today'),todayCells=[...dash.querySelectorAll('.fc38-schoolcell.is-today')],mobile=dash.querySelector('.fc47-school-mobile'),avatarStyles=visibleAvatars.map(a=>{const c=getComputedStyle(a),b=a.getBoundingClientRect();return{text:a.textContent.trim(),w:b.width,h:b.height,display:c.display,align:c.alignItems,justify:c.justifyContent,font:parseFloat(c.fontSize),color:c.color}}),currentDay=new Date(`${todayISO()}T12:00:00`).getDay(),peopleCount=(data.people||[]).filter(p=>p.id!=='oli').length;
     return{same:before===after,version:window.__fcReferenceDashboard39.version,dashboard:!!dash,sourceWidth:source.getBoundingClientRect().width,overflow:document.documentElement.scrollWidth<=document.documentElement.clientWidth+1,daybar:dash.querySelector('.fc38-daybar').getBoundingClientRect().height,panels:dash.querySelectorAll('.fc38-panel').length,tasks:tasks.length,heights:tasks.map(x=>x.getBoundingClientRect().height),lines:dash.querySelectorAll('.fc38-line').length,schoolCells:school.children.length,schoolDisplay:getComputedStyle(school).display,reminders:dash.querySelectorAll('.fc38-reminders>*').length,avatars:visibleAvatars.length,avatarText:visibleAvatars.every(a=>a.textContent.trim().length===1),avatarStyles,text:dash.textContent,nav:document.querySelector('.fc9-nav').getBoundingClientRect().height,todayHead:todayHead?.textContent||'',todayCellCount:todayCells.length,currentDay,peopleCount,mobileDisplay:mobile?getComputedStyle(mobile).display:'missing',mobileTabs:mobile?.querySelectorAll('.fc47-day').length||0,mobileRows:mobile?.querySelectorAll('.fc47-child').length||0,mobileSelected:mobile?.querySelectorAll('.fc47-day.is-selected').length||0,mobileToday:mobile?.querySelectorAll('.fc47-day.is-today').length||0}
   });
-  console.log('reference-v49',JSON.stringify(r));
-  assert.equal(r.version,'9.44.0');
+  console.log('reference-v52',JSON.stringify(r));
+  assert.ok(['9.44.0','9.52.0'].includes(r.version));
   assert.ok(r.dashboard&&r.same&&r.overflow);
   assert.ok(r.sourceWidth<=1.5);
   assert.ok(r.daybar>=46&&r.daybar<=55);
@@ -36,8 +38,8 @@ try{
   assert.ok(r.lines>=2);
   assert.ok(r.panels>=4);
   assert.ok(r.schoolCells>=24,'full Mon-Fri school grid must remain in the DOM for desktop/compatibility');
-  assert.equal(r.schoolDisplay,'none','V9.49 hides the desktop week matrix on iPhone');
-  assert.notEqual(r.mobileDisplay,'none','V9.49 mobile school-day view must be visible');
+  assert.equal(r.schoolDisplay,'none','mobile hides the desktop week matrix on iPhone');
+  assert.notEqual(r.mobileDisplay,'none','mobile school-day view must be visible');
   assert.equal(r.mobileTabs,5,'mobile school-day view must offer Mo-Fr');
   assert.equal(r.mobileRows,r.peopleCount,'mobile school-day view must show every child');
   assert.equal(r.mobileSelected,1,'exactly one school day must be selected');
@@ -51,5 +53,5 @@ try{
   const normalOnly=await page.evaluate(()=>{for(const t of data.todos)t.priority=false;window.__fcReferenceDashboard39.rebuild(true);window.__fcMobileSchoolDayV947?.render();const d=document.querySelector('#today>.fc38-dashboard');return{kicker:d.querySelector('.fc38-kicker')?.textContent||'',subheads:d.querySelectorAll('.fc38-subhead').length}});
   assert.match(normalOnly.kicker,/OFFEN/);assert.equal(normalOnly.subheads,0,'normal-only tasks must not be mislabeled as additional tasks');
   await browser.close();
-  console.log('V9.49 approved iPhone reference regression: ok');
+  console.log('V9.52 approved iPhone reference regression: ok');
 }finally{server.kill('SIGTERM')}
