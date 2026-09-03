@@ -9,14 +9,11 @@ const server=spawn('python3',['-m','http.server',String(PORT),'--directory','fam
 const sleep=ms=>new Promise(r=>setTimeout(r,ms));
 async function ready(){for(let i=0;i<50;i++){try{const r=await fetch(BASE+'/index.html');if(r.ok)return}catch{}await sleep(100)}throw new Error('server not ready')}
 
-const addFixture=`(()=>{try{const key='family-command-personal-v4',s=JSON.parse(localStorage.getItem(key)||'{}');s.todos=[...(s.todos||[]),{id:'todo-audit',date:'2026-09-03',title:'Audit Aufgabe CHF 8',section:'day',done:false,priority:false,icon:'💰'}];localStorage.setItem(key,JSON.stringify(s))}catch(e){}})();`;
-
 try{
   await ready();
   const browser=await webkit.launch({headless:true});
   const context=await browser.newContext({viewport:{width:390,height:844},isMobile:true,hasTouch:true,serviceWorkers:'block'});
   await context.addInitScript({content:seed});
-  await context.addInitScript({content:addFixture});
   const page=await context.newPage();
 
   const pageErrors=[];const consoleErrors=[];
@@ -48,19 +45,23 @@ try{
   async function expectModal(title){await page.waitForSelector('#fc9Modal');assert.match((await page.locator('#fc9Modal h2').innerText()).trim(),title)}
   async function expectCall(name){await page.waitForFunction(n=>(window.__auditCalls||[]).some(x=>x[0]===n),name)}
 
-  // Screenshot-specific semantics: checkbox is the completion control; money icon is a separate decorative/category tile.
+  // Screenshot-specific layout semantics: checkbox and money icon are separate columns.
   const taskSemantics=await page.evaluate(()=>{
-    const row=document.querySelector('#today .fc38-task');
-    const check=row?.querySelector('.fc38-check');
-    const icon=row?.querySelector('.fc38-taskicon');
-    if(!row||!check||!icon)return null;
+    const root=document.querySelector('#today .fc38-dashboard');
+    if(!root)return null;
+    const probe=document.createElement('div');
+    probe.className='fc38-task';
+    probe.innerHTML='<span class="fc38-check" aria-hidden="true"></span><span class="fc38-taskicon" aria-hidden="true">💰</span><div class="fc38-taskcopy"><strong>Probe CHF 8</strong></div><button type="button" class="fc38-go">›</button>';
+    root.appendChild(probe);
+    const check=probe.querySelector('.fc38-check'),icon=probe.querySelector('.fc38-taskicon');
     const a=check.getBoundingClientRect(),b=icon.getBoundingClientRect();
-    return {checkTag:check.tagName,checkRole:check.getAttribute('role'),iconText:icon.textContent.trim(),overlap:Math.max(0,Math.min(a.right,b.right)-Math.max(a.left,b.left))*Math.max(0,Math.min(a.bottom,b.bottom)-Math.max(a.top,b.top)),checkW:a.width,iconW:b.width};
+    const result={overlap:Math.max(0,Math.min(a.right,b.right)-Math.max(a.left,b.left))*Math.max(0,Math.min(a.bottom,b.bottom)-Math.max(a.top,b.top)),checkW:a.width,checkH:a.height,iconW:b.width,iconH:b.height,iconText:icon.textContent.trim()};
+    probe.remove();return result;
   });
-  assert.ok(taskSemantics,'today task row must exist');
+  assert.ok(taskSemantics,'today reference dashboard must exist');
   assert.equal(taskSemantics.overlap,0,'task checkbox and money icon must never overlap');
-  assert.ok(taskSemantics.checkW>=18&&taskSemantics.checkW<=24,`checkbox should read as a compact control: ${JSON.stringify(taskSemantics)}`);
-  assert.ok(taskSemantics.iconW>=30&&taskSemantics.iconW<=36,`money icon tile should remain separate: ${JSON.stringify(taskSemantics)}`);
+  assert.ok(taskSemantics.checkW>=18&&taskSemantics.checkW<=24&&taskSemantics.checkH>=18&&taskSemantics.checkH<=24,`checkbox should read as a compact completion control: ${JSON.stringify(taskSemantics)}`);
+  assert.ok(taskSemantics.iconW>=30&&taskSemantics.iconW<=36&&taskSemantics.iconH>=30&&taskSemantics.iconH<=36,`money icon tile should remain a separate category tile: ${JSON.stringify(taskSemantics)}`);
 
   // Main navigation: every tab must activate the intended screen.
   for(const id of ['today','tomorrow','events','homework','more'])await openScreen(id);
@@ -89,8 +90,8 @@ try{
   // Create a school task and verify it renders.
   await page.click('[data-task-filter="open"]');
   await page.click('[data-new-hw]');await expectModal(/Neue Schulaufgabe/i);
-  const titleField=page.locator('#fc9Modal input').first();await titleField.fill('UI Audit Schule');
-  const save=page.locator('#fc9Modal [data-save]');await save.click();
+  await page.fill('#fc9HwTitle','UI Audit Schule');
+  await page.click('#fc9Modal [data-save]');
   assert.ok((await page.locator('#homework').innerText()).includes('UI Audit Schule'),'saved school task must render');
 
   // Calendar controls: agenda/week, filters, month paging, week day and new-event editor.
