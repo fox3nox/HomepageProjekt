@@ -1,0 +1,22 @@
+name: Family Command V9.57 family contacts regression
+on:
+  pull_request:
+    branches: [main]
+    paths: ['family-command/family-contacts.js','family-command/family-contacts.css','family-command/e2e/family-contacts-v957.spec.mjs','family-command/index.html','family-command/sw.js','.github/workflows/family-command-contacts-v957-check.yml']
+  push:
+    branches: [main]
+    paths: ['family-command/family-contacts.js','family-command/family-contacts.css','family-command/e2e/family-contacts-v957.spec.mjs','family-command/index.html','family-command/sw.js','.github/workflows/family-command-contacts-v957-check.yml']
+jobs:
+  contacts:
+    runs-on: ubuntu-latest
+    timeout-minutes: 12
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+      - run: node --check family-command/family-contacts.js && node --check family-command/e2e/family-contacts-v957.spec.mjs
+      - run: grep -q "family-contacts.js" family-command/index.html && grep -q "family-contacts.css" family-command/index.html && grep -q "family-command-v94" family-command/sw.js
+      - run: npm install --no-save playwright
+      - run: npx playwright install --with-deps webkit
+      - run: node family-command/e2e/family-contacts-v957.spec.mjs
