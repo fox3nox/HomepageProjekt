@@ -91,8 +91,8 @@
     left:calc(50% + 9px)!important;
   }
 
-  /* The scrollable content now gets a little more usable vertical space. */
-  body .fc9-main{padding-bottom:20px!important;scroll-padding-bottom:20px!important}
+  /* Preserve the established non-overlapping scroll-space contract. */
+  body .fc9-main{scroll-padding-bottom:28px!important}
 }
 
 @media (max-width:390px){
