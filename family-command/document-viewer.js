@@ -26,5 +26,5 @@
   }
   window.fcOpenOriginal=open;
   window.__fcDocumentViewerHealth={version:VERSION,v9Native:true,readable:true,original:true,originalPath:true,zoom:true,legacyWrapper:false};
-  if(!window.__fcSmartDocumentsLoading){window.__fcSmartDocumentsLoading=true;const s=document.createElement('script');s.src='./smart-documents.js?v=20260831-v9220';s.async=true;s.onerror=()=>console.error('fc_smart_documents_load_failed');document.head.appendChild(s)}
+  if(!window.__fcSmartDocumentsLoading){window.__fcSmartDocumentsLoading=true;const s=document.createElement('script');s.src='./smart-documents.js?v=20260903-v9510';s.async=true;s.onerror=()=>console.error('fc_smart_documents_load_failed');document.head.appendChild(s)}
 })();
