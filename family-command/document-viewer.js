@@ -5,7 +5,7 @@
   const VERSION='1.1.0';
   const DOC_BASE='https://lmrvapstojcecljjdgds.supabase.co/functions/v1/family-command-documents';
   const MODAL='fcDocumentViewer';
-  const esc=s=>String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot',"'":'&#39;'}[c]));
+  const esc=s=>String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
   function accessKey(){try{const p=document.cookie.split(';').map(x=>x.trim()).find(x=>x.startsWith('fc_private_access='));if(p)return decodeURIComponent(p.split('=').slice(1).join('='))}catch(e){}try{return localStorage.getItem('fc-private-access-v1')||''}catch(e){return''}}
   async function request(path){const h=new Headers();h.set('x-fc-access',accessKey());return fetch(DOC_BASE+path,{headers:h,cache:'no-store'})}
   function tableHtml(t){const cols=Array.isArray(t?.columns)?t.columns:[],rows=Array.isArray(t?.rows)?t.rows:[];if(!cols.length&&!rows.length)return'';return `<div class="fc-dv-table-wrap"><table class="fc-dv-table"><thead>${cols.length?`<tr>${cols.map(x=>`<th>${esc(x)}</th>`).join('')}</tr>`:''}</thead><tbody>${rows.map(r=>`<tr>${(Array.isArray(r)?r:[]).map(x=>`<td>${esc(x)}</td>`).join('')}</tr>`).join('')}</tbody></table></div>`}
