@@ -1,0 +1,21 @@
+name: Family Command V9.54 meal planner regression
+on:
+  pull_request:
+    branches: [main]
+    paths: ['family-command/meal-planner.js','family-command/meal-planner.css','family-command/e2e/meal-planner-v954.spec.mjs','.github/workflows/family-command-meal-planner-v954-check.yml']
+  push:
+    branches: [main]
+    paths: ['family-command/meal-planner.js','family-command/meal-planner.css','family-command/e2e/meal-planner-v954.spec.mjs','.github/workflows/family-command-meal-planner-v954-check.yml']
+jobs:
+  meal-planner:
+    runs-on: ubuntu-latest
+    timeout-minutes: 12
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+      - run: node --check family-command/meal-planner.js && node --check family-command/e2e/meal-planner-v954.spec.mjs
+      - run: npm install --no-save playwright
+      - run: npx playwright install --with-deps webkit
+      - run: node family-command/e2e/meal-planner-v954.spec.mjs
