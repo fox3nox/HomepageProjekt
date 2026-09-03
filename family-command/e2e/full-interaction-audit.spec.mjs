@@ -16,9 +16,10 @@ try{
   await context.addInitScript({content:seed});
   const page=await context.newPage();
 
-  const pageErrors=[];const consoleErrors=[];
+  const pageErrors=[];const consoleErrors=[];const badResponses=[];
   page.on('pageerror',e=>pageErrors.push(String(e?.stack||e)));
   page.on('console',m=>{if(m.type()==='error')consoleErrors.push(m.text())});
+  page.on('response',r=>{if(r.status()>=400)badResponses.push({status:r.status(),url:r.url()})});
   await page.route('**/family-command-documents/list',route=>route.fulfill({status:200,contentType:'application/json',body:JSON.stringify({documents:[{id:'doc-audit',title:'Audit Dokument',created_at:'2026-09-03T10:00:00Z',mime_type:'application/pdf'}]})}));
   await page.route('**/family-command-documents/readable?id=doc-audit',route=>route.fulfill({status:200,contentType:'application/json',body:JSON.stringify({title:'Audit Dokument',content:{kind:'document',title:'Audit Dokument',sections:[{heading:'Test',paragraph:'Lesefassung funktioniert.'}]}})}));
   await page.route('**/family-command-backups/**',route=>{const u=new URL(route.request().url());if(u.pathname.endsWith('/list'))return route.fulfill({status:200,contentType:'application/json',body:JSON.stringify({snapshots:[]})});if(u.pathname.endsWith('/snapshot'))return route.fulfill({status:200,contentType:'application/json',body:JSON.stringify({snapshot:{id:'audit-backup',created_at:'2026-09-03T10:00:00Z',reason:'startup'}})});return route.fulfill({status:200,contentType:'application/json',body:'{}'})});
@@ -127,6 +128,7 @@ try{
   }
 
   assert.deepEqual(pageErrors,[],`page errors: ${JSON.stringify(pageErrors)}`);
+  assert.deepEqual(badResponses,[],`unexpected HTTP responses: ${JSON.stringify(badResponses)}`);
   const unexpectedConsole=consoleErrors.filter(x=>!/service worker|favicon|fc9_deferred/i.test(x));
   assert.deepEqual(unexpectedConsole,[],`console errors: ${JSON.stringify(unexpectedConsole)}`);
 
