@@ -33,7 +33,10 @@ jobs:
           check "shopping styles wired" grep -q "shopping-lists.css" family-command/index.html
           check "meal planner wired" grep -q "meal-planner.js" family-command/index.html
           check "meal planner styles wired" grep -q "meal-planner.css" family-command/index.html
-          check "supported PWA cache" grep -Eq "const CACHE='family-command-v(68|69|70|71|72|73|74|75|76|77|78|79|80|81|82|83|84|85|86|87|88|89|90|91)'" family-command/sw.js
+          check "recipe bridge wired" grep -q "recipe-meal-bridge.js" family-command/index.html
+          check "recipes wired" grep -q "recipes-favorites.js" family-command/index.html
+          check "recipes styles wired" grep -q "recipes-favorites.css" family-command/index.html
+          check "supported PWA cache" grep -Eq "const CACHE='family-command-v(68|69|70|71|72|73|74|75|76|77|78|79|80|81|82|83|84|85|86|87|88|89|90|91|92)'" family-command/sw.js
           check "reference dashboard JS cached" grep -q "reference-dashboard-v36.js" family-command/sw.js
           check "reference dashboard CSS cached" grep -q "reference-dashboard-v36.css" family-command/sw.js
           check "global design cached" grep -q "global-design-v37.css" family-command/sw.js
@@ -49,6 +52,9 @@ jobs:
           check "shopping CSS cached" grep -q "shopping-lists.css" family-command/sw.js
           check "meal JS cached" grep -q "meal-planner.js" family-command/sw.js
           check "meal CSS cached" grep -q "meal-planner.css" family-command/sw.js
+          check "recipe bridge cached" grep -q "recipe-meal-bridge.js" family-command/sw.js
+          check "recipe JS cached" grep -q "recipes-favorites.js" family-command/sw.js
+          check "recipe CSS cached" grep -q "recipes-favorites.css" family-command/sw.js
           check "global design loaded" grep -q "global-design-v37.css" family-command/reference-mobile-v35.js
           check "product design loaded" grep -q "v9-product-design.css" family-command/reference-mobile-v35.js
           check "responsive design loaded" grep -q "v9-responsive-v946.css" family-command/reference-mobile-v35.js
@@ -76,6 +82,6 @@ jobs:
       - name: Production feature wiring
         run: |
           set -euo pipefail
-          for f in core-runtime.js cloud-state.js document-viewer.js smart-documents.js event-details.js chat-command-sync.js app-data-rules.js v9-data.js event-delete-fix.js multi-link-ui.js v9-app.js shopping-lists.js meal-planner.js v9-professional.js reference-mobile-v35.js homework-originals.js; do grep -q "$f" family-command/index.html || { echo "critical module not wired: $f"; exit 1; }; done
+          for f in core-runtime.js cloud-state.js document-viewer.js smart-documents.js event-details.js chat-command-sync.js app-data-rules.js v9-data.js event-delete-fix.js multi-link-ui.js v9-app.js shopping-lists.js meal-planner.js recipe-meal-bridge.js recipes-favorites.js v9-professional.js reference-mobile-v35.js homework-originals.js; do grep -q "$f" family-command/index.html || { echo "critical module not wired: $f"; exit 1; }; done
           for f in push-v2.js runtime-health.js family-ai-v2.js ai-budget-guard.js family-ai-original-links.js print-planner-v2.js backup-manager.js app-selftest-v9.js; do grep -q "$f" family-command/index.html || { echo "deferred module not wired: $f"; exit 1; }; done
           ! grep -q "family-command-private-app" family-command/index.html
