@@ -23,6 +23,7 @@ try{
   await page.route('**/family-command-documents/list',route=>route.fulfill({status:200,contentType:'application/json',body:JSON.stringify({documents:[{id:'doc-audit',title:'Audit Dokument',created_at:'2026-09-03T10:00:00Z',mime_type:'application/pdf'}]})}));
   await page.route('**/family-command-documents/readable?id=doc-audit',route=>route.fulfill({status:200,contentType:'application/json',body:JSON.stringify({title:'Audit Dokument',content:{kind:'document',title:'Audit Dokument',sections:[{heading:'Test',paragraph:'Lesefassung funktioniert.'}]}})}));
   await page.route('**/family-command-backups/**',route=>{const u=new URL(route.request().url());if(u.pathname.endsWith('/list'))return route.fulfill({status:200,contentType:'application/json',body:JSON.stringify({snapshots:[]})});if(u.pathname.endsWith('/snapshot'))return route.fulfill({status:200,contentType:'application/json',body:JSON.stringify({snapshot:{id:'audit-backup',created_at:'2026-09-03T10:00:00Z',reason:'startup'}})});return route.fulfill({status:200,contentType:'application/json',body:'{}'})});
+  await page.route('**/family-command-chat-commands',route=>route.fulfill({status:200,contentType:'application/json',body:route.request().method()==='GET'?JSON.stringify({ok:true,commands:[]}):JSON.stringify({ok:true})}));
 
   await page.goto(BASE+'/?access=test',{waitUntil:'domcontentloaded'});
   await page.waitForFunction(()=>document.documentElement.dataset.fcReady==='1');
