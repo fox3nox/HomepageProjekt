@@ -20,6 +20,7 @@ try{
   page.on('pageerror',e=>pageErrors.push(String(e?.stack||e)));
   page.on('console',m=>{if(m.type()==='error')consoleErrors.push(m.text())});
   await page.route('**/family-command-documents/list',route=>route.fulfill({status:200,contentType:'application/json',body:JSON.stringify({documents:[{id:'doc-audit',title:'Audit Dokument',created_at:'2026-09-03T10:00:00Z',mime_type:'application/pdf'}]})}));
+  await page.route('**/family-command-documents/readable?id=doc-audit',route=>route.fulfill({status:200,contentType:'application/json',body:JSON.stringify({title:'Audit Dokument',content:{kind:'document',title:'Audit Dokument',sections:[{heading:'Test',paragraph:'Lesefassung funktioniert.'}]}})}));
 
   await page.goto(BASE+'/?access=test',{waitUntil:'domcontentloaded'});
   await page.waitForFunction(()=>document.documentElement.dataset.fcReady==='1');
@@ -35,7 +36,6 @@ try{
     window.fcOpenBackups=(...a)=>hit('backup',...a);
     window.enablePush=(...a)=>hit('push',...a);
     window.exportData=(...a)=>hit('export',...a);
-    window.fcOpenOriginal=(...a)=>hit('doc',...a);
     window.fcOpenEventDetails=(...a)=>hit('event',...a);
     window.confirm=()=>true;
   });
@@ -103,7 +103,7 @@ try{
 
   await openScreen('more');
   await page.click('[data-feature="people"]');await page.waitForFunction(()=>document.querySelector('#people')?.classList.contains('active'));await page.click('#people [data-back]');
-  await page.click('[data-feature="docs"]');await expectModal(/Dokumentenzentrale/i);await page.waitForSelector('#fc9Modal [data-doc="doc-audit"]');await page.click('#fc9Modal [data-doc="doc-audit"]');await expectCall('doc');await closeModal();
+  await page.click('[data-feature="docs"]');await expectModal(/Dokumentenzentrale/i);await page.waitForSelector('#fc9Modal [data-doc="doc-audit"]');await page.click('#fc9Modal [data-doc="doc-audit"]');await page.waitForSelector('#fcDocumentViewer');await page.waitForFunction(()=>document.querySelector('#fcDocumentViewer .fc-dv-readable')?.innerText.includes('Lesefassung funktioniert.'));assert.equal((await page.locator('#fcDocumentViewer .fc-dv-head h1').innerText()).trim(),'Audit Dokument');await page.click('#fcDocumentViewer .fc-dv-close');await closeModal();
   for(const k of ['ai','daypdf','weekpdf','backup','export']){await page.click(`[data-feature="${k}"]`);await expectCall(k)}
   await page.click('[data-feature="push"]');await expectModal(/Erinnerungen/i);await page.click('#fc9Modal [data-save]');await expectCall('push');
 
