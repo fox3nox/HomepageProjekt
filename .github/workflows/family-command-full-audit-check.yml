@@ -29,7 +29,9 @@ jobs:
           check "private rules version" grep -q "PRIVATE_RULES_VERSION='2026-08-31-v2'" family-command/index.html
           check "smart documents wired" grep -q "smart-documents.js" family-command/index.html
           check "reference loader wired" grep -q "reference-mobile-v35.js" family-command/index.html
-          check "supported PWA cache" grep -Eq "const CACHE='family-command-v(68|69|70|71|72|73|74|75|76|77|78|79|80|81|82|83|84|85|86|87|88|89)'" family-command/sw.js
+          check "shopping lists wired" grep -q "shopping-lists.js" family-command/index.html
+          check "shopping styles wired" grep -q "shopping-lists.css" family-command/index.html
+          check "supported PWA cache" grep -Eq "const CACHE='family-command-v(68|69|70|71|72|73|74|75|76|77|78|79|80|81|82|83|84|85|86|87|88|89|90)'" family-command/sw.js
           check "reference dashboard JS cached" grep -q "reference-dashboard-v36.js" family-command/sw.js
           check "reference dashboard CSS cached" grep -q "reference-dashboard-v36.css" family-command/sw.js
           check "global design cached" grep -q "global-design-v37.css" family-command/sw.js
@@ -41,6 +43,8 @@ jobs:
           check "iphone layout JS cached" grep -q "v9-iphone-layout-v948.js" family-command/sw.js
           check "visual polish cached" grep -q "v9-visual-polish-v949.css" family-command/sw.js
           check "mobile polish cached" grep -q "v9-mobile-polish-v952.css" family-command/sw.js
+          check "shopping JS cached" grep -q "shopping-lists.js" family-command/sw.js
+          check "shopping CSS cached" grep -q "shopping-lists.css" family-command/sw.js
           check "global design loaded" grep -q "global-design-v37.css" family-command/reference-mobile-v35.js
           check "product design loaded" grep -q "v9-product-design.css" family-command/reference-mobile-v35.js
           check "responsive design loaded" grep -q "v9-responsive-v946.css" family-command/reference-mobile-v35.js
@@ -68,6 +72,6 @@ jobs:
       - name: Production feature wiring
         run: |
           set -euo pipefail
-          for f in core-runtime.js cloud-state.js document-viewer.js smart-documents.js event-details.js chat-command-sync.js app-data-rules.js v9-data.js event-delete-fix.js multi-link-ui.js v9-app.js v9-professional.js reference-mobile-v35.js homework-originals.js; do grep -q "$f" family-command/index.html || { echo "critical module not wired: $f"; exit 1; }; done
+          for f in core-runtime.js cloud-state.js document-viewer.js smart-documents.js event-details.js chat-command-sync.js app-data-rules.js v9-data.js event-delete-fix.js multi-link-ui.js v9-app.js shopping-lists.js v9-professional.js reference-mobile-v35.js homework-originals.js; do grep -q "$f" family-command/index.html || { echo "critical module not wired: $f"; exit 1; }; done
           for f in push-v2.js runtime-health.js family-ai-v2.js ai-budget-guard.js family-ai-original-links.js print-planner-v2.js backup-manager.js app-selftest-v9.js; do grep -q "$f" family-command/index.html || { echo "deferred module not wired: $f"; exit 1; }; done
           ! grep -q "family-command-private-app" family-command/index.html

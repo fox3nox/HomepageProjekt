@@ -1,0 +1,21 @@
+name: Family Command V9.53 shopping lists regression
+on:
+  pull_request:
+    branches: [main]
+    paths: ['family-command/shopping-lists.js','family-command/shopping-lists.css','family-command/e2e/shopping-lists-v953.spec.mjs','.github/workflows/family-command-shopping-v953-check.yml']
+  push:
+    branches: [main]
+    paths: ['family-command/shopping-lists.js','family-command/shopping-lists.css','family-command/e2e/shopping-lists-v953.spec.mjs','.github/workflows/family-command-shopping-v953-check.yml']
+jobs:
+  shopping-lists:
+    runs-on: ubuntu-latest
+    timeout-minutes: 12
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+      - run: node --check family-command/shopping-lists.js && node --check family-command/e2e/shopping-lists-v953.spec.mjs
+      - run: npm install --no-save playwright
+      - run: npx playwright install --with-deps webkit
+      - run: node family-command/e2e/shopping-lists-v953.spec.mjs
