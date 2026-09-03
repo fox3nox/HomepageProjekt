@@ -22,8 +22,8 @@ try{
   const desktop=await boot(browser,{width:1440,height:1000}),dp=desktop.page;
   await dp.evaluate(()=>{const b=document.createElement('button');b.id='fc61FocusProbe';b.textContent='Fokusprobe';b.style.position='fixed';b.style.left='12px';b.style.top='12px';b.style.zIndex='999999';document.body.prepend(b);document.body.setAttribute('tabindex','-1');document.body.focus()});
   await dp.keyboard.press('Tab');
-  const focus=await dp.evaluate(()=>{const e=document.activeElement,s=getComputedStyle(e);return{id:e?.id||'',outlineStyle:s.outlineStyle,outlineWidth:parseFloat(s.outlineWidth)||0,outlineColor:s.outlineColor,boxShadow:s.boxShadow}});
-  console.log('v961-focus',JSON.stringify(focus));assert.equal(focus.id,'fc61FocusProbe');assert.notEqual(focus.outlineStyle,'none');assert.ok(focus.outlineWidth>=2);assert.notEqual(focus.boxShadow,'none');
+  const focus=await dp.evaluate(()=>{const e=document.activeElement,s=getComputedStyle(e);return{id:e?.id||'',outlineStyle:s.outlineStyle,outlineWidth:parseFloat(s.outlineWidth)||0,outlineColor:s.outlineColor}});
+  console.log('v961-focus',JSON.stringify(focus));assert.equal(focus.id,'fc61FocusProbe');assert.equal(focus.outlineStyle,'solid');assert.ok(focus.outlineWidth>=2);assert.equal(focus.outlineColor,'rgb(27, 115, 232)');
 
   const disabled=await dp.evaluate(()=>{const b=document.createElement('button');b.disabled=true;b.textContent='Disabled';document.body.appendChild(b);const s=getComputedStyle(b);return{opacity:parseFloat(s.opacity),cursor:s.cursor}});
   console.log('v961-disabled',JSON.stringify(disabled));assert.ok(disabled.opacity<=.5);assert.equal(disabled.cursor,'not-allowed');
