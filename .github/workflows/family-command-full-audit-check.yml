@@ -40,7 +40,8 @@ jobs:
           check "budget styles wired" grep -q "family-budget.css" family-command/index.html
           check "contacts wired" grep -q "family-contacts.js" family-command/index.html
           check "contacts styles wired" grep -q "family-contacts.css" family-command/index.html
-          check "supported PWA cache" grep -Eq "const CACHE='family-command-v(68|69|70|71|72|73|74|75|76|77|78|79|80|81|82|83|84|85|86|87|88|89|90|91|92|93|94)'" family-command/sw.js
+          check "unified design wired" grep -q "v9-unified-design-v958.css" family-command/index.html
+          check "supported PWA cache" grep -Eq "const CACHE='family-command-v(68|69|70|71|72|73|74|75|76|77|78|79|80|81|82|83|84|85|86|87|88|89|90|91|92|93|94|95)'" family-command/sw.js
           check "reference dashboard JS cached" grep -q "reference-dashboard-v36.js" family-command/sw.js
           check "reference dashboard CSS cached" grep -q "reference-dashboard-v36.css" family-command/sw.js
           check "global design cached" grep -q "global-design-v37.css" family-command/sw.js
@@ -52,6 +53,7 @@ jobs:
           check "iphone layout JS cached" grep -q "v9-iphone-layout-v948.js" family-command/sw.js
           check "visual polish cached" grep -q "v9-visual-polish-v949.css" family-command/sw.js
           check "mobile polish cached" grep -q "v9-mobile-polish-v952.css" family-command/sw.js
+          check "unified design cached" grep -q "v9-unified-design-v958.css" family-command/sw.js
           check "shopping JS cached" grep -q "shopping-lists.js" family-command/sw.js
           check "shopping CSS cached" grep -q "shopping-lists.css" family-command/sw.js
           check "meal JS cached" grep -q "meal-planner.js" family-command/sw.js
