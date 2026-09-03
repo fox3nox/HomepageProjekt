@@ -10,9 +10,9 @@
   <meta name="apple-mobile-web-app-title" content="Familie">
   <meta name="format-detection" content="telephone=no">
   <title>Familienzentrale</title>
-  <link rel="manifest" href="./manifest.webmanifest?v=20260903-v9450">
-  <link rel="icon" href="./icon.svg?v=20260903-v9450" type="image/svg+xml">
-  <link rel="apple-touch-icon" sizes="180x180" href="./apple-touch-icon.png?v=20260903-v9450">
+  <link rel="manifest" href="./manifest.webmanifest?v=20260903-v9590">
+  <link rel="icon" href="./icon.svg?v=20260903-v9590" type="image/svg+xml">
+  <link rel="apple-touch-icon" sizes="180x180" href="./apple-touch-icon.png?v=20260903-v9590">
   <style>
     html,body{margin:0;min-height:100%;background:#f7f9fc;color-scheme:light}
     #fcApp{visibility:hidden}
@@ -20,7 +20,7 @@
   </style>
 </head>
 <body>
-  <div id="fcBoot" class="fc9-boot"><div class="fc9-boot-box"><div class="fc9-boot-brand"><div class="fc9-boot-mark"><img src="./apple-touch-icon.png?v=20260903-v9450" alt=""></div><span>Familienzentrale</span></div><div class="fc9-boot-bar"><i></i></div><p>Deine Familienübersicht wird vorbereitet …</p></div></div>
+  <div id="fcBoot" class="fc9-boot"><div class="fc9-boot-box"><div class="fc9-boot-brand"><div class="fc9-boot-mark"><img src="./apple-touch-icon.png?v=20260903-v9590" alt=""></div><span>Familienzentrale</span></div><div class="fc9-boot-bar"><i></i></div><p>Deine Familienübersicht wird vorbereitet …</p></div></div>
   <div class="app" id="fcApp"></div>
   <div class="toast" id="toast" role="status" aria-live="polite" aria-atomic="true"></div>
   <script>
@@ -29,7 +29,7 @@
     window.__fcManagedBoot=true;window.__fcV9Boot=true;
     const STORE='fc-private-access-v1',COOKIE='fc_private_access',params=new URLSearchParams(location.search);
     const PRIVATE_CONFIG='https://lmrvapstojcecljjdgds.supabase.co/functions/v1/family-command-private-config';
-    const VERSION='20260903-v9450',PRIVATE_RULES_VERSION='2026-08-31-v2',PRIVATE_RULES_CACHE='fc-private-rules-code-v1';
+    const VERSION='20260903-v9590',PRIVATE_RULES_VERSION='2026-08-31-v2',PRIVATE_RULES_CACHE='fc-private-rules-code-v1';
     const CRITICAL=['core-runtime.js','cloud-state.js','document-viewer.js','smart-documents.js','event-details.js','chat-command-sync.js','app-data-rules.js','v9-data.js','event-delete-fix.js','multi-link-ui.js','v9-app.js','shopping-lists.js','meal-planner.js','recipe-meal-bridge.js','recipes-favorites.js','family-budget.js','family-contacts.js','v9-professional.js','reference-mobile-v35.js','homework-originals.js'];
     const DEFERRED=['push-v2.js','runtime-health.js','family-ai-v2.js','ai-budget-guard.js','family-ai-original-links.js','print-planner-v2.js','backup-manager.js','app-selftest-v9.js'];
     let extrasPromise=null;
@@ -47,7 +47,7 @@
     function readRulesCache(){try{const x=JSON.parse(localStorage.getItem(PRIVATE_RULES_CACHE)||'null');return x&&x.version===PRIVATE_RULES_VERSION&&typeof x.code==='string'?x.code:''}catch(e){return''}}
     function writeRulesCache(code){try{localStorage.setItem(PRIVATE_RULES_CACHE,JSON.stringify({version:PRIVATE_RULES_VERSION,code,at:Date.now()}))}catch(e){}}
     function fetchPrivateRules(){if(key==='test'&&/^(localhost|127\.0\.0\.1)$/.test(location.hostname))return fetchText('./e2e/mock-private-rules.js');return browserFetch(PRIVATE_CONFIG+'?v='+encodeURIComponent(PRIVATE_RULES_VERSION),{cache:'no-store',headers:{'x-fc-access':key}}).then(async r=>{if(!r.ok)throw new Error('Private Familienkonfiguration nicht erreichbar ('+r.status+').');return r.text()})}
-    async function loadCss(){for(const file of ['v9.css','v9-professional.css','reference-mobile-v35.css','document-viewer.css','v9-global-polish.css','shopping-lists.css','meal-planner.css','recipes-favorites.css','family-budget.css','family-contacts.css','v9-unified-design-v958.css'])await new Promise((resolve,reject)=>{const l=document.createElement('link');l.rel='stylesheet';l.href='./'+file+'?v='+VERSION;l.onload=resolve;l.onerror=reject;document.head.appendChild(l)})}
+    async function loadCss(){for(const file of ['v9.css','v9-professional.css','reference-mobile-v35.css','document-viewer.css','v9-global-polish.css','shopping-lists.css','meal-planner.css','recipes-favorites.css','family-budget.css','family-contacts.css','v9-unified-design-v958.css','v9-page-polish-v959.css'])await new Promise((resolve,reject)=>{const l=document.createElement('link');l.rel='stylesheet';l.href='./'+file+'?v='+VERSION;l.onload=resolve;l.onerror=reject;document.head.appendChild(l)})}
     function idle(fn,delay=0){setTimeout(()=>{'requestIdleCallback'in window?requestIdleCallback(fn,{timeout:2200}):setTimeout(fn,40)},delay)}
     async function loadExtras(){if(extrasPromise)return extrasPromise;extrasPromise=(async()=>{const codes=await Promise.all(DEFERRED.map(async file=>{try{return await fetchText('./'+file+'?v='+VERSION)}catch(e){console.error('fc9_deferred_fetch',file,e);return''}}));for(let i=0;i<DEFERRED.length;i++){if(codes[i]){try{executeDeferred(DEFERRED[i],codes[i])}catch(e){console.error('fc9_deferred_exec',DEFERRED[i],e)}}await wait(8)}document.documentElement.dataset.fcExtras='ready';return true})();return extrasPromise}
     window.__fcLoadExtrasNow=loadExtras;
