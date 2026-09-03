@@ -1,4 +1,4 @@
-/* Familienzentrale V9.47.2 · iPhone school-day presentation layer */
+/* Familienzentrale V9.49 · iPhone school-day presentation layer */
 (()=>{
 'use strict';
 if(window.__fcMobileSchoolDayV947)return;
@@ -10,7 +10,7 @@ const addDays=(iso,n)=>{const d=new Date(`${iso}T12:00:00`);d.setDate(d.getDate(
 const schedule=(pid,day)=>{try{return typeof scheduleFor==='function'?(scheduleFor(pid,day)||[]):D().schedules?.[pid]?.[day]||[]}catch(_){return[]}};
 const color=p=>p?.color||'#718197';
 const initial=p=>(p?.name||'?').trim().charAt(0).toUpperCase()||'?';
-const personMeta=p=>p?.schoolClass||p?.class||p?.role||'';
+const personMeta=p=>String(p?.schoolClass||p?.class||p?.role||'').replace(/\s*·\s*Schuljahr\b.*$/i,'').trim();
 const state={day:null};
 function week(){const iso=todayIso(),wd=new Date(`${iso}T12:00:00`).getDay(),monday=addDays(iso,wd===0?-6:1-wd);return{iso,wd,monday}}
 function label(slots,p){if(!slots.length)return{kind:'FREI',icon:'—',time:'Kein Unterricht',note:'',free:true};const first=slots[0],last=slots[slots.length-1],start=first.start||'',notes=[...new Set(slots.map(x=>String(x.note||'').trim()).filter(Boolean))];const kg=/elia|kindergarten/i.test(`${p?.id||''} ${p?.name||''} ${first.label||''}`);const early=start&&start<'08:10';return{kind:kg?'KG':early?'FRÜH':'SPÄT',icon:kg?'⌂':early?'☀':'◐',time:`${start||'—'}${start?'–':''}${last.end||'—'}`,note:notes[0]||'',free:false}}
@@ -25,9 +25,9 @@ function render(){
   const html=`<div class="fc47-daytabs" role="tablist" aria-label="Schultag auswählen">${tabs}</div><div class="fc47-schoolday">${rows||'<div class="fc47-empty">Keine Kinder hinterlegt.</div>'}</div>`;
   if(box.innerHTML!==html)box.innerHTML=html;
   box.querySelectorAll('[data-fc47-day]').forEach(b=>b.onclick=()=>{state.day=Number(b.dataset.fc47Day);render()});
-  document.documentElement.dataset.fcMobileSchoolDay='v47';
+  document.documentElement.dataset.fcMobileSchoolDay='v49';
 }
 let timer;const insideOwnView=node=>{const el=node?.nodeType===1?node:node?.parentElement;return Boolean(el?.closest?.('.fc47-school-mobile'))};const obs=new MutationObserver(mutations=>{if(mutations.length&&mutations.every(m=>insideOwnView(m.target)))return;clearTimeout(timer);timer=setTimeout(render,35)});
 function install(){if(!matchMedia(MOBILE).matches)return;const t=document.getElementById('today');if(!t){setTimeout(install,50);return}obs.observe(t,{childList:true,subtree:true});render();addEventListener('resize',render)}
-window.__fcMobileSchoolDayV947={version:'9.47.2',render};if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',install,{once:true});else install();
+window.__fcMobileSchoolDayV947={version:'9.49.0',render};if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',install,{once:true});else install();
 })();
