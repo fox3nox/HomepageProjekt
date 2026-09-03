@@ -1,0 +1,207 @@
+/* Familienzentrale V9.46 · responsive product layer
+   Dedicated iPhone + desktop adaptation. No business logic changes. */
+
+:root{
+  --fc46-desktop-nav:208px;
+  --fc46-desktop-max:1180px;
+}
+
+/* Phone baseline: keep the native-feeling one-column product, but remove tiny UI. */
+@media (max-width: 600px){
+  .fc9-shell{min-height:100dvh!important}
+  .fc9-topbar-in{width:100%!important;max-width:none!important}
+  .fc9-main{width:100%!important;max-width:none!important;box-sizing:border-box!important}
+  .fc9-pagehead{min-width:0!important}
+  .fc9-pagehead>div{min-width:0!important}
+  .fc9-pagehead h1{overflow-wrap:anywhere!important}
+  .fc9-row-main{min-width:0!important}
+  /* #today's legacy V9 page is intentionally collapsed behind the reference dashboard.
+     Do not force word wrapping inside that hidden compatibility source or it grows vertically. */
+  .fc9-screen:not(#today) .fc9-row-main b,.fc9-screen:not(#today) .fc9-row-main span{overflow-wrap:anywhere!important}
+  .fc38-taskcopy{min-width:0!important}
+  .fc38-taskcopy strong{overflow-wrap:anywhere!important}
+  .fc38-school{overflow-x:auto!important;overscroll-behavior-inline:contain!important;scrollbar-width:none!important;-webkit-overflow-scrolling:touch!important}
+  .fc38-school::-webkit-scrollbar{display:none!important}
+  .fc38-school>header{position:sticky!important;left:0!important;z-index:4!important;min-width:calc(100vw - 24px)!important;box-sizing:border-box!important}
+  .fc38-schoolgrid{min-width:650px!important}
+  .fc38-th{min-height:48px!important;padding:7px 5px!important}
+  .fc38-th>span{font-size:10px!important}
+  .fc38-th>small{font-size:8px!important}
+  .fc38-th>em{font-size:7px!important;padding:2px 6px!important}
+  .fc38-person{padding:8px 6px!important}
+  .fc38-person>b{font-size:10px!important}
+  .fc38-person>small{font-size:8px!important}
+  .fc38-schoolcell{min-height:88px!important;padding:9px 6px!important}
+  .fc38-schoolcell b{font-size:9.5px!important;line-height:1.2!important}
+  .fc38-schoolcell span{font-size:9px!important;line-height:1.25!important}
+  .fc38-schoolcell strong{font-size:8px!important;line-height:1.2!important}
+  .fc38-reminders h3{font-size:12px!important}
+  .fc38-reminders span,.fc38-reminders p,.fc38-reminders small{font-size:10.5px!important}
+  body .fc9-nav{max-width:560px!important;margin-inline:auto!important}
+  body .fc9-nav button{touch-action:manipulation!important}
+}
+
+/* Small iPhones: maximize usable width and keep the bottom bar clear of the home indicator. */
+@media (max-width: 430px){
+  .fc9-topbar-in{padding-left:12px!important;padding-right:12px!important}
+  .fc9-brand b{font-size:18px!important}
+  .fc9-brand span{font-size:10.5px!important}
+  .fc9-main{padding:14px 12px calc(116px + env(safe-area-inset-bottom,0px))!important}
+  .fc9-page{gap:15px!important}
+  .fc9-pagehead h1{font-size:29px!important}
+  .fc9-pagehead p{font-size:12px!important;max-width:none!important}
+  .fc38-daybar b{font-size:19px!important}
+  .fc38-line{grid-template-columns:50px 32px minmax(0,1fr) 28px!important;column-gap:7px!important}
+  .fc38-line strong{font-size:12.5px!important}
+  .fc38-line span{font-size:10px!important}
+  .fc38-taskcopy strong{font-size:13px!important}
+  .fc38-school>header{min-width:calc(100vw - 24px)!important}
+  body .fc9-nav{left:8px!important;right:8px!important;bottom:max(7px,env(safe-area-inset-bottom,0px))!important;min-height:68px!important;border-radius:22px!important}
+  body .fc9-nav .fc9-nav-in{min-height:58px!important}
+  body .fc9-nav button{min-height:58px!important;font-size:9px!important}
+  body .fc9-nav button svg{width:20px!important;height:20px!important}
+}
+
+/* Desktop / laptop: transform the mobile shell into a true app workspace. */
+@media (min-width: 900px){
+  html,body,.app{min-height:100%!important}
+  body{overflow-x:hidden!important}
+  .fc9-shell{
+    width:100%!important;
+    min-height:100vh!important;
+    display:grid!important;
+    grid-template-columns:var(--fc46-desktop-nav) minmax(0,1fr)!important;
+    grid-template-rows:auto minmax(0,1fr)!important;
+    padding-bottom:0!important;
+    background:var(--fc45-bg)!important;
+  }
+  .fc9-topbar{
+    grid-column:1/-1!important;
+    grid-row:1!important;
+    position:sticky!important;
+    top:0!important;
+    z-index:80!important;
+  }
+  .fc9-topbar-in{
+    width:min(calc(100% - 48px),calc(var(--fc46-desktop-max) + var(--fc46-desktop-nav)))!important;
+    min-height:78px!important;
+    padding:12px 24px!important;
+  }
+  .fc9-brand b{font-size:20px!important}
+  .fc9-brand span{font-size:11.5px!important}
+  .fc9-main{
+    grid-column:2!important;
+    grid-row:2!important;
+    width:min(100%,var(--fc46-desktop-max))!important;
+    max-width:var(--fc46-desktop-max)!important;
+    margin:0 auto!important;
+    padding:28px 32px 56px!important;
+    box-sizing:border-box!important;
+  }
+  body .fc9-nav{
+    grid-column:1!important;
+    grid-row:2!important;
+    position:sticky!important;
+    top:78px!important;
+    align-self:start!important;
+    left:auto!important;
+    right:auto!important;
+    bottom:auto!important;
+    width:var(--fc46-desktop-nav)!important;
+    height:calc(100vh - 78px)!important;
+    min-height:0!important;
+    margin:0!important;
+    padding:22px 14px!important;
+    border:0!important;
+    border-right:1px solid var(--fc45-border)!important;
+    border-radius:0!important;
+    background:rgba(255,255,255,.72)!important;
+    box-shadow:none!important;
+    backdrop-filter:blur(18px) saturate(150%)!important;
+    -webkit-backdrop-filter:blur(18px) saturate(150%)!important;
+    box-sizing:border-box!important;
+    overflow:auto!important;
+    z-index:40!important;
+  }
+  body .fc9-nav .fc9-nav-in{
+    width:100%!important;
+    max-width:none!important;
+    min-height:0!important;
+    display:flex!important;
+    flex-direction:column!important;
+    align-items:stretch!important;
+    gap:6px!important;
+  }
+  body .fc9-nav button{
+    width:100%!important;
+    min-height:50px!important;
+    display:grid!important;
+    grid-template-columns:28px minmax(0,1fr)!important;
+    align-items:center!important;
+    justify-content:start!important;
+    gap:11px!important;
+    padding:0 13px!important;
+    border-radius:13px!important;
+    font-size:13px!important;
+    text-align:left!important;
+  }
+  body .fc9-nav button svg{width:21px!important;height:21px!important}
+  body .fc9-nav button span{justify-self:start!important}
+  .fc9-page{gap:22px!important}
+  .fc9-pagehead{padding:5px 2px 8px!important}
+  .fc9-pagehead h1{font-size:38px!important}
+  .fc9-pagehead p{font-size:14px!important;max-width:58ch!important}
+  .fc9-section-head h2{font-size:17px!important}
+  .fc9-card,.fc38-panel{border-radius:20px!important}
+  .fc9-row{min-height:70px!important;padding:13px 16px!important}
+  .fc9-row-main b{font-size:14.5px!important}
+  .fc9-row-main span{font-size:12px!important}
+  .fc38-daybar{padding-bottom:12px!important}
+  .fc38-daybar b{font-size:23px!important}
+  .fc38-dashboard{gap:18px!important}
+  .fc38-panel>header{padding:12px 17px!important}
+  .fc38-panel h2{font-size:16px!important}
+  .fc38-task{min-height:62px!important;padding:9px 14px!important}
+  .fc38-line{min-height:66px!important;padding:10px 16px!important;grid-template-columns:64px 36px minmax(0,1fr) 30px!important}
+  .fc38-line strong{font-size:13.5px!important}
+  .fc38-line span{font-size:11px!important}
+  .fc38-school>header{flex-direction:row!important;align-items:center!important;justify-content:space-between!important;padding:14px 17px!important}
+  .fc38-legend{font-size:10px!important;max-width:70%!important;text-align:right!important}
+  .fc38-th{min-height:50px!important;padding:8px 5px!important}
+  .fc38-th>span{font-size:10px!important}
+  .fc38-th>small{font-size:8px!important}
+  .fc38-th>em{font-size:7px!important}
+  .fc38-person{padding:9px 7px!important}
+  .fc38-person>b{font-size:10px!important}
+  .fc38-person>small{font-size:8px!important}
+  .fc38-schoolcell{min-height:94px!important;padding:10px 7px!important}
+  .fc38-schoolcell b{font-size:10px!important}
+  .fc38-schoolcell span{font-size:9.5px!important}
+  .fc38-schoolcell strong{font-size:8.5px!important}
+  .fc38-reminders{grid-template-columns:1fr 1fr!important;gap:16px!important}
+  .fc38-reminders section,.fc38-reminders aside{padding:17px!important}
+  .fc38-reminders h3{font-size:12px!important}
+  .fc38-reminders span,.fc38-reminders p,.fc38-reminders small{font-size:10.5px!important}
+  #events .fc9-filters{flex-wrap:wrap!important}
+  #events .fc9-filter{height:42px!important;font-size:11.5px!important}
+  #events .fc9-weekdays{gap:9px!important}
+  #events .fc9-weekday{min-height:68px!important}
+  #homework .fc9-task-add{max-width:none!important;flex-wrap:nowrap!important}
+  #homework .fc9-task-add button{height:42px!important;font-size:11px!important}
+  #more .fc9-more-grid{grid-template-columns:repeat(3,minmax(0,1fr))!important;gap:14px!important}
+  #more .fc9-tile{min-height:138px!important;padding:18px!important}
+  #more .fc9-tile b{font-size:15px!important}
+  #more .fc9-tile span{font-size:11.5px!important}
+  .fc9-sheet{max-width:720px!important;margin-inline:auto!important}
+}
+
+/* Wide desktop: use the available space without stretching reading widths excessively. */
+@media (min-width: 1280px){
+  :root{--fc46-desktop-nav:224px;--fc46-desktop-max:1240px}
+  .fc9-main{padding-left:40px!important;padding-right:40px!important}
+  #more .fc9-more-grid{grid-template-columns:repeat(4,minmax(0,1fr))!important}
+}
+
+@media (prefers-reduced-motion:reduce){
+  body .fc9-nav button{transition:none!important}
+}
