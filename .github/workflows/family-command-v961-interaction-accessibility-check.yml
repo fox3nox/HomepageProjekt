@@ -1,0 +1,39 @@
+name: Family Command V9.61 interaction accessibility regression
+on:
+  push:
+    branches: [main]
+    paths:
+      - 'family-command/v9-interaction-accessibility-v961.css'
+      - 'family-command/v9-page-polish-v959.css'
+      - 'family-command/sw.js'
+      - 'family-command/e2e/interaction-accessibility-v961.spec.mjs'
+      - '.github/workflows/family-command-v961-interaction-accessibility-check.yml'
+  pull_request:
+    branches: [main]
+    paths:
+      - 'family-command/v9-interaction-accessibility-v961.css'
+      - 'family-command/v9-page-polish-v959.css'
+      - 'family-command/sw.js'
+      - 'family-command/e2e/interaction-accessibility-v961.spec.mjs'
+      - '.github/workflows/family-command-v961-interaction-accessibility-check.yml'
+jobs:
+  interaction-accessibility:
+    runs-on: ubuntu-latest
+    timeout-minutes: 12
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+      - name: Static integration
+        run: |
+          node --check family-command/e2e/interaction-accessibility-v961.spec.mjs
+          grep -q "v9-interaction-accessibility-v961.css" family-command/v9-page-polish-v959.css
+          grep -q "v9-interaction-accessibility-v961.css" family-command/sw.js
+          grep -q "family-command-v98" family-command/sw.js
+      - name: Install Playwright
+        run: npm install --no-save playwright
+      - name: Install WebKit
+        run: npx playwright install --with-deps webkit
+      - name: iPhone and desktop interaction accessibility regression
+        run: node family-command/e2e/interaction-accessibility-v961.spec.mjs

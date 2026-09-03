@@ -43,7 +43,8 @@ jobs:
           check "unified design wired" grep -q "v9-unified-design-v958.css" family-command/index.html
           check "page polish wired" grep -q "v9-page-polish-v959.css" family-command/index.html
           check "form dialog polish imported" grep -q "v9-form-dialog-polish-v960.css" family-command/v9-page-polish-v959.css
-          check "supported PWA cache" grep -Eq "const CACHE='family-command-v(68|69|70|71|72|73|74|75|76|77|78|79|80|81|82|83|84|85|86|87|88|89|90|91|92|93|94|95|96|97)'" family-command/sw.js
+          check "interaction accessibility polish imported" grep -q "v9-interaction-accessibility-v961.css" family-command/v9-page-polish-v959.css
+          check "supported PWA cache" grep -Eq "const CACHE='family-command-v(68|69|70|71|72|73|74|75|76|77|78|79|80|81|82|83|84|85|86|87|88|89|90|91|92|93|94|95|96|97|98)'" family-command/sw.js
           check "reference dashboard JS cached" grep -q "reference-dashboard-v36.js" family-command/sw.js
           check "reference dashboard CSS cached" grep -q "reference-dashboard-v36.css" family-command/sw.js
           check "global design cached" grep -q "global-design-v37.css" family-command/sw.js
@@ -58,6 +59,7 @@ jobs:
           check "unified design cached" grep -q "v9-unified-design-v958.css" family-command/sw.js
           check "page polish cached" grep -q "v9-page-polish-v959.css" family-command/sw.js
           check "form dialog polish cached" grep -q "v9-form-dialog-polish-v960.css" family-command/sw.js
+          check "interaction accessibility polish cached" grep -q "v9-interaction-accessibility-v961.css" family-command/sw.js
           check "shopping JS cached" grep -q "shopping-lists.js" family-command/sw.js
           check "shopping CSS cached" grep -q "shopping-lists.css" family-command/sw.js
           check "meal JS cached" grep -q "meal-planner.js" family-command/sw.js
