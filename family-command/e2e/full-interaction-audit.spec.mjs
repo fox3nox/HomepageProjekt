@@ -26,10 +26,16 @@ try{
   await page.waitForFunction(()=>document.documentElement.dataset.fcReady==='1');
   await page.waitForFunction(()=>document.documentElement.dataset.fcGlobalPolish==='v49');
 
+  // Exercise the final production runtime, including all deferred feature modules, before installing
+  // harmless audit spies. Otherwise the real deferred scripts can overwrite early spies and make the
+  // result depend on runner timing instead of the actual stable handler chain.
+  await page.evaluate(()=>window.__fcLoadExtrasNow());
+  await page.waitForFunction(()=>document.documentElement.dataset.fcExtras==='ready');
+  await page.waitForFunction(()=>window.__fcAiBudgetGuard?.preservesDocumentViewer===true);
+
   await page.evaluate(()=>{
     window.__auditCalls=[];
     const hit=(name,...args)=>window.__auditCalls.push([name,...args]);
-    window.__fcLoadExtrasNow=async()=>true;
     window.fcOpenFamilyAI=(...a)=>hit('ai',...a);
     window.fcPrintDay=(...a)=>hit('daypdf',...a);
     window.fcPrintWeek=(...a)=>hit('weekpdf',...a);
