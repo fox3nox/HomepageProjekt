@@ -38,12 +38,14 @@ jobs:
           check "mobile school JS cached" grep -q "mobile-school-day-v947.js" family-command/sw.js
           check "mobile school CSS cached" grep -q "mobile-school-day-v947.css" family-command/sw.js
           check "iphone layout CSS cached" grep -q "v9-iphone-layout-v948.css" family-command/sw.js
+          check "iphone layout JS cached" grep -q "v9-iphone-layout-v948.js" family-command/sw.js
           check "global design loaded" grep -q "global-design-v37.css" family-command/reference-mobile-v35.js
           check "product design loaded" grep -q "v9-product-design.css" family-command/reference-mobile-v35.js
           check "responsive design loaded" grep -q "v9-responsive-v946.css" family-command/reference-mobile-v35.js
           check "mobile school JS loaded" grep -q "mobile-school-day-v947.js" family-command/reference-mobile-v35.js
           check "mobile school CSS loaded" grep -q "mobile-school-day-v947.css" family-command/reference-mobile-v35.js
           check "iphone layout CSS loaded" grep -q "v9-iphone-layout-v948.css" family-command/reference-mobile-v35.js
+          check "iphone layout JS loaded" grep -q "v9-iphone-layout-v948.js" family-command/reference-mobile-v35.js
           check "responsive design version" grep -q "20260903-v9480" family-command/reference-mobile-v35.js
           check "iphone layout marker" grep -q "fcIphoneLayout='v48'" family-command/reference-mobile-v35.js
           check "audit hardening marker" grep -q "v9.26-full-audit-hardening" family-command/build.txt
