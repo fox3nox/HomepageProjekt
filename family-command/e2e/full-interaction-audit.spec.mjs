@@ -121,7 +121,7 @@ try{
 
   for(const id of ['today','tomorrow','events','homework','more']){
     await openScreen(id);
-    const bad=await page.evaluate(screen=>[...document.querySelectorAll(`#${screen} button`)].filter(b=>{const r=b.getBoundingClientRect(),s=getComputedStyle(b);return s.display!=='none'&&s.visibility!=='hidden'&&!b.disabled&&(r.width<12||r.height<12)}).map(b=>({text:b.textContent.trim(),w:b.getBoundingClientRect().width,h:b.getBoundingClientRect().height})),id);
+    const bad=await page.evaluate(screen=>[...document.querySelectorAll(`#${screen} button`)].filter(b=>{const r=b.getBoundingClientRect(),s=getComputedStyle(b);const rendered=b.getClientRects().length>0;return rendered&&s.display!=='none'&&s.visibility!=='hidden'&&!b.disabled&&(r.width<12||r.height<12)}).map(b=>({text:b.textContent.trim(),w:b.getBoundingClientRect().width,h:b.getBoundingClientRect().height})),id);
     assert.deepEqual(bad,[],`${id} has unusable button tap targets: ${JSON.stringify(bad)}`);
   }
 
