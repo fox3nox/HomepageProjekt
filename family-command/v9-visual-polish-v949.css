@@ -1,0 +1,122 @@
+/* Familienzentrale V9.49 · mobile visual-polish pass
+   Screenshot-driven fixes for task icon alignment, row rhythm and bottom chrome. */
+@media (max-width:719px){
+  /* Task row: reserve a real icon tile so emoji can never drift into the checkbox. */
+  #today .fc38-task{
+    grid-template-columns:44px 36px minmax(0,1fr) 44px!important;
+    column-gap:8px!important;
+    padding-left:10px!important;
+    padding-right:6px!important;
+    align-items:center!important;
+  }
+  #today .fc38-check{
+    justify-self:center!important;
+    align-self:center!important;
+    margin:0!important;
+  }
+  #today .fc38-taskicon{
+    width:34px!important;
+    height:34px!important;
+    min-width:34px!important;
+    min-height:34px!important;
+    box-sizing:border-box!important;
+    display:grid!important;
+    place-items:center!important;
+    justify-self:center!important;
+    align-self:center!important;
+    margin:0!important;
+    padding:0!important;
+    border-radius:10px!important;
+    background:#f3f6fb!important;
+    font-family:"Apple Color Emoji","Segoe UI Emoji","Noto Color Emoji",sans-serif!important;
+    font-size:18px!important;
+    font-weight:400!important;
+    line-height:1!important;
+    text-align:center!important;
+    text-indent:0!important;
+    letter-spacing:0!important;
+    overflow:hidden!important;
+  }
+  #today .fc38-taskcopy{
+    min-width:0!important;
+    align-items:center!important;
+  }
+  #today .fc38-taskcopy strong{
+    line-height:1.24!important;
+    overflow-wrap:anywhere!important;
+  }
+  #today .fc38-go{
+    justify-self:center!important;
+    align-self:center!important;
+    display:grid!important;
+    place-items:center!important;
+    margin:0!important;
+    padding:0!important;
+  }
+
+  /* Today overview: cleaner optical alignment between time, avatar and copy. */
+  #today .fc38-line{
+    column-gap:9px!important;
+  }
+  #today .fc38-line>.fc38-avatar{
+    justify-self:center!important;
+  }
+  #today .fc38-line>div{
+    padding-right:2px!important;
+  }
+
+  /* School cards: prevent secondary metadata from looking clipped or crowded. */
+  #today .fc47-person small{
+    max-width:100%!important;
+    overflow:hidden!important;
+    text-overflow:ellipsis!important;
+    white-space:nowrap!important;
+    line-height:1.25!important;
+  }
+  #today .fc47-child{
+    overflow:hidden!important;
+  }
+
+  /* Segmented controls and filter pills: make vertical centering deterministic. */
+  #events .fc9-segment button,
+  #homework .fc9-segment button,
+  #events .fc9-filter,
+  #today .fc38-switch>*{
+    display:flex!important;
+    align-items:center!important;
+    justify-content:center!important;
+    line-height:1!important;
+  }
+
+  /* Bottom navigation: soften the upward shadow so it does not visually cover headings. */
+  body .fc9-nav{
+    border-top:1px solid rgba(218,226,237,.9)!important;
+    box-shadow:0 -3px 14px rgba(20,43,74,.055)!important;
+  }
+  body .fc9-nav button{
+    min-width:0!important;
+  }
+  body .fc9-nav button .badge,
+  body .fc9-nav button [class*="badge"]{
+    line-height:1!important;
+  }
+
+  /* Keep the last content visually clear of the nav's shadow on every screen. */
+  body .fc9-main{
+    scroll-padding-bottom:18px!important;
+  }
+}
+
+@media (max-width:390px){
+  #today .fc38-task{
+    grid-template-columns:42px 34px minmax(0,1fr) 40px!important;
+    column-gap:7px!important;
+  }
+  #today .fc38-taskicon{
+    width:32px!important;
+    height:32px!important;
+    min-width:32px!important;
+    min-height:32px!important;
+    font-size:17px!important;
+  }
+}
