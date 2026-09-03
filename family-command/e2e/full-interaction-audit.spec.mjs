@@ -75,18 +75,21 @@ try{
     await page.click(`#fc9Modal [data-q="${kind}"]`);await expectModal(title);await closeModal();
   }
 
-  // Create and complete a To-do through the actual UI.
+  // Create and complete a To-do through the actual UI. Completion rerenders the row,
+  // therefore click the real control and validate the resulting filter state instead of using locator.check().
   await openScreen('homework');
   await page.click('[data-new-todo]');await expectModal(/Neues To-do/i);
   await page.fill('#fc9TodoTitle','UI Audit To-do');
   await page.click('#fc9Modal [data-save]');
   await page.waitForSelector('#homework [data-todo]');
   assert.ok((await page.locator('#homework').innerText()).includes('UI Audit To-do'),'saved To-do must render');
-  const auditTodo=page.locator('#homework [data-todo]').filter({hasText:'UI Audit To-do'});
-  await auditTodo.locator('input[type="checkbox"]').check();
+  let auditTodo=page.locator('#homework [data-todo]').filter({hasText:'UI Audit To-do'});
+  await auditTodo.locator('input[type="checkbox"]').click();
+  await page.waitForFunction(()=>!document.querySelector('#homework')?.innerText.includes('UI Audit To-do'));
 
-  // Task filters must switch without errors.
+  // Task filters must switch and the completed task must be visible under Erledigt.
   for(const f of ['open','today','done']){await page.click(`[data-task-filter="${f}"]`);assert.ok(await page.locator(`[data-task-filter="${f}"]`).evaluate(el=>el.classList.contains('active')),`task filter ${f} must become active`)}
+  assert.ok((await page.locator('#homework').innerText()).includes('UI Audit To-do'),'completed To-do must render in Done filter');
 
   // Create a school task and verify it renders.
   await page.click('[data-task-filter="open"]');
@@ -113,9 +116,10 @@ try{
   for(const k of ['ai','daypdf','weekpdf','backup','export']){await page.click(`[data-feature="${k}"]`);await expectCall(k)}
   await page.click('[data-feature="push"]');await expectModal(/Erinnerungen/i);await page.click('#fc9Modal [data-save]');await expectCall('push');
 
-  // Pendenz create + completion.
+  // Pendenz create + completion. It also rerenders immediately after completion.
   await openScreen('more');await page.click('[data-add-pend]');await expectModal(/Neue Pendenz/i);await page.fill('#fc9PendTitle','UI Audit Pendenz');await page.fill('#fc9PendAmount','12.50');await page.click('#fc9Modal [data-save]');assert.ok((await page.locator('#more').innerText()).includes('UI Audit Pendenz'));
-  const pend=page.locator('#more .fc9-pend-row').filter({hasText:'UI Audit Pendenz'});await pend.locator('input[type="checkbox"]').check();
+  const pend=page.locator('#more .fc9-pend-row').filter({hasText:'UI Audit Pendenz'});await pend.locator('input[type="checkbox"]').click();
+  await page.waitForFunction(()=>!document.querySelector('#more')?.innerText.includes('UI Audit Pendenz'));
 
   // AI header button must use the same feature route.
   await page.evaluate(()=>window.__auditCalls=[]);await page.click('#fc9AI');await expectCall('ai');
