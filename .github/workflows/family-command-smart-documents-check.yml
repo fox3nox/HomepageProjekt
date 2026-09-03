@@ -9,6 +9,7 @@ on:
       - 'family-command/ai-budget-guard.js'
       - 'family-command/sw.js'
       - 'family-command/e2e/smart-documents.spec.mjs'
+      - 'family-command/e2e/document-center-v951.spec.mjs'
       - '.github/workflows/family-command-smart-documents-check.yml'
   pull_request:
     branches: [main]
@@ -19,6 +20,7 @@ on:
       - 'family-command/ai-budget-guard.js'
       - 'family-command/sw.js'
       - 'family-command/e2e/smart-documents.spec.mjs'
+      - 'family-command/e2e/document-center-v951.spec.mjs'
       - '.github/workflows/family-command-smart-documents-check.yml'
 jobs:
   smart-documents:
@@ -35,6 +37,7 @@ jobs:
           node --check family-command/document-viewer.js
           node --check family-command/ai-budget-guard.js
           node --check family-command/e2e/smart-documents.spec.mjs
+          node --check family-command/e2e/document-center-v951.spec.mjs
           grep -q "smart-documents.js" family-command/index.html
           grep -q "__fcSmartDocumentsHealth" family-command/smart-documents.js
       - name: Install Playwright
@@ -47,6 +50,12 @@ jobs:
         run: |
           set -o pipefail
           node family-command/e2e/smart-documents.spec.mjs 2>&1 | tee smart-documents-test.log
+      - name: V9.51 document center regression
+        id: centertest
+        shell: bash
+        run: |
+          set -o pipefail
+          node family-command/e2e/document-center-v951.spec.mjs 2>&1 | tee -a smart-documents-test.log
       - name: Upload smart documents diagnostics
         if: failure()
         uses: actions/upload-artifact@v4
