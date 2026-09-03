@@ -1,0 +1,56 @@
+/* Familienzentrale V9.60 · form & dialog polish
+   Visual-only layer for sheets, editors and feature workspaces. */
+:root{--fc60-sheet:#fff;--fc60-bg:#f5f8fc;--fc60-line:#dbe5ef;--fc60-ink:#102846;--fc60-muted:#71839b;--fc60-blue:#176fdd;--fc60-blue-soft:#edf5ff;--fc60-danger:#b33e4a;--fc60-radius:22px;--fc60-field:14px;--fc60-shadow:0 28px 80px rgba(18,38,66,.22)}
+
+/* Native V9 sheets + event/document sheets */
+.fc9-modal,.fc-detail-modal,.fc-picker-modal,.fc-event-edit-modal{background:rgba(14,27,45,.38)!important;backdrop-filter:blur(14px) saturate(.9)!important;-webkit-backdrop-filter:blur(14px) saturate(.9)!important}
+.fc9-sheet,.fc-detail-sheet,.fc-picker-sheet,.fc-event-edit-sheet{background:var(--fc60-sheet)!important;border:1px solid rgba(218,228,239,.92)!important;border-radius:var(--fc60-radius)!important;box-shadow:var(--fc60-shadow)!important;color:var(--fc60-ink)!important}
+.fc9-sheet-head,.fc-detail-sheet header,.fc-picker-head,.fc-event-edit-head{padding-bottom:11px!important;border-bottom:1px solid #edf2f7!important;align-items:flex-start!important}
+.fc9-sheet-head h2,.fc-detail-sheet h2,.fc-picker-head h2,.fc-event-edit-head h2{color:var(--fc60-ink)!important;letter-spacing:-.035em!important;font-weight:880!important}
+.fc9-sheet-head small,.fc-picker-head small,.fc-event-edit-head small{color:#7b8ca1!important}
+.fc9-close,.fc-detail-close,.fc-picker-close,.fc-event-edit-close{width:44px!important;height:44px!important;min-width:44px!important;border:1px solid #e0e8f1!important;border-radius:13px!important;background:#f1f5f9!important;color:#50647e!important;transition:transform .14s ease,background .14s ease!important}
+.fc9-close:active,.fc-detail-close:active,.fc-picker-close:active,.fc-event-edit-close:active{transform:scale(.94)!important;background:#e9eff6!important}
+
+/* Shared inputs */
+.fc9-field input,.fc9-field textarea,.fc9-field select,.fc-event-edit-field input,.fc-event-edit-field select,.fc-event-edit-field textarea,
+.fc-shopping-form input,.fc-shopping-form select,.fc-shopping-form textarea,.fc-meal-form input,.fc-meal-form select,.fc-meal-form textarea,.fc-recipe-form input,.fc-recipe-form select,.fc-recipe-form textarea,.fc-budget-form input,.fc-budget-form select,.fc-budget-form textarea,.fc-contact-form input,.fc-contact-form select,.fc-contact-form textarea{
+  min-height:48px!important;border:1px solid var(--fc60-line)!important;border-radius:var(--fc60-field)!important;background:#fff!important;color:#17304f!important;padding:11px 12px!important;box-shadow:inset 0 1px 1px rgba(25,49,80,.018)!important;outline:none!important;transition:border-color .14s ease,box-shadow .14s ease,background .14s ease!important
+}
+.fc9-field textarea,.fc-event-edit-field textarea,.fc-shopping-form textarea,.fc-meal-form textarea,.fc-recipe-form textarea,.fc-budget-form textarea,.fc-contact-form textarea{min-height:92px!important;line-height:1.45!important}
+.fc9-field input:focus,.fc9-field textarea:focus,.fc9-field select:focus,.fc-event-edit-field input:focus,.fc-event-edit-field select:focus,.fc-event-edit-field textarea:focus,
+.fc-shopping-form input:focus,.fc-shopping-form select:focus,.fc-shopping-form textarea:focus,.fc-meal-form input:focus,.fc-meal-form select:focus,.fc-meal-form textarea:focus,.fc-recipe-form input:focus,.fc-recipe-form select:focus,.fc-recipe-form textarea:focus,.fc-budget-form input:focus,.fc-budget-form select:focus,.fc-budget-form textarea:focus,.fc-contact-form input:focus,.fc-contact-form select:focus,.fc-contact-form textarea:focus{
+  border-color:#80b5f4!important;box-shadow:0 0 0 3px rgba(23,111,221,.11)!important;background:#fff!important
+}
+.fc9-field label,.fc-event-edit-field label,.fc-shopping-form label,.fc-meal-form label,.fc-recipe-form label,.fc-budget-form label,.fc-contact-form label{color:#687c95!important;font-weight:900!important;letter-spacing:.07em!important}
+
+/* Action bars */
+.fc9-sheet-actions,.fc-event-edit-actions,.fc-detail-manage{gap:9px!important;margin-top:16px!important}
+.fc9-sheet-actions button,.fc-event-edit-actions button,.fc-detail-manage button{min-height:48px!important;border-radius:13px!important;font-weight:850!important}
+.fc9-sheet-actions .save,.fc-event-edit-save{background:linear-gradient(180deg,#2378e5,#1769d8)!important;border-color:#1769d8!important;color:#fff!important;box-shadow:0 7px 16px rgba(23,105,216,.16)!important}
+.fc9-sheet-actions .delete,.fc-detail-delete{background:#fff5f5!important;border-color:#f0d2d5!important;color:var(--fc60-danger)!important}
+
+/* Feature editors */
+.fc-shopping-edit-modal,.fc-meal-edit-modal,.fc-recipe-edit-modal,.fc-budget-edit-modal,.fc-contact-edit-modal{background:rgba(14,27,45,.38)!important;backdrop-filter:blur(14px)!important;-webkit-backdrop-filter:blur(14px)!important}
+.fc-shopping-edit-sheet,.fc-meal-edit-sheet,.fc-recipe-edit-sheet,.fc-budget-edit-sheet,.fc-contact-edit-sheet{background:#fff!important;border:1px solid #dce6f0!important;border-radius:24px!important;box-shadow:var(--fc60-shadow)!important}
+.fc-shopping-edit-sheet>header,.fc-meal-edit-sheet>header,.fc-recipe-edit-sheet>header,.fc-budget-edit-sheet>header,.fc-contact-edit-sheet>header{padding-bottom:11px!important;border-bottom:1px solid #edf2f7!important}
+.fc-shopping-edit-sheet h3,.fc-meal-edit-sheet h3,.fc-recipe-edit-sheet h3,.fc-budget-edit-sheet h3,.fc-contact-edit-sheet h3{color:var(--fc60-ink)!important;letter-spacing:-.025em!important}
+.fc-shopping-edit-sheet footer,.fc-meal-edit-sheet footer,.fc-recipe-edit-sheet footer,.fc-budget-edit-sheet footer,.fc-contact-edit-sheet footer{gap:8px!important;padding-top:12px!important;border-top:1px solid #edf2f7!important}
+.fc-shopping-edit-sheet footer button,.fc-meal-edit-sheet footer button,.fc-recipe-edit-sheet footer button,.fc-budget-edit-sheet footer button,.fc-contact-edit-sheet footer button{min-height:46px!important;border-radius:12px!important;font-weight:850!important}
+
+/* Document/event content grouping */
+.fc-detail-grid>div,.fc-detail-rem,.fc-detail-note{background:#f8fbff!important;border-color:#e2eaf3!important;border-radius:15px!important}
+.fc-detail-doc,.fc-picker-existing{border-color:#dfe7f1!important;background:#fbfdff!important;border-radius:14px!important;min-height:58px!important}
+.fc-detail-upload,.fc-detail-pick,.fc-picker-upload{min-height:52px!important;border-radius:14px!important;background:#f8fbff!important}
+
+@media(max-width:719px){
+  .fc9-modal,.fc-detail-modal,.fc-picker-modal,.fc-event-edit-modal,.fc-shopping-edit-modal,.fc-meal-edit-modal,.fc-recipe-edit-modal,.fc-budget-edit-modal,.fc-contact-edit-modal{padding:8px 8px calc(8px + env(safe-area-inset-bottom,0px))!important}
+  .fc9-sheet,.fc-detail-sheet,.fc-picker-sheet,.fc-event-edit-sheet,.fc-shopping-edit-sheet,.fc-meal-edit-sheet,.fc-recipe-edit-sheet,.fc-budget-edit-sheet,.fc-contact-edit-sheet{width:100%!important;max-height:91dvh!important;border-radius:22px!important;padding:14px!important}
+  .fc9-sheet-head h2,.fc-detail-sheet h2,.fc-picker-head h2,.fc-event-edit-head h2{font-size:20px!important}
+  .fc9-field input,.fc9-field textarea,.fc9-field select,.fc-event-edit-field input,.fc-event-edit-field select,.fc-event-edit-field textarea,.fc-shopping-form input,.fc-shopping-form select,.fc-shopping-form textarea,.fc-meal-form input,.fc-meal-form select,.fc-meal-form textarea,.fc-recipe-form input,.fc-recipe-form select,.fc-recipe-form textarea,.fc-budget-form input,.fc-budget-form select,.fc-budget-form textarea,.fc-contact-form input,.fc-contact-form select,.fc-contact-form textarea{font-size:16px!important}
+  .fc9-sheet-actions,.fc-event-edit-actions,.fc-detail-manage{position:sticky!important;bottom:-14px!important;background:linear-gradient(180deg,rgba(255,255,255,.72),#fff 28%)!important;padding-top:14px!important;padding-bottom:4px!important;z-index:2!important}
+}
+
+@media(min-width:900px){
+  .fc9-sheet,.fc-detail-sheet,.fc-picker-sheet,.fc-event-edit-sheet{width:min(620px,calc(100vw - 80px))!important;padding:20px!important;border-radius:26px!important}
+  .fc-shopping-edit-sheet,.fc-meal-edit-sheet,.fc-recipe-edit-sheet,.fc-budget-edit-sheet,.fc-contact-edit-sheet{border-radius:26px!important}
+}
