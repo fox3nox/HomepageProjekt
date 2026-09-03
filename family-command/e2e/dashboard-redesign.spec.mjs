@@ -8,13 +8,14 @@ const seed=readFileSync('family-command/e2e/mock-private-core.js','utf8');
 const server=spawn('python3',['-m','http.server',String(PORT),'--directory','family-command'],{stdio:['ignore','pipe','pipe']});
 const sleep=ms=>new Promise(r=>setTimeout(r,ms));
 async function ready(){for(let i=0;i<40;i++){try{const r=await fetch(BASE+'/index.html');if(r.ok)return}catch{}await sleep(100)}throw new Error('server not ready')}
-async function openApp(browser,options){const context=await browser.newContext({...options,serviceWorkers:'block'});await context.addInitScript({content:seed});const page=await context.newPage();await page.goto(BASE+'/?access=test',{waitUntil:'domcontentloaded'});await page.waitForFunction(()=>document.documentElement.dataset.fcReady==='1');await page.waitForFunction(()=>document.documentElement.dataset.fcIphoneDashboard==='v31');return{context,page}}
+async function openApp(browser,options){const context=await browser.newContext({...options,serviceWorkers:'block'});await context.addInitScript({content:seed});const page=await context.newPage();await page.goto(BASE+'/?access=test',{waitUntil:'domcontentloaded'});await page.waitForFunction(()=>document.documentElement.dataset.fcReady==='1');await page.waitForFunction(()=>document.documentElement.dataset.fcGlobalPolish==='v46');return{context,page}}
 try{
   await ready();
   const browser=await webkit.launch({headless:true});
 
   const mobile=await openApp(browser,{viewport:{width:390,height:844},isMobile:true,hasTouch:true});
   const p=mobile.page;
+  await p.waitForFunction(()=>document.documentElement.dataset.fcIphoneDashboard==='v31');
   const x=await p.evaluate(()=>{
     const nav=document.querySelector('.fc9-nav').getBoundingClientRect();
     const shell=document.querySelector('.fc9-shell').getBoundingClientRect();
