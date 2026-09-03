@@ -1,0 +1,4 @@
+/* V9.45 final visual QA compatibility */
+.fc38-th.is-today{background:linear-gradient(180deg,#edf5ff 0%,#e4efff 100%)!important}
+body .fc9-nav button.active{background:linear-gradient(180deg,#f1f6ff 0%,#e9f2ff 100%)!important}
+.fc38-line .fc38-avatar{color:#fff!important}

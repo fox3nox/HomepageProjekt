@@ -4,23 +4,23 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
-  <meta name="theme-color" content="#f6f8fb">
+  <meta name="theme-color" content="#f7f9fc">
   <meta name="apple-mobile-web-app-capable" content="yes">
   <meta name="apple-mobile-web-app-status-bar-style" content="default">
   <meta name="apple-mobile-web-app-title" content="Familie">
   <meta name="format-detection" content="telephone=no">
   <title>Familienzentrale</title>
-  <link rel="manifest" href="./manifest.webmanifest?v=20260901-v9350">
-  <link rel="icon" href="./icon.svg?v=20260901-v9350" type="image/svg+xml">
-  <link rel="apple-touch-icon" sizes="180x180" href="./apple-touch-icon.png?v=20260901-v9350">
+  <link rel="manifest" href="./manifest.webmanifest?v=20260903-v9450">
+  <link rel="icon" href="./icon.svg?v=20260903-v9450" type="image/svg+xml">
+  <link rel="apple-touch-icon" sizes="180x180" href="./apple-touch-icon.png?v=20260903-v9450">
   <style>
-    html,body{margin:0;min-height:100%;background:#f6f8fb;color-scheme:light}
+    html,body{margin:0;min-height:100%;background:#f7f9fc;color-scheme:light}
     #fcApp{visibility:hidden}
-    .fc9-boot{position:fixed;inset:0;z-index:100000;background:#f6f8fb;display:grid;place-items:center;padding:20px;font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif}.fc9-boot-box{width:min(100%,430px)}.fc9-boot-brand{display:flex;align-items:center;gap:10px;font-weight:900;color:#172033}.fc9-boot-mark{width:36px;height:36px;border-radius:11px;overflow:hidden;background:#17265d;display:grid;place-items:center}.fc9-boot-mark img{display:block;width:100%;height:100%;object-fit:cover}.fc9-boot-bar{height:4px;margin-top:18px;border-radius:999px;background:#e3e8ef;overflow:hidden}.fc9-boot-bar i{display:block;width:48%;height:100%;background:#263a67;border-radius:inherit;animation:fc9load 1s ease-in-out infinite alternate}.fc9-boot p{color:#8491a4;font-size:10px;margin-top:9px}@keyframes fc9load{to{transform:translateX(105%)}}
+    .fc9-boot{position:fixed;inset:0;z-index:100000;background:#f7f9fc;display:grid;place-items:center;padding:20px;font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif}.fc9-boot-box{width:min(100%,430px)}.fc9-boot-brand{display:flex;align-items:center;gap:10px;font-weight:900;color:#172033}.fc9-boot-mark{width:36px;height:36px;border-radius:11px;overflow:hidden;background:#17265d;display:grid;place-items:center}.fc9-boot-mark img{display:block;width:100%;height:100%;object-fit:cover}.fc9-boot-bar{height:4px;margin-top:18px;border-radius:999px;background:#e3e8ef;overflow:hidden}.fc9-boot-bar i{display:block;width:48%;height:100%;background:#263a67;border-radius:inherit;animation:fc9load 1s ease-in-out infinite alternate}.fc9-boot p{color:#8491a4;font-size:10px;margin-top:9px}@keyframes fc9load{to{transform:translateX(105%)}}
   </style>
 </head>
 <body>
-  <div id="fcBoot" class="fc9-boot"><div class="fc9-boot-box"><div class="fc9-boot-brand"><div class="fc9-boot-mark"><img src="./apple-touch-icon.png?v=20260901-v9350" alt=""></div><span>Familienzentrale</span></div><div class="fc9-boot-bar"><i></i></div><p>Deine Familienübersicht wird vorbereitet …</p></div></div>
+  <div id="fcBoot" class="fc9-boot"><div class="fc9-boot-box"><div class="fc9-boot-brand"><div class="fc9-boot-mark"><img src="./apple-touch-icon.png?v=20260903-v9450" alt=""></div><span>Familienzentrale</span></div><div class="fc9-boot-bar"><i></i></div><p>Deine Familienübersicht wird vorbereitet …</p></div></div>
   <div class="app" id="fcApp"></div>
   <div class="toast" id="toast" role="status" aria-live="polite" aria-atomic="true"></div>
   <script>
@@ -29,7 +29,7 @@
     window.__fcManagedBoot=true;window.__fcV9Boot=true;
     const STORE='fc-private-access-v1',COOKIE='fc_private_access',params=new URLSearchParams(location.search);
     const PRIVATE_CONFIG='https://lmrvapstojcecljjdgds.supabase.co/functions/v1/family-command-private-config';
-    const VERSION='20260901-v9350',PRIVATE_RULES_VERSION='2026-08-31-v2',PRIVATE_RULES_CACHE='fc-private-rules-code-v1';
+    const VERSION='20260903-v9450',PRIVATE_RULES_VERSION='2026-08-31-v2',PRIVATE_RULES_CACHE='fc-private-rules-code-v1';
     const CRITICAL=['core-runtime.js','cloud-state.js','document-viewer.js','smart-documents.js','event-details.js','chat-command-sync.js','app-data-rules.js','v9-data.js','event-delete-fix.js','multi-link-ui.js','v9-app.js','v9-professional.js','reference-mobile-v35.js','homework-originals.js'];
     const DEFERRED=['push-v2.js','runtime-health.js','family-ai-v2.js','ai-budget-guard.js','family-ai-original-links.js','print-planner-v2.js','backup-manager.js','app-selftest-v9.js'];
     let extrasPromise=null;

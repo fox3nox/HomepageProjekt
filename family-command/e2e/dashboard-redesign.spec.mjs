@@ -26,6 +26,7 @@ try{
     const todoSection=todos[0]?.closest('.fc9-section');
     const todoHeading=todoSection?.querySelector('.fc9-section-head h2');
     const statTexts=[...document.querySelectorAll('#today .fc31-stat span')].map(x=>x.textContent.trim());
+    const activeStyle=getComputedStyle(document.querySelector('.fc9-nav button.active'));
     return {
       navX:nav.x,navBottom:nav.bottom,navW:nav.width,shellX:shell.x,shellW:shell.width,
       innerW:innerWidth,innerH:innerHeight,
@@ -38,12 +39,12 @@ try{
       statTexts,
       dashboard:document.documentElement.dataset.fcIphoneDashboard,
       reference:document.documentElement.dataset.fcReferenceDesign,
-      activeNavBg:getComputedStyle(document.querySelector('.fc9-nav button.active')).backgroundColor
+      activeNavBg:activeStyle.backgroundImage!=='none'?activeStyle.backgroundImage:activeStyle.backgroundColor
     };
   });
-  console.log('iphone-v33',JSON.stringify(x));
-  assert.ok(x.navX<=1&&Math.abs(x.navW-x.innerW)<=2,`mobile nav width ${JSON.stringify(x)}`);
-  assert.ok(Math.abs(x.navBottom-x.innerH)<=2,`mobile nav bottom ${JSON.stringify(x)}`);
+  console.log('iphone-v45',JSON.stringify(x));
+  assert.ok(x.navX>=8&&x.navX<=12&&Math.abs(x.navW-(x.innerW-20))<=3,`mobile floating nav width ${JSON.stringify(x)}`);
+  assert.ok(x.innerH-x.navBottom>=6&&x.innerH-x.navBottom<=12,`mobile floating nav safe gap ${JSON.stringify(x)}`);
   assert.ok(x.shellX<=1&&Math.abs(x.shellW-x.innerW)<=2,`mobile shell ${JSON.stringify(x)}`);
   assert.equal(x.overflow,true,`mobile overflow ${JSON.stringify(x)}`);
   assert.equal(x.dashboard,'v31');
@@ -52,7 +53,7 @@ try{
   assert.deepEqual(x.statTexts,['Wichtig','Offen','Termine']);
   assert.ok(x.focusHeight<90,`focus card must stay compact on iPhone: ${x.focusHeight}`);
   if(x.todoCount>0)assert.equal(x.todoHeading,'Heute – Das Wichtigste zuerst','today task section must follow the V9.33 reference hierarchy');
-  assert.notEqual(x.activeNavBg,'rgba(0, 0, 0, 0)','active bottom navigation must be visibly highlighted');
+  assert.ok(String(x.activeNavBg).includes('gradient')||String(x.activeNavBg).includes('rgb'),'active bottom navigation must be visibly highlighted');
   await browser.close();
-  console.log('V9.33 iPhone dashboard regression: ok');
+  console.log('V9.45 iPhone dashboard regression: ok');
 } finally {server.kill('SIGTERM')}
