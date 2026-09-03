@@ -62,6 +62,8 @@ try{
   await mobile.context.close();
 
   const desktop=await openApp(browser,{viewport:{width:1440,height:1000}});
+  await desktop.page.click('.fc9-nav button[data-screen="more"]');
+  await desktop.page.waitForSelector('#more .fc9-more-grid');
   const d=await desktop.page.evaluate(()=>{
     const shell=document.querySelector('.fc9-shell').getBoundingClientRect();
     const nav=document.querySelector('.fc9-nav').getBoundingClientRect();
@@ -76,7 +78,7 @@ try{
       rootOverflow:document.documentElement.scrollWidth<=document.documentElement.clientWidth+1,
       navPosition:navStyle.position,navDirection:navInStyle.flexDirection,
       moreCols:moreStyle.gridTemplateColumns,
-      h1:parseFloat(getComputedStyle(document.querySelector('#today .fc9-pagehead h1')).fontSize)
+      h1:parseFloat(getComputedStyle(document.querySelector('#more .fc9-pagehead h1')).fontSize)
     };
   });
   console.log('desktop-v46',JSON.stringify(d));
