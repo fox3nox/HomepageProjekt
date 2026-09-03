@@ -1,0 +1,58 @@
+/* Familienzentrale V9.48 · iPhone layout correctness pass
+   Prevent content/navigation overlap and reserve a real time column for all-day rows. */
+@media (max-width:719px){
+  html,body,.app{height:100%;min-height:100%;overflow:hidden!important}
+  .fc9-shell{
+    height:100dvh!important;
+    min-height:100dvh!important;
+    padding-bottom:0!important;
+    display:grid!important;
+    grid-template-rows:auto minmax(0,1fr) auto!important;
+    overflow:hidden!important;
+  }
+  .fc9-topbar{grid-row:1!important;position:relative!important;top:auto!important}
+  .fc9-main{
+    grid-row:2!important;
+    min-height:0!important;
+    overflow-y:auto!important;
+    overflow-x:hidden!important;
+    overscroll-behavior-y:contain!important;
+    -webkit-overflow-scrolling:touch!important;
+    padding-bottom:28px!important;
+    scroll-padding-bottom:28px!important;
+  }
+  body .fc9-nav{
+    grid-row:3!important;
+    position:relative!important;
+    left:auto!important;
+    right:auto!important;
+    bottom:auto!important;
+    width:auto!important;
+    margin:0 8px max(7px,env(safe-area-inset-bottom,0px))!important;
+    padding:4px 8px!important;
+    flex:none!important;
+  }
+  body .fc9-nav .fc9-nav-in{width:100%!important;max-width:none!important}
+
+  /* "Ganztägig" must never run into the avatar column. */
+  .fc38-line{
+    grid-template-columns:72px 36px minmax(0,1fr) 14px!important;
+    column-gap:7px!important;
+  }
+  .fc38-line time{
+    min-width:0!important;
+    white-space:nowrap!important;
+    overflow:hidden!important;
+    text-overflow:ellipsis!important;
+  }
+  .fc38-line>.fc38-avatar{justify-self:center!important}
+
+  /* A little more breathing room at panel edges; no content should touch the tab bar. */
+  .fc38-dashboard{padding-bottom:8px!important}
+  #today .fc38-panel:last-child{margin-bottom:4px!important}
+}
+
+@media (max-width:390px){
+  .fc38-line{grid-template-columns:68px 34px minmax(0,1fr) 13px!important;column-gap:6px!important}
+  .fc38-line time{font-size:9.1px!important}
+}
