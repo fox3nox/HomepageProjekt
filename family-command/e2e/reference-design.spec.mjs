@@ -16,8 +16,10 @@ try{
   await page.goto(BASE+'/?access=test',{waitUntil:'domcontentloaded'});
   await page.waitForFunction(()=>document.documentElement.dataset.fcReady==='1'&&window.__fcV9);
   await page.evaluate(()=>{const iso=todayISO();const d=new Date(`${iso}T12:00:00`);d.setDate(d.getDate()+1);const tomorrow=d.toISOString().slice(0,10);data.todos=[{id:'gift',date:iso,title:'Pokémon-Karten als Geschenk kaufen',priority:true,done:false,section:'day'},{id:'shop',date:iso,title:'Maggi kaufen',priority:true,done:false,section:'day'},{id:'normal',date:iso,title:'Normale offene Aufgabe',priority:false,done:false,section:'day'}];data.events=[{id:'visit',personIds:['child-a'],title:'Schulbesuch',date:iso,time:'13:40',note:'PET-Flaschen mitnehmen'},{id:'birthday',personIds:['child-a'],title:'Geburtstag Alessio',date:tomorrow,time:'13:30'}];for(const p of(data.people||[]).filter(p=>p.id!=='oli')){data.schedules[p.id]??={};for(const wd of[1,2,3,4,5])data.schedules[p.id][wd]=[{start:wd===3?'07:30':'08:20',end:'11:55',label:'Schule / Kindergarten',note:wd===3?'Turnzeug einpacken':''}]}save?.();window.renderToday?.()});
-  await page.waitForFunction(()=>['v44','v52'].includes(document.documentElement.dataset.fcReferenceDashboard));
-  await page.waitForFunction(()=>document.documentElement.dataset.fcMobileSchoolDay==='v49');
+  await page.waitForFunction(()=>window.__fcReferenceDashboard39?.rebuild&&document.querySelector('#today>.fc38-dashboard'),{timeout:30000});
+  await page.evaluate(()=>window.__fcReferenceDashboard39.rebuild(true));
+  await page.waitForFunction(()=>document.querySelector('#today>.fc38-dashboard')?.textContent.includes('Pokémon-Karten als Geschenk kaufen'),{timeout:10000});
+  await page.waitForFunction(()=>document.documentElement.dataset.fcMobileSchoolDay==='v49'&&document.querySelector('#today .fc47-school-mobile'),{timeout:30000});
 
   const r=await page.evaluate(()=>{
     const before=JSON.stringify({todos:data.todos,events:data.events,homework:data.homework,people:data.people,schedules:data.schedules});
