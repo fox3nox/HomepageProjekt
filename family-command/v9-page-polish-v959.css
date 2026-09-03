@@ -1,0 +1,137 @@
+/* Familienzentrale V9.59 · page-specific polish
+   Visual refinement only. No business logic changes. */
+:root{
+  --fc59-section-gap:18px;
+  --fc59-row-hover:#f8fbff;
+  --fc59-blue:#176fdd;
+  --fc59-blue-ink:#0f5fc7;
+  --fc59-soft-blue:#edf5ff;
+  --fc59-soft-green:#edf8f4;
+  --fc59-line:#dfe7f1;
+  --fc59-ink:#102846;
+  --fc59-muted:#71839b;
+}
+
+/* Shared hierarchy */
+.fc9-page{gap:var(--fc59-section-gap)!important}
+.fc9-pagehead{align-items:flex-end!important;padding-top:4px!important;padding-bottom:3px!important}
+.fc9-pagehead>div{max-width:680px}
+.fc9-pagehead h1{line-height:1.02!important}
+.fc9-pagehead p{max-width:56ch!important}
+.fc9-section{gap:8px!important}
+.fc9-section-head{min-height:30px!important}
+.fc9-section-head h2{font-weight:850!important}
+.fc9-card{overflow:hidden!important}
+.fc9-row{transition:background .14s ease,transform .14s ease!important}
+.fc9-row:active{background:var(--fc59-row-hover)!important}
+.fc9-row-main b{font-weight:820!important}
+.fc9-chevron{font-size:17px!important}
+
+/* Heute: stronger dashboard rhythm */
+#today .fc9-page{gap:16px!important}
+#today .fc9-focus{min-height:88px!important;border-radius:20px!important;border-color:#d9e5f4!important;background:linear-gradient(135deg,#edf5ff 0%,#f7faff 55%,#fff 100%)!important;box-shadow:0 8px 24px rgba(23,111,221,.07)!important;padding:15px 16px!important}
+#today .fc9-focus small{color:var(--fc59-blue-ink)!important}
+#today .fc9-focus b{font-size:16px!important;letter-spacing:-.025em!important}
+#today .fc9-focus-time strong{color:var(--fc59-blue-ink)!important}
+#today .fc38-panel{box-shadow:0 4px 18px rgba(27,48,77,.045)!important}
+#today .fc38-panel>header{background:linear-gradient(180deg,#fff,#fbfdff)!important;border-bottom:1px solid #edf2f7!important}
+#today .fc38-line{transition:background .14s ease!important}
+#today .fc38-line:active{background:#f8fbff!important}
+
+/* Morgen: clearer person blocks and time scanning */
+#tomorrow .fc9-tomorrow{padding:0!important}
+#tomorrow .fc9-tomorrow-top{min-height:54px!important;padding:11px 13px!important;background:linear-gradient(180deg,#fff,#fbfdff)!important}
+#tomorrow .fc9-tomorrow-top b{font-weight:850!important;color:#17304f!important}
+#tomorrow .fc9-tomorrow-items{border-top-color:#e8eef5!important}
+#tomorrow .fc9-mini{min-height:48px!important;padding:10px 13px!important;grid-template-columns:58px minmax(0,1fr)!important}
+#tomorrow .fc9-mini em{color:var(--fc59-blue-ink)!important;font-size:8.6px!important}
+#tomorrow .fc9-mini b{color:#17304f!important;font-weight:800!important}
+
+/* Kalender: controls read as one coherent toolbar */
+#events .fc9-segment{height:44px!important;border-radius:14px!important;padding:4px!important}
+#events .fc9-filters{gap:7px!important;padding-top:1px!important;padding-bottom:6px!important}
+#events .fc9-filter{height:37px!important;padding-inline:13px!important}
+#events .fc9-month{min-height:48px!important;padding:2px 0!important}
+#events .fc9-month button{width:40px!important;height:40px!important;border-radius:12px!important}
+#events .fc9-month b{font-size:16px!important;color:#17304f!important}
+#events .fc9-day-label{margin-top:8px!important;margin-bottom:4px!important;font-weight:900!important}
+#events .fc9-event{min-height:60px!important;border-left-width:4px!important}
+#events .fc9-weekdays{gap:7px!important}
+#events .fc9-weekday{min-height:54px!important;border-radius:14px!important}
+
+/* Aufgaben: larger tap targets, less visual noise */
+#homework .fc9-tasktabs{height:44px!important;padding:4px!important;border-radius:14px!important}
+#homework .fc9-row{min-height:62px!important;padding-top:11px!important;padding-bottom:11px!important}
+#homework .fc9-check{width:30px!important;height:30px!important;display:grid!important;place-items:center!important}
+#homework .fc9-check i{width:25px!important;height:25px!important;border-radius:8px!important}
+#homework .fc9-task-add{gap:8px!important}
+#homework .fc9-task-add button{min-height:44px!important;border-radius:12px!important;background:#fff!important;box-shadow:0 2px 8px rgba(25,49,80,.035)!important}
+#homework .fc9-badge{padding:4px 7px!important}
+
+/* Mehr: dashboard-like feature cards */
+#more .fc9-more-grid{gap:12px!important}
+#more .fc9-tile{min-height:112px!important;padding:15px!important;border-radius:20px!important;background:linear-gradient(145deg,#fff 0%,#fbfdff 100%)!important}
+#more .fc9-tile i{width:39px!important;height:39px!important;border-radius:12px!important;background:var(--fc59-soft-blue)!important;color:var(--fc59-blue-ink)!important}
+#more .fc9-tile b{margin-top:10px!important;font-size:12.2px!important}
+#more .fc9-tile span{margin-top:4px!important;line-height:1.35!important}
+#more .fc9-tile:after{top:12px!important;right:13px!important}
+
+/* Bottom navigation: more stable hit area and clearer active state */
+body .fc9-nav button{min-height:58px!important;border-radius:15px!important;transition:background .14s ease,color .14s ease,transform .14s ease!important}
+body .fc9-nav button:active{transform:scale(.97)!important}
+body .fc9-nav button.active svg{stroke-width:2.05!important}
+
+/* Feature workspaces */
+.fc-shopping-main,.fc-meal-main,.fc-recipes-main,.fc-budget-main,.fc-contacts-main{scroll-padding-top:16px!important}
+.fc-shopping-group>div,.fc-shopping-done>div,.fc-meal-day,.fc-recipe-card,.fc-budget-summary>div,.fc-budget-budget,.fc-budget-list,.fc-contact-card{box-shadow:0 4px 16px rgba(27,48,77,.045)!important}
+.fc-shopping-close,.fc-meal-close,.fc-recipes-close,.fc-budget-close,.fc-contacts-close{transition:transform .14s ease,background .14s ease!important}
+.fc-shopping-close:active,.fc-meal-close:active,.fc-recipes-close:active,.fc-budget-close:active,.fc-contacts-close:active{transform:scale(.94)!important}
+
+@media(max-width:719px){
+  .fc9-main{padding-top:12px!important;padding-bottom:26px!important}
+  .fc9-page{gap:15px!important}
+  .fc9-pagehead{align-items:center!important;padding:5px 1px 3px!important}
+  .fc9-pagehead h1{font-size:28px!important}
+  .fc9-pagehead p{font-size:10.8px!important}
+  .fc9-section-head{min-height:28px!important}
+  .fc9-section-head h2{font-size:15.3px!important}
+  .fc9-card{border-radius:18px!important}
+  .fc9-row{min-height:59px!important;padding-left:12px!important;padding-right:12px!important}
+  .fc9-time{width:57px!important;font-size:11.2px!important}
+  .fc9-row-main b{font-size:11.7px!important}
+  .fc9-row-main span{font-size:8.9px!important}
+
+  #today .fc9-focus{min-height:82px!important;padding:13px 14px!important}
+  #today .fc9-focus b{font-size:15px!important}
+  #today .fc9-focus-time strong{font-size:21px!important}
+
+  #tomorrow .fc9-mini{grid-template-columns:55px minmax(0,1fr)!important;padding:9px 12px!important}
+
+  #events .fc9-filter{height:36px!important;padding-inline:12px!important}
+  #events .fc9-event{min-height:58px!important}
+
+  #homework .fc9-row{min-height:61px!important}
+
+  #more .fc9-more-grid{grid-template-columns:1fr 1fr!important;gap:10px!important}
+  #more .fc9-tile{min-height:108px!important;padding:14px!important}
+  #more .fc9-tile i{width:38px!important;height:38px!important}
+  #more .fc9-tile b{font-size:11.9px!important}
+  #more .fc9-tile span{font-size:8.8px!important}
+}
+
+@media(min-width:720px) and (max-width:899px){
+  .fc9-page{gap:20px!important}
+  #more .fc9-more-grid{grid-template-columns:repeat(3,minmax(0,1fr))!important}
+  #more .fc9-tile{min-height:124px!important}
+}
+
+@media(min-width:900px){
+  .fc9-page{gap:22px!important}
+  .fc9-pagehead{padding-top:10px!important;padding-bottom:8px!important}
+  .fc9-section{gap:10px!important}
+  .fc9-row{min-height:62px!important}
+  .fc9-row:hover{background:#f8fbff!important}
+  #more .fc9-more-grid{grid-template-columns:repeat(3,minmax(0,1fr))!important;gap:14px!important}
+  #more .fc9-tile{min-height:132px!important;padding:18px!important}
+  #more .fc9-tile:hover{transform:translateY(-2px)!important;box-shadow:0 10px 26px rgba(26,47,76,.07)!important;border-color:#d3dfeb!important}
+}
