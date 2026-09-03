@@ -43,7 +43,7 @@ try{
   async function openScreen(id){await page.click(`.fc9-nav button[data-screen="${id}"]`);await page.waitForFunction(x=>document.querySelector(`#${x}`)?.classList.contains('active'),id)}
   async function closeModal(){const close=page.locator('#fc9Modal .fc9-close');if(await close.count())await close.click();await page.waitForFunction(()=>!document.querySelector('#fc9Modal'))}
   async function expectModal(title){await page.waitForSelector('#fc9Modal');assert.match((await page.locator('#fc9Modal h2').innerText()).trim(),title)}
-  async function expectCall(name){await page.waitForFunction(n=>(window.__auditCalls||[]).some(x=>x[0]===n),name)}
+  async function expectCall(name){try{await page.waitForFunction(n=>(window.__auditCalls||[]).some(x=>x[0]===n),name,{timeout:5000})}catch(e){const calls=await page.evaluate(()=>window.__auditCalls||[]);throw new Error(`feature ${name} did not reach expected handler; calls=${JSON.stringify(calls)}`,{cause:e})}}
 
   const taskSemantics=await page.evaluate(()=>{
     const root=document.querySelector('#today .fc38-dashboard');
