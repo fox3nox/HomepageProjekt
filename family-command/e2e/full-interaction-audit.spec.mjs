@@ -45,7 +45,6 @@ try{
   async function expectModal(title){await page.waitForSelector('#fc9Modal');assert.match((await page.locator('#fc9Modal h2').innerText()).trim(),title)}
   async function expectCall(name){await page.waitForFunction(n=>(window.__auditCalls||[]).some(x=>x[0]===n),name)}
 
-  // Screenshot-specific layout semantics: checkbox and money icon are separate columns.
   const taskSemantics=await page.evaluate(()=>{
     const root=document.querySelector('#today .fc38-dashboard');
     if(!root)return null;
@@ -64,19 +63,15 @@ try{
   assert.ok(taskSemantics.visualW>=20&&taskSemantics.visualW<=24&&taskSemantics.visualH>=20&&taskSemantics.visualH<=24,`visible checkbox must stay compact and distinct from the money icon: ${JSON.stringify(taskSemantics)}`);
   assert.ok(taskSemantics.iconW>=30&&taskSemantics.iconW<=36&&taskSemantics.iconH>=30&&taskSemantics.iconH<=36,`money icon tile should remain a separate category tile: ${JSON.stringify(taskSemantics)}`);
 
-  // Main navigation: every tab must activate the intended screen.
   for(const id of ['today','tomorrow','events','homework','more'])await openScreen(id);
   await openScreen('today');
 
-  // Header quick-add opens and every choice routes to the correct editor.
   const quick=[['event',/Neuer Termin/i],['todo',/Neues To-do/i],['hw',/Neue Schulaufgabe/i],['pend',/Neue Pendenz/i]];
   for(const [kind,title] of quick){
     await page.click('#fc9Add');await expectModal(/Was möchtest du eintragen/i);
     await page.click(`#fc9Modal [data-q="${kind}"]`);await expectModal(title);await closeModal();
   }
 
-  // Create and complete a To-do through the actual UI. Completion rerenders the row,
-  // therefore click the real control and validate the resulting filter state instead of using locator.check().
   await openScreen('homework');
   await page.click('[data-new-todo]');await expectModal(/Neues To-do/i);
   await page.fill('#fc9TodoTitle','UI Audit To-do');
@@ -87,18 +82,15 @@ try{
   await auditTodo.locator('input[type="checkbox"]').click();
   await page.waitForFunction(()=>!document.querySelector('#homework')?.innerText.includes('UI Audit To-do'));
 
-  // Task filters must switch and the completed task must be visible under Erledigt.
   for(const f of ['open','today','done']){await page.click(`[data-task-filter="${f}"]`);assert.ok(await page.locator(`[data-task-filter="${f}"]`).evaluate(el=>el.classList.contains('active')),`task filter ${f} must become active`)}
   assert.ok((await page.locator('#homework').innerText()).includes('UI Audit To-do'),'completed To-do must render in Done filter');
 
-  // Create a school task and verify it renders.
   await page.click('[data-task-filter="open"]');
   await page.click('[data-new-hw]');await expectModal(/Neue Schulaufgabe/i);
   await page.fill('#fc9HwTitle','UI Audit Schule');
   await page.click('#fc9Modal [data-save]');
   assert.ok((await page.locator('#homework').innerText()).includes('UI Audit Schule'),'saved school task must render');
 
-  // Calendar controls: agenda/week, filters, month paging, week day and new-event editor.
   await openScreen('events');
   await page.click('[data-cal-mode="week"]');assert.ok(await page.locator('[data-cal-mode="week"]').evaluate(el=>el.classList.contains('active')));
   const weekDay=page.locator('[data-week-date]').first();if(await weekDay.count())await weekDay.click();
@@ -109,22 +101,18 @@ try{
   await page.click('[data-new-event]');await expectModal(/Neuer Termin/i);await closeModal();
   const eventRow=page.locator('#events [data-event]').first();if(await eventRow.count()){await eventRow.click();await expectCall('event')}
 
-  // More: every utility tile must either open its destination or call its backing feature.
   await openScreen('more');
   await page.click('[data-feature="people"]');await page.waitForFunction(()=>document.querySelector('#people')?.classList.contains('active'));await page.click('#people [data-back]');
-  await page.click('[data-feature="docs"]');await expectModal(/Originale & Dateien/i);await page.waitForSelector('#fc9Modal [data-doc="doc-audit"]');await page.click('#fc9Modal [data-doc="doc-audit"]');await expectCall('doc');await closeModal();
+  await page.click('[data-feature="docs"]');await expectModal(/Dokumentenzentrale/i);await page.waitForSelector('#fc9Modal [data-doc="doc-audit"]');await page.click('#fc9Modal [data-doc="doc-audit"]');await expectCall('doc');await closeModal();
   for(const k of ['ai','daypdf','weekpdf','backup','export']){await page.click(`[data-feature="${k}"]`);await expectCall(k)}
   await page.click('[data-feature="push"]');await expectModal(/Erinnerungen/i);await page.click('#fc9Modal [data-save]');await expectCall('push');
 
-  // Pendenz create + completion. It also rerenders immediately after completion.
   await openScreen('more');await page.click('[data-add-pend]');await expectModal(/Neue Pendenz/i);await page.fill('#fc9PendTitle','UI Audit Pendenz');await page.fill('#fc9PendAmount','12.50');await page.click('#fc9Modal [data-save]');assert.ok((await page.locator('#more').innerText()).includes('UI Audit Pendenz'));
   const pend=page.locator('#more .fc9-pend-row').filter({hasText:'UI Audit Pendenz'});await pend.locator('input[type="checkbox"]').click();
   await page.waitForFunction(()=>!document.querySelector('#more')?.innerText.includes('UI Audit Pendenz'));
 
-  // AI header button must use the same feature route.
   await page.evaluate(()=>window.__auditCalls=[]);await page.click('#fc9AI');await expectCall('ai');
 
-  // Every visible enabled button on each primary screen must have a non-zero tap target.
   for(const id of ['today','tomorrow','events','homework','more']){
     await openScreen(id);
     const bad=await page.evaluate(screen=>[...document.querySelectorAll(`#${screen} button`)].filter(b=>{const r=b.getBoundingClientRect(),s=getComputedStyle(b);return s.display!=='none'&&s.visibility!=='hidden'&&!b.disabled&&(r.width<12||r.height<12)}).map(b=>({text:b.textContent.trim(),w:b.getBoundingClientRect().width,h:b.getBoundingClientRect().height})),id);
