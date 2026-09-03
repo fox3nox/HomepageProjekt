@@ -1,0 +1,22 @@
+name: Family Command V9.55 recipes regression
+on:
+  pull_request:
+    branches: [main]
+    paths: ['family-command/recipes-favorites.js','family-command/recipes-favorites.css','family-command/recipe-meal-bridge.js','family-command/e2e/recipes-favorites-v955.spec.mjs','family-command/index.html','family-command/sw.js','.github/workflows/family-command-recipes-v955-check.yml']
+  push:
+    branches: [main]
+    paths: ['family-command/recipes-favorites.js','family-command/recipes-favorites.css','family-command/recipe-meal-bridge.js','family-command/e2e/recipes-favorites-v955.spec.mjs','family-command/index.html','family-command/sw.js','.github/workflows/family-command-recipes-v955-check.yml']
+jobs:
+  recipes:
+    runs-on: ubuntu-latest
+    timeout-minutes: 12
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+      - run: node --check family-command/recipes-favorites.js && node --check family-command/recipe-meal-bridge.js && node --check family-command/e2e/recipes-favorites-v955.spec.mjs
+      - run: grep -q "recipes-favorites.js" family-command/index.html && grep -q "recipes-favorites.css" family-command/index.html && grep -q "recipe-meal-bridge.js" family-command/index.html
+      - run: npm install --no-save playwright
+      - run: npx playwright install --with-deps webkit
+      - run: node family-command/e2e/recipes-favorites-v955.spec.mjs
