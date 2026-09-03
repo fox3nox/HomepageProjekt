@@ -1,0 +1,46 @@
+/* Familienzentrale V9.61 · interaction + accessibility polish */
+:root{--fc61-focus:#1b73e8;--fc61-focus-ring:0 0 0 3px rgba(27,115,232,.18);--fc61-disabled:#94a3b8}
+
+/* Keyboard focus: visible, consistent and never dependent on browser defaults. */
+:where(button,a,input,select,textarea,[tabindex]):focus{outline:none}
+:where(button,a,input,select,textarea,[tabindex]):focus-visible{outline:2px solid var(--fc61-focus)!important;outline-offset:2px!important;box-shadow:var(--fc61-focus-ring)!important}
+:where(input,select,textarea):focus-visible{border-color:var(--fc61-focus)!important;outline:0!important}
+
+/* Clear interaction feedback without changing layout. */
+:where(button,a,.fc9-row,.fc9-more-card,.fc38-line){-webkit-tap-highlight-color:transparent}
+:where(button,[role="button"],a){transition:transform .12s ease,box-shadow .12s ease,background-color .12s ease,border-color .12s ease,opacity .12s ease}
+:where(button,[role="button"]):active{transform:scale(.985)}
+
+/* Disabled states should look disabled and stop suggesting interaction. */
+:where(button,input,select,textarea):disabled,
+:where(button,[role="button"])[aria-disabled="true"]{opacity:.48!important;cursor:not-allowed!important;filter:saturate(.6)}
+
+/* Improve field legibility and error affordance across old/new modules. */
+:where(input,select,textarea)::placeholder{color:#8b9aaf!important;opacity:1}
+:where(input,select,textarea)[aria-invalid="true"]{border-color:#d34b57!important;box-shadow:0 0 0 3px rgba(211,75,87,.12)!important}
+:where(label,.fc-event-edit-field label,.fc-budget-field label,.fc-contact-field label){text-underline-offset:2px}
+
+/* Stronger row/card feedback on pointer devices only. */
+@media (hover:hover) and (pointer:fine){
+  .fc9-row:hover,.fc38-line:hover{background:#f7faff!important}
+  .fc9-more-card:hover{transform:translateY(-1px);box-shadow:0 10px 24px rgba(25,45,74,.08)!important}
+  :where(button,a):not(:disabled):hover{filter:brightness(.985)}
+}
+
+/* Touch targets: protect the important small controls without making the UI bulky. */
+@media (max-width:719px){
+  :where(.fc-detail-close,.fc-picker-close,.fc-event-edit-close,.fc38-check,.fc9-icon){min-width:44px!important;min-height:44px!important}
+  :where(input,select,textarea){font-size:max(16px,1em)}
+  .fc9-row,.fc38-line{touch-action:manipulation}
+}
+
+/* Reduced motion: retain state changes without unnecessary animation. */
+@media (prefers-reduced-motion:reduce){
+  *,*::before,*::after{scroll-behavior:auto!important;animation-duration:.01ms!important;animation-iteration-count:1!important;transition-duration:.01ms!important}
+}
+
+/* Higher contrast preference. */
+@media (prefers-contrast:more){
+  :where(.fc9-card,.fc38-panel,input,select,textarea){border-color:#aebdce!important}
+  :where(.fc9-muted,.fc38-line span,small){color:#52657c!important}
+}
