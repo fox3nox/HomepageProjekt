@@ -1,0 +1,34 @@
+name: Family Command event editor focus race regression
+on:
+  push:
+    branches: [main]
+    paths:
+      - 'family-command/event-details.js'
+      - 'family-command/e2e/event-focus-race.spec.mjs'
+      - '.github/workflows/family-command-event-focus-race-check.yml'
+  pull_request:
+    branches: [main]
+    paths:
+      - 'family-command/event-details.js'
+      - 'family-command/e2e/event-focus-race.spec.mjs'
+      - '.github/workflows/family-command-event-focus-race-check.yml'
+jobs:
+  event-focus:
+    runs-on: ubuntu-latest
+    timeout-minutes: 12
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+      - name: Syntax and focus guard
+        run: |
+          node --check family-command/event-details.js
+          node --check family-command/e2e/event-focus-race.spec.mjs
+          grep -q "if(!m.contains(document.activeElement))" family-command/event-details.js
+      - name: Install Playwright
+        run: npm install --no-save playwright
+      - name: Install WebKit
+        run: npx playwright install --with-deps webkit
+      - name: Event editor focus race regression
+        run: node family-command/e2e/event-focus-race.spec.mjs
