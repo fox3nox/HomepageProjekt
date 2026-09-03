@@ -1,0 +1,22 @@
+name: Family Command V9.56 family budget regression
+on:
+  pull_request:
+    branches: [main]
+    paths: ['family-command/family-budget.js','family-command/family-budget.css','family-command/e2e/family-budget-v956.spec.mjs','family-command/index.html','family-command/sw.js','.github/workflows/family-command-budget-v956-check.yml']
+  push:
+    branches: [main]
+    paths: ['family-command/family-budget.js','family-command/family-budget.css','family-command/e2e/family-budget-v956.spec.mjs','family-command/index.html','family-command/sw.js','.github/workflows/family-command-budget-v956-check.yml']
+jobs:
+  budget:
+    runs-on: ubuntu-latest
+    timeout-minutes: 12
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+      - run: node --check family-command/family-budget.js && node --check family-command/e2e/family-budget-v956.spec.mjs
+      - run: grep -q "family-budget.js" family-command/index.html && grep -q "family-budget.css" family-command/index.html && grep -q "family-command-v93" family-command/sw.js
+      - run: npm install --no-save playwright
+      - run: npx playwright install --with-deps webkit
+      - run: node family-command/e2e/family-budget-v956.spec.mjs
