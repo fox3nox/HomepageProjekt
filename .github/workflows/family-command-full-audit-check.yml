@@ -29,7 +29,7 @@ jobs:
           check "private rules version" grep -q "PRIVATE_RULES_VERSION='2026-08-31-v2'" family-command/index.html
           check "smart documents wired" grep -q "smart-documents.js" family-command/index.html
           check "reference loader wired" grep -q "reference-mobile-v35.js" family-command/index.html
-          check "supported PWA cache" grep -Eq "const CACHE='family-command-v(68|69|70|71|72|73|74|75|76|77|78|79|80|81|82|83|84|85)'" family-command/sw.js
+          check "supported PWA cache" grep -Eq "const CACHE='family-command-v(68|69|70|71|72|73|74|75|76|77|78|79|80|81|82|83|84|85|86)'" family-command/sw.js
           check "reference dashboard JS cached" grep -q "reference-dashboard-v36.js" family-command/sw.js
           check "reference dashboard CSS cached" grep -q "reference-dashboard-v36.css" family-command/sw.js
           check "global design cached" grep -q "global-design-v37.css" family-command/sw.js
@@ -37,12 +37,15 @@ jobs:
           check "responsive design cached" grep -q "v9-responsive-v946.css" family-command/sw.js
           check "mobile school JS cached" grep -q "mobile-school-day-v947.js" family-command/sw.js
           check "mobile school CSS cached" grep -q "mobile-school-day-v947.css" family-command/sw.js
+          check "iphone layout CSS cached" grep -q "v9-iphone-layout-v948.css" family-command/sw.js
           check "global design loaded" grep -q "global-design-v37.css" family-command/reference-mobile-v35.js
           check "product design loaded" grep -q "v9-product-design.css" family-command/reference-mobile-v35.js
           check "responsive design loaded" grep -q "v9-responsive-v946.css" family-command/reference-mobile-v35.js
           check "mobile school JS loaded" grep -q "mobile-school-day-v947.js" family-command/reference-mobile-v35.js
           check "mobile school CSS loaded" grep -q "mobile-school-day-v947.css" family-command/reference-mobile-v35.js
-          check "responsive design version" grep -q "20260903-v9472" family-command/reference-mobile-v35.js
+          check "iphone layout CSS loaded" grep -q "v9-iphone-layout-v948.css" family-command/reference-mobile-v35.js
+          check "responsive design version" grep -q "20260903-v9480" family-command/reference-mobile-v35.js
+          check "iphone layout marker" grep -q "fcIphoneLayout='v48'" family-command/reference-mobile-v35.js
           check "audit hardening marker" grep -q "v9.26-full-audit-hardening" family-command/build.txt
       - name: Canonical state integrity invariants
         run: |
