@@ -17,6 +17,8 @@ try{
   await page.goto(BASE+'/?access=test',{waitUntil:'domcontentloaded'});
   await page.waitForFunction(()=>document.documentElement.dataset.fcReady==='1');
   await page.waitForFunction(()=>document.documentElement.dataset.fcGlobalPolish==='v52'&&document.documentElement.dataset.fcReferenceDashboard==='v52',{timeout:20000});
+  await page.evaluate(()=>{const iso=typeof todayISO==='function'?todayISO():new Date().toISOString().slice(0,10);window.data.events=Array.isArray(window.data.events)?window.data.events:[];window.data.events.push({id:'v952-all-day',date:iso,time:'',title:'V9.52 Ganztagstest',personIds:['jayden'],note:''});window.__fcReferenceDashboard39?.rebuild(true)});
+  await page.waitForFunction(()=>[...document.querySelectorAll('#today .fc38-line time.fc52-all-day')].some(x=>x.textContent==='Ganztägig'));
   const m=await page.evaluate(()=>{
     const header=document.querySelector('.fc9-topbar-in'),nav=document.querySelector('.fc9-nav'),buttons=[...document.querySelectorAll('.fc9-nav button')],main=document.querySelector('.fc9-main'),taskIcon=document.querySelector('#today .fc38-taskicon');
     const allDay=[...document.querySelectorAll('#today .fc38-line time.fc52-all-day')];
