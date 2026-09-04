@@ -40,6 +40,8 @@ jobs:
             family-contacts.js \
             family-contacts.css \
             reminder-center.js \
+            v9-final-unity-v9618.css \
+            v9-design-system-v9619.css \
             v9-page-polish-v959.css \
             v9-form-dialog-polish-v960.css \
             v9-interaction-accessibility-v961.css \
@@ -56,6 +58,8 @@ jobs:
           grep -q 'family-contacts.js' family-command/index.html
           grep -q 'family-contacts.css' family-command/index.html
           grep -q 'reminder-center.js' family-command/index.html
+          grep -q 'v9-final-unity-v9618.css' family-command/index.html
+          grep -q 'v9-design-system-v9619.css' family-command/index.html
           grep -q 'v9-form-dialog-polish-v960.css' family-command/v9-page-polish-v959.css
           grep -q 'v9-interaction-accessibility-v961.css' family-command/v9-page-polish-v959.css
           node --check family-command/core-runtime.js
@@ -112,6 +116,8 @@ jobs:
           grep -q 'family-contacts.js' /tmp/fc-live-index.html
           grep -q 'family-contacts.css' /tmp/fc-live-index.html
           grep -q 'reminder-center.js' /tmp/fc-live-index.html
+          grep -q 'v9-final-unity-v9618.css' /tmp/fc-live-index.html
+          grep -q 'v9-design-system-v9619.css' /tmp/fc-live-index.html
 
       - name: Wait for exact critical production assets
         shell: bash
@@ -131,6 +137,8 @@ jobs:
             family-contacts.js
             family-contacts.css
             reminder-center.js
+            v9-final-unity-v9618.css
+            v9-design-system-v9619.css
             v9-page-polish-v959.css
             v9-form-dialog-polish-v960.css
             v9-interaction-accessibility-v961.css
