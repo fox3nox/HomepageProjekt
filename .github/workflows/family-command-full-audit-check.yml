@@ -25,8 +25,8 @@ jobs:
         run: |
           set -euo pipefail
           check(){ label="$1"; shift; if "$@"; then echo "ok: $label"; else echo "FAILED: $label"; exit 1; fi; }
-          check "boot version" grep -q "const VERSION='20260904-v9616'" family-command/index.html
-          check "current build marker" grep -q "v9.61.6-existing-data-surfaces" family-command/build.txt
+          check "boot version" grep -q "const VERSION='20260904-v9617'" family-command/index.html
+          check "current build marker" grep -q "v9.61.7-reminder-surface" family-command/build.txt
           check "private rules version" grep -q "PRIVATE_RULES_VERSION='2026-08-31-v2'" family-command/index.html
           check "smart documents wired" grep -q "smart-documents.js" family-command/index.html
           check "reference loader wired" grep -q "reference-mobile-v35.js" family-command/index.html
@@ -41,6 +41,7 @@ jobs:
           check "budget styles wired" grep -q "family-budget.css" family-command/index.html
           check "contacts wired" grep -q "family-contacts.js" family-command/index.html
           check "contacts styles wired" grep -q "family-contacts.css" family-command/index.html
+          check "reminder center wired" grep -q "reminder-center.js" family-command/index.html
           check "unified design wired" grep -q "v9-unified-design-v958.css" family-command/index.html
           check "page polish wired" grep -q "v9-page-polish-v959.css" family-command/index.html
           check "form dialog polish imported" grep -q "v9-form-dialog-polish-v960.css" family-command/v9-page-polish-v959.css
@@ -72,6 +73,7 @@ jobs:
           check "budget CSS cached" grep -q "family-budget.css" family-command/sw.js
           check "contacts JS cached" grep -q "family-contacts.js" family-command/sw.js
           check "contacts CSS cached" grep -q "family-contacts.css" family-command/sw.js
+          check "reminder center cached" grep -q "reminder-center.js" family-command/sw.js
           check "global design loaded" grep -q "global-design-v37.css" family-command/reference-mobile-v35.js
           check "product design loaded" grep -q "v9-product-design.css" family-command/reference-mobile-v35.js
           check "responsive design loaded" grep -q "v9-responsive-v946.css" family-command/reference-mobile-v35.js
@@ -99,6 +101,6 @@ jobs:
       - name: Production feature wiring
         run: |
           set -euo pipefail
-          for f in core-runtime.js cloud-state.js document-viewer.js smart-documents.js event-details.js chat-command-sync.js app-data-rules.js v9-data.js event-delete-fix.js multi-link-ui.js v9-app.js shopping-lists.js meal-planner.js recipe-meal-bridge.js recipes-favorites.js family-budget.js family-contacts.js v9-professional.js reference-mobile-v35.js homework-originals.js; do grep -q "$f" family-command/index.html || { echo "critical module not wired: $f"; exit 1; }; done
+          for f in core-runtime.js cloud-state.js document-viewer.js smart-documents.js event-details.js chat-command-sync.js app-data-rules.js v9-data.js event-delete-fix.js multi-link-ui.js v9-app.js shopping-lists.js meal-planner.js recipe-meal-bridge.js recipes-favorites.js family-budget.js family-contacts.js reminder-center.js v9-professional.js reference-mobile-v35.js homework-originals.js; do grep -q "$f" family-command/index.html || { echo "critical module not wired: $f"; exit 1; }; done
           for f in push-v2.js runtime-health.js family-ai-v2.js ai-budget-guard.js family-ai-original-links.js print-planner-v2.js backup-manager.js app-selftest-v9.js; do grep -q "$f" family-command/index.html || { echo "deferred module not wired: $f"; exit 1; }; done
           ! grep -q "family-command-private-app" family-command/index.html

@@ -58,12 +58,13 @@ try{
   await page.waitForSelector('text=Dokumentenzentrale',{timeout:20000});
 
   // Opening More/Documents can finish deferred render/persistence work. Re-assert the isolated
-  // E2E state only after that view is fully mounted so unrelated bootstrap state cannot race it.
+  // E2E state only after that view is mounted, then wait for its asynchronous mocked list.
   await isolate();
-  await page.waitForTimeout(50);
+  await page.waitForFunction(()=>document.querySelectorAll('[data-doc]').length===2,{timeout:20000});
 
   assert.equal(await page.locator('[data-doc]').count(),2,'all filter must show both documents');
   await page.click('[data-doc-filter="fynn"]');
+  await page.waitForFunction(()=>document.querySelectorAll('[data-doc]').length===1,{timeout:5000});
   assert.equal(await page.locator('[data-doc]').count(),1,'Fynn filter must only show Fynn documents');
   assert.match(await page.locator('[data-doc]').innerText(),/Fynn/);
   await page.check('[data-doc-person][value="fynn"]');

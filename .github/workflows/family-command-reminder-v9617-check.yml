@@ -1,0 +1,32 @@
+name: Family Command V9.61.7 reminder center regression
+on:
+  push:
+    branches: [main]
+    paths:
+      - 'family-command/reminder-center.js'
+      - 'family-command/e2e/reminder-center-v9617.spec.mjs'
+      - 'family-command/index.html'
+      - '.github/workflows/family-command-reminder-v9617-check.yml'
+  pull_request:
+    branches: [main]
+    paths:
+      - 'family-command/reminder-center.js'
+      - 'family-command/e2e/reminder-center-v9617.spec.mjs'
+      - 'family-command/index.html'
+      - '.github/workflows/family-command-reminder-v9617-check.yml'
+jobs:
+  reminder-center:
+    runs-on: ubuntu-latest
+    timeout-minutes: 8
+    steps:
+      - uses: actions/checkout@v4
+      - name: JavaScript syntax
+        run: |
+          node --check family-command/reminder-center.js
+          node --check family-command/e2e/reminder-center-v9617.spec.mjs
+      - name: Install Playwright WebKit
+        run: |
+          npm install --no-save playwright@1.55.0
+          npx playwright install --with-deps webkit
+      - name: Run reminder center regression
+        run: node family-command/e2e/reminder-center-v9617.spec.mjs

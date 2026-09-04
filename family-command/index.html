@@ -10,9 +10,9 @@
   <meta name="apple-mobile-web-app-title" content="Familie">
   <meta name="format-detection" content="telephone=no">
   <title>Familienzentrale</title>
-  <link rel="manifest" href="./manifest.webmanifest?v=20260904-v9616">
-  <link rel="icon" href="./icon.svg?v=20260904-v9616" type="image/svg+xml">
-  <link rel="apple-touch-icon" sizes="180x180" href="./apple-touch-icon.png?v=20260904-v9616">
+  <link rel="manifest" href="./manifest.webmanifest?v=20260904-v9617">
+  <link rel="icon" href="./icon.svg?v=20260904-v9617" type="image/svg+xml">
+  <link rel="apple-touch-icon" sizes="180x180" href="./apple-touch-icon.png?v=20260904-v9617">
   <style>
     html,body{margin:0;min-height:100%;background:#f7f9fc;color-scheme:light}
     #fcApp{visibility:hidden}
@@ -20,7 +20,7 @@
   </style>
 </head>
 <body>
-  <div id="fcBoot" class="fc9-boot"><div class="fc9-boot-box"><div class="fc9-boot-brand"><div class="fc9-boot-mark"><img src="./apple-touch-icon.png?v=20260904-v9616" alt=""></div><span>Familienzentrale</span></div><div class="fc9-boot-bar"><i></i></div><p>Deine Familienübersicht wird vorbereitet …</p></div></div>
+  <div id="fcBoot" class="fc9-boot"><div class="fc9-boot-box"><div class="fc9-boot-brand"><div class="fc9-boot-mark"><img src="./apple-touch-icon.png?v=20260904-v9617" alt=""></div><span>Familienzentrale</span></div><div class="fc9-boot-bar"><i></i></div><p>Deine Familienübersicht wird vorbereitet …</p></div></div>
   <div class="app" id="fcApp"></div>
   <div class="toast" id="toast" role="status" aria-live="polite" aria-atomic="true"></div>
   <script>
@@ -29,8 +29,8 @@
     window.__fcManagedBoot=true;window.__fcV9Boot=true;
     const STORE='fc-private-access-v1',COOKIE='fc_private_access',params=new URLSearchParams(location.search);
     const PRIVATE_CONFIG='https://lmrvapstojcecljjdgds.supabase.co/functions/v1/family-command-private-config';
-    const VERSION='20260904-v9616',PRIVATE_RULES_VERSION='2026-08-31-v2',PRIVATE_RULES_CACHE='fc-private-rules-code-v1';
-    const CRITICAL=['core-runtime.js','cloud-state.js','document-viewer.js','smart-documents.js','event-details.js','chat-command-sync.js','app-data-rules.js','v9-data.js','event-delete-fix.js','multi-link-ui.js','v9-app.js','shopping-lists.js','meal-planner.js','recipe-meal-bridge.js','recipes-favorites.js','family-budget.js','family-contacts.js','v9-professional.js','reference-mobile-v35.js','homework-originals.js'];
+    const VERSION='20260904-v9617',PRIVATE_RULES_VERSION='2026-08-31-v2',PRIVATE_RULES_CACHE='fc-private-rules-code-v1';
+    const CRITICAL=['core-runtime.js','cloud-state.js','document-viewer.js','smart-documents.js','event-details.js','chat-command-sync.js','app-data-rules.js','v9-data.js','event-delete-fix.js','multi-link-ui.js','v9-app.js','shopping-lists.js','meal-planner.js','recipe-meal-bridge.js','recipes-favorites.js','family-budget.js','family-contacts.js','reminder-center.js','v9-professional.js','reference-mobile-v35.js','homework-originals.js'];
     const DEFERRED=['push-v2.js','runtime-health.js','family-ai-v2.js','ai-budget-guard.js','family-ai-original-links.js','print-planner-v2.js','backup-manager.js','app-selftest-v9.js'];
     let extrasPromise=null;
     function readCookie(name){const prefix=name+'=',part=document.cookie.split(';').map(x=>x.trim()).find(x=>x.startsWith(prefix));return part?decodeURIComponent(part.slice(prefix.length)):''}

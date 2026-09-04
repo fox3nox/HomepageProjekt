@@ -39,6 +39,7 @@ jobs:
             v9-professional.css \
             family-contacts.js \
             family-contacts.css \
+            reminder-center.js \
             v9-page-polish-v959.css \
             v9-form-dialog-polish-v960.css \
             v9-interaction-accessibility-v961.css \
@@ -48,12 +49,13 @@ jobs:
           done
           grep -q '<title>Familienzentrale</title>' family-command/index.html
           grep -q 'data-fc-v9="1"' family-command/index.html
-          grep -q "const VERSION='20260904-v9616'" family-command/index.html
+          grep -q "const VERSION='20260904-v9617'" family-command/index.html
           grep -q 'core-runtime.js' family-command/index.html
           grep -q 'smart-documents.js' family-command/index.html
           grep -q 'v9-app.js' family-command/index.html
           grep -q 'family-contacts.js' family-command/index.html
           grep -q 'family-contacts.css' family-command/index.html
+          grep -q 'reminder-center.js' family-command/index.html
           grep -q 'v9-form-dialog-polish-v960.css' family-command/v9-page-polish-v959.css
           grep -q 'v9-interaction-accessibility-v961.css' family-command/v9-page-polish-v959.css
           node --check family-command/core-runtime.js
@@ -62,6 +64,7 @@ jobs:
           node --check family-command/v9-app.js
           node --check family-command/smart-documents.js
           node --check family-command/family-contacts.js
+          node --check family-command/reminder-center.js
           node --check family-command/sw.js
 
   production:
@@ -102,12 +105,13 @@ jobs:
 
           grep -q '<title>Familienzentrale</title>' /tmp/fc-live-index.html
           grep -q 'data-fc-v9="1"' /tmp/fc-live-index.html
-          grep -q "const VERSION='20260904-v9616'" /tmp/fc-live-index.html
+          grep -q "const VERSION='20260904-v9617'" /tmp/fc-live-index.html
           grep -q 'core-runtime.js' /tmp/fc-live-index.html
           grep -q 'smart-documents.js' /tmp/fc-live-index.html
           grep -q 'v9-app.js' /tmp/fc-live-index.html
           grep -q 'family-contacts.js' /tmp/fc-live-index.html
           grep -q 'family-contacts.css' /tmp/fc-live-index.html
+          grep -q 'reminder-center.js' /tmp/fc-live-index.html
 
       - name: Verify exact critical production assets
         shell: bash
@@ -126,6 +130,7 @@ jobs:
             v9-professional.css \
             family-contacts.js \
             family-contacts.css \
+            reminder-center.js \
             v9-page-polish-v959.css \
             v9-form-dialog-polish-v960.css \
             v9-interaction-accessibility-v961.css \
@@ -155,6 +160,7 @@ jobs:
           node --check /tmp/smart-documents.js
           node --check /tmp/v9-app.js
           node --check /tmp/family-contacts.js
+          node --check /tmp/reminder-center.js
           node --check /tmp/sw.js
           grep -q '"name"' /tmp/manifest.webmanifest
           grep -q 'v9-form-dialog-polish-v960.css' /tmp/v9-page-polish-v959.css
