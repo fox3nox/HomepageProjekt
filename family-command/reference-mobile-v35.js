@@ -2,7 +2,7 @@
 (()=>{
 'use strict';
 if(window.__fcReferenceMobileV35)return;window.__fcReferenceMobileV35=true;
-const V='20260904-v9621';
+const V='20260903-v9520';
 function findLink(file){return[...document.querySelectorAll('link[rel="stylesheet"]')].find(x=>{try{return new URL(x.href,location.href).pathname.endsWith('/'+file)}catch(_){return false}})}
 function css(file,key){let l=findLink(file);if(l){l.dataset[key]='1';return l}l=document.createElement('link');l.rel='stylesheet';l.href=`./${file}?v=${V}`;l.dataset[key]='1';document.head.appendChild(l);return l}
 function finalCss(file,key){let l=findLink(file);if(!l){l=document.createElement('link');l.rel='stylesheet';l.href=`./${file}?v=${V}`}l.dataset[key]='1';document.head.appendChild(l);return l}
