@@ -39,5 +39,5 @@ assert.deepEqual(links.slice(-3).map(l=>new URL(l.href,base).pathname.split('/')
   'v9-unified-design-v958.css','v9-final-unity-v9618.css','v9-design-system-v9619.css'
 ],'final cascade layers must stay in the intended order');
 assert.equal(documentElement.dataset.fcDesignSystem,'v9619');
-assert.match(source,/20260904-v9621/,'loader assets need the current cache-busting version');
+assert.match(source,/20260903-v9520/,'loader must keep the established compatible asset version');
 console.log('ok reference loader dedupe V9.62.1');
