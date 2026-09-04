@@ -8,7 +8,7 @@ const seed=readFileSync('family-command/e2e/mock-private-core.js','utf8');
 const server=spawn('python3',['-m','http.server',String(PORT),'--directory','family-command'],{stdio:['ignore','pipe','pipe']});
 const sleep=ms=>new Promise(r=>setTimeout(r,ms));
 async function ready(){for(let i=0;i<60;i++){try{if((await fetch(BASE+'/index.html')).ok)return}catch{}await sleep(100)}throw Error('server not ready')}
-async function boot(browser,viewport,mobile=false){const ctx=await browser.newContext({viewport,isMobile:mobile,hasTouch:mobile,serviceWorkers:'block'});await ctx.addInitScript({content:seed});const page=await ctx.newPage();await page.goto(BASE+'/?access=test',{waitUntil:'domcontentloaded'});await page.waitForFunction(()=>document.documentElement.dataset.fcReady==='1'&&window.__fcFamilyContacts?.version==='9.61.5',{timeout:20000});return{ctx,page}}
+async function boot(browser,viewport,mobile=false){const ctx=await browser.newContext({viewport,isMobile:mobile,hasTouch:mobile,serviceWorkers:'block'});await ctx.addInitScript({content:seed});const page=await ctx.newPage();await page.goto(BASE+'/?access=test',{waitUntil:'domcontentloaded'});await page.waitForFunction(()=>document.documentElement.dataset.fcReady==='1'&&window.__fcFamilyContacts?.version==='9.61.6',{timeout:20000});return{ctx,page}}
 
 try{
   await ready();
@@ -35,6 +35,7 @@ try{
   assert.ok(layout.min>=40);
   assert.equal(layout.health.approvedContactDesign,true);
   assert.equal(layout.health.directCall,true);
+  assert.ok(layout.health.derivedCommonContacts>=1,'existing common family contacts must be surfaced');
 
   await page.locator('.fc-contacts-new').click();
   await page.locator('#fcContactName').fill('Praxis Buchsi');
@@ -80,5 +81,5 @@ try{
   const d=await desktop.page.evaluate(()=>{const r=document.querySelector('.fc-contacts-shell').getBoundingClientRect();return{w:r.width,left:r.left,right:r.right,overflow:document.documentElement.scrollWidth>document.documentElement.clientWidth+1,cols:getComputedStyle(document.querySelector('.fc-contacts-tools')).gridTemplateColumns}});
   assert.equal(d.overflow,false);assert.ok(d.w>=700&&d.w<=940);assert.ok(d.left>0&&d.right<1440);assert.match(d.cols,/px/);
   await desktop.ctx.close();await browser.close();
-  console.log('V9.61.5 family contacts regression: ok');
+  console.log('V9.61.6 family contacts regression: ok');
 }finally{server.kill('SIGTERM')}
