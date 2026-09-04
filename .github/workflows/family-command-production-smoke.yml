@@ -27,18 +27,34 @@ jobs:
         shell: bash
         run: |
           set -euo pipefail
-          test -s family-command/index.html
-          test -s family-command/core-runtime.js
-          test -s family-command/v9-app.js
-          test -s family-command/smart-documents.js
-          test -s family-command/sw.js
-          test -s family-command/manifest.webmanifest
+          for asset in \
+            index.html \
+            core-runtime.js \
+            cloud-state.js \
+            document-viewer.js \
+            document-viewer.css \
+            smart-documents.js \
+            v9-app.js \
+            v9.css \
+            v9-professional.css \
+            v9-page-polish-v959.css \
+            v9-form-dialog-polish-v960.css \
+            v9-interaction-accessibility-v961.css \
+            sw.js \
+            manifest.webmanifest; do
+            test -s "family-command/${asset}"
+          done
           grep -q '<title>Familienzentrale</title>' family-command/index.html
           grep -q 'data-fc-v9="1"' family-command/index.html
+          grep -q "const VERSION='20260904-v9612'" family-command/index.html
           grep -q 'core-runtime.js' family-command/index.html
           grep -q 'smart-documents.js' family-command/index.html
           grep -q 'v9-app.js' family-command/index.html
+          grep -q 'v9-form-dialog-polish-v960.css' family-command/v9-page-polish-v959.css
+          grep -q 'v9-interaction-accessibility-v961.css' family-command/v9-page-polish-v959.css
           node --check family-command/core-runtime.js
+          node --check family-command/cloud-state.js
+          node --check family-command/document-viewer.js
           node --check family-command/v9-app.js
           node --check family-command/smart-documents.js
           node --check family-command/sw.js
@@ -81,11 +97,12 @@ jobs:
 
           grep -q '<title>Familienzentrale</title>' /tmp/fc-live-index.html
           grep -q 'data-fc-v9="1"' /tmp/fc-live-index.html
+          grep -q "const VERSION='20260904-v9612'" /tmp/fc-live-index.html
           grep -q 'core-runtime.js' /tmp/fc-live-index.html
           grep -q 'smart-documents.js' /tmp/fc-live-index.html
           grep -q 'v9-app.js' /tmp/fc-live-index.html
 
-      - name: Verify critical production assets
+      - name: Verify exact critical production assets
         shell: bash
         env:
           BASE_URL: https://fox3nox.github.io/HomepageProjekt/family-command
@@ -94,26 +111,45 @@ jobs:
           for asset in \
             core-runtime.js \
             cloud-state.js \
+            document-viewer.js \
+            document-viewer.css \
             smart-documents.js \
             v9-app.js \
+            v9.css \
+            v9-professional.css \
+            v9-page-polish-v959.css \
+            v9-form-dialog-polish-v960.css \
+            v9-interaction-accessibility-v961.css \
             sw.js \
             manifest.webmanifest; do
             echo "Checking ${asset}"
+            target="/tmp/${asset//\//_}"
             curl --fail --silent --show-error --location \
               --retry 3 --retry-delay 2 --retry-all-errors \
               --header 'Cache-Control: no-cache' \
               "${BASE_URL}/${asset}?fc_smoke=${GITHUB_SHA}" \
-              --output "/tmp/${asset//\//_}"
-            test -s "/tmp/${asset//\//_}"
+              --output "$target"
+            test -s "$target"
+            expected="$(sha256sum "family-command/${asset}" | awk '{print $1}')"
+            actual="$(sha256sum "$target" | awk '{print $1}')"
+            if [ "$actual" != "$expected" ]; then
+              echo "Production asset mismatch: ${asset}"
+              echo "Expected SHA256: $expected"
+              echo "Live SHA256: $actual"
+              exit 1
+            fi
           done
 
           node --check /tmp/core-runtime.js
           node --check /tmp/cloud-state.js
+          node --check /tmp/document-viewer.js
           node --check /tmp/smart-documents.js
           node --check /tmp/v9-app.js
           node --check /tmp/sw.js
           grep -q '"name"' /tmp/manifest.webmanifest
+          grep -q 'v9-form-dialog-polish-v960.css' /tmp/v9-page-polish-v959.css
+          grep -q 'v9-interaction-accessibility-v961.css' /tmp/v9-page-polish-v959.css
 
       - name: Production smoke summary
         run: |
-          echo "Family Command production smoke passed for ${GITHUB_SHA}."
+          echo "Family Command production smoke passed with exact asset hashes for ${GITHUB_SHA}."
