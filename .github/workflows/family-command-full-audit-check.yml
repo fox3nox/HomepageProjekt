@@ -25,8 +25,8 @@ jobs:
         run: |
           set -euo pipefail
           check(){ label="$1"; shift; if "$@"; then echo "ok: $label"; else echo "FAILED: $label"; exit 1; fi; }
-          check "boot version" grep -q "const VERSION='20260904-v9612'" family-command/index.html
-          check "current build marker" grep -q "v9.61.2-cache-integrity" family-command/build.txt
+          check "boot version" grep -q "const VERSION='20260904-v9615'" family-command/index.html
+          check "current build marker" grep -q "v9.61.5-approved-contact-design" family-command/build.txt
           check "private rules version" grep -q "PRIVATE_RULES_VERSION='2026-08-31-v2'" family-command/index.html
           check "smart documents wired" grep -q "smart-documents.js" family-command/index.html
           check "reference loader wired" grep -q "reference-mobile-v35.js" family-command/index.html
@@ -45,7 +45,7 @@ jobs:
           check "page polish wired" grep -q "v9-page-polish-v959.css" family-command/index.html
           check "form dialog polish imported" grep -q "v9-form-dialog-polish-v960.css" family-command/v9-page-polish-v959.css
           check "interaction accessibility polish imported" grep -q "v9-interaction-accessibility-v961.css" family-command/v9-page-polish-v959.css
-          check "supported PWA cache" grep -Eq "const CACHE='family-command-v(68|69|70|71|72|73|74|75|76|77|78|79|80|81|82|83|84|85|86|87|88|89|90|91|92|93|94|95|96|97|98)'" family-command/sw.js
+          check "supported PWA cache" grep -Eq "const CACHE='family-command-v(68|69|70|71|72|73|74|75|76|77|78|79|80|81|82|83|84|85|86|87|88|89|90|91|92|93|94|95|96|97|98|99)'" family-command/sw.js
           check "reference dashboard JS cached" grep -q "reference-dashboard-v36.js" family-command/sw.js
           check "reference dashboard CSS cached" grep -q "reference-dashboard-v36.css" family-command/sw.js
           check "global design cached" grep -q "global-design-v37.css" family-command/sw.js
