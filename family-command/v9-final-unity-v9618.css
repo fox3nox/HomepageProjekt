@@ -1,0 +1,61 @@
+/* Familienzentrale V9.61.8 · final unity pass: honest day navigation + unified documents */
+@media(max-width:719px){
+  /* Heute: nur Bedienelemente anzeigen, die wirklich funktionieren. Der linke Pfeil
+     und das Raster waren reine Dekoration ohne Handler. Der Titel bleibt exakt zentriert. */
+  #today .fc38-daybar{grid-template-columns:36px minmax(0,1fr) 36px!important;gap:7px!important}
+  #today .fc38-daybar::before{content:"";display:block;grid-column:1}
+  #today .fc38-daybar>button[data-nav="today"],#today .fc38-calicon{display:none!important}
+  #today .fc38-daybar>div{grid-column:2!important;text-align:center!important}
+  #today .fc38-daybar>button[data-nav="tomorrow"]{grid-column:3!important;justify-self:end!important}
+}
+
+/* Dokumente gehören optisch zur selben App: dieselbe SF/System-Typografie,
+   dieselbe Hierarchie, Karten, Linien, Radien und Farben wie V9. */
+body .fc9-modal .fc9-sheet,
+body .fc9-modal .fc9-doc-list,
+body .fc-dv-modal,
+body .fc-dv-shell,
+body .fc-dv-readable{
+  font-family:-apple-system,BlinkMacSystemFont,"SF Pro Text","Segoe UI",sans-serif!important;
+  color:var(--fc58-ink,#102846)!important;
+}
+body .fc9-modal .fc9-sheet{background:var(--fc58-bg,#f5f8fc)!important;border-color:var(--fc58-line,#dfe7f1)!important;box-shadow:0 24px 70px rgba(20,38,64,.18)!important}
+body .fc9-modal .fc9-sheet-head{background:#fff!important;border-color:#e2e9f2!important;padding:16px 18px!important}
+body .fc9-modal .fc9-sheet-head small{font-size:9px!important;font-weight:750!important;letter-spacing:.11em!important;color:#71839b!important}
+body .fc9-modal .fc9-sheet-head h2{margin:3px 0 0!important;font-size:21px!important;line-height:1.16!important;font-weight:800!important;letter-spacing:-.035em!important;color:#102846!important}
+body .fc9-modal .fc9-close{background:#eef3f8!important;color:#405873!important;border:1px solid #e0e7f0!important;box-shadow:none!important}
+body .fc9-modal .fc9-doc-list{padding:11px!important;gap:8px!important;background:var(--fc58-bg,#f5f8fc)!important}
+body .fc9-modal .fc9-doc{min-height:62px!important;padding:11px 13px!important;border:1px solid #dfe7f1!important;border-radius:16px!important;background:#fff!important;box-shadow:0 3px 14px rgba(26,47,76,.04)!important;text-align:left!important}
+body .fc9-modal .fc9-doc b{font-size:13px!important;line-height:1.25!important;font-weight:750!important;letter-spacing:-.012em!important;color:#17304f!important}
+body .fc9-modal .fc9-doc span{margin-top:3px!important;font-size:9.5px!important;line-height:1.35!important;font-weight:500!important;color:#71839a!important}
+
+body .fc-dv-shell{background:var(--fc58-bg,#f5f8fc)!important}
+body .fc-dv-head{background:#fff!important;border-color:#e2e9f2!important}
+body .fc-dv-head small{font-size:9px!important;font-weight:750!important;letter-spacing:.11em!important;color:#71839b!important}
+body .fc-dv-head h1{font-size:20px!important;font-weight:800!important;letter-spacing:-.03em!important;color:#102846!important}
+body .fc-dv-close{background:#eef3f8!important;color:#405873!important;border:1px solid #e0e7f0!important}
+body .fc-dv-tabs{background:#fff!important;border-color:#e2e9f2!important}
+body .fc-dv-tabs button{font-size:11px!important;font-weight:750!important;color:#60758e!important;border-color:#dfe7f1!important;background:#f7f9fc!important}
+body .fc-dv-tabs button.active{background:#176fdd!important;border-color:#176fdd!important;color:#fff!important}
+body .fc-dv-toolbar{background:#f1f5f9!important;border-color:#dfe7f1!important}
+body .fc-dv-toolbar button,body .fc-dv-toolbar span{font-weight:700!important}
+body .fc-dv-readable{border-color:#dfe7f1!important;border-radius:18px!important;box-shadow:0 3px 14px rgba(26,47,76,.04)!important}
+body .fc-dv-readable-head>span{font-size:9px!important;font-weight:750!important;color:#60758e!important}
+body .fc-dv-readable-head h2{font-size:20px!important;font-weight:800!important;letter-spacing:-.025em!important;color:#102846!important}
+body .fc-dv-readable-head p{font-size:11px!important;font-weight:500!important;color:#71839b!important}
+body .fc-dv-readable h3{font-size:14px!important;font-weight:750!important;color:#294464!important}
+body .fc-dv-readable p{font-size:13px!important;line-height:1.55!important;font-weight:450!important;color:#40536c!important}
+body .fc-dv-callout{font-size:12px!important;font-weight:650!important}
+body .fc-dv-table{font-size:11px!important}
+body .fc-dv-table th{font-weight:750!important}
+body .fc-dv-table th:first-child,body .fc-dv-table td:first-child{font-weight:700!important}
+
+@media(max-width:719px){
+  body .fc9-modal .fc9-sheet-head{padding:14px!important}
+  body .fc9-modal .fc9-sheet-head h2{font-size:19px!important}
+  body .fc9-modal .fc9-doc-list{padding:9px!important;padding-bottom:calc(92px + env(safe-area-inset-bottom,0px))!important}
+  body .fc9-modal .fc9-doc{min-height:60px!important;border-radius:15px!important}
+  body .fc-dv-head h1{font-size:19px!important}
+  body .fc-dv-readable{padding:14px!important}
+  body .fc-dv-readable p{font-size:12.5px!important}
+}
