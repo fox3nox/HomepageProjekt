@@ -46,7 +46,7 @@ jobs:
           check "page polish wired" grep -q "v9-page-polish-v959.css" family-command/index.html
           check "form dialog polish imported" grep -q "v9-form-dialog-polish-v960.css" family-command/v9-page-polish-v959.css
           check "interaction accessibility polish imported" grep -q "v9-interaction-accessibility-v961.css" family-command/v9-page-polish-v959.css
-          check "supported PWA cache" grep -Eq "const CACHE='family-command-v(68|69|70|71|72|73|74|75|76|77|78|79|80|81|82|83|84|85|86|87|88|89|90|91|92|93|94|95|96|97|98|99|100)'" family-command/sw.js
+          check "supported PWA cache" grep -Eq "const CACHE='family-command-v(68|69|70|71|72|73|74|75|76|77|78|79|80|81|82|83|84|85|86|87|88|89|90|91|92|93|94|95|96|97|98|99|100|101)'" family-command/sw.js
           check "reference dashboard JS cached" grep -q "reference-dashboard-v36.js" family-command/sw.js
           check "reference dashboard CSS cached" grep -q "reference-dashboard-v36.css" family-command/sw.js
           check "global design cached" grep -q "global-design-v37.css" family-command/sw.js
@@ -59,6 +59,9 @@ jobs:
           check "visual polish cached" grep -q "v9-visual-polish-v949.css" family-command/sw.js
           check "mobile polish cached" grep -q "v9-mobile-polish-v952.css" family-command/sw.js
           check "unified design cached" grep -q "v9-unified-design-v958.css" family-command/sw.js
+          check "final unity cached" grep -q "v9-final-unity-v9618.css" family-command/sw.js
+          check "design system cached" grep -q "v9-design-system-v9619.css" family-command/sw.js
+          check "final layout cached" grep -q "v9-layout-final-v9622.css" family-command/sw.js
           check "page polish cached" grep -q "v9-page-polish-v959.css" family-command/sw.js
           check "form dialog polish cached" grep -q "v9-form-dialog-polish-v960.css" family-command/sw.js
           check "interaction accessibility polish cached" grep -q "v9-interaction-accessibility-v961.css" family-command/sw.js
@@ -83,6 +86,8 @@ jobs:
           check "iphone layout JS loaded" grep -q "v9-iphone-layout-v948.js" family-command/reference-mobile-v35.js
           check "visual polish loaded" grep -q "v9-visual-polish-v949.css" family-command/reference-mobile-v35.js
           check "mobile polish loaded" grep -q "v9-mobile-polish-v952.css" family-command/reference-mobile-v35.js
+          check "final layout loaded" grep -q "v9-layout-final-v9622.css" family-command/reference-mobile-v35.js
+          check "final layout marker" grep -q "fcFinalLayout='v9622'" family-command/reference-mobile-v35.js
           check "responsive design version" grep -q "20260903-v9520" family-command/reference-mobile-v35.js
           check "iphone layout marker" grep -q "fcIphoneLayout='v48'" family-command/reference-mobile-v35.js
           check "visual polish compatibility marker" grep -q "fcGlobalPolish='v49'" family-command/reference-mobile-v35.js
