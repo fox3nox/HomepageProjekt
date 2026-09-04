@@ -37,6 +37,8 @@ jobs:
             v9-app.js \
             v9.css \
             v9-professional.css \
+            daily-check.js \
+            daily-check.css \
             family-contacts.js \
             family-contacts.css \
             reminder-center.js \
@@ -53,10 +55,12 @@ jobs:
           done
           grep -q '<title>Familienzentrale</title>' family-command/index.html
           grep -q 'data-fc-v9="1"' family-command/index.html
-          grep -q "const VERSION='20260904-v9617'" family-command/index.html
+          grep -q "const VERSION='20260904-v9630'" family-command/index.html
           grep -q 'core-runtime.js' family-command/index.html
           grep -q 'smart-documents.js' family-command/index.html
           grep -q 'v9-app.js' family-command/index.html
+          grep -q 'daily-check.js' family-command/index.html
+          grep -q 'daily-check.css' family-command/index.html
           grep -q 'family-contacts.js' family-command/index.html
           grep -q 'family-contacts.css' family-command/index.html
           grep -q 'reminder-center.js' family-command/index.html
@@ -64,6 +68,8 @@ jobs:
           grep -q 'v9-design-system-v9619.css' family-command/index.html
           grep -q "finalCss('v9-design-system-v9619.css','fc9619design');finalCss('v9-layout-final-v9622.css','fc9622layout')" family-command/reference-mobile-v35.js
           grep -q "const CACHE='family-command-v101'" family-command/sw.js
+          grep -q 'daily-check.js' family-command/sw.js
+          grep -q 'daily-check.css' family-command/sw.js
           grep -q 'v9-layout-final-v9622.css' family-command/sw.js
           grep -q 'v9-form-dialog-polish-v960.css' family-command/v9-page-polish-v959.css
           grep -q 'v9-interaction-accessibility-v961.css' family-command/v9-page-polish-v959.css
@@ -71,6 +77,7 @@ jobs:
           node --check family-command/cloud-state.js
           node --check family-command/document-viewer.js
           node --check family-command/v9-app.js
+          node --check family-command/daily-check.js
           node --check family-command/smart-documents.js
           node --check family-command/family-contacts.js
           node --check family-command/reminder-center.js
@@ -112,13 +119,14 @@ jobs:
             echo "Live index SHA256: ${live:-unavailable}"
             exit 1
           }
-
           grep -q '<title>Familienzentrale</title>' /tmp/fc-live-index.html
           grep -q 'data-fc-v9="1"' /tmp/fc-live-index.html
-          grep -q "const VERSION='20260904-v9617'" /tmp/fc-live-index.html
+          grep -q "const VERSION='20260904-v9630'" /tmp/fc-live-index.html
           grep -q 'core-runtime.js' /tmp/fc-live-index.html
           grep -q 'smart-documents.js' /tmp/fc-live-index.html
           grep -q 'v9-app.js' /tmp/fc-live-index.html
+          grep -q 'daily-check.js' /tmp/fc-live-index.html
+          grep -q 'daily-check.css' /tmp/fc-live-index.html
           grep -q 'family-contacts.js' /tmp/fc-live-index.html
           grep -q 'family-contacts.css' /tmp/fc-live-index.html
           grep -q 'reminder-center.js' /tmp/fc-live-index.html
@@ -140,6 +148,8 @@ jobs:
             v9-app.js
             v9.css
             v9-professional.css
+            daily-check.js
+            daily-check.css
             family-contacts.js
             family-contacts.css
             reminder-center.js
@@ -153,43 +163,28 @@ jobs:
             sw.js
             manifest.webmanifest
           )
-
           all_ok=false
           for attempt in $(seq 1 60); do
             all_ok=true
             for asset in "${assets[@]}"; do
               target="/tmp/${asset//\//_}"
-              if ! curl --fail --silent --show-error --location \
-                --header 'Cache-Control: no-cache' \
-                "${BASE_URL}/${asset}?fc_smoke=${GITHUB_SHA}-${attempt}" \
-                --output "$target"; then
-                echo "Attempt ${attempt}: ${asset} not reachable yet"
-                all_ok=false
-                continue
+              if ! curl --fail --silent --show-error --location --header 'Cache-Control: no-cache' "${BASE_URL}/${asset}?fc_smoke=${GITHUB_SHA}-${attempt}" --output "$target"; then
+                echo "Attempt ${attempt}: ${asset} not reachable yet"; all_ok=false; continue
               fi
               expected="$(sha256sum "family-command/${asset}" | awk '{print $1}')"
               actual="$(sha256sum "$target" | awk '{print $1}')"
-              if [ "$actual" != "$expected" ]; then
-                echo "Attempt ${attempt}: ${asset} still differs ($actual != $expected)"
-                all_ok=false
-              fi
+              if [ "$actual" != "$expected" ]; then echo "Attempt ${attempt}: ${asset} still differs ($actual != $expected)"; all_ok=false; fi
             done
-            if [ "$all_ok" = true ]; then
-              echo "All critical production assets match ${GITHUB_SHA}."
-              break
-            fi
+            if [ "$all_ok" = true ]; then echo "All critical production assets match ${GITHUB_SHA}."; break; fi
             sleep 5
           done
-          test "$all_ok" = true || {
-            echo "Critical production assets did not converge to ${GITHUB_SHA} within the propagation window."
-            exit 1
-          }
-
+          test "$all_ok" = true || { echo "Critical production assets did not converge to ${GITHUB_SHA} within the propagation window."; exit 1; }
           node --check /tmp/core-runtime.js
           node --check /tmp/cloud-state.js
           node --check /tmp/document-viewer.js
           node --check /tmp/smart-documents.js
           node --check /tmp/v9-app.js
+          node --check /tmp/daily-check.js
           node --check /tmp/family-contacts.js
           node --check /tmp/reminder-center.js
           node --check /tmp/reference-mobile-v35.js
@@ -197,6 +192,8 @@ jobs:
           grep -q '"name"' /tmp/manifest.webmanifest
           grep -q "finalCss('v9-design-system-v9619.css','fc9619design');finalCss('v9-layout-final-v9622.css','fc9622layout')" /tmp/reference-mobile-v35.js
           grep -q "const CACHE='family-command-v101'" /tmp/sw.js
+          grep -q 'daily-check.js' /tmp/sw.js
+          grep -q 'daily-check.css' /tmp/sw.js
           grep -q 'v9-layout-final-v9622.css' /tmp/sw.js
           grep -q 'v9-form-dialog-polish-v960.css' /tmp/v9-page-polish-v959.css
           grep -q 'v9-interaction-accessibility-v961.css' /tmp/v9-page-polish-v959.css
