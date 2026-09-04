@@ -113,46 +113,61 @@ jobs:
           grep -q 'family-contacts.css' /tmp/fc-live-index.html
           grep -q 'reminder-center.js' /tmp/fc-live-index.html
 
-      - name: Verify exact critical production assets
+      - name: Wait for exact critical production assets
         shell: bash
         env:
           BASE_URL: https://fox3nox.github.io/HomepageProjekt/family-command
         run: |
           set -euo pipefail
-          for asset in \
-            core-runtime.js \
-            cloud-state.js \
-            document-viewer.js \
-            document-viewer.css \
-            smart-documents.js \
-            v9-app.js \
-            v9.css \
-            v9-professional.css \
-            family-contacts.js \
-            family-contacts.css \
-            reminder-center.js \
-            v9-page-polish-v959.css \
-            v9-form-dialog-polish-v960.css \
-            v9-interaction-accessibility-v961.css \
-            sw.js \
-            manifest.webmanifest; do
-            echo "Checking ${asset}"
-            target="/tmp/${asset//\//_}"
-            curl --fail --silent --show-error --location \
-              --retry 3 --retry-delay 2 --retry-all-errors \
-              --header 'Cache-Control: no-cache' \
-              "${BASE_URL}/${asset}?fc_smoke=${GITHUB_SHA}" \
-              --output "$target"
-            test -s "$target"
-            expected="$(sha256sum "family-command/${asset}" | awk '{print $1}')"
-            actual="$(sha256sum "$target" | awk '{print $1}')"
-            if [ "$actual" != "$expected" ]; then
-              echo "Production asset mismatch: ${asset}"
-              echo "Expected SHA256: $expected"
-              echo "Live SHA256: $actual"
-              exit 1
+          assets=(
+            core-runtime.js
+            cloud-state.js
+            document-viewer.js
+            document-viewer.css
+            smart-documents.js
+            v9-app.js
+            v9.css
+            v9-professional.css
+            family-contacts.js
+            family-contacts.css
+            reminder-center.js
+            v9-page-polish-v959.css
+            v9-form-dialog-polish-v960.css
+            v9-interaction-accessibility-v961.css
+            sw.js
+            manifest.webmanifest
+          )
+
+          all_ok=false
+          for attempt in $(seq 1 60); do
+            all_ok=true
+            for asset in "${assets[@]}"; do
+              target="/tmp/${asset//\//_}"
+              if ! curl --fail --silent --show-error --location \
+                --header 'Cache-Control: no-cache' \
+                "${BASE_URL}/${asset}?fc_smoke=${GITHUB_SHA}-${attempt}" \
+                --output "$target"; then
+                echo "Attempt ${attempt}: ${asset} not reachable yet"
+                all_ok=false
+                continue
+              fi
+              expected="$(sha256sum "family-command/${asset}" | awk '{print $1}')"
+              actual="$(sha256sum "$target" | awk '{print $1}')"
+              if [ "$actual" != "$expected" ]; then
+                echo "Attempt ${attempt}: ${asset} still differs ($actual != $expected)"
+                all_ok=false
+              fi
+            done
+            if [ "$all_ok" = true ]; then
+              echo "All critical production assets match ${GITHUB_SHA}."
+              break
             fi
+            sleep 5
           done
+          test "$all_ok" = true || {
+            echo "Critical production assets did not converge to ${GITHUB_SHA} within the propagation window."
+            exit 1
+          }
 
           node --check /tmp/core-runtime.js
           node --check /tmp/cloud-state.js
