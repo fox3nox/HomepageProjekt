@@ -50,7 +50,8 @@ button,input,select,textarea{font-family:var(--fcui-font)!important}
 #more .fc9-tile b{font-size:11.9px!important;line-height:1.18!important;margin-top:8px!important}
 #more .fc9-tile span{font-size:8.8px!important;line-height:1.3!important;margin-top:3px!important}
 
-/* People is a normal V9 page, not a visually separate app */
+/* People is a normal V9 page, not a visually separate app.
+   Keep the approved touch/readability floors while removing the extra-heavy feel. */
 #people.active #fcContactsModal .fc-contacts-shell{background:transparent!important}
 #people.active #fcContactsModal .fc-contacts-shell>header{padding:5px 2px 11px!important}
 #people.active #fcContactsModal .fc-contacts-shell>header>h2{font-size:28px!important;line-height:1.02!important;margin:0 0 5px!important}
@@ -59,14 +60,14 @@ button,input,select,textarea{font-family:var(--fcui-font)!important}
 #people.active .fc-contacts-tools input,#people.active .fc-contacts-tools select{min-height:46px!important;border:1px solid var(--fcui-line)!important;border-radius:14px!important;font-size:12px!important;font-weight:600!important;color:var(--fcui-ink)!important}
 #people.active .fc-contact-search-wrap input{padding-left:44px!important}
 #people.active .fc-contact-select-wrap select{padding-left:39px!important}
-#people.active .fc-contacts-new{min-height:48px!important;border-radius:14px!important;font-size:13px!important}
+#people.active .fc-contacts-new{min-height:50px!important;border-radius:14px!important;font-size:13px!important}
 #people.active .fc-contacts-new span{font-size:20px!important}
 #people.active .fc-contacts-list{padding-left:0!important;padding-right:0!important;gap:9px!important}
-#people.active .fc-contact-card{min-height:74px!important;padding:9px 10px!important;border-width:1px!important;border-radius:18px!important}
-#people.active .fc-contact-main{grid-template-columns:44px minmax(0,1fr)!important;gap:10px!important}
-#people.active .fc-contact-avatar{width:44px!important;height:44px!important;border-radius:13px!important;font-size:18px!important;font-weight:800!important}
+#people.active .fc-contact-card{min-height:78px!important;padding:9px 10px!important;border-width:1px!important;border-radius:18px!important}
+#people.active .fc-contact-main{grid-template-columns:48px minmax(0,1fr)!important;gap:10px!important}
+#people.active .fc-contact-avatar{width:48px!important;height:48px!important;border-radius:13px!important;font-size:18px!important;font-weight:800!important}
 #people.active .fc-contact-copy{row-gap:3px!important}
-#people.active .fc-contact-copy b{font-size:14px!important;line-height:1.15!important}
+#people.active .fc-contact-copy b{font-size:17px!important;line-height:1.12!important;font-weight:700!important}
 #people.active .fc-contact-role{font-size:9.7px!important;font-weight:700!important;padding:3px 7px!important}
 #people.active .fc-contact-copy small{font-size:10.4px!important;line-height:1.25!important}
 #people.active .fc-contact-actions{gap:6px!important}
