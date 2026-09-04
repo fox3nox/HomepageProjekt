@@ -23,8 +23,15 @@ jobs:
     timeout-minutes: 10
     steps:
       - uses: actions/checkout@v4
+      - name: Syntax
+        run: |
+          node --check family-command/family-contacts.js
+          node --check family-command/e2e/family-contacts-stability.spec.mjs
+          node --check family-command/e2e/full-interaction-audit.spec.mjs
       - name: Install matching Playwright package
         timeout-minutes: 2
         run: npm install --no-save --package-lock=false playwright@1.57.0
+      - name: Contact routing and mutation stability
+        run: node family-command/e2e/family-contacts-stability.spec.mjs
       - name: Full mobile interaction audit
         run: node family-command/e2e/full-interaction-audit.spec.mjs
