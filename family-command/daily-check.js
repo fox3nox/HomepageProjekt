@@ -13,7 +13,7 @@ const iso=d=>`${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${Str
 const currentDate=()=>{try{if(typeof todayISO==='function'){const value=String(todayISO()||'');if(DATE_RE.test(value))return value}}catch(_){}return iso(new Date())};
 const dayOf=value=>new Date(`${value}T12:00:00`).getDay();
 const shift=(value,days)=>{const d=new Date(`${value}T12:00:00`);d.setDate(d.getDate()+days);return iso(d)};
-const esc=s=>String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot',"'":'&#39;'}[c]));
+const esc=s=>String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
 const validDate=value=>DATE_RE.test(String(value||''));
 const cleanTime=value=>String(value||'').slice(0,5);
 
