@@ -1,0 +1,35 @@
+name: Family Command V9.63.2 daily check regression
+on:
+  push:
+    branches: [main]
+    paths:
+      - 'family-command/daily-check.js'
+      - 'family-command/daily-check.css'
+      - 'family-command/e2e/daily-check-v9632.spec.mjs'
+      - '.github/workflows/family-command-daily-check-v9632-check.yml'
+  pull_request:
+    branches: [main]
+    paths:
+      - 'family-command/daily-check.js'
+      - 'family-command/daily-check.css'
+      - 'family-command/e2e/daily-check-v9632.spec.mjs'
+      - '.github/workflows/family-command-daily-check-v9632-check.yml'
+permissions:
+  contents: read
+jobs:
+  daily-check:
+    runs-on: ubuntu-latest
+    container:
+      image: mcr.microsoft.com/playwright:v1.57.0-noble
+    timeout-minutes: 8
+    steps:
+      - uses: actions/checkout@v4
+      - name: Syntax
+        run: |
+          node --check family-command/daily-check.js
+          node --check family-command/e2e/daily-check-v9632.spec.mjs
+      - name: Install matching Playwright package
+        timeout-minutes: 2
+        run: npm install --no-save --package-lock=false playwright@1.57.0
+      - name: iPhone Tagescheck regression
+        run: node family-command/e2e/daily-check-v9632.spec.mjs
