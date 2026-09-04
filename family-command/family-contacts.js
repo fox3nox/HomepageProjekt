@@ -1,4 +1,4 @@
-/* Familienzentrale V9.61.6 · Personen & Kontakte · complete existing data surfaces */
+/* Familienzentrale V9.61.6 · Personen & Kontakte · existing-data audit */
 (()=>{'use strict';if(window.__fcFamilyContactsInstalled)return;window.__fcFamilyContactsInstalled=true;
 const VERSION='9.61.6',CATS=['Schule','Arzt','Zahnarzt','Betreuung','Therapie','Verein','Familie','Sonstiges'];
 const D=()=>{try{return typeof data!=='undefined'&&data?data:{}}catch(_){return{}}};
