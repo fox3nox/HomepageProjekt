@@ -10,15 +10,28 @@ on:
     paths:
       - 'family-command/**'
       - '.github/workflows/family-command-full-interaction-audit.yml'
+permissions:
+  contents: read
+concurrency:
+  group: family-command-full-interaction-${{ github.event.pull_request.number || github.ref }}
+  cancel-in-progress: true
 jobs:
   interaction-audit:
     runs-on: ubuntu-latest
-    timeout-minutes: 15
+    container:
+      image: mcr.microsoft.com/playwright:v1.57.0-noble
+    timeout-minutes: 10
     steps:
       - uses: actions/checkout@v4
-      - name: Install Playwright WebKit
+      - name: Syntax
         run: |
-          npm install --no-save --package-lock=false playwright@1.55.0
-          npx playwright install --with-deps webkit
+          node --check family-command/family-contacts.js
+          node --check family-command/e2e/family-contacts-stability.spec.mjs
+          node --check family-command/e2e/full-interaction-audit.spec.mjs
+      - name: Install matching Playwright package
+        timeout-minutes: 2
+        run: npm install --no-save --package-lock=false playwright@1.57.0
+      - name: Contact routing and mutation stability
+        run: node family-command/e2e/family-contacts-stability.spec.mjs
       - name: Full mobile interaction audit
         run: node family-command/e2e/full-interaction-audit.spec.mjs
