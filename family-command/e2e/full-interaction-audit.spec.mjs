@@ -114,7 +114,7 @@ try{
   await page.click('[data-feature="people"]');await page.waitForFunction(()=>document.querySelector('#people')?.classList.contains('active'));await page.click('#people [data-back]');
   await page.click('[data-feature="docs"]');await expectModal(/Dokumentenzentrale/i);await page.waitForSelector('#fc9Modal [data-doc="doc-audit"]');await page.click('#fc9Modal [data-doc="doc-audit"]');await page.waitForSelector('#fcDocumentViewer');await page.waitForFunction(()=>document.querySelector('#fcDocumentViewer .fc-dv-readable')?.innerText.includes('Lesefassung funktioniert.'));assert.equal((await page.locator('#fcDocumentViewer .fc-dv-head h1').innerText()).trim(),'Audit Dokument');await page.click('#fcDocumentViewer .fc-dv-close');await closeModal();
   for(const k of ['ai','daypdf','weekpdf','backup','export']){await page.click(`[data-feature="${k}"]`);await expectCall(k)}
-  await page.click('[data-feature="push"]');await expectModal(/Erinnerungen/i);await page.click('#fc9Modal [data-save]');await expectCall('push');
+  await page.click('[data-feature="push"]');await page.waitForSelector('#fcReminderCenter');assert.match((await page.locator('#fcReminderCenter h2').innerText()).trim(),/Erinnerungen/i);assert.equal((await page.evaluate(()=>window.__fcReminderCenter?.health?.().readOnlyRules)),true);await page.click('#fcReminderCenter [data-push]');await expectCall('push');await page.click('#fcReminderCenter [data-close]');
 
   await openScreen('more');await page.click('[data-add-pend]');await expectModal(/Neue Pendenz/i);await page.fill('#fc9PendTitle','UI Audit Pendenz');await page.fill('#fc9PendAmount','12.50');await page.click('#fc9Modal [data-save]');assert.ok((await page.locator('#more').innerText()).includes('UI Audit Pendenz'));
   const pend=page.locator('#more .fc9-pend-row').filter({hasText:'UI Audit Pendenz'});await pend.locator('input[type="checkbox"]').click();
@@ -133,6 +133,6 @@ try{
   const unexpectedConsole=consoleErrors.filter(x=>!/service worker|favicon|fc9_deferred/i.test(x));
   assert.deepEqual(unexpectedConsole,[],`console errors: ${JSON.stringify(unexpectedConsole)}`);
 
-  console.log('V9.50 full interaction audit: ok');
+  console.log('V9.61.7 full interaction audit: ok');
   await context.close();await browser.close();
 } finally {server.kill('SIGTERM')}
