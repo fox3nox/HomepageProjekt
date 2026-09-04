@@ -1,0 +1,119 @@
+name: Family Command production smoke
+
+on:
+  pull_request:
+    branches: [main]
+    paths:
+      - 'family-command/**'
+      - '.github/workflows/family-command-production-smoke.yml'
+  push:
+    branches: [main]
+    paths:
+      - 'family-command/**'
+      - '.github/workflows/family-command-production-smoke.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  validate:
+    if: github.event_name == 'pull_request'
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@v4
+      - name: Validate production smoke inputs
+        shell: bash
+        run: |
+          set -euo pipefail
+          test -s family-command/index.html
+          test -s family-command/core-runtime.js
+          test -s family-command/v9-app.js
+          test -s family-command/smart-documents.js
+          test -s family-command/sw.js
+          test -s family-command/manifest.webmanifest
+          grep -q '<title>Familienzentrale</title>' family-command/index.html
+          grep -q 'data-fc-v9="1"' family-command/index.html
+          grep -q 'core-runtime.js' family-command/index.html
+          grep -q 'smart-documents.js' family-command/index.html
+          grep -q 'v9-app.js' family-command/index.html
+          node --check family-command/core-runtime.js
+          node --check family-command/v9-app.js
+          node --check family-command/smart-documents.js
+          node --check family-command/sw.js
+
+  production:
+    if: github.event_name == 'push' || github.event_name == 'workflow_dispatch'
+    runs-on: ubuntu-latest
+    timeout-minutes: 8
+    steps:
+      - uses: actions/checkout@v4
+      - name: Wait for exact Family Command build on GitHub Pages
+        shell: bash
+        env:
+          BASE_URL: https://fox3nox.github.io/HomepageProjekt/family-command
+        run: |
+          set -euo pipefail
+          expected="$(sha256sum family-command/index.html | awk '{print $1}')"
+          live=''
+          for attempt in $(seq 1 36); do
+            if curl --fail --silent --show-error --location \
+              --header 'Cache-Control: no-cache' \
+              "${BASE_URL}/index.html?fc_smoke=${GITHUB_SHA}-${attempt}" \
+              --output /tmp/fc-live-index.html; then
+              live="$(sha256sum /tmp/fc-live-index.html | awk '{print $1}')"
+              if [ "$live" = "$expected" ]; then
+                echo "Exact family-command/index.html is live: $live"
+                break
+              fi
+              echo "Attempt ${attempt}: GitHub Pages still serves a different build ($live != $expected)"
+            else
+              echo "Attempt ${attempt}: GitHub Pages not reachable yet"
+            fi
+            sleep 10
+          done
+          test "$live" = "$expected" || {
+            echo "Expected index SHA256: $expected"
+            echo "Live index SHA256: ${live:-unavailable}"
+            exit 1
+          }
+
+          grep -q '<title>Familienzentrale</title>' /tmp/fc-live-index.html
+          grep -q 'data-fc-v9="1"' /tmp/fc-live-index.html
+          grep -q 'core-runtime.js' /tmp/fc-live-index.html
+          grep -q 'smart-documents.js' /tmp/fc-live-index.html
+          grep -q 'v9-app.js' /tmp/fc-live-index.html
+
+      - name: Verify critical production assets
+        shell: bash
+        env:
+          BASE_URL: https://fox3nox.github.io/HomepageProjekt/family-command
+        run: |
+          set -euo pipefail
+          for asset in \
+            core-runtime.js \
+            cloud-state.js \
+            smart-documents.js \
+            v9-app.js \
+            sw.js \
+            manifest.webmanifest; do
+            echo "Checking ${asset}"
+            curl --fail --silent --show-error --location \
+              --retry 3 --retry-delay 2 --retry-all-errors \
+              --header 'Cache-Control: no-cache' \
+              "${BASE_URL}/${asset}?fc_smoke=${GITHUB_SHA}" \
+              --output "/tmp/${asset//\//_}"
+            test -s "/tmp/${asset//\//_}"
+          done
+
+          node --check /tmp/core-runtime.js
+          node --check /tmp/cloud-state.js
+          node --check /tmp/smart-documents.js
+          node --check /tmp/v9-app.js
+          node --check /tmp/sw.js
+          grep -q '"name"' /tmp/manifest.webmanifest
+
+      - name: Production smoke summary
+        run: |
+          echo "Family Command production smoke passed for ${GITHUB_SHA}."
