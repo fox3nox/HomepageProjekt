@@ -80,7 +80,7 @@ try{
   assert.ok(report.now.overdue.every(x=>x.overdue===true));
   assert.ok(report.now.overdue.every(x=>x.time.startsWith('Überfällig seit ')));
   assert.ok(!report.now.overdue.some(x=>/Erledigt/.test(x.title)),'Done overdue entries must stay hidden');
-  assert.deepEqual(report.now.important,['Deutsch · Heute abgeben','Heute wichtig']);
+  assert.deepEqual(report.now.important,['Heute wichtig','Deutsch · Heute abgeben']);
   assert.ok(report.now.pack.includes('Schultasche einpacken'));
   assert.ok(!report.now.pack.includes('Sportbeutel mitnehmen'),'School-break reminders must stay hidden');
   assert.ok(!report.now.pack.includes('Turnzeug mitnehmen'),'School-break schedule notes must stay hidden');
