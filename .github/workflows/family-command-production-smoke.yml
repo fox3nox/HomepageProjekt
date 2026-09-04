@@ -48,7 +48,7 @@ jobs:
           done
           grep -q '<title>Familienzentrale</title>' family-command/index.html
           grep -q 'data-fc-v9="1"' family-command/index.html
-          grep -q "const VERSION='20260904-v9615'" family-command/index.html
+          grep -q "const VERSION='20260904-v9616'" family-command/index.html
           grep -q 'core-runtime.js' family-command/index.html
           grep -q 'smart-documents.js' family-command/index.html
           grep -q 'v9-app.js' family-command/index.html
@@ -102,7 +102,7 @@ jobs:
 
           grep -q '<title>Familienzentrale</title>' /tmp/fc-live-index.html
           grep -q 'data-fc-v9="1"' /tmp/fc-live-index.html
-          grep -q "const VERSION='20260904-v9615'" /tmp/fc-live-index.html
+          grep -q "const VERSION='20260904-v9616'" /tmp/fc-live-index.html
           grep -q 'core-runtime.js' /tmp/fc-live-index.html
           grep -q 'smart-documents.js' /tmp/fc-live-index.html
           grep -q 'v9-app.js' /tmp/fc-live-index.html
