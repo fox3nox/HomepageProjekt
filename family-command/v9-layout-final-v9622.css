@@ -1,0 +1,133 @@
+/* Familienzentrale V9.62.2 · final layout hierarchy and density
+   Visual-only. Keeps the V9 interaction/data model unchanged. */
+:root{
+  --fc22-bg:#f6f9fd;
+  --fc22-surface:#fff;
+  --fc22-ink:#102846;
+  --fc22-muted:#71839b;
+  --fc22-line:#dfe7f1;
+  --fc22-shadow:0 4px 14px rgba(24,45,74,.045);
+  --fc22-radius:18px;
+}
+
+/* Compact, calm global chrome */
+.fc9-topbar-in{min-height:54px!important;padding:calc(6px + env(safe-area-inset-top,0px)) 13px 6px!important;gap:9px!important}
+.fc9-mark{width:32px!important;height:32px!important;border-radius:10px!important;font-size:9px!important}
+.fc9-brand b{font-size:15px!important;font-weight:780!important;letter-spacing:-.025em!important}
+.fc9-brand span{font-size:9.4px!important;margin-top:0!important;color:var(--fc22-muted)!important}
+.fc9-head-actions{gap:6px!important}
+.fc9-icon{width:40px!important;height:40px!important;border-radius:12px!important;font-size:17px!important;box-shadow:none!important}
+.fc9-icon.ai{font-size:9px!important}
+.fc9-main{padding-top:11px!important;padding-bottom:20px!important}
+
+/* One spacing rhythm and one hierarchy */
+.fc9-page{gap:14px!important}
+.fc9-pagehead{padding:2px 1px 1px!important;align-items:flex-end!important}
+.fc9-pagehead h1,#people.active .fc-contacts-shell>header>h2{font-size:38px!important;line-height:1.02!important;font-weight:790!important;letter-spacing:-.042em!important;color:var(--fc22-ink)!important}
+.fc9-pagehead p,#people.active .fc-contacts-shell>header>p{font-size:10.5px!important;line-height:1.38!important;font-weight:500!important;color:var(--fc22-muted)!important}
+.fc9-date{font-size:10.5px!important;font-weight:680!important;color:#70839a!important}
+.fc9-section{gap:7px!important}
+.fc9-section-head{min-height:28px!important;padding:0 2px!important}
+.fc9-section-head h2{font-size:14.5px!important;line-height:1.2!important;font-weight:750!important;color:#294464!important}
+.fc9-section-head button,.fc9-link{font-size:10px!important;font-weight:650!important;color:#647990!important}
+.fc9-card,.fc38-panel,.fc36-panel,.fc9-tile,.fc-contact-card,.fc-doc-item{border:1px solid var(--fc22-line)!important;border-radius:var(--fc22-radius)!important;box-shadow:var(--fc22-shadow)!important}
+.fc9-row-main b,.fc38-line strong,.fc38-taskcopy strong,.fc9-tile b,.fc-doc-main b{font-weight:690!important;letter-spacing:-.012em!important}
+.fc9-row-main span,.fc38-line>div>span,.fc38-taskcopy span,.fc9-tile span,.fc-doc-meta{font-weight:490!important}
+
+/* Today: stronger priority, quieter secondary information */
+#today .fc9-focus{min-height:76px!important;padding:13px 14px!important;border-radius:18px!important;border-color:#d9e4f4!important;background:linear-gradient(135deg,#f2f7ff,#fbfdff)!important;box-shadow:0 5px 16px rgba(37,86,144,.05)!important}
+#today .fc9-focus small{font-size:7.8px!important;font-weight:800!important;letter-spacing:.11em!important}
+#today .fc9-focus b{font-size:15.5px!important;font-weight:740!important;color:var(--fc22-ink)!important}
+#today .fc9-focus p{font-size:9.8px!important;color:var(--fc22-muted)!important}
+#today .fc9-focus-time strong{font-size:21px!important;font-weight:760!important}
+#today .fc9-person{min-height:54px!important;padding:9px 10px!important}
+#today .fc9-person b{font-size:11.6px!important;font-weight:700!important}
+#today .fc9-person span{font-size:9.3px!important}
+#today .fc9-person-time{font-size:10.5px!important;font-weight:720!important}
+#today .fc9-tomorrow{background:#fbfcfe!important;box-shadow:none!important}
+#today .fc9-tomorrow-top{padding:9px 10px!important}
+#today .fc9-tomorrow-top b{font-size:12px!important;font-weight:700!important}
+#today .fc9-mini{padding:7px 10px!important}
+#today .fc9-mini b{font-size:10.5px!important;font-weight:650!important}
+#today .fc9-mini small{font-size:8.8px!important}
+
+/* Tomorrow follows the same density */
+#tomorrow .fc9-person{min-height:54px!important;padding:9px 10px!important}
+#tomorrow .fc9-person b{font-weight:700!important}
+#tomorrow .fc9-empty{padding:11px 12px!important}
+
+/* Calendar: retain the strongest current screen, just normalize controls */
+#events .fc9-segment{height:40px!important;border-radius:13px!important}
+#events .fc9-segment button{font-size:10.8px!important;font-weight:680!important}
+#events .fc9-filter{height:34px!important;padding:0 11px!important;font-size:9.7px!important;font-weight:680!important}
+#events .fc9-month button{width:40px!important;height:40px!important;border-radius:12px!important;box-shadow:none!important}
+#events .fc9-month b{font-size:14.5px!important;font-weight:720!important}
+#events .fc9-day-label{font-size:9.8px!important;font-weight:720!important;margin-top:3px!important}
+#events .fc9-event{min-height:55px!important}
+#events .fc9-time{font-weight:760!important;color:#344a64!important}
+
+/* Tasks: calm header actions and clearer rows */
+#homework .fc9-task-add{gap:6px!important}
+#homework .fc9-task-add button{height:40px!important;border-radius:12px!important;font-size:9.8px!important;font-weight:700!important;padding:0 10px!important;box-shadow:none!important}
+#homework .fc9-tasktabs{height:40px!important}
+#homework .fc9-tasktabs button{font-size:10.8px!important;font-weight:680!important}
+#homework .fc9-row{min-height:58px!important;padding:10px 11px!important}
+#homework .fc9-row-main b{font-size:11.8px!important;line-height:1.3!important}
+#homework .fc9-danger{font-size:9.2px!important;font-weight:620!important}
+
+/* More: existing 2-column order already forms four logical pairs.
+   Give each pair a shared visual family so the page reads as grouped, not random. */
+#more .fc9-more-grid{gap:10px!important;row-gap:12px!important}
+#more .fc9-tile{min-height:104px!important;padding:13px!important;border-radius:18px!important;background:#fff!important;position:relative!important;overflow:hidden!important}
+#more .fc9-tile i{width:32px!important;height:32px!important;border-radius:10px!important;font-size:15px!important;box-shadow:none!important}
+#more .fc9-tile b{font-size:11.8px!important;line-height:1.18!important;font-weight:700!important;margin-top:8px!important}
+#more .fc9-tile span{font-size:8.9px!important;line-height:1.28!important;color:var(--fc22-muted)!important}
+#more .fc9-tile[data-feature="docs"],#more .fc9-tile[data-feature="people"]{border-top:2px solid #8ebaf2!important}
+#more .fc9-tile[data-feature="docs"] i,#more .fc9-tile[data-feature="people"] i{background:#edf5ff!important;color:#236dbf!important}
+#more .fc9-tile[data-feature="ai"],#more .fc9-tile[data-feature="push"]{border-top:2px solid #b4a7e8!important}
+#more .fc9-tile[data-feature="ai"] i,#more .fc9-tile[data-feature="push"] i{background:#f4f0ff!important;color:#6757b2!important}
+#more .fc9-tile[data-feature="daypdf"],#more .fc9-tile[data-feature="weekpdf"]{border-top:2px solid #9ccfba!important}
+#more .fc9-tile[data-feature="daypdf"] i,#more .fc9-tile[data-feature="weekpdf"] i{background:#eef9f4!important;color:#337a5d!important}
+#more .fc9-tile[data-feature="backup"],#more .fc9-tile[data-feature="export"]{border-top:2px solid #b6c2d1!important}
+#more .fc9-tile[data-feature="backup"] i,#more .fc9-tile[data-feature="export"] i{background:#f2f5f8!important;color:#566b82!important}
+#more .fc9-section{margin-top:2px!important}
+#more .fc9-section-head{padding-top:2px!important}
+
+/* Contacts: keep readability floors, reduce the separate-mini-app feel */
+#people.active #fcContactsModal .fc-contacts-shell>header{padding:3px 1px 9px!important}
+#people.active .fc-contacts-tools{gap:7px!important;padding-bottom:10px!important}
+#people.active .fc-contacts-tools input,#people.active .fc-contacts-tools select{min-height:44px!important;border-radius:13px!important;font-size:11.5px!important;font-weight:570!important}
+#people.active .fc-contacts-new{min-height:50px!important;border-radius:13px!important;font-size:12.2px!important;font-weight:720!important;box-shadow:0 5px 14px rgba(23,105,216,.13)!important}
+#people.active .fc-contacts-list{gap:8px!important}
+#people.active .fc-contact-card{min-height:76px!important;padding:9px 10px!important;border-radius:17px!important}
+#people.active .fc-contact-copy b{font-size:17px!important;font-weight:700!important;letter-spacing:-.018em!important}
+#people.active .fc-contact-role{font-size:9.3px!important;font-weight:660!important}
+#people.active .fc-contact-copy small{font-size:10.1px!important;font-weight:500!important}
+#people.active .fc-contact-actions a,#people.active .fc-contact-actions button{width:40px!important;height:40px!important;border-radius:12px!important}
+
+/* Documents and viewer: same density as the rest of V9 */
+body .fc-doc-center .fc9-sheet-head h2{font-size:19px!important;font-weight:760!important}
+body .fc-doc-upload{border-radius:17px!important;box-shadow:var(--fc22-shadow)!important}
+body .fc-doc-upload-title b{font-weight:690!important}
+body .fc-doc-file-picker,body .fc-doc-person,body .fc-doc-search input,body .fc-doc-filters button{font-weight:580!important}
+body .fc-doc-library-head h3{font-size:14.5px!important;font-weight:730!important}
+body .fc-doc-item{min-height:60px!important;padding:9px 10px!important;border-radius:16px!important}
+body .fc-doc-main b{font-size:11.8px!important;font-weight:690!important}
+body .fc-doc-meta{font-size:9.2px!important}
+body .fc-doc-chip{font-weight:580!important}
+body .fc-dv-tabs button,body .fc-dv-toolbar button,body .fc-dv-toolbar span{font-weight:620!important}
+body .fc-dv-readable-head h2{font-weight:740!important}
+body .fc-dv-readable h3{font-weight:700!important}
+
+/* Navigation: slightly lighter visually, same touch target */
+.fc9-nav{padding-top:3px!important}
+.fc9-nav button{min-height:56px!important;font-size:8.8px!important;font-weight:560!important}
+.fc9-nav button.active{font-weight:680!important}
+.fc9-nav svg{width:19px!important;height:19px!important}
+
+@media(max-width:719px){
+  .fc9-main{padding-left:12px!important;padding-right:12px!important}
+  .fc9-page{gap:13px!important}
+  .fc9-pagehead h1,#people.active .fc-contacts-shell>header>h2{font-size:28px!important}
+  #more .fc9-tile{min-height:104px!important}
+}

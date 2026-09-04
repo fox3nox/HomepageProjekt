@@ -8,7 +8,8 @@ const links=[
   {rel:'stylesheet',href:base+'v9-global-polish.css?v=20260904-v9617',dataset:{}},
   {rel:'stylesheet',href:base+'v9-unified-design-v958.css?v=20260904-v9617',dataset:{}},
   {rel:'stylesheet',href:base+'v9-final-unity-v9618.css?v=20260904-v9617',dataset:{}},
-  {rel:'stylesheet',href:base+'v9-design-system-v9619.css?v=20260904-v9617',dataset:{}}
+  {rel:'stylesheet',href:base+'v9-design-system-v9619.css?v=20260904-v9617',dataset:{}},
+  {rel:'stylesheet',href:base+'v9-layout-final-v9622.css?v=20260904-v9617',dataset:{}}
 ];
 const scripts=[];
 const documentElement={dataset:{}};
@@ -35,9 +36,11 @@ assert.equal(byFile('v9-global-polish.css')[0].dataset.fc44,'1','reused styleshe
 assert.equal(byFile('v9-unified-design-v958.css').length,1);
 assert.equal(byFile('v9-final-unity-v9618.css').length,1);
 assert.equal(byFile('v9-design-system-v9619.css').length,1);
-assert.deepEqual(links.slice(-3).map(l=>new URL(l.href,base).pathname.split('/').pop()),[
-  'v9-unified-design-v958.css','v9-final-unity-v9618.css','v9-design-system-v9619.css'
+assert.equal(byFile('v9-layout-final-v9622.css').length,1);
+assert.deepEqual(links.slice(-4).map(l=>new URL(l.href,base).pathname.split('/').pop()),[
+  'v9-unified-design-v958.css','v9-final-unity-v9618.css','v9-design-system-v9619.css','v9-layout-final-v9622.css'
 ],'final cascade layers must stay in the intended order');
 assert.equal(documentElement.dataset.fcDesignSystem,'v9619');
+assert.equal(documentElement.dataset.fcFinalLayout,'v9622');
 assert.match(source,/20260903-v9520/,'loader must keep the established compatible asset version');
-console.log('ok reference loader dedupe V9.62.1');
+console.log('ok reference loader dedupe V9.62.2');
