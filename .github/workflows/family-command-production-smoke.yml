@@ -43,6 +43,7 @@ jobs:
             reference-mobile-v35.js \
             v9-final-unity-v9618.css \
             v9-design-system-v9619.css \
+            v9-layout-final-v9622.css \
             v9-page-polish-v959.css \
             v9-form-dialog-polish-v960.css \
             v9-interaction-accessibility-v961.css \
@@ -61,8 +62,9 @@ jobs:
           grep -q 'reminder-center.js' family-command/index.html
           grep -q 'v9-final-unity-v9618.css' family-command/index.html
           grep -q 'v9-design-system-v9619.css' family-command/index.html
-          grep -q "finalCss('v9-final-unity-v9618.css','fc9618unity');finalCss('v9-design-system-v9619.css','fc9619design')" family-command/reference-mobile-v35.js
-          grep -q "const CACHE='family-command-v100'" family-command/sw.js
+          grep -q "finalCss('v9-design-system-v9619.css','fc9619design');finalCss('v9-layout-final-v9622.css','fc9622layout')" family-command/reference-mobile-v35.js
+          grep -q "const CACHE='family-command-v101'" family-command/sw.js
+          grep -q 'v9-layout-final-v9622.css' family-command/sw.js
           grep -q 'v9-form-dialog-polish-v960.css' family-command/v9-page-polish-v959.css
           grep -q 'v9-interaction-accessibility-v961.css' family-command/v9-page-polish-v959.css
           node --check family-command/core-runtime.js
@@ -144,6 +146,7 @@ jobs:
             reference-mobile-v35.js
             v9-final-unity-v9618.css
             v9-design-system-v9619.css
+            v9-layout-final-v9622.css
             v9-page-polish-v959.css
             v9-form-dialog-polish-v960.css
             v9-interaction-accessibility-v961.css
@@ -192,8 +195,9 @@ jobs:
           node --check /tmp/reference-mobile-v35.js
           node --check /tmp/sw.js
           grep -q '"name"' /tmp/manifest.webmanifest
-          grep -q "finalCss('v9-final-unity-v9618.css','fc9618unity');finalCss('v9-design-system-v9619.css','fc9619design')" /tmp/reference-mobile-v35.js
-          grep -q "const CACHE='family-command-v100'" /tmp/sw.js
+          grep -q "finalCss('v9-design-system-v9619.css','fc9619design');finalCss('v9-layout-final-v9622.css','fc9622layout')" /tmp/reference-mobile-v35.js
+          grep -q "const CACHE='family-command-v101'" /tmp/sw.js
+          grep -q 'v9-layout-final-v9622.css' /tmp/sw.js
           grep -q 'v9-form-dialog-polish-v960.css' /tmp/v9-page-polish-v959.css
           grep -q 'v9-interaction-accessibility-v961.css' /tmp/v9-page-polish-v959.css
 
