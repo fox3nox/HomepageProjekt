@@ -16,4 +16,5 @@ Familienzentrale personal build
 2026-09-04 v9.61.2-cache-integrity
 2026-09-04 v9.61.5-approved-contact-design
 2026-09-04 v9.61.6-existing-data-surfaces
+2026-09-04 v9.61.7-reminder-surface
 private family workspace
