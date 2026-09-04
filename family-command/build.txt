@@ -13,4 +13,5 @@ Familienzentrale personal build
 2026-08-31 v9.26-full-audit-hardening
 2026-09-01 v9.27-today-clarity
 2026-09-01 v9.30-dashboard-redesign
+2026-09-04 v9.61.2-cache-integrity
 private family workspace

@@ -25,7 +25,8 @@ jobs:
         run: |
           set -euo pipefail
           check(){ label="$1"; shift; if "$@"; then echo "ok: $label"; else echo "FAILED: $label"; exit 1; fi; }
-          check "boot version" grep -q "const VERSION='20260903-v9590'" family-command/index.html
+          check "boot version" grep -q "const VERSION='20260904-v9612'" family-command/index.html
+          check "current build marker" grep -q "v9.61.2-cache-integrity" family-command/build.txt
           check "private rules version" grep -q "PRIVATE_RULES_VERSION='2026-08-31-v2'" family-command/index.html
           check "smart documents wired" grep -q "smart-documents.js" family-command/index.html
           check "reference loader wired" grep -q "reference-mobile-v35.js" family-command/index.html
