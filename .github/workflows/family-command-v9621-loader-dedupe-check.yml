@@ -4,13 +4,17 @@ on:
     branches: [main]
     paths:
       - 'family-command/reference-mobile-v35.js'
+      - 'family-command/sharp-header-v9643.css'
       - 'family-command/e2e/reference-loader-dedupe-v9621.spec.mjs'
+      - 'family-command/e2e/sharp-header-v9645.spec.mjs'
       - '.github/workflows/family-command-v9621-loader-dedupe-check.yml'
   pull_request:
     branches: [main]
     paths:
       - 'family-command/reference-mobile-v35.js'
+      - 'family-command/sharp-header-v9643.css'
       - 'family-command/e2e/reference-loader-dedupe-v9621.spec.mjs'
+      - 'family-command/e2e/sharp-header-v9645.spec.mjs'
       - '.github/workflows/family-command-v9621-loader-dedupe-check.yml'
 jobs:
   regression:
@@ -22,5 +26,8 @@ jobs:
         run: |
           node --check family-command/reference-mobile-v35.js
           node --check family-command/e2e/reference-loader-dedupe-v9621.spec.mjs
+          node --check family-command/e2e/sharp-header-v9645.spec.mjs
       - name: Loader dedupe and cascade order
         run: node family-command/e2e/reference-loader-dedupe-v9621.spec.mjs
+      - name: Native iOS header rendering
+        run: node family-command/e2e/sharp-header-v9645.spec.mjs
