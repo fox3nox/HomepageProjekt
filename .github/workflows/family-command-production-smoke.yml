@@ -39,6 +39,7 @@ jobs:
             v9-professional.css \
             daily-check.js \
             daily-check.css \
+            header-native-v9652.css \
             family-contacts.js \
             family-contacts.css \
             reminder-center.js \
@@ -67,9 +68,11 @@ jobs:
           grep -q 'v9-final-unity-v9618.css' family-command/index.html
           grep -q 'v9-design-system-v9619.css' family-command/index.html
           grep -q "finalCss('v9-design-system-v9619.css','fc9619design');finalCss('v9-layout-final-v9622.css','fc9622layout')" family-command/reference-mobile-v35.js
-          grep -q "const CACHE='family-command-v101'" family-command/sw.js
+          grep -q "finalCss('header-native-v9652.css','fc9652native')" family-command/reference-mobile-v35.js
+          grep -q "const CACHE='family-command-v102'" family-command/sw.js
           grep -q 'daily-check.js' family-command/sw.js
           grep -q 'daily-check.css' family-command/sw.js
+          grep -q 'header-native-v9652.css' family-command/sw.js
           grep -q 'v9-layout-final-v9622.css' family-command/sw.js
           grep -q 'v9-form-dialog-polish-v960.css' family-command/v9-page-polish-v959.css
           grep -q 'v9-interaction-accessibility-v961.css' family-command/v9-page-polish-v959.css
@@ -83,6 +86,7 @@ jobs:
           node --check family-command/reminder-center.js
           node --check family-command/reference-mobile-v35.js
           node --check family-command/sw.js
+          node family-command/e2e/header-native-v9652.spec.mjs
 
   production:
     if: github.event_name == 'push' || github.event_name == 'workflow_dispatch'
@@ -150,6 +154,7 @@ jobs:
             v9-professional.css
             daily-check.js
             daily-check.css
+            header-native-v9652.css
             family-contacts.js
             family-contacts.css
             reminder-center.js
@@ -191,9 +196,11 @@ jobs:
           node --check /tmp/sw.js
           grep -q '"name"' /tmp/manifest.webmanifest
           grep -q "finalCss('v9-design-system-v9619.css','fc9619design');finalCss('v9-layout-final-v9622.css','fc9622layout')" /tmp/reference-mobile-v35.js
-          grep -q "const CACHE='family-command-v101'" /tmp/sw.js
+          grep -q "finalCss('header-native-v9652.css','fc9652native')" /tmp/reference-mobile-v35.js
+          grep -q "const CACHE='family-command-v102'" /tmp/sw.js
           grep -q 'daily-check.js' /tmp/sw.js
           grep -q 'daily-check.css' /tmp/sw.js
+          grep -q 'header-native-v9652.css' /tmp/sw.js
           grep -q 'v9-layout-final-v9622.css' /tmp/sw.js
           grep -q 'v9-form-dialog-polish-v960.css' /tmp/v9-page-polish-v959.css
           grep -q 'v9-interaction-accessibility-v961.css' /tmp/v9-page-polish-v959.css
