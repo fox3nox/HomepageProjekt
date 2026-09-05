@@ -1,0 +1,29 @@
+/* Familienzentrale V9.64.3 · iOS/WebKit sharp header rendering
+   Visual-only: removes the mobile sticky-header blur/compositing layer. */
+@media (max-width:719px){
+  .fc9-topbar{
+    background:#f7f9fc!important;
+    backdrop-filter:none!important;
+    -webkit-backdrop-filter:none!important;
+  }
+  .fc9-topbar-in,
+  .fc9-mark,
+  .fc9-brand,
+  .fc9-brand b,
+  .fc9-brand span,
+  .fc9-head-actions,
+  .fc9-icon{
+    filter:none!important;
+    backdrop-filter:none!important;
+    -webkit-backdrop-filter:none!important;
+    transform:none!important;
+    -webkit-transform:none!important;
+  }
+  .fc9-brand b,
+  .fc9-brand span,
+  .fc9-sync,
+  .fc9-today-anchor{
+    -webkit-font-smoothing:antialiased;
+    text-rendering:geometricPrecision;
+  }
+}
