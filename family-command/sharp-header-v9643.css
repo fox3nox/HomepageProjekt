@@ -5,6 +5,7 @@
   .fc9-topbar{
     display:block!important;
     position:relative!important;
+    top:auto!important;
     inset:auto!important;
     z-index:auto!important;
     isolation:auto!important;
