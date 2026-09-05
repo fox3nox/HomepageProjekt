@@ -1,9 +1,11 @@
-/* Familienzentrale V9.64.7 · native iOS/WebKit header rendering + clean app mark
-   Visual-only: remove compositing causes and avoid tiny/synthetic header typography on phones. */
+/* Familienzentrale V9.64.8 · crisp native iOS/WebKit header
+   Visual-only: keep the header off separate compositing layers and let iOS render text natively. */
 @media (max-width:719px){
   .fc9-topbar{
     position:relative!important;
     top:auto!important;
+    z-index:auto!important;
+    isolation:auto!important;
     background:#fff!important;
     backdrop-filter:none!important;
     -webkit-backdrop-filter:none!important;
@@ -30,6 +32,14 @@
     will-change:auto!important;
     opacity:1!important;
   }
+
+  /* Safari 13+ already provides accelerated overflow scrolling. The legacy
+     touch value creates an extra stacking/compositing context on iOS and can
+     make adjacent text/logo layers look bitmap-scaled. */
+  body .fc9-main{
+    -webkit-overflow-scrolling:auto!important;
+  }
+
   .fc9-mark{
     width:40px!important;
     height:40px!important;
@@ -43,10 +53,10 @@
     font-family:-apple-system,BlinkMacSystemFont,"Helvetica Neue",Arial,sans-serif!important;
   }
   .fc9-brand b{
-    font-size:17px!important;
-    line-height:1.08!important;
-    font-weight:800!important;
-    letter-spacing:-.018em!important;
+    font-size:18px!important;
+    line-height:1.111111!important;
+    font-weight:750!important;
+    letter-spacing:-.01em!important;
     color:#102846!important;
     text-shadow:none!important;
     font-synthesis:none!important;
@@ -55,8 +65,8 @@
   }
   .fc9-brand span{
     margin-top:2px!important;
-    font-size:10.5px!important;
-    line-height:1.16!important;
+    font-size:11px!important;
+    line-height:1.181818!important;
     font-weight:600!important;
     letter-spacing:0!important;
     color:#71839b!important;
@@ -73,8 +83,8 @@
     text-rendering:auto!important;
     text-shadow:none!important;
   }
-  .fc9-sync{font-size:9px!important;font-weight:650!important}
-  .fc9-today-anchor{font-size:9px!important;font-weight:650!important}
+  .fc9-sync{font-size:9.5px!important;font-weight:650!important}
+  .fc9-today-anchor{font-size:9.5px!important;font-weight:650!important}
   .fc9-icon{
     font-family:-apple-system,BlinkMacSystemFont,"Helvetica Neue",Arial,sans-serif!important;
     text-shadow:none!important;
