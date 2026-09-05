@@ -1,10 +1,10 @@
-/* Familienzentrale V9.64.6 · native iOS/WebKit header rendering + clean app mark
-   Visual-only: avoid sticky/GPU compositing and forced font rasterization on phones. */
+/* Familienzentrale V9.64.7 · native iOS/WebKit header rendering + clean app mark
+   Visual-only: remove compositing causes and avoid tiny/synthetic header typography on phones. */
 @media (max-width:719px){
   .fc9-topbar{
     position:relative!important;
     top:auto!important;
-    background:#f7f9fc!important;
+    background:#fff!important;
     backdrop-filter:none!important;
     -webkit-backdrop-filter:none!important;
     filter:none!important;
@@ -12,6 +12,7 @@
     -webkit-transform:none!important;
     will-change:auto!important;
     contain:none!important;
+    opacity:1!important;
   }
   .fc9-topbar-in,
   .fc9-mark,
@@ -27,17 +28,56 @@
     transform:none!important;
     -webkit-transform:none!important;
     will-change:auto!important;
+    opacity:1!important;
   }
   .fc9-mark{
-    background:url('./header-logo-v9646.svg') center/cover no-repeat!important;
+    width:40px!important;
+    height:40px!important;
+    border-radius:12px!important;
+    background:url('./header-logo-v9646.svg') center/100% 100% no-repeat!important;
+    box-shadow:none!important;
     overflow:hidden!important;
   }
-  .fc9-mark img{display:block!important;opacity:0!important;image-rendering:auto!important}
-  .fc9-brand b,
-  .fc9-brand span,
-  .fc9-sync,
-  .fc9-today-anchor{
+  .fc9-mark img{display:none!important}
+  .fc9-brand{
+    font-family:-apple-system,BlinkMacSystemFont,"Helvetica Neue",Arial,sans-serif!important;
+  }
+  .fc9-brand b{
+    font-size:17px!important;
+    line-height:1.08!important;
+    font-weight:800!important;
+    letter-spacing:-.018em!important;
+    color:#102846!important;
+    text-shadow:none!important;
+    font-synthesis:none!important;
     -webkit-font-smoothing:auto!important;
     text-rendering:auto!important;
+  }
+  .fc9-brand span{
+    margin-top:2px!important;
+    font-size:10.5px!important;
+    line-height:1.16!important;
+    font-weight:600!important;
+    letter-spacing:0!important;
+    color:#71839b!important;
+    text-shadow:none!important;
+    font-synthesis:none!important;
+    -webkit-font-smoothing:auto!important;
+    text-rendering:auto!important;
+  }
+  .fc9-sync,
+  .fc9-today-anchor{
+    font-family:-apple-system,BlinkMacSystemFont,"Helvetica Neue",Arial,sans-serif!important;
+    font-synthesis:none!important;
+    -webkit-font-smoothing:auto!important;
+    text-rendering:auto!important;
+    text-shadow:none!important;
+  }
+  .fc9-sync{font-size:9px!important;font-weight:650!important}
+  .fc9-today-anchor{font-size:9px!important;font-weight:650!important}
+  .fc9-icon{
+    font-family:-apple-system,BlinkMacSystemFont,"Helvetica Neue",Arial,sans-serif!important;
+    text-shadow:none!important;
+    font-synthesis:none!important;
   }
 }
