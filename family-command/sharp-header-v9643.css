@@ -1,4 +1,4 @@
-/* Familienzentrale V9.64.5 · native iOS/WebKit header rendering
+/* Familienzentrale V9.64.6 · native iOS/WebKit header rendering + clean app mark
    Visual-only: avoid sticky/GPU compositing and forced font rasterization on phones. */
 @media (max-width:719px){
   .fc9-topbar{
@@ -28,7 +28,11 @@
     -webkit-transform:none!important;
     will-change:auto!important;
   }
-  .fc9-mark img{display:block!important;image-rendering:auto!important}
+  .fc9-mark{
+    background:url('./header-logo-v9646.svg') center/cover no-repeat!important;
+    overflow:hidden!important;
+  }
+  .fc9-mark img{display:block!important;opacity:0!important;image-rendering:auto!important}
   .fc9-brand b,
   .fc9-brand span,
   .fc9-sync,
