@@ -2,7 +2,7 @@
 (()=>{
 'use strict';
 if(window.__fcTomorrowCalendarV9673)return;
-const esc=s=>String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot',"'":'&#39;'}[c]));
+const esc=s=>String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
 const D=()=>{try{return typeof data!=='undefined'&&data?data:{}}catch(_){return{}}};
 const iso=d=>`${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`;
 const today=()=>{try{return typeof todayISO==='function'?todayISO():iso(new Date())}catch(_){return iso(new Date())}};
@@ -33,7 +33,7 @@ function enhanceTomorrow(){
   document.documentElement.dataset.fcTomorrowPack='v673';
 }
 function monthData(){const state=window.__fcV9?.state||{},cur=state.calendarMonth instanceof Date?state.calendarMonth:new Date(`${today()}T12:00:00`),y=cur.getFullYear(),m=cur.getMonth(),first=new Date(y,m,1,12),days=new Date(y,m+1,0,12).getDate(),offset=(first.getDay()+6)%7;return{state,y,m,days,offset}}
-function openCalendarDate(date){const state=window.__fcV9?.state;if(!state||!/^\d{4}-\d{2}-\d{2}$/.test(String(date||'')))return false;state.weekDate=String(date);state.calendarMode='week';window.__fcV9.invalidate?.('events');window.__fcV9.render?.('events',true);return true}
+function openCalendarDate(date){const state=window.__fcV9?.state;if(!state||!/^\d{4}-\d{2}-\d{2}$/.test(String(date||'')))return false;state.weekDate=String(date);if(typeof window.openScreen==='function')window.openScreen('week');else{state.calendarMode='week';window.__fcV9.invalidate?.('events');window.__fcV9.render?.('events',true)}return true}
 function bindCalendar(root){root.querySelectorAll('[data-fc673-date]').forEach(b=>{if(b.dataset.fc673Bound==='1')return;b.dataset.fc673Bound='1';b.onclick=e=>{e.preventDefault();e.stopPropagation();openCalendarDate(b.dataset.fc673Date)}})}
 function enhanceCalendar(){
   const root=document.getElementById('events');if(!root||!root.classList.contains('active')||window.__fcV9?.state?.calendarMode!=='agenda')return;
@@ -50,7 +50,7 @@ function enhanceCalendar(){
 }
 let timer=0;function run(){clearTimeout(timer);timer=setTimeout(()=>{enhanceTomorrow();enhanceCalendar()},20)}
 const obs=new MutationObserver(ms=>{if(ms.every(m=>m.target?.closest?.('.fc673-tomorrow-pack,.fc673-monthgrid')))return;run()});
-function install(){const app=document.getElementById('fcApp')||document.body;obs.observe(app,{childList:true,subtree:true});document.addEventListener('click',e=>{if(e.target.closest?.('[data-screen="tomorrow"],[data-screen="events"]'))setTimeout(run,30)},true);run()}
+function install(){const app=document.getElementById('fcApp')||document.body;obs.observe(app,{childList:true,subtree:true});window.addEventListener('pointerdown',e=>{const day=e.target?.closest?.('[data-fc673-date]');if(!day)return;e.preventDefault();e.stopImmediatePropagation();openCalendarDate(day.dataset.fc673Date)},true);document.addEventListener('click',e=>{if(e.target.closest?.('[data-screen="tomorrow"],[data-screen="events"]'))setTimeout(run,30)},true);run()}
 window.__fcTomorrowCalendarV9673={version:'9.67.3',render:run,packFor,openCalendarDate};
 if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',install,{once:true});else install();
 })();
