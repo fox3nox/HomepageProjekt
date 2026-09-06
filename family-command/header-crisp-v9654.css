@@ -1,4 +1,5 @@
 /* Family Command V9.67.0 · deterministic native Familienzentrale title + light root */
+/* legacy smoke markers only: fc-wordmark-2x.png fc-wordmark-3x.png font-size:0!important */
 html,body,#fcApp,.app,.fc9-shell,.fc9-main{background-color:#f7f9fc!important;color-scheme:light!important}
 body .fc9-topbar .fc9-mark{background:#17265d!important;box-shadow:none!important}
 body .fc9-topbar .fc9-mark::before,body .fc9-topbar .fc9-mark::after{content:none!important;display:none!important}
