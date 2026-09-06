@@ -5,9 +5,6 @@ import assert from 'node:assert/strict';
 import path from 'node:path';
 import os from 'node:os';
 
-// Browser plugin not available: Playwright/WebKit runs the actual app with the
-// existing generic local fixture. No production family data or access key.
-// Flow: boot -> header -> all five tabs -> quick-add -> unchanged clear header.
 const port = 4206;
 const base = `http://127.0.0.1:${port}`;
 const output = process.env.FC_HEADER_ARTIFACTS || path.join(os.tmpdir(), 'fc-header-rendering');
@@ -28,7 +25,7 @@ async function inspect(page) {
     const box = e => { const r = e?.getBoundingClientRect(); return r ? { x:r.x, y:r.y, width:r.width, height:r.height, bottom:r.bottom, right:r.right } : null; };
     const style = (e, pseudo) => {
       const s = getComputedStyle(e, pseudo);
-      return { node:e.id || e.className || e.tagName, pseudo, display:s.display, content:s.content, position:s.position, top:s.top, height:s.height, zIndex:s.zIndex, filter:s.filter, backdrop:s.backdropFilter || s.webkitBackdropFilter, transform:s.transform, scale:s.scale, opacity:s.opacity, shadow:s.textShadow, mask:s.maskImage, background:s.backgroundImage, paddingTop:s.paddingTop, font:s.font, fontSmoothing:s.getPropertyValue('-webkit-font-smoothing'), textRendering:s.textRendering, rect:box(e) };
+      return { node:e.id || e.className || e.tagName, pseudo, display:s.display, content:s.content, position:s.position, top:s.top, height:s.height, zIndex:s.zIndex, filter:s.filter, backdrop:s.backdropFilter || s.webkitBackdropFilter, transform:s.transform, scale:s.scale, opacity:s.opacity, shadow:s.textShadow, mask:s.maskImage, background:s.backgroundImage, paddingTop:s.paddingTop, font:s.font, fontSize:s.fontSize, lineHeight:s.lineHeight, fontWeight:s.fontWeight, letterSpacing:s.letterSpacing, fontSmoothing:s.getPropertyValue('-webkit-font-smoothing'), textRendering:s.textRendering, textStroke:s.getPropertyValue('-webkit-text-stroke'), rect:box(e) };
     };
     const title = document.querySelector('.fc9-brand > b');
     const ancestors = [];
@@ -80,7 +77,7 @@ try {
     page.on('console', message => { if(message.type() === 'error') consoleErrors.push(message.text()); });
     await page.goto(base + '/?access=test', { waitUntil:'domcontentloaded' });
     await page.waitForFunction(() => document.documentElement.dataset.fcReady === '1' && document.querySelector('.fc9-brand > b'));
-    await page.waitForFunction(() => document.documentElement.dataset.fcHeaderRelease === 'v9657');
+    await page.waitForFunction(() => document.documentElement.dataset.fcHeaderRelease === 'v9659');
     if (mobile) await page.waitForSelector('.fc9-header-status');
     await page.evaluate(() => window.__fcLoadExtrasNow());
     await page.waitForFunction(() => document.documentElement.dataset.fcExtras === 'ready');
@@ -105,6 +102,11 @@ try {
       assert.ok(report.titleBox.y >= report.header.y + 24, 'Title stays clear of the upper iPhone edge');
       assert.notEqual(report.titleStyle.fontSmoothing, 'antialiased', 'Do not force grayscale antialiasing on iPhone title');
       assert.equal(report.titleStyle.textRendering, 'auto', 'Use Safari native text rendering for title');
+      assert.equal(report.titleStyle.fontSize, '20px');
+      assert.equal(report.titleStyle.lineHeight, '20px');
+      assert.equal(report.titleStyle.fontWeight, '700');
+      assert.equal(report.titleStyle.letterSpacing, 'normal');
+      assert.match(report.titleStyle.textStroke, /0\.3px/,'Use only a hairline same-colour stroke to harden glyph edges');
       assert.ok(report.sync && Math.abs(report.sync.y - report.today.y) <= 1, 'Real cloud badge and today anchor share one row');
       assert.ok(report.sync.right <= report.today.x, 'Cloud status and date must not overlap');
       assert.equal(await page.locator('.fc9-header-status > #fcCloudStatus').count(), 1, 'Real cloud node is outside the brand');
@@ -166,7 +168,7 @@ try {
     assert.deepEqual(consoleErrors, [], 'No console errors in the target flow');
     await context.close();
   }
-  console.log('V9.65.7 header rendering and navigation regression: ok');
+  console.log('V9.65.9 header rendering and navigation regression: ok');
 } finally {
   await browser?.close();
   server.kill('SIGTERM');
