@@ -24,9 +24,9 @@ jobs:
           grep -q '<title>Familienzentrale</title>' family-command/index.html
           grep -q 'data-fc-v9="1"' family-command/index.html
           grep -q "const VERSION='20260904-v9630'" family-command/index.html
-          grep -q "const HEADER_VERSION='20260906-v9662'" family-command/index.html
+          grep -q "const HEADER_VERSION='20260906-v9661'" family-command/index.html
           grep -q "HEADER_V='20260906-v9662'" family-command/reference-mobile-v35.js
-          grep -q "const CACHE='family-command-v104'" family-command/sw.js
+          grep -q "const CACHE='family-command-v105'" family-command/sw.js
           node --check family-command/core-runtime.js
           node --check family-command/cloud-state.js
           node --check family-command/document-viewer.js
@@ -57,7 +57,7 @@ jobs:
             sleep 10
           done
           test "$live" = "$expected"
-          grep -q "const HEADER_VERSION='20260906-v9662'" /tmp/fc-live-index.html
+          grep -q "const HEADER_VERSION='20260906-v9661'" /tmp/fc-live-index.html
       - name: Wait for exact critical production assets
         shell: bash
         env: { BASE_URL: 'https://fox3nox.github.io/HomepageProjekt/family-command' }
@@ -77,6 +77,6 @@ jobs:
           done
           test "$all_ok" = true
           grep -q "HEADER_V='20260906-v9662'" /tmp/reference-mobile-v35.js
-          grep -q "const CACHE='family-command-v104'" /tmp/sw.js
+          grep -q "const CACHE='family-command-v105'" /tmp/sw.js
       - name: Production smoke summary
         run: echo "Family Command production smoke passed with exact asset hashes for ${GITHUB_SHA}."
