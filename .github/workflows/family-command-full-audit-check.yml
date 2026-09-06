@@ -92,7 +92,7 @@ jobs:
           check "mobile polish loaded" grep -q "v9-mobile-polish-v952.css" family-command/reference-mobile-v35.js
           check "final layout loaded" grep -q "v9-layout-final-v9622.css" family-command/reference-mobile-v35.js
           check "final layout marker" grep -q "fcFinalLayout='v9622'" family-command/reference-mobile-v35.js
-          check "responsive design version" grep -q "20260903-v9520" family-command/reference-mobile-v35.js
+          check "responsive design version" grep -q "20260906-v9680" family-command/reference-mobile-v35.js
           check "iphone layout marker" grep -q "fcIphoneLayout='v48'" family-command/reference-mobile-v35.js
           check "visual polish compatibility marker" grep -q "fcGlobalPolish='v49'" family-command/reference-mobile-v35.js
           check "mobile polish marker" grep -q "fcMobilePolish='v52'" family-command/reference-mobile-v35.js
