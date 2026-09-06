@@ -25,21 +25,26 @@ function enhanceTomorrow(){
   const date=addDays(today(),1),people=(D().people||[]).filter(p=>p.id!=='oli'),rows=people.map(p=>({p,...packFor(p,date)})).filter(x=>x.items.length);
   let box=page.querySelector('.fc673-tomorrow-pack');
   if(!rows.length){box?.remove();return}
-  const html=`<section class="fc9-section fc673-tomorrow-pack"><div class="fc9-section-head"><h2>Morgen mitnehmen</h2><span>Direkt aus dem Stundenplan</span></div><div class="fc673-packlist">${rows.map(x=>`<article class="fc673-packchild"><div class="fc673-packhead"><b>${esc(x.p.name||'Kind')}</b><small>MITNEHMEN</small></div><div class="fc673-packchips">${x.items.map(i=>`<span>${esc(i)}</span>`).join('')}</div>${x.note?`<div class="fc673-packnote">⚠ ${esc(x.note)}</div>`:''}</article>`).join('')}</div></section>`;
+  const signature=JSON.stringify(rows.map(x=>[x.p.id,x.items,x.note]));
+  if(box?.dataset.fc673Signature===signature){document.documentElement.dataset.fcTomorrowPack='v673';return}
+  const html=`<section class="fc9-section fc673-tomorrow-pack" data-fc673-signature="${esc(signature)}"><div class="fc9-section-head"><h2>Morgen mitnehmen</h2><span>Direkt aus dem Stundenplan</span></div><div class="fc673-packlist">${rows.map(x=>`<article class="fc673-packchild"><div class="fc673-packhead"><b>${esc(x.p.name||'Kind')}</b><small>MITNEHMEN</small></div><div class="fc673-packchips">${x.items.map(i=>`<span>${esc(i)}</span>`).join('')}</div>${x.note?`<div class="fc673-packnote">⚠ ${esc(x.note)}</div>`:''}</article>`).join('')}</div></section>`;
   if(!box){const anchor=[...page.querySelectorAll('.fc9-section')].find(s=>/Kinder morgen/i.test(s.textContent||''));if(anchor)anchor.insertAdjacentHTML('afterend',html);else page.querySelector('.fc9-pagehead')?.insertAdjacentHTML('afterend',html)}
   else box.outerHTML=html;
   document.documentElement.dataset.fcTomorrowPack='v673';
 }
 function monthData(){const state=window.__fcV9?.state||{},cur=state.calendarMonth instanceof Date?state.calendarMonth:new Date(`${today()}T12:00:00`),y=cur.getFullYear(),m=cur.getMonth(),first=new Date(y,m,1,12),days=new Date(y,m+1,0,12).getDate(),offset=(first.getDay()+6)%7;return{state,y,m,days,offset}}
+function bindCalendar(root){root.querySelectorAll('[data-fc673-date]').forEach(b=>{if(b.dataset.fc673Bound)return;b.dataset.fc673Bound='1';b.onclick=()=>{const state=window.__fcV9?.state;if(!state)return;state.weekDate=b.dataset.fc673Date;state.calendarMode='week';window.__fcV9.invalidate?.('events');window.__fcV9.render?.('events',true)}})}
 function enhanceCalendar(){
   const root=document.getElementById('events');if(!root||!root.classList.contains('active')||window.__fcV9?.state?.calendarMode!=='agenda')return;
   const month=root.querySelector('.fc9-month');if(!month)return;
-  const {y,m,days,offset}=monthData(),selected=window.__fcV9?.state?.weekDate||'',now=today();
+  const {y,m,days,offset}=monthData(),selected=window.__fcV9?.state?.weekDate||'',now=today(),eventSig=(D().events||[]).map(e=>`${e.id||''}:${e.date||''}:${e.endDate||''}`).join('|'),signature=`${y}-${m}-${selected}-${eventSig}`;
+  let grid=root.querySelector('.fc673-monthgrid');
+  if(grid?.dataset.fc673Signature===signature){bindCalendar(root);document.documentElement.dataset.fcCalendarDays='v673';return}
   const cells=[];for(let i=0;i<offset;i++)cells.push('<span class="fc673-calblank"></span>');
   for(let day=1;day<=days;day++){const date=`${y}-${String(m+1).padStart(2,'0')}-${String(day).padStart(2,'0')}`,wd=new Date(`${date}T12:00:00`).getDay(),has=(D().events||[]).some(e=>String(e.date||'')<=date&&String(e.endDate||e.date||'')>=date);cells.push(`<button type="button" class="fc673-calday${date===now?' is-today':''}${date===selected?' is-selected':''}${wd===0||wd===6?' is-weekend':''}" data-fc673-date="${date}" aria-label="${day}. ${m+1}. öffnen"><b>${day}</b>${has?'<i aria-hidden="true"></i>':''}</button>`)}
-  const html=`<div class="fc673-monthgrid"><div class="fc673-weekheads"><span>Mo</span><span>Di</span><span>Mi</span><span>Do</span><span>Fr</span><span>Sa</span><span>So</span></div><div class="fc673-days">${cells.join('')}</div><small>Datum antippen, um den Tag zu öffnen</small></div>`;
-  let grid=root.querySelector('.fc673-monthgrid');if(grid)grid.outerHTML=html;else month.insertAdjacentHTML('afterend',html);
-  root.querySelectorAll('[data-fc673-date]').forEach(b=>b.onclick=()=>{const state=window.__fcV9?.state;if(!state)return;state.weekDate=b.dataset.fc673Date;state.calendarMode='week';window.__fcV9.invalidate?.('events');window.__fcV9.render?.('events',true)});
+  const html=`<div class="fc673-monthgrid" data-fc673-signature="${esc(signature)}"><div class="fc673-weekheads"><span>Mo</span><span>Di</span><span>Mi</span><span>Do</span><span>Fr</span><span>Sa</span><span>So</span></div><div class="fc673-days">${cells.join('')}</div><small>Datum antippen, um den Tag zu öffnen</small></div>`;
+  if(grid)grid.outerHTML=html;else month.insertAdjacentHTML('afterend',html);
+  bindCalendar(root);
   document.documentElement.dataset.fcCalendarDays='v673';
 }
 let timer=0;function run(){clearTimeout(timer);timer=setTimeout(()=>{enhanceTomorrow();enhanceCalendar()},20)}
