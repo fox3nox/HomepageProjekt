@@ -8,7 +8,7 @@ for(const token of [
   '-webkit-font-smoothing:auto!important',
   'text-rendering:auto!important',
   'font-size:20px!important',
-  'line-height:21px!important',
+  'line-height:20px!important',
   'font-weight:700!important',
   'color:#061a47!important',
   '-webkit-text-stroke:.3px #061a47!important',
@@ -17,5 +17,5 @@ for(const token of [
   'overflow:visible!important',
   'text-overflow:clip!important'
 ])if(!css.includes(token))throw new Error(`missing hardened title guard: ${token}`);
-for(const forbidden of ['-webkit-font-smoothing:antialiased!important','text-rendering:geometricPrecision!important','font-weight:800!important','letter-spacing:-.15px!important'])if(css.includes(forbidden))throw new Error(`soft/synthetic title rendering must be removed: ${forbidden}`);
-console.log('V9.65.9 hardened native header title regression ok');
+for(const forbidden of ['-webkit-font-smoothing:antialiased!important','text-rendering:geometricPrecision!important','font-weight:800!important','letter-spacing:-.15px!important','line-height:21px!important'])if(css.includes(forbidden))throw new Error(`soft/oversized title rendering must be removed: ${forbidden}`);
+console.log('V9.65.9 hardened compact native header title regression ok');
