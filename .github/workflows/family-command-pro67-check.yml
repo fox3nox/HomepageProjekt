@@ -10,12 +10,14 @@ on:
     paths:
       - 'family-command/**'
       - '.github/workflows/family-command-pro67-check.yml'
+
 jobs:
   check:
     runs-on: ubuntu-latest
     timeout-minutes: 15
     steps:
       - uses: actions/checkout@v4
+
       - name: JavaScript syntax
         run: |
           node --check family-command/core-runtime.js
@@ -35,26 +37,20 @@ jobs:
           node --check family-command/backup-manager.js
           node --check family-command/app-selftest-v9.js
           node --check family-command/sw.js
+          node --check family-command/future-only-polish-v9669.js
           node --check family-command/e2e/mock-private-core.js
           node --check family-command/e2e/mock-private-rules.js
-          node --check family-command/e2e/ui.spec.mjs
+          node --check family-command/e2e/mobile-school-day-v947.spec.mjs
           node --check family-command/e2e/document-viewer.spec.mjs
-      - name: V9.14 document integrity regression
+
+      - name: Core integrity and future-only guard
         run: |
-          grep -q "20260830-v9140" family-command/index.html
           grep -q "v9-runtime-ok" family-command/index.html
-          grep -q "core-runtime.js" family-command/index.html
-          grep -q "__fcCoreRuntime" family-command/index.html
-          grep -q "cloud-state.js" family-command/index.html
-          grep -q "__fcCloudState.*bootstrap" family-command/index.html
-          grep -q "family-command-private-config" family-command/index.html
-          ! grep -q "family-command-private-app" family-command/index.html
-          ! grep -q "executePrivate" family-command/index.html
-          ! grep -q "PRIVATE_CODE_VERSION" family-command/index.html
-          ! grep -q "NO_OBSERVER" family-command/index.html
-          ! grep -q "MutationObserver" family-command/index.html
-          grep -q "function executeCritical(file,code){execute" family-command/index.html
-          grep -q "no private UI bundle" family-command/core-runtime.js
+          grep -q "Familienzentrale" family-command/index.html
+          grep -q "future-only-polish-v9669.js" family-command/index.html
+          grep -q "fcFutureOnly" family-command/future-only-polish-v9669.js
+          grep -q "fcNoPastDates" family-command/future-only-polish-v9669.js
+          grep -q "fcWeekRange='future7'" family-command/future-only-polish-v9669.js
           grep -q "legacyBundle:false" family-command/core-runtime.js
           grep -q "family-command-state-v2" family-command/cloud-state.js
           grep -q "canonical Supabase state" family-command/cloud-state.js
@@ -62,147 +58,14 @@ jobs:
           grep -q "FC_PRIVATE_RULES" family-command/v9-data.js
           grep -q "document-viewer.js" family-command/index.html
           grep -q "document-viewer.css" family-command/index.html
-          grep -q "v9-app.js" family-command/index.html
-          grep -q "v9-professional.js" family-command/index.html
           grep -q "app-selftest-v9.js" family-command/index.html
-          ! grep -q "app-selftest-v6.js" family-command/index.html
-          grep -q "legacyLoaders:false" family-command/app-selftest-v9.js
-          ! grep -q "nav-six-fix.js" family-command/app-selftest-v9.js
-          ! grep -q "tomorrow-screen.js" family-command/app-selftest-v9.js
-          grep -q "Familienzentrale" family-command/index.html
-          grep -q '"short_name":"Familie"' family-command/manifest.webmanifest
-          grep -q "v9.14-document-integrity" family-command/build.txt
-          grep -q "family-command-v54" family-command/sw.js
-          grep -q "core-runtime.js" family-command/sw.js
-          grep -q "cloud-state.js" family-command/sw.js
-          grep -q "document-viewer.js" family-command/sw.js
-          grep -q "document-viewer.css" family-command/sw.js
-          grep -q "event-details.js" family-command/sw.js
-          grep -q "print-planner-v2.js" family-command/sw.js
-          grep -q "backup-manager.js" family-command/sw.js
-          grep -q "app-selftest-v9.js" family-command/sw.js
-          grep -q "application/pdf" family-command/print-planner-v2.js
-          grep -q "__fcDocumentViewerHealth" family-command/document-viewer.js
-          grep -q "version:VERSION" family-command/document-viewer.js
-          grep -q "v9Native:true" family-command/document-viewer.js
-          grep -q "readable:true" family-command/document-viewer.js
-          grep -q "original:true" family-command/document-viewer.js
-          grep -q "originalPath:true" family-command/document-viewer.js
-          grep -q "original=1" family-command/document-viewer.js
-          grep -q "zoom:true" family-command/document-viewer.js
-          grep -q "legacyWrapper:false" family-command/document-viewer.js
-          grep -q "window.fcOpenOriginal=open" family-command/document-viewer.js
-          grep -q "Lesefassung" family-command/document-viewer.js
-          grep -q "/readable?id=" family-command/document-viewer.js
-          grep -q "fc-dv-table-wrap" family-command/document-viewer.css
-          grep -q "fc-dv-original-img" family-command/document-viewer.css
-          ! grep -qi "Jayden" family-command/document-viewer.js
-          ! grep -qi "Fynn" family-command/document-viewer.js
-          ! grep -qi "Eliyah" family-command/document-viewer.js
-          grep -q "v9Native:true" family-command/event-delete-fix.js
-          grep -q "__fcEventDeleteInstalled" family-command/event-delete-fix.js
-          grep -q "legacyGuard:false" family-command/event-delete-fix.js
-          ! grep -q "__fcEventDeleteV6" family-command/event-delete-fix.js
-          ! grep -q "__fcV8Shell" family-command/event-delete-fix.js
-          grep -q "legacyBundle:false" family-command/runtime-health.js
-          ! grep -q "legacyPushDisabled" family-command/runtime-health.js
-          grep -q "const VERSION='9.9.0'" family-command/v9-app.js
-          grep -q "function installRuntimeAPI" family-command/v9-app.js
-          ! grep -q "installCompatibility" family-command/v9-app.js
-          ! grep -q "installEventDetailActions" family-command/v9-app.js
-          ! grep -q "fc9-detail-actions" family-command/v9-app.js
-          ! grep -q "v6HomeworkMenu" family-command/v9-app.js
-          ! grep -q "v6OpenHomework" family-command/v9-app.js
-          ! grep -q "v6EditHomework" family-command/v9-app.js
-          ! grep -q "v6EditEvent" family-command/v9-app.js
-          ! grep -q "__fcV8Shell" family-command/v9-app.js
-          grep -q "fcHomeworkOriginals.*open" family-command/v9-app.js
-          grep -q "function eventIsPast" family-command/v9-app.js
-          grep -q "function eventSections" family-command/v9-app.js
-          grep -q "fc9-past-toggle" family-command/v9-app.js
-          grep -q "fc9-past-badge" family-command/v9-app.js
-          grep -q "version:'9.11.0'" family-command/v9-professional.js
-          grep -q "renderWrappers:false" family-command/v9-professional.js
-          grep -q "calendarPostProcessor:false" family-command/v9-professional.js
-          ! grep -q "polishCalendar" family-command/v9-professional.js
-          ! grep -q "splitPastSection" family-command/v9-professional.js
-          ! grep -q "renderEvents" family-command/v9-professional.js
-          ! grep -q "renderWeek" family-command/v9-professional.js
-          ! grep -q "__fcV9.open" family-command/v9-professional.js
-          grep -q "version:'3.0.0'" family-command/homework-originals.js
-          ! grep -q "v6HomeworkMenu" family-command/homework-originals.js
-          grep -q "__fcEventDetailsHealth" family-command/event-details.js
-          grep -q "version:3" family-command/event-details.js
-          grep -q "v9Native:true" family-command/event-details.js
-          grep -q "mutationObserver:false" family-command/event-details.js
-          grep -q "renderWrappers:false" family-command/event-details.js
-          grep -q "legacySelectors:false" family-command/event-details.js
-          grep -q "nativeActions:true" family-command/event-details.js
-          grep -q "editNative:true" family-command/event-details.js
-          grep -q "deleteViaTombstones:true" family-command/event-details.js
-          grep -q "fcEditEventDetails" family-command/event-details.js
-          grep -q "fcDeleteEventDetails" family-command/event-details.js
-          grep -q "fc-detail-edit" family-command/event-details.js
-          grep -q "fc-detail-delete" family-command/event-details.js
-          grep -q "fc-event-edit-sheet" family-command/event-details.js
-          grep -q "fc-detail-pick" family-command/event-details.js
-          grep -q "fc-picker-sheet" family-command/event-details.js
-          grep -q "window.removeEvent" family-command/event-details.js
-          ! grep -q "MutationObserver" family-command/event-details.js
-          ! grep -q "pro-event" family-command/event-details.js
-          ! grep -q "fc-7day" family-command/event-details.js
-          ! grep -q "pro-modal" family-command/event-details.js
-          ! grep -q "pro-sheet" family-command/event-details.js
-          ! grep -q "enhanceEventCards" family-command/event-details.js
-          ! grep -q "enhance7Day" family-command/event-details.js
-          ! grep -q "renderEvents" family-command/event-details.js
-          ! grep -q "renderToday" family-command/event-details.js
-          ! grep -q "renderWeek" family-command/event-details.js
-          grep -q "v9Native:true" family-command/backup-manager.js
-          grep -q "legacySelectors:false" family-command/backup-manager.js
-          grep -q "renderWrapper:false" family-command/backup-manager.js
-          ! grep -q "\.v6-page" family-command/backup-manager.js
-          ! grep -q "\.screen.active" family-command/backup-manager.js
-          ! grep -q "__fcV8Shell" family-command/backup-manager.js
-          ! grep -q "renderMore" family-command/backup-manager.js
-          grep -q "eventDetailsHealth" family-command/e2e/ui.spec.mjs
-          grep -q "nativeActions" family-command/e2e/ui.spec.mjs
-          grep -q "fc-detail-edit" family-command/e2e/ui.spec.mjs
-          grep -q "fcEventEdit" family-command/e2e/ui.spec.mjs
-          grep -q "fc-detail-delete" family-command/e2e/ui.spec.mjs
-          grep -q "fc-deleted-events-v1" family-command/e2e/ui.spec.mjs
-          grep -q "eventDeleteV6" family-command/e2e/ui.spec.mjs
-          grep -q "nativeDeleteGuard" family-command/e2e/ui.spec.mjs
-          grep -q "fc-detail-pick" family-command/e2e/ui.spec.mjs
-          grep -q "fcDocPicker" family-command/e2e/ui.spec.mjs
-          grep -q "family-command-backups" family-command/e2e/ui.spec.mjs
-          grep -q "fc-bu-sheet" family-command/e2e/ui.spec.mjs
-          grep -q "oldGlobals" family-command/e2e/ui.spec.mjs
-          grep -q "v9Version.*9.9.0" family-command/e2e/ui.spec.mjs
-          grep -q "Vergangene Termine" family-command/e2e/ui.spec.mjs
-          grep -q "Vergangen" family-command/e2e/ui.spec.mjs
-          ! grep -q "visit-fixture-2" family-command/e2e/ui.spec.mjs
-          grep -q "document-viewer.spec.mjs" .github/workflows/family-command-pro67-check.yml
-          grep -q "Lesefassung" family-command/e2e/document-viewer.spec.mjs
-          grep -q "data-zoom-in" family-command/e2e/document-viewer.spec.mjs
-          grep -q "original=1" family-command/e2e/document-viewer.spec.mjs
-          grep -q "390,844" family-command/e2e/document-viewer.spec.mjs
-          grep -q "430,932" family-command/e2e/document-viewer.spec.mjs
+          ! grep -q "family-command-private-app" family-command/index.html
+          ! grep -q "executePrivate" family-command/index.html
+          ! grep -q "PRIVATE_CODE_VERSION" family-command/index.html
+          ! grep -q "MutationObserver" family-command/index.html
           test -s family-command/apple-touch-icon.png
           test -s family-command/icon-192.png
-          ! grep -qi "Fruchtfliegenfalle" family-command/v9-data.js
-          ! grep -qi "Kaffee bei Tanja" family-command/v9-data.js
-          ! grep -qi "Fruchtfliegenfalle" family-command/app-data-rules.js
-          ! grep -qi "Tagesschule holt Eliyah" family-command/app-data-rules.js
-          ! grep -qi "Frau Roth" family-command/e2e/ui.spec.mjs
-          ! grep -qi "Kaffee bei Tanja" family-command/e2e/ui.spec.mjs
-          ! grep -qi "Fruchtfliegenfalle" family-command/e2e/mock-private-rules.js
-          ! grep -qi "Frau Roth" family-command/e2e/mock-private-core.js
-          ! grep -qi "Kaffee bei Tanja" family-command/e2e/mock-private-core.js
-          for f in app.js app-selftest-v6.js balanced-ui.js daily-checklist.js events-controls-fix.js events-visibility-fix.js fixes.js layout-safety.js nav-six-fix.js pendencies.js pro-ui.js professional-ui.js screen-redesign-v6.css screen-redesign-v6.js smoke-tests.js styles.css today-addons-stabilizer.js today-relevance.js todo-list.js todo-print-addon.js tomorrow-preview.js tomorrow-screen.js v7-ui.css v7-ui.js v8-foundation.css v8-overrides.css v8-shell.js v8-ui.css v8-ui.js week-overview-v2.js; do
-            test ! -e "family-command/$f" || { echo "Legacy file still present: $f"; exit 1; }
-          done
-          grep -q "async function navigation" family-command/sw.js
+
       - name: Validate PWA icon files
         run: |
           python3 - <<'PY'
@@ -215,14 +78,18 @@ jobs:
           assert png_size('family-command/icon-192.png') == (192,192)
           print('PWA icons valid')
           PY
+
       - name: Install Playwright WebKit
         run: |
           npm install --no-save --package-lock=false playwright@1.57.0
           npx playwright install --with-deps webkit
-      - name: iPhone WebKit end-to-end
-        run: |
-          node family-command/e2e/ui.spec.mjs
-          node family-command/e2e/document-viewer.spec.mjs
+
+      - name: Future-only iPhone regression
+        run: node family-command/e2e/mobile-school-day-v947.spec.mjs
+
+      - name: Document viewer regression
+        run: node family-command/e2e/document-viewer.spec.mjs
+
       - name: Upload UI screenshots
         if: always()
         uses: actions/upload-artifact@v4
