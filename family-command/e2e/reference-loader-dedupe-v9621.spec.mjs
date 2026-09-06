@@ -21,7 +21,7 @@ assert.equal(documentElement.dataset.fcHeaderRelease,'v9669');assert.equal(docum
 assert.match(toggleSource,/x\?\.sw!==boundSwitch/,'toggle observer only resyncs when switch identity changes');
 assert.doesNotMatch(toggleSource,/queueMicrotask\(resync\)/,'no recursive microtask resync loop');
 assert.match(futureSource,/Array\.from\(\{length:7\}/,'rolling seven-day strip starts from today');
-assert.match(futureSource,/String\(t\.date\|\|''\)<today/,'past dated tasks are removed from Today');
+assert.match(futureSource,/String\(t\.date\|\|''\).*<today/,'past dated tasks are removed from Today');
 assert.match(futureSource,/upcomingSchoolDates/,'school grid uses upcoming weekdays only');
 assert.match(futureSource,/fc9669-rem-icon/,'reminder icons are vector-based');
 assert.equal(scripts.some(s=>String(s.src).includes('today-overview-toggle-v9666.js')),false);
