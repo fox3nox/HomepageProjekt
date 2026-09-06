@@ -1,10 +1,10 @@
-/* Familienzentrale V9.66.9 · compatibility loader for reference dashboard + responsive product layer + deterministic header */
+/* Familienzentrale V9.67.1 · compatibility loader for reference dashboard + responsive product layer + deterministic header */
 (()=>{
 'use strict';
 if(window.__fcReferenceMobileV35)return;window.__fcReferenceMobileV35=true;
-const V='20260903-v9520',HEADER_V='20260906-v9669',TODAY_V='20260906-v9669';
+const V='20260903-v9520',HEADER_V='20260906-v9669',TODAY_V='20260906-v9669',SCHOOL_V='20260906-v9671';
 const headerAsset=file=>/^(header-|sharp-header-)/.test(file);
-const assetVersion=file=>(file==='today-overview-toggle-v9668.js'||file==='future-only-polish-v9669.js')?TODAY_V:(headerAsset(file)?HEADER_V:V);
+const assetVersion=file=>file==='mobile-school-day-v947.js'?SCHOOL_V:(file==='today-overview-toggle-v9668.js'||file==='future-only-polish-v9669.js')?TODAY_V:(headerAsset(file)?HEADER_V:V);
 function findLink(file){return[...document.querySelectorAll('link[rel="stylesheet"]')].find(x=>{try{return new URL(x.href,location.href).pathname.endsWith('/'+file)}catch(_){return false}})}
 function css(file,key){let l=findLink(file);if(l){l.dataset[key]='1';return l}l=document.createElement('link');l.rel='stylesheet';l.href=`./${file}?v=${assetVersion(file)}`;l.dataset[key]='1';document.head.appendChild(l);return l}
 function finalCss(file,key){let l=findLink(file);if(!l){l=document.createElement('link');l.rel='stylesheet';l.href=`./${file}?v=${assetVersion(file)}`}if(headerAsset(file))l.href=`./${file}?v=${HEADER_V}`;l.dataset[key]='1';document.head.appendChild(l);return l}
