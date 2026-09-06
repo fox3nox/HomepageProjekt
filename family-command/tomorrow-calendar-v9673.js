@@ -14,7 +14,7 @@ function packFor(p,date){
   if(!slots.length)return{items:[],note:''};
   items.push('🎒 Schultasche','💧 Trinkflasche');
   if(isKg(p))items.push('🦺 Leuchtweste','🍎 Znüni-Box');
-  if(/\b(turnen|sport|sportunterricht)\b/i.test(hay))items.push('👟 Turnzeug');
+  if(/\b(turnen|sport|sportunterricht|turnschuh(?:e|en)?)\b/i.test(hay))items.push('👟 Turnzeug');
   if(/\b(schwimmen|schwimmunterricht)\b/i.test(hay))items.push('🏊 Schwimmsachen');
   const notes=[...new Set(slots.map(x=>String(x?.note||'').trim()).filter(n=>/mitnehmen|rucksack|anziehen|abfahrt|turnschuh|leuchtweste|znüni|znueni/i.test(n)))];
   return{items:[...new Set(items)],note:notes[0]||''};
