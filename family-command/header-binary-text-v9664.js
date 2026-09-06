@@ -34,7 +34,7 @@ function refresh(){
     const walker=document.createTreeWalker(top,NodeFilter.SHOW_TEXT,{acceptNode:n=>n.nodeValue?.trim()?NodeFilter.FILTER_ACCEPT:NodeFilter.FILTER_REJECT});const nodes=[];while(walker.nextNode())nodes.push(walker.currentNode);nodes.forEach(wrapTextNode);
     for(const h of top.querySelectorAll('.fc-hardtext-host')){const t=[...h.childNodes].find(n=>n.nodeType===3);if(t)draw(h,t.nodeValue)}
     document.documentElement.dataset.fcHeaderRelease='v9664';document.documentElement.dataset.fcBinaryHeaderText='v9664';
-  }finally{busy=false}}
+  }finally{busy=false}
 }
 const obs=new MutationObserver(()=>{clearTimeout(timer);timer=setTimeout(refresh,30)});
 function install(){refresh();const top=document.querySelector('.fc9-topbar');if(top)obs.observe(top,{subtree:true,childList:true,characterData:true});media.addEventListener('change',refresh);addEventListener('resize',()=>{clearTimeout(timer);timer=setTimeout(refresh,60)},{passive:true});setInterval(refresh,1000)}
