@@ -20,13 +20,16 @@ jobs:
         shell: bash
         run: |
           set -euo pipefail
-          for asset in index.html core-runtime.js cloud-state.js document-viewer.js document-viewer.css smart-documents.js v9-app.js v9.css v9-professional.css daily-check.js daily-check.css header-native-v9652.css sharp-header-v9643.css header-structure-v9654.css header-structure-v9654.js header-crisp-v9654.css apple-touch-icon.png family-contacts.js family-contacts.css reminder-center.js reference-mobile-v35.js v9-final-unity-v9618.css v9-design-system-v9619.css v9-layout-final-v9622.css v9-page-polish-v959.css v9-form-dialog-polish-v960.css v9-interaction-accessibility-v961.css sw.js manifest.webmanifest; do test -s "family-command/${asset}"; done
+          for asset in index.html core-runtime.js cloud-state.js document-viewer.js document-viewer.css smart-documents.js v9-app.js v9.css v9-professional.css daily-check.js daily-check.css header-native-v9652.css sharp-header-v9643.css header-structure-v9654.css header-structure-v9654.js header-crisp-v9654.css fc-wordmark-2x.png fc-wordmark-3x.png apple-touch-icon.png family-contacts.js family-contacts.css reminder-center.js reference-mobile-v35.js v9-final-unity-v9618.css v9-design-system-v9619.css v9-layout-final-v9622.css v9-page-polish-v959.css v9-form-dialog-polish-v960.css v9-interaction-accessibility-v961.css sw.js manifest.webmanifest; do test -s "family-command/${asset}"; done
           grep -q '<title>Familienzentrale</title>' family-command/index.html
           grep -q 'data-fc-v9="1"' family-command/index.html
           grep -q "const VERSION='20260904-v9630'" family-command/index.html
-          grep -q "HEADER_V='20260906-v9663'" family-command/reference-mobile-v35.js
-          grep -q "fcHeaderRelease='v9663'" family-command/reference-mobile-v35.js
-          grep -q -- '-webkit-font-smoothing:none!important' family-command/header-crisp-v9654.css
+          grep -q "const HEADER_VERSION='20260906-v9665'" family-command/index.html
+          grep -q "HEADER_V='20260906-v9665'" family-command/reference-mobile-v35.js
+          grep -q "fcHeaderRelease='v9665'" family-command/reference-mobile-v35.js
+          grep -q 'fc-wordmark-2x.png?v=20260906-v9665' family-command/header-crisp-v9654.css
+          grep -q 'fc-wordmark-3x.png?v=20260906-v9665' family-command/header-crisp-v9654.css
+          ! grep -q 'header-binary-text-v9664.js' family-command/reference-mobile-v35.js
           grep -q "const CACHE='family-command-v106'" family-command/sw.js
           node --check family-command/core-runtime.js
           node --check family-command/cloud-state.js
@@ -58,12 +61,13 @@ jobs:
             sleep 10
           done
           test "$live" = "$expected"
+          grep -q "const HEADER_VERSION='20260906-v9665'" /tmp/fc-live-index.html
       - name: Wait for exact critical production assets
         shell: bash
         env: { BASE_URL: 'https://fox3nox.github.io/HomepageProjekt/family-command' }
         run: |
           set -euo pipefail
-          assets=(core-runtime.js cloud-state.js document-viewer.js document-viewer.css smart-documents.js v9-app.js v9.css v9-professional.css daily-check.js daily-check.css header-native-v9652.css sharp-header-v9643.css header-structure-v9654.css header-structure-v9654.js header-crisp-v9654.css apple-touch-icon.png family-contacts.js family-contacts.css reminder-center.js reference-mobile-v35.js v9-final-unity-v9618.css v9-design-system-v9619.css v9-layout-final-v9622.css v9-page-polish-v959.css v9-form-dialog-polish-v960.css v9-interaction-accessibility-v961.css sw.js manifest.webmanifest)
+          assets=(core-runtime.js cloud-state.js document-viewer.js document-viewer.css smart-documents.js v9-app.js v9.css v9-professional.css daily-check.js daily-check.css header-native-v9652.css sharp-header-v9643.css header-structure-v9654.css header-structure-v9654.js header-crisp-v9654.css fc-wordmark-2x.png fc-wordmark-3x.png apple-touch-icon.png family-contacts.js family-contacts.css reminder-center.js reference-mobile-v35.js v9-final-unity-v9618.css v9-design-system-v9619.css v9-layout-final-v9622.css v9-page-polish-v959.css v9-form-dialog-polish-v960.css v9-interaction-accessibility-v961.css sw.js manifest.webmanifest)
           all_ok=false
           for attempt in $(seq 1 60); do
             all_ok=true
@@ -76,9 +80,9 @@ jobs:
             sleep 5
           done
           test "$all_ok" = true
-          grep -q "HEADER_V='20260906-v9663'" /tmp/reference-mobile-v35.js
-          grep -q "fcHeaderRelease='v9663'" /tmp/reference-mobile-v35.js
-          grep -q -- '-webkit-font-smoothing:none!important' /tmp/header-crisp-v9654.css
+          grep -q "HEADER_V='20260906-v9665'" /tmp/reference-mobile-v35.js
+          grep -q "fcHeaderRelease='v9665'" /tmp/reference-mobile-v35.js
+          grep -q 'fc-wordmark-2x.png?v=20260906-v9665' /tmp/header-crisp-v9654.css
           grep -q "const CACHE='family-command-v106'" /tmp/sw.js
       - name: Production smoke summary
         run: echo "Family Command production smoke passed with exact asset hashes for ${GITHUB_SHA}."

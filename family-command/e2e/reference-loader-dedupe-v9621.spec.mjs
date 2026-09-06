@@ -11,7 +11,8 @@ const byFile=file=>links.filter(l=>new URL(l.href,base).pathname.endsWith('/'+fi
 for(const file of ['v9-global-polish.css','v9-unified-design-v958.css','v9-final-unity-v9618.css','v9-design-system-v9619.css','v9-layout-final-v9622.css','sharp-header-v9643.css','header-native-v9652.css','header-structure-v9654.css','header-crisp-v9654.css'])assert.equal(byFile(file).length,1,file);
 assert.deepEqual(links.slice(-8).map(l=>new URL(l.href,base).pathname.split('/').pop()),['v9-unified-design-v958.css','v9-final-unity-v9618.css','v9-design-system-v9619.css','v9-layout-final-v9622.css','sharp-header-v9643.css','header-native-v9652.css','header-structure-v9654.css','header-crisp-v9654.css']);
 assert.match(source,/20260903-v9520/);assert.equal(scripts.filter(s=>String(s.src).includes('header-structure-v9654.js')).length,1);
-for(const file of ['sharp-header-v9643.css','header-native-v9652.css','header-structure-v9654.css','header-crisp-v9654.css'])assert.equal(new URL(byFile(file)[0].href,base).searchParams.get('v'),'20260906-v9663',file);
-assert.equal(new URL(scripts.find(s=>s.src.includes('header-structure-v9654.js')).src,base).searchParams.get('v'),'20260906-v9663');
-assert.equal(documentElement.dataset.fcHeaderRelease,'v9663');
-console.log('ok reference loader dedupe V9.66.3');
+for(const file of ['sharp-header-v9643.css','header-native-v9652.css','header-structure-v9654.css','header-crisp-v9654.css'])assert.equal(new URL(byFile(file)[0].href,base).searchParams.get('v'),'20260906-v9665',file);
+assert.equal(new URL(scripts.find(s=>s.src.includes('header-structure-v9654.js')).src,base).searchParams.get('v'),'20260906-v9665');
+assert.equal(documentElement.dataset.fcHeaderRelease,'v9665');
+assert.equal(scripts.some(s=>String(s.src).includes('header-binary-text-v9664.js')),false);
+console.log('ok reference loader dedupe V9.66.5');
