@@ -54,17 +54,40 @@ try {
     const mobile = width < 720;
     const context = await browser.newContext({ viewport:{ width, height:900 }, deviceScaleFactor:mobile ? 3 : 1, isMobile:mobile, hasTouch:mobile, serviceWorkers:'block' });
     await context.addInitScript({ content:seed });
+    // Same harmless endpoint shapes as full-interaction-audit. Never send the
+    // generic fixture or its synthetic access key to a production backend.
+    const unexpectedRequests = [], mockedRequests = [], badResponses = [];
+    await context.route('**/*', async route => {
+      const request = route.request(), url = new URL(request.url());
+      if (url.origin === base) return route.continue();
+      const prefix = '/functions/v1/';
+      const endpoint = url.hostname === 'lmrvapstojcecljjdgds.supabase.co' && url.pathname.startsWith(prefix) ? url.pathname.slice(prefix.length) : '';
+      let body;
+      if (endpoint === 'family-command-backups/list' && request.method() === 'GET') body = { snapshots:[] };
+      else if (endpoint === 'family-command-backups/snapshot' && request.method() === 'POST') body = { skipped:true, snapshot:{ id:'header-fixture', created_at:'2026-09-06T00:00:00Z', reason:'startup' } };
+      else if (endpoint === 'family-command-chat-commands' && ['GET','POST'].includes(request.method())) body = { ok:true, commands:[] };
+      else if (endpoint === 'family-command-documents/list' && request.method() === 'GET') body = { documents:[] };
+      if (body) {
+        mockedRequests.push({ endpoint, method:request.method() });
+        return route.fulfill({ status:200, contentType:'application/json', body:JSON.stringify(body) });
+      }
+      unexpectedRequests.push({ url:request.url(), method:request.method() });
+      return route.abort('blockedbyclient');
+    });
     const page = await context.newPage();
     const errors = [];
     page.on('pageerror', error => errors.push(error.message));
+    page.on('response', response => { if (response.status() >= 400) badResponses.push({ url:response.url(), status:response.status() }); });
     const consoleErrors = [];
     page.on('console', message => { if(message.type() === 'error') consoleErrors.push(message.text()); });
     await page.goto(base + '/?access=test', { waitUntil:'domcontentloaded' });
     await page.waitForFunction(() => document.documentElement.dataset.fcReady === '1' && document.querySelector('.fc9-brand > b'));
     await page.waitForFunction(() => document.documentElement.dataset.fcHeaderRelease === 'v9656');
     if (mobile) await page.waitForSelector('.fc9-header-status');
+    await page.evaluate(() => window.__fcLoadExtrasNow());
+    await page.waitForFunction(() => document.documentElement.dataset.fcExtras === 'ready');
     await page.evaluate(() => document.fonts.ready);
-    await sleep(1200);
+    await sleep(3000);
     const report = await inspect(page);
     writeFileSync(path.join(output, `header-${width}.json`), JSON.stringify({ ...report, errors, consoleErrors }, null, 2));
     await page.screenshot({ path:path.join(output, `app-${width}.png`) });
@@ -138,6 +161,9 @@ try {
       assert.ok(after.header.height <= 86, 'Header remains compact after interaction and resize');
       writeFileSync(path.join(output, `interactions-${width}.json`), JSON.stringify({ navigation:'passed', quickAdd:'passed', dailyCheck:'passed', safeArea:'passed', resize:width === 402 ? 'passed' : 'not-run', errors, consoleErrors, after }, null, 2));
     }
+    writeFileSync(path.join(output, `network-${width}.json`), JSON.stringify({ mockedRequests, unexpectedRequests, badResponses, errors, consoleErrors }, null, 2));
+    assert.deepEqual(unexpectedRequests, [], 'All backend requests are explicit local fixtures, never live calls');
+    assert.deepEqual(badResponses, [], 'No failed local resources or mocked responses');
     assert.deepEqual(errors, [], 'No uncaught browser errors');
     assert.deepEqual(consoleErrors, [], 'No console errors in the target flow');
     await context.close();
