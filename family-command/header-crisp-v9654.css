@@ -1,12 +1,17 @@
-/* Family Command V9.65.4 · final iPhone header sharpness guard */
+/* Family Command V9.65.6 · original family logo and effect-free header */
+/* The existing apple-touch image is the approved family/house/calendar logo.
+   Remove BOTH the substitute background and the old generated house glyph. */
+body .fc9-topbar .fc9-mark{background:#17265d!important;box-shadow:none!important}
+body .fc9-topbar .fc9-mark::before,body .fc9-topbar .fc9-mark::after{content:none!important;display:none!important}
+body .fc9-topbar .fc9-mark img{display:block!important;width:100%!important;height:100%!important;object-fit:contain!important;filter:none!important;transform:none!important;opacity:1!important}
 @media (max-width:719px){
   .fc9-topbar::before,.fc9-topbar::after,.fc9-topbar-in::before,.fc9-topbar-in::after,.fc9-brand::before,.fc9-brand::after{
     content:none!important;display:none!important;filter:none!important;backdrop-filter:none!important;-webkit-backdrop-filter:none!important;box-shadow:none!important;opacity:0!important
   }
-  .fc9-topbar,.fc9-topbar-in,.fc9-mark,.fc9-brand,.fc9-brand>b,.fc9-brand>span,.fc9-brand .fc-today-anchor,.fc9-brand .fc-today-anchor span,.fc9-sync,.fc9-head-actions,.fc9-head-actions .fc9-icon{
+  .fc9-topbar,.fc9-topbar-in,.fc9-mark,.fc9-brand,.fc9-brand>b,.fc9-brand>span,.fc9-brand .fc-today-anchor,.fc9-brand .fc-today-anchor span,.fc9-sync,#fcCloudStatus,.fc9-head-actions,.fc9-head-actions .fc9-icon{
     filter:none!important;backdrop-filter:none!important;-webkit-backdrop-filter:none!important;transform:none!important;-webkit-transform:none!important;perspective:none!important;will-change:auto!important;mix-blend-mode:normal!important;text-shadow:none!important;opacity:1!important;-webkit-backface-visibility:visible!important;backface-visibility:visible!important
   }
-  .fc9-brand>b,.fc9-brand>span,.fc9-brand .fc-today-anchor,.fc9-brand .fc-today-anchor span,.fc9-sync,.fc9-head-actions .fc9-icon{
+  .fc9-brand>b,.fc9-brand>span,.fc9-brand .fc-today-anchor,.fc9-brand .fc-today-anchor span,.fc9-sync,#fcCloudStatus,.fc9-head-actions .fc9-icon{
     -webkit-font-smoothing:antialiased!important;text-rendering:geometricPrecision!important;font-synthesis:none!important
   }
   .fc9-brand>b{font-weight:700!important;color:#0b203b!important}

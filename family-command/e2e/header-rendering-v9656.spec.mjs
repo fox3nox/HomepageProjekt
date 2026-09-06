@@ -44,7 +44,7 @@ async function inspect(page) {
     const image = mark?.querySelector('img');
     const top = document.querySelector('.fc9-topbar-in');
     const nav = document.querySelector('.fc9-nav');
-    return { title:document.title, url:location.href, viewport:innerWidth, header:box(top), titleBox:box(title), status:box(document.querySelector('.fc9-header-status')), today:box(document.querySelector('.fc9-header-today')), sync:box(document.querySelector('.fc9-sync')), ancestors, effects, mark:mark ? style(mark) : null, image:image ? { src:image.getAttribute('src'), display:getComputedStyle(image).display, complete:image.complete, naturalWidth:image.naturalWidth, rect:box(image) } : null, nav:box(nav), navButtons:[...nav.querySelectorAll('button')].map(box), overflow:document.documentElement.scrollWidth > document.documentElement.clientWidth + 1, stylesheets:[...document.querySelectorAll('link[rel="stylesheet"]')].map(x=>x.href) };
+    return { title:document.title, url:location.href, viewport:innerWidth, header:box(top), titleBox:box(title), status:box(document.querySelector('.fc9-header-status')), today:box(document.querySelector('.fc9-header-today')), sync:box(document.querySelector('#fcCloudStatus')), ancestors, effects, mark:mark ? style(mark) : null, image:image ? { src:image.getAttribute('src'), display:getComputedStyle(image).display, complete:image.complete, naturalWidth:image.naturalWidth, rect:box(image) } : null, nav:box(nav), navButtons:[...nav.querySelectorAll('button')].map(box), overflow:document.documentElement.scrollWidth > document.documentElement.clientWidth + 1, stylesheets:[...document.querySelectorAll('link[rel="stylesheet"]')].map(x=>x.href) };
   });
 }
 try {
@@ -57,24 +57,45 @@ try {
     const page = await context.newPage();
     const errors = [];
     page.on('pageerror', error => errors.push(error.message));
+    const consoleErrors = [];
+    page.on('console', message => { if(message.type() === 'error') consoleErrors.push(message.text()); });
     await page.goto(base + '/?access=test', { waitUntil:'domcontentloaded' });
     await page.waitForFunction(() => document.documentElement.dataset.fcReady === '1' && document.querySelector('.fc9-brand > b'));
-    await page.waitForFunction(() => document.documentElement.dataset.fcHeaderCrisp === 'v9654');
+    await page.waitForFunction(() => document.documentElement.dataset.fcHeaderRelease === 'v9656');
     if (mobile) await page.waitForSelector('.fc9-header-status');
     await page.evaluate(() => document.fonts.ready);
     await sleep(1200);
     const report = await inspect(page);
-    writeFileSync(path.join(output, `header-${width}.json`), JSON.stringify({ ...report, errors }, null, 2));
+    writeFileSync(path.join(output, `header-${width}.json`), JSON.stringify({ ...report, errors, consoleErrors }, null, 2));
     await page.screenshot({ path:path.join(output, `app-${width}.png`) });
     await page.locator('.fc9-topbar').screenshot({ path:path.join(output, `header-${width}.png`) });
     console.log('header-rendering', JSON.stringify(report));
     assert.equal(report.title, 'Familienzentrale');
+    assert.equal(new URL(report.url).origin, base, 'Correct local app, not an error page');
+    assert.ok(await page.locator('#today').innerText(), 'First meaningful screen is not blank');
+    assert.equal(report.mark.background, 'none', 'No substitute house background behind the original image');
+    assert.equal(await page.locator('.fc9-mark').evaluate(e => getComputedStyle(e, '::before').content), 'none', 'No house pseudo-glyph covering the family logo');
     assert.equal(report.overflow, false, 'No horizontal page overflow');
     assert.ok(report.image?.display !== 'none' && report.image?.rect.width > 0, 'The original family logo must be a visible image, not a replacement house background');
     assert.ok(report.image.complete && report.image.naturalWidth >= 180, 'Family logo must finish loading at sufficient source resolution');
     assert.match(report.image.src, /(?:apple-touch-icon\.png|icon\.svg)/, 'Reuse the existing family/house/calendar brand asset');
     if (mobile) {
-      assert.ok(report.header.height - parseFloat(report.ancestors.find(x => x.node === 'fc9-topbar-in').paddingTop) <= 86, 'Compact header including a separate status row');
+      assert.ok(report.header.height <= 86, `Compact header including a separate status row: ${report.header.height}`);
+      assert.ok(report.titleBox.y >= report.header.y + 24, 'Title stays clear of the upper iPhone edge');
+      assert.ok(report.sync && Math.abs(report.sync.y - report.today.y) <= 1, 'Real cloud badge and today anchor share one row');
+      assert.ok(report.sync.right <= report.today.x, 'Cloud status and date must not overlap');
+      assert.equal(await page.locator('.fc9-header-status > #fcCloudStatus').count(), 1, 'Real cloud node is outside the brand');
+      assert.equal(await page.locator('#fcCloudStatus').getAttribute('role'), 'status');
+      assert.equal(await page.locator('#fcCloudStatus').getAttribute('aria-live'), 'polite');
+      await page.evaluate(() => { window.__headerTestStatusNode = document.getElementById('fcCloudStatus'); });
+      // Test an explicit 59px safe area independently from browser emulation,
+      // which does not reproduce the native iPhone status bar or its edge fade.
+      await page.evaluate(() => document.documentElement.style.setProperty('--fc-header-safe-top', '59px'));
+      const safe = await inspect(page);
+      assert.ok(Math.abs(safe.header.height - report.header.height - 59) <= 1, 'Safe area is applied exactly once');
+      assert.ok(Math.abs(safe.titleBox.y - report.titleBox.y - 59) <= 1, 'Safe-area padding moves the title, not a scale/transform');
+      writeFileSync(path.join(output, `safe-area-${width}.json`), JSON.stringify(safe, null, 2));
+      await page.evaluate(() => document.documentElement.style.removeProperty('--fc-header-safe-top'));
       for (const a of report.ancestors) {
         assert.equal(a.filter, 'none', `No text/ancestor filter: ${a.node}`);
         assert.ok(!a.backdrop || a.backdrop === 'none', `No text/ancestor backdrop filter: ${a.node}`);
@@ -88,14 +109,37 @@ try {
         await page.waitForFunction(id => document.getElementById(id)?.classList.contains('active'), screen);
         assert.ok(await page.locator(`#${screen}`).innerText(), `Meaningful ${screen} content`);
         assert.equal(await page.locator('.fc9-header-status').count(), 1, 'No duplicate header after navigation');
+        assert.equal(await page.evaluate(() => document.getElementById('fcCloudStatus') === window.__headerTestStatusNode), true, 'Preserve the live cloud node identity');
       }
       await page.locator('#fc9Add').click();
       await page.waitForSelector('.fc9-modal');
       assert.ok(await page.locator('.fc9-modal').innerText(), 'Quick-add still opens');
       await page.locator('.fc9-modal .fc9-close').click();
       await page.waitForSelector('.fc9-modal', { state:'detached' });
+      await page.locator('.fc9-header-today').press('Enter');
+      await page.waitForSelector('.fc-dc-modal');
+      assert.ok(await page.locator('.fc-dc-modal').innerText(), 'Keyboard activation still opens the daily check');
+      await page.locator('.fc-dc-modal [data-close]').click();
+      await page.waitForSelector('.fc-dc-modal', { state:'detached' });
+      if (width === 402) {
+        await page.setViewportSize({ width:1280, height:900 });
+        await page.waitForSelector('.fc9-header-status', { state:'detached' });
+        assert.equal(await page.locator('.fc9-brand > #fcCloudStatus').count(), 1, 'Restore the cloud node for desktop');
+        assert.notEqual(await page.locator('.fc-today-anchor').getAttribute('aria-hidden'), 'true', 'Restore desktop anchor accessibility');
+        assert.equal(await page.locator('.fc-today-anchor').evaluate(e => e.tabIndex), 0);
+        await page.setViewportSize({ width, height:900 });
+        await page.waitForSelector('.fc9-header-status > #fcCloudStatus');
+        assert.equal(await page.locator('#fcCloudStatus').count(), 1, 'No duplicated cloud node after resize');
+        await page.locator('.fc9-header-today').click();
+        await page.waitForSelector('.fc-dc-modal');
+        await page.locator('.fc-dc-modal [data-close]').click();
+      }
+      const after = await inspect(page);
+      assert.ok(after.header.height <= 86, 'Header remains compact after interaction and resize');
+      writeFileSync(path.join(output, `interactions-${width}.json`), JSON.stringify({ navigation:'passed', quickAdd:'passed', dailyCheck:'passed', safeArea:'passed', resize:width === 402 ? 'passed' : 'not-run', errors, consoleErrors, after }, null, 2));
     }
     assert.deepEqual(errors, [], 'No uncaught browser errors');
+    assert.deepEqual(consoleErrors, [], 'No console errors in the target flow');
     await context.close();
   }
   console.log('V9.65.6 header rendering and navigation regression: ok');

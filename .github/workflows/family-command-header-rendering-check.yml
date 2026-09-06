@@ -29,11 +29,6 @@ jobs:
         env:
           FC_HEADER_ARTIFACTS: /tmp/fc-header-rendering
         run: node family-command/e2e/header-rendering-v9656.spec.mjs
-      - name: Collect public source for this diagnostic run
-        if: always()
-        run: |
-          mkdir -p /tmp/fc-header-rendering
-          tar -czf /tmp/fc-header-rendering/public-source.tar.gz family-command .github/workflows
       - name: Upload generic-fixture screenshots and measurements
         if: always()
         uses: actions/upload-artifact@v4
