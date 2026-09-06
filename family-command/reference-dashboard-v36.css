@@ -41,7 +41,7 @@
 #today .fc38-dashboard .fc38-kicker b{display:grid;place-items:center;border-radius:20px;background:#edf2f8;color:#4c6480;min-width:22px;height:22px;font-size:11px}
 #today .fc38-dashboard .fc38-more-work,#today .fc38-dashboard .fc38-calendar-link{display:flex;align-items:center;justify-content:center;gap:8px;width:100%;min-height:48px;background:#fafcfe;border:0;border-top:1px solid #e8eef4;font-size:13px;color:var(--r-blue);font-weight:600}
 #today .fc38-dashboard .fc38-calendar-link .fc-icon{width:18px;height:18px}
-#today button.fc38-line{display:grid;grid-template-columns:54px 32px minmax(0,1fr) 16px!important;align-items:center;gap:10px!important;width:100%;padding:14px!important;border:0;border-top:1px solid #e8eef4;background:white;text-align:left;border-radius:0;min-height:80px!important;font:inherit}
+#today button.fc38-line{display:grid;grid-template-columns:72px 32px minmax(0,1fr) 16px!important;align-items:center;gap:10px!important;width:100%;padding:14px!important;border:0;border-top:1px solid #e8eef4;background:white;text-align:left;border-radius:0;min-height:80px!important;font:inherit}
 #today .fc38-dashboard .fc38-line>div{min-width:0}
 #today button.fc38-line strong{display:block;font-size:14px!important;line-height:1.4!important;color:var(--r-navy);overflow-wrap:anywhere}
 #today button.fc38-line>div>span{display:block;font-size:12px!important;white-space:normal!important;line-height:1.45!important;color:var(--r-muted);margin-top:3px}
