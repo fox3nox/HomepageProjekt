@@ -24,6 +24,7 @@ try{
   await page.locator('.fc9-nav button[data-screen="more"]').click();
   const tile=page.locator('#more [data-feature="push"]');
   await tile.waitFor();
+  await page.waitForFunction(()=>document.querySelector('#more [data-feature="push"]')?.textContent.includes('2 Merklisten'));
   assert.match(await tile.innerText(),/2 Merklisten/);
   await tile.click();
   await page.waitForSelector('#fcReminderCenter');

@@ -23,3 +23,5 @@ body,.app,.fc9-shell{background:var(--r-bg)!important}.fc9-main{width:min(100%,5
 .fc38-reminders{grid-template-columns:1.4fr 1fr!important;gap:9px!important}.fc38-reminders section,.fc38-reminders aside{padding:9px 10px!important;border-radius:12px!important}.fc38-reminders h3{font-size:8px!important}.fc38-reminders section span{font-size:6.5px!important}.fc38-reminders aside b{font-size:6.4px!important}.fc38-reminders aside p{font-size:6.8px!important}.fc38-reminders aside strong{font-size:15px!important}.fc38-reminders aside small{font-size:5.8px!important}
 .fc9-nav{box-shadow:0 -8px 24px rgba(20,43,74,.045)!important}.fc9-nav button.active{background:#eef5ff!important}
 }
+
+#today .fc38-panel > [data-fc9668-day-hidden="1"]{display:none!important}

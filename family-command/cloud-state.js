@@ -6,6 +6,7 @@ window.__fcCloudStateInstalled=true;
 
 const BASE='https://lmrvapstojcecljjdgds.supabase.co/functions/v1/family-command-state-v2';
 const ACCESS='fc-private-access-v1',DEVICE='fc-cloud-device-v1',DELETED='_syncDeleted';
+const JOURNAL='fc-cloud-sync-v1';
 const SYNC_ARRAYS=['people','events','todos','homework','reminders','pendencies'];
 const LOCAL_TEST=location.hostname==='127.0.0.1'||location.hostname==='localhost';
 let revision=0,busy=false,pending=false,timer=0,status='idle',lastError='',lastSync=0,baseState=null,lastConflictCount=0,uiRetry=0,lastObservedState=null;
@@ -18,6 +19,10 @@ function accessKey(){try{const p=document.cookie.split(';').map(x=>x.trim()).fin
 function deviceId(){try{let id=localStorage.getItem(DEVICE)||'';if(!id){id='web-'+(crypto.randomUUID?.()||Math.random().toString(36).slice(2)+Date.now().toString(36));localStorage.setItem(DEVICE,id)}return id}catch(_){return'web-browser'}}
 function current(){try{return typeof data!=='undefined'&&data&&typeof data==='object'?data:null}catch(_){return null}}
 function valid(s){return !!s&&typeof s==='object'&&!Array.isArray(s)&&Array.isArray(s.people)&&Array.isArray(s.events)&&s.schedules&&typeof s.schedules==='object'}
+// Store the acknowledged base and pending snapshot together, so a PWA restart
+// can perform the same three-way merge as a conflict within one session.
+function persistJournal(){try{localStorage.setItem(JOURNAL,JSON.stringify({version:1,revision,base:baseState,local:current()}))}catch(e){console.error('fc_cloud_journal',e)}}
+function restoreJournal(){try{const j=JSON.parse(localStorage.getItem(JOURNAL)||'null');if(j?.version!==1||!valid(j.base)||!valid(j.local)||!Number.isInteger(j.revision)||j.revision<0)return;revision=j.revision;baseState=clone(j.base);if(!eq(j.local,j.base))replaceState(j.local)}catch(e){console.error('fc_cloud_journal_restore',e)}}
 function replaceState(next){const cur=current();if(!cur||!valid(next))return false;Object.keys(cur).forEach(k=>delete cur[k]);Object.assign(cur,clone(next));lastObservedState=clone(next);try{rawSave?.()}catch(e){console.error('fc_cloud_local_save',e)}return true}
 function identities(x){return [...new Set([String(x?.id||''),String(x?.clientRef||''),String(x?.sourceCommandId||'')].filter(Boolean))]}
 function sameRecord(a,b){const aa=new Set(identities(a));return identities(b).some(k=>aa.has(k))}
@@ -105,11 +110,13 @@ async function write(snapshot,base,attempt=0){
   const {r,j}=await request('POST',{state:snapshot,baseRevision:base,deviceId:deviceId()});
   if(r.ok&&j.ok){
     revision=Number(j.revision||base+1);
-    const canonical=valid(j.state)?j.state:snapshot,changed=!eq(canonical,current());
-    if(changed){replaceState(canonical);notifyRender()}else lastObservedState=clone(canonical);
-    baseState=clone(canonical);lastObservedState=clone(canonical);lastSync=Date.now();setStatus('synced','');return true;
+    const canonical=valid(j.state)?j.state:snapshot;
+    const latest=eq(snapshot,current())?clone(canonical):mergeStates(canonical,current(),snapshot);
+    if(!eq(latest,current())){replaceState(latest);notifyRender()}
+    baseState=clone(canonical);lastObservedState=clone(latest);lastSync=Date.now();
+    pending=!eq(latest,canonical);persistJournal();setStatus(pending?'queued':'synced','');return true;
   }
-  if(r.status===409&&j.conflict&&valid(j.state)&&attempt<1){revision=Number(j.revision||0);const merged=mergeStates(j.state,snapshot,baseState);replaceState(merged);notifyRender();return write(merged,revision,attempt+1)}
+  if(r.status===409&&j.conflict&&valid(j.state)&&attempt<1){revision=Number(j.revision||0);const merged=mergeStates(j.state,current(),baseState);baseState=clone(j.state);replaceState(merged);persistJournal();notifyRender();return write(clone(merged),revision,attempt+1)}
   throw new Error(j.error||('HTTP '+r.status));
 }
 async function pushNow(reason='save'){
@@ -124,12 +131,13 @@ function schedule(reason='save',delay=320){
   if(reason!=='bootstrap-retry'&&status!=='offline-cache')setStatus('queued');
   timer=setTimeout(()=>pushNow(reason),delay);
 }
-function installSaveWrapper(){if(!rawSave||window.__fcCloudSaveWrapped)return;window.__fcCloudSaveWrapped=true;const wrapped=function(...args){const cur=current();if(cur&&lastObservedState)applyDeletionMarks(lastObservedState,cur);const out=rawSave.apply(this,args);if(cur)lastObservedState=clone(cur);schedule('save');return out};window.save=wrapped;try{save=wrapped}catch(_){}}
+function installSaveWrapper(){if(!rawSave||window.__fcCloudSaveWrapped)return;window.__fcCloudSaveWrapped=true;const wrapped=function(...args){const cur=current();if(cur&&lastObservedState)applyDeletionMarks(lastObservedState,cur);const out=rawSave.apply(this,args);if(cur)lastObservedState=clone(cur);persistJournal();schedule('save');return out};window.save=wrapped;try{save=wrapped}catch(_){}}
 async function bootstrap(){
+  restoreJournal();
   installSaveWrapper();ensureSyncUi();
   if(LOCAL_TEST&&accessKey()==='test'){revision=1;baseState=clone(current()||{});lastObservedState=clone(current()||{});lastSync=Date.now();setStatus('test','');return{ok:true,test:true,revision}}
   if(!accessKey()||!valid(current())){lastObservedState=clone(current()||{});setStatus('local-only');return{ok:false,reason:'state-or-access-missing'}}
-  try{const remote=await pull();revision=Number(remote.revision||0);if(valid(remote.state)){replaceState(remote.state);baseState=clone(remote.state);lastObservedState=clone(remote.state);lastSync=Date.now();setStatus('synced','');return{ok:true,source:'cloud',revision}}lastObservedState=clone(current()||{});const ok=await write(clone(current()),0);return{ok,source:'local-bootstrap',revision}}
+  try{const remote=await pull();revision=Number(remote.revision||0);if(valid(remote.state)){const merged=valid(baseState)?mergeStates(remote.state,current(),baseState):clone(remote.state);baseState=clone(remote.state);replaceState(merged);persistJournal();lastSync=Date.now();const dirty=!eq(merged,remote.state);setStatus(dirty?'queued':'synced','');if(dirty)schedule('restored-edits');return{ok:true,source:dirty?'cloud-with-local-edits':'cloud',revision}}lastObservedState=clone(current()||{});const ok=await write(clone(current()),0);return{ok,source:'local-bootstrap',revision}}
   catch(e){lastObservedState=clone(current()||{});setStatus('offline-cache',e?.message||String(e));console.error('fc_cloud_bootstrap',e);schedule('bootstrap-retry',1800);return{ok:false,source:'local-cache',error:lastError}}
 }
 window.__fcCloudState={version:'2.5.0',bootstrap,pushNow,schedule,health,mergeStates,applyDeletionMarks,preserveDeletionHistory,renderSyncUi,get revision(){return revision}};

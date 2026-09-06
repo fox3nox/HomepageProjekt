@@ -25,7 +25,7 @@ jobs:
         run: |
           set -euo pipefail
           check(){ label="$1"; shift; if "$@"; then echo "ok: $label"; else echo "FAILED: $label"; exit 1; fi; }
-          check "boot version" grep -q "const VERSION='20260904-v9630'" family-command/index.html
+          check "boot version" grep -q "const VERSION='20260906-v9680'" family-command/index.html
           check "current build marker" grep -q "v9.61.7-reminder-surface" family-command/build.txt
           check "private rules version" grep -q "PRIVATE_RULES_VERSION='2026-08-31-v2'" family-command/index.html
           check "smart documents wired" grep -q "smart-documents.js" family-command/index.html
@@ -48,7 +48,7 @@ jobs:
           check "page polish wired" grep -q "v9-page-polish-v959.css" family-command/index.html
           check "form dialog polish imported" grep -q "v9-form-dialog-polish-v960.css" family-command/v9-page-polish-v959.css
           check "interaction accessibility polish imported" grep -q "v9-interaction-accessibility-v961.css" family-command/v9-page-polish-v959.css
-          check "supported PWA cache" grep -Eq "const CACHE='family-command-v(68|69|70|71|72|73|74|75|76|77|78|79|80|81|82|83|84|85|86|87|88|89|90|91|92|93|94|95|96|97|98|99|100|101|102|103|104|105|106|107)'" family-command/sw.js
+          check "supported PWA cache" grep -Eq "const CACHE='family-command-v(68|69|70|71|72|73|74|75|76|77|78|79|80|81|82|83|84|85|86|87|88|89|90|91|92|93|94|95|96|97|98|99|100|101|102|103|104|105|106|107|108)'" family-command/sw.js
           check "daily check JS cached" grep -q "daily-check.js" family-command/sw.js
           check "daily check CSS cached" grep -q "daily-check.css" family-command/sw.js
           check "reference dashboard JS cached" grep -q "reference-dashboard-v36.js" family-command/sw.js
@@ -92,7 +92,7 @@ jobs:
           check "mobile polish loaded" grep -q "v9-mobile-polish-v952.css" family-command/reference-mobile-v35.js
           check "final layout loaded" grep -q "v9-layout-final-v9622.css" family-command/reference-mobile-v35.js
           check "final layout marker" grep -q "fcFinalLayout='v9622'" family-command/reference-mobile-v35.js
-          check "responsive design version" grep -q "20260903-v9520" family-command/reference-mobile-v35.js
+          check "responsive design version" grep -q "20260906-v9680" family-command/reference-mobile-v35.js
           check "iphone layout marker" grep -q "fcIphoneLayout='v48'" family-command/reference-mobile-v35.js
           check "visual polish compatibility marker" grep -q "fcGlobalPolish='v49'" family-command/reference-mobile-v35.js
           check "mobile polish marker" grep -q "fcMobilePolish='v52'" family-command/reference-mobile-v35.js

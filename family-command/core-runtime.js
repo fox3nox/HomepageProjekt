@@ -22,6 +22,19 @@ function scheduleFor(id,day){return data.schedules?.[id]?.[day]||[]}
 function remindersFor(day){return(data.reminders||[]).filter(r=>(r.days||[]).map(Number).includes(Number(day)))}
 function eventsOn(date){return(data.events||[]).filter(e=>String(e.date)===String(date)||(e.endDate&&String(e.date)<=String(date)&&String(e.endDate)>=String(date))).sort((a,b)=>String(a.time||'99:99').localeCompare(String(b.time||'99:99')))}
 function schoolBreakFor(id,date){return(data.events||[]).find(e=>(e.personIds||[]).map(String).includes(String(id))&&/(ferien|osterwochenende|auffahrt|pfingsten)/i.test(String(e.title||''))&&String(e.date||'')<=String(date)&&String(e.endDate||e.date||'')>=String(date))||null}
+// Shared read model: packing comes only from saved reminders and school slots.
+function schoolDayFor(id,date){
+  const day=new Date(String(date)+'T12:00:00').getDay(),schoolBreak=schoolBreakFor(id,date);
+  const slots=schoolBreak?[]:[...scheduleFor(id,day)].sort((a,b)=>String(a.start||'').localeCompare(String(b.start||'')));
+  if(!slots.length)return{slots,schoolBreak,items:[],special:[],notes:[]};
+  const hay=slots.map(s=>[s.label,s.subject,s.title,s.note].filter(Boolean).join(' ')).join(' ');
+  const items=remindersFor(day).filter(r=>String(r.personId)===String(id)).flatMap(r=>r.items||[]).map(String);
+  const special=[];
+  if(/\b(turnen|sport|sportunterricht|turnschuhe?)\b/i.test(hay))special.push('👟 Turnen · Turnzeug mitnehmen');
+  if(/\b(schwimmen|schwimmunterricht)\b/i.test(hay))special.push('🏊 Schwimmen · Schwimmsachen mitnehmen');
+  const notes=slots.map(s=>String(s.note||'').trim()).filter(n=>/mitnehmen|einpack|rucksack|anzieh|dabei|turnschuh|leuchtweste|trinkflasche|zn[uü]ni|abfahrt/i.test(n));
+  return{slots,schoolBreak,items:[...new Set(items)],special:[...new Set(special)],notes:[...new Set(notes)]};
+}
 function toast(text){let el=document.getElementById('toast');if(!el){el=document.createElement('div');el.id='toast';el.className='toast';el.setAttribute('role','status');document.body.appendChild(el)}el.textContent=String(text||'');el.classList.add('show');clearTimeout(toast._t);toast._t=setTimeout(()=>el.classList.remove('show'),1800)}
 function exportData(){const blob=new Blob([JSON.stringify(data,null,2)],{type:'application/json'}),a=document.createElement('a');a.href=URL.createObjectURL(blob);a.download=`familienzentrale-${todayISO()}.json`;a.click();setTimeout(()=>URL.revokeObjectURL(a.href),0)}
 

@@ -7,17 +7,9 @@ const D=()=>{try{return typeof data!=='undefined'&&data?data:{}}catch(_){return{
 const iso=d=>`${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`;
 const today=()=>{try{return typeof todayISO==='function'?todayISO():iso(new Date())}catch(_){return iso(new Date())}};
 const addDays=(value,n)=>{const d=new Date(`${value}T12:00:00`);d.setDate(d.getDate()+n);return iso(d)};
-const schedule=(pid,wd)=>{try{return typeof scheduleFor==='function'?(scheduleFor(pid,wd)||[]):D().schedules?.[pid]?.[wd]||[]}catch(_){return[]}};
-const isKg=p=>/elia|eliya|eliyah|kindergarten/i.test(`${p?.id||''} ${p?.name||''} ${p?.role||''} ${p?.schoolClass||''}`);
 function packFor(p,date){
-  const wd=new Date(`${date}T12:00:00`).getDay(),slots=[...schedule(p.id,wd)],hay=slots.map(x=>`${x?.label||''} ${x?.subject||''} ${x?.title||''} ${x?.note||''}`).join(' · ');
-  if(!slots.length)return{items:[],special:[],note:''};
-  const items=['🎒 Schultasche','💧 Trinkflasche'],special=[];
-  if(isKg(p))items.push('🦺 Leuchtweste','🍎 Znüni-Box');
-  if(/\b(turnen|sport|sportunterricht|turnschuh(?:e|en)?)\b/i.test(hay)){items.push('👟 Turnzeug');special.push('👟 Turnen · Turnzeug mitnehmen')}
-  if(/\b(schwimmen|schwimmunterricht)\b/i.test(hay)){items.push('🏊 Schwimmsachen');special.push('🏊 Schwimmen · Schwimmsachen mitnehmen')}
-  const notes=[...new Set(slots.map(x=>String(x?.note||'').trim()).filter(n=>/mitnehmen|rucksack|anziehen|abfahrt|turnschuh|leuchtweste|znüni|znueni/i.test(n)))];
-  return{items:[...new Set(items)],special:[...new Set(special)],note:notes[0]||''};
+  if(typeof schoolDayFor==='function'){const x=schoolDayFor(p.id,date);return{items:x.items,special:x.special,note:x.notes.join(' · ')}}
+  return{items:[],special:[],note:''};
 }
 function compactPackText(info){
   if(info.special.length){const extra=info.items.filter(x=>!/(Turnzeug|Schwimmsachen)/i.test(x));return [...info.special,...extra].join(' · ')}
@@ -30,9 +22,9 @@ function enhanceTomorrow(){
   const date=addDays(today(),1),people=(D().people||[]).filter(p=>p.id!=='oli');
   section.classList.add('fc674-tomorrow-children');
   for(const row of section.querySelectorAll('.fc9-person')){
-    row.querySelectorAll('.fc674-inline-pack').forEach(x=>x.remove());
+    row.querySelectorAll('.fc674-inline-pack,.fc674-inline-note').forEach(x=>x.remove());
     const name=row.querySelector('b')?.textContent?.trim()||'',p=people.find(x=>String(x.name||'').trim()===name);if(!p)continue;
-    const info=packFor(p,date),text=compactPackText(info);if(!text)continue;
+    const info=packFor(p,date),text=compactPackText(info);if(!text&&!info.note)continue;
     const main=row.querySelector('b')?.parentElement;if(!main)continue;
     const line=document.createElement('span');line.className='fc674-inline-pack';line.textContent=text;main.appendChild(line);
     if(info.note&&!text.includes(info.note)){const note=document.createElement('small');note.className='fc674-inline-note';note.textContent=info.note;main.appendChild(note)}
@@ -47,7 +39,6 @@ function openCalendarDate(date){
   state.weekDate=selected;state.calendarMode='week';state.calendarMonth=new Date(d.getFullYear(),d.getMonth(),1,12);
   v9.invalidate?.('events');
   if(state.screen!=='events')v9.open?.('events');else v9.render?.('events',true);
-  requestAnimationFrame(()=>{if(state.weekDate!==selected||state.calendarMode!=='week'){state.weekDate=selected;state.calendarMode='week';v9.invalidate?.('events');v9.render?.('events',true)}});
   document.documentElement.dataset.fcCalendarSelectedDate=selected;
   return true;
 }
