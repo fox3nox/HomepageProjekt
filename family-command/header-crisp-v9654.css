@@ -1,4 +1,4 @@
-/* Family Command V9.65.8 · stronger, native-sharp iOS header typography */
+/* Family Command V9.65.9 · hardened native iPhone title edges */
 /* The existing apple-touch image is the approved family/house/calendar logo.
    Remove BOTH the substitute background and the old generated house glyph. */
 body .fc9-topbar .fc9-mark{background:#17265d!important;box-shadow:none!important}
@@ -11,23 +11,26 @@ body .fc9-topbar .fc9-mark img{display:block!important;width:100%!important;heig
   .fc9-topbar,.fc9-topbar-in,.fc9-mark,.fc9-brand,.fc9-brand>b,.fc9-brand>span,.fc9-brand .fc-today-anchor,.fc9-brand .fc-today-anchor span,.fc9-sync,#fcCloudStatus,.fc9-head-actions,.fc9-head-actions .fc9-icon{
     filter:none!important;backdrop-filter:none!important;-webkit-backdrop-filter:none!important;transform:none!important;-webkit-transform:none!important;perspective:none!important;will-change:auto!important;mix-blend-mode:normal!important;text-shadow:none!important;opacity:1!important;-webkit-backface-visibility:visible!important;backface-visibility:visible!important
   }
-  /* Let the physical iPhone use Safari's native text rasterizer. */
   .fc9-brand>b,.fc9-brand>span,.fc9-brand .fc-today-anchor,.fc9-brand .fc-today-anchor span,.fc9-sync,#fcCloudStatus,.fc9-head-actions .fc9-icon{
     -webkit-font-smoothing:auto!important;text-rendering:auto!important;font-synthesis:none!important
   }
-  /* Match the approved visual reference: strong navy title, native system face,
-     integer metrics and no clipping/composited ellipsis on the title itself. */
+  /* The physical iPhone screenshot still showed a faint soft fringe around the
+     title at weight 800. Use the native bold master and a hairline same-colour
+     stroke to harden the actual glyph boundary instead of adding shadows/filters. */
   .fc9-brand>b{
     display:block!important;
     font-family:-apple-system,BlinkMacSystemFont,"SF Pro Display","Helvetica Neue",Arial,sans-serif!important;
-    font-size:19px!important;
-    line-height:20px!important;
-    font-weight:800!important;
+    font-size:20px!important;
+    line-height:21px!important;
+    font-weight:700!important;
     font-style:normal!important;
     font-kerning:normal!important;
     font-optical-sizing:auto!important;
-    letter-spacing:-.15px!important;
-    color:#071d4f!important;
+    font-synthesis:none!important;
+    letter-spacing:0!important;
+    color:#061a47!important;
+    -webkit-text-stroke:.3px #061a47!important;
+    paint-order:stroke fill!important;
     white-space:nowrap!important;
     overflow:visible!important;
     text-overflow:clip!important;
