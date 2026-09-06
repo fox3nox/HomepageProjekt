@@ -26,5 +26,6 @@
   }
   window.fcOpenOriginal=open;
   window.__fcDocumentViewerHealth={version:VERSION,v9Native:true,readable:true,original:true,originalPath:true,zoom:true,legacyWrapper:false};
-  if(!window.__fcSmartDocumentsLoading){window.__fcSmartDocumentsLoading=true;const s=document.createElement('script');s.src='./smart-documents.js?v=20260903-v9510';s.async=true;s.onerror=()=>console.error('fc_smart_documents_load_failed');document.head.appendChild(s)}
+  // Managed boot already loads both modules in order; standalone use keeps its fallback.
+  if(!window.__fcManagedBoot&&!window.__fcSmartDocumentsLoading){window.__fcSmartDocumentsLoading=true;const load=()=>{const s=document.createElement('script');s.src='./smart-documents.js?v=20260906-v9690';s.async=true;s.onerror=()=>console.error('fc_smart_documents_load_failed');document.head.appendChild(s)};if(window.__fcDocumentLibrary)load();else{const s=document.createElement('script');s.src='./document-library.js?v=20260906-v9690';s.onload=load;s.onerror=()=>console.error('fc_document_library_load_failed');document.head.appendChild(s)}}
 })();

@@ -90,6 +90,9 @@ jobs:
       - name: Complete calendar and daily flows in iPhone WebKit
         run: node family-command/e2e/daily-reliability.spec.mjs
 
+      - name: Today focus and cross-module search in iPhone WebKit
+        run: node family-command/e2e/focus-search.spec.mjs
+
       - name: Document viewer regression
         run: node family-command/e2e/document-viewer.spec.mjs
 

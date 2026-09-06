@@ -2,7 +2,7 @@
 (()=>{
 'use strict';
 if(window.__fcReferenceMobileV35)return;window.__fcReferenceMobileV35=true;
-const V='20260906-v9680',HEADER_V='20260906-v9669',TODAY_V='20260906-v9680',SCHOOL_V='20260906-v9680',DAYTOOLS_V='20260906-v9680';
+const V='20260906-v9690',HEADER_V='20260906-v9669',TODAY_V='20260906-v9690',SCHOOL_V='20260906-v9690',DAYTOOLS_V='20260906-v9690';
 const headerAsset=file=>/^(header-|sharp-header-)/.test(file);
 const schoolAsset=file=>file==='mobile-school-day-v947.js'||file==='mobile-school-day-v947.css';
 const dayToolsAsset=file=>file==='tomorrow-calendar-v9673.js'||file==='tomorrow-calendar-v9673.css';
