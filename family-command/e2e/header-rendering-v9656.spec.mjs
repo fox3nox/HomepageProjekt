@@ -28,7 +28,7 @@ async function inspect(page) {
     const box = e => { const r = e?.getBoundingClientRect(); return r ? { x:r.x, y:r.y, width:r.width, height:r.height, bottom:r.bottom, right:r.right } : null; };
     const style = (e, pseudo) => {
       const s = getComputedStyle(e, pseudo);
-      return { node:e.id || e.className || e.tagName, pseudo, display:s.display, content:s.content, position:s.position, top:s.top, height:s.height, zIndex:s.zIndex, filter:s.filter, backdrop:s.backdropFilter || s.webkitBackdropFilter, transform:s.transform, scale:s.scale, opacity:s.opacity, shadow:s.textShadow, mask:s.maskImage, background:s.backgroundImage, paddingTop:s.paddingTop, font:s.font, rect:box(e) };
+      return { node:e.id || e.className || e.tagName, pseudo, display:s.display, content:s.content, position:s.position, top:s.top, height:s.height, zIndex:s.zIndex, filter:s.filter, backdrop:s.backdropFilter || s.webkitBackdropFilter, transform:s.transform, scale:s.scale, opacity:s.opacity, shadow:s.textShadow, mask:s.maskImage, background:s.backgroundImage, paddingTop:s.paddingTop, font:s.font, fontSmoothing:s.getPropertyValue('-webkit-font-smoothing'), textRendering:s.textRendering, rect:box(e) };
     };
     const title = document.querySelector('.fc9-brand > b');
     const ancestors = [];
@@ -44,7 +44,7 @@ async function inspect(page) {
     const image = mark?.querySelector('img');
     const top = document.querySelector('.fc9-topbar-in');
     const nav = document.querySelector('.fc9-nav');
-    return { title:document.title, url:location.href, viewport:innerWidth, header:box(top), titleBox:box(title), status:box(document.querySelector('.fc9-header-status')), today:box(document.querySelector('.fc9-header-today')), sync:box(document.querySelector('#fcCloudStatus')), ancestors, effects, mark:mark ? style(mark) : null, image:image ? { src:image.getAttribute('src'), display:getComputedStyle(image).display, complete:image.complete, naturalWidth:image.naturalWidth, rect:box(image) } : null, nav:box(nav), navButtons:[...nav.querySelectorAll('button')].map(box), overflow:document.documentElement.scrollWidth > document.documentElement.clientWidth + 1, stylesheets:[...document.querySelectorAll('link[rel="stylesheet"]')].map(x=>x.href) };
+    return { title:document.title, url:location.href, viewport:innerWidth, header:box(top), titleBox:box(title), titleStyle:style(title), status:box(document.querySelector('.fc9-header-status')), today:box(document.querySelector('.fc9-header-today')), sync:box(document.querySelector('#fcCloudStatus')), ancestors, effects, mark:mark ? style(mark) : null, image:image ? { src:image.getAttribute('src'), display:getComputedStyle(image).display, complete:image.complete, naturalWidth:image.naturalWidth, rect:box(image) } : null, nav:box(nav), navButtons:[...nav.querySelectorAll('button')].map(box), overflow:document.documentElement.scrollWidth > document.documentElement.clientWidth + 1, stylesheets:[...document.querySelectorAll('link[rel="stylesheet"]')].map(x=>x.href) };
   });
 }
 try {
@@ -54,8 +54,6 @@ try {
     const mobile = width < 720;
     const context = await browser.newContext({ viewport:{ width, height:900 }, deviceScaleFactor:mobile ? 3 : 1, isMobile:mobile, hasTouch:mobile, serviceWorkers:'block' });
     await context.addInitScript({ content:seed });
-    // Same harmless endpoint shapes as full-interaction-audit. Never send the
-    // generic fixture or its synthetic access key to a production backend.
     const unexpectedRequests = [], mockedRequests = [], badResponses = [];
     await context.route('**/*', async route => {
       const request = route.request(), url = new URL(request.url());
@@ -82,7 +80,7 @@ try {
     page.on('console', message => { if(message.type() === 'error') consoleErrors.push(message.text()); });
     await page.goto(base + '/?access=test', { waitUntil:'domcontentloaded' });
     await page.waitForFunction(() => document.documentElement.dataset.fcReady === '1' && document.querySelector('.fc9-brand > b'));
-    await page.waitForFunction(() => document.documentElement.dataset.fcHeaderRelease === 'v9656');
+    await page.waitForFunction(() => document.documentElement.dataset.fcHeaderRelease === 'v9657');
     if (mobile) await page.waitForSelector('.fc9-header-status');
     await page.evaluate(() => window.__fcLoadExtrasNow());
     await page.waitForFunction(() => document.documentElement.dataset.fcExtras === 'ready');
@@ -105,14 +103,14 @@ try {
     if (mobile) {
       assert.ok(report.header.height <= 86, `Compact header including a separate status row: ${report.header.height}`);
       assert.ok(report.titleBox.y >= report.header.y + 24, 'Title stays clear of the upper iPhone edge');
+      assert.notEqual(report.titleStyle.fontSmoothing, 'antialiased', 'Do not force grayscale antialiasing on iPhone title');
+      assert.equal(report.titleStyle.textRendering, 'auto', 'Use Safari native text rendering for title');
       assert.ok(report.sync && Math.abs(report.sync.y - report.today.y) <= 1, 'Real cloud badge and today anchor share one row');
       assert.ok(report.sync.right <= report.today.x, 'Cloud status and date must not overlap');
       assert.equal(await page.locator('.fc9-header-status > #fcCloudStatus').count(), 1, 'Real cloud node is outside the brand');
       assert.equal(await page.locator('#fcCloudStatus').getAttribute('role'), 'status');
       assert.equal(await page.locator('#fcCloudStatus').getAttribute('aria-live'), 'polite');
       await page.evaluate(() => { window.__headerTestStatusNode = document.getElementById('fcCloudStatus'); });
-      // Test an explicit 59px safe area independently from browser emulation,
-      // which does not reproduce the native iPhone status bar or its edge fade.
       await page.evaluate(() => document.documentElement.style.setProperty('--fc-header-safe-top', '59px'));
       const safe = await inspect(page);
       assert.ok(Math.abs(safe.header.height - report.header.height - 59) <= 1, 'Safe area is applied exactly once');
@@ -168,7 +166,7 @@ try {
     assert.deepEqual(consoleErrors, [], 'No console errors in the target flow');
     await context.close();
   }
-  console.log('V9.65.6 header rendering and navigation regression: ok');
+  console.log('V9.65.7 header rendering and navigation regression: ok');
 } finally {
   await browser?.close();
   server.kill('SIGTERM');
