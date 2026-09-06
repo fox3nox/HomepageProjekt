@@ -1,0 +1,22 @@
+/* Family Command V9.65.4 · deterministic iPhone header */
+@media(max-width:719px){
+  .fc9-topbar-in{display:grid!important;grid-template-columns:40px minmax(0,1fr) auto!important;grid-template-rows:auto auto!important;column-gap:10px!important;row-gap:5px!important;align-items:center!important;padding:calc(env(safe-area-inset-top,0px) + 10px) 14px 9px!important}
+  .fc9-mark{grid-column:1!important;grid-row:1 / span 2!important;align-self:center!important}
+  .fc9-brand{grid-column:2!important;grid-row:1!important;display:block!important;min-width:0!important;align-self:end!important}
+  .fc9-brand>b{display:block!important;font-size:18px!important;line-height:21px!important;white-space:nowrap!important;overflow:hidden!important;text-overflow:ellipsis!important;margin:0!important}
+  .fc9-brand>span:not(.fc-today-anchor){display:block!important;font-size:11px!important;line-height:14px!important;white-space:nowrap!important;overflow:hidden!important;text-overflow:ellipsis!important;margin:2px 0 0!important}
+  .fc9-brand>.fc-today-anchor,.fc9-brand>.fc9-anchor-source{display:none!important}
+  .fc9-head-actions{grid-column:3!important;grid-row:1 / span 2!important;align-self:center!important}
+  .fc9-header-status{grid-column:2!important;grid-row:2!important;display:flex!important;align-items:center!important;gap:6px!important;min-width:0!important;align-self:start!important;overflow:hidden!important}
+  .fc9-header-status .fc9-sync{position:static!important;display:inline-flex!important;align-items:center!important;max-width:110px!important;min-width:0!important;margin:0!important;padding:2px 7px!important;white-space:nowrap!important;overflow:hidden!important;text-overflow:ellipsis!important;transform:none!important;filter:none!important}
+  .fc9-header-today{box-sizing:border-box!important;display:inline-flex!important;align-items:center!important;gap:3px!important;min-width:0!important;height:21px!important;margin:0!important;padding:0 7px!important;border:1px solid #d7e4ff!important;border-radius:999px!important;background:#eef4ff!important;color:#315dc7!important;font-family:-apple-system,BlinkMacSystemFont,"Helvetica Neue",Arial,sans-serif!important;font-size:9px!important;line-height:19px!important;font-weight:700!important;letter-spacing:0!important;white-space:nowrap!important;overflow:hidden!important;text-overflow:ellipsis!important;filter:none!important;backdrop-filter:none!important;-webkit-backdrop-filter:none!important;transform:none!important;box-shadow:none!important}
+  .fc9-header-today span{font:inherit!important;color:inherit!important;line-height:inherit!important;margin:0!important;padding:0!important;white-space:nowrap!important}
+}
+@media(max-width:390px){
+  .fc9-topbar-in{grid-template-columns:38px minmax(0,1fr) auto!important;column-gap:8px!important;padding-left:11px!important;padding-right:11px!important}
+  .fc9-brand>b{font-size:17px!important;line-height:20px!important}
+  .fc9-brand>span:not(.fc-today-anchor){font-size:10.5px!important}
+  .fc9-header-status{gap:5px!important}
+  .fc9-header-status .fc9-sync{max-width:96px!important;padding-left:6px!important;padding-right:6px!important}
+  .fc9-header-today{font-size:8.5px!important;padding-left:6px!important;padding-right:6px!important}
+}
