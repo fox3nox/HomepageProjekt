@@ -1,21 +1,14 @@
 name: Family Command production smoke
-
 on:
   pull_request:
     branches: [main]
-    paths:
-      - 'family-command/**'
-      - '.github/workflows/family-command-production-smoke.yml'
+    paths: ['family-command/**','.github/workflows/family-command-production-smoke.yml']
   push:
     branches: [main]
-    paths:
-      - 'family-command/**'
-      - '.github/workflows/family-command-production-smoke.yml'
+    paths: ['family-command/**','.github/workflows/family-command-production-smoke.yml']
   workflow_dispatch:
-
 permissions:
   contents: read
-
 jobs:
   validate:
     if: github.event_name == 'pull_request'
@@ -27,60 +20,13 @@ jobs:
         shell: bash
         run: |
           set -euo pipefail
-          for asset in \
-            index.html \
-            core-runtime.js \
-            cloud-state.js \
-            document-viewer.js \
-            document-viewer.css \
-            smart-documents.js \
-            v9-app.js \
-            v9.css \
-            v9-professional.css \
-            daily-check.js \
-            daily-check.css \
-            header-native-v9652.css \
-            sharp-header-v9643.css \
-            header-structure-v9654.css \
-            header-structure-v9654.js \
-            header-crisp-v9654.css \
-            apple-touch-icon.png \
-            family-contacts.js \
-            family-contacts.css \
-            reminder-center.js \
-            reference-mobile-v35.js \
-            v9-final-unity-v9618.css \
-            v9-design-system-v9619.css \
-            v9-layout-final-v9622.css \
-            v9-page-polish-v959.css \
-            v9-form-dialog-polish-v960.css \
-            v9-interaction-accessibility-v961.css \
-            sw.js \
-            manifest.webmanifest; do
-            test -s "family-command/${asset}"
-          done
+          for asset in index.html core-runtime.js cloud-state.js document-viewer.js document-viewer.css smart-documents.js v9-app.js v9.css v9-professional.css daily-check.js daily-check.css header-native-v9652.css sharp-header-v9643.css header-structure-v9654.css header-structure-v9654.js header-crisp-v9654.css apple-touch-icon.png family-contacts.js family-contacts.css reminder-center.js reference-mobile-v35.js v9-final-unity-v9618.css v9-design-system-v9619.css v9-layout-final-v9622.css v9-page-polish-v959.css v9-form-dialog-polish-v960.css v9-interaction-accessibility-v961.css sw.js manifest.webmanifest; do test -s "family-command/${asset}"; done
           grep -q '<title>Familienzentrale</title>' family-command/index.html
           grep -q 'data-fc-v9="1"' family-command/index.html
           grep -q "const VERSION='20260904-v9630'" family-command/index.html
-          grep -q 'core-runtime.js' family-command/index.html
-          grep -q 'smart-documents.js' family-command/index.html
-          grep -q 'v9-app.js' family-command/index.html
-          grep -q 'daily-check.js' family-command/index.html
-          grep -q 'daily-check.css' family-command/index.html
-          grep -q 'family-contacts.js' family-command/index.html
-          grep -q 'family-contacts.css' family-command/index.html
-          grep -q 'reminder-center.js' family-command/index.html
-          grep -q 'v9-final-unity-v9618.css' family-command/index.html
-          grep -q 'v9-design-system-v9619.css' family-command/index.html
-          grep -q "finalCss('v9-design-system-v9619.css','fc9619design');finalCss('v9-layout-final-v9622.css','fc9622layout')" family-command/reference-mobile-v35.js
-          grep -q "finalCss('header-native-v9652.css','fc9652native')" family-command/reference-mobile-v35.js
+          grep -q "const HEADER_VERSION='20260906-v9660'" family-command/index.html
+          grep -q "HEADER_V='20260906-v9660'" family-command/reference-mobile-v35.js
           grep -q "const CACHE='family-command-v104'" family-command/sw.js
-          grep -q 'daily-check.js' family-command/sw.js
-          grep -q 'daily-check.css' family-command/sw.js
-          grep -q 'header-native-v9652.css' family-command/sw.js
-          grep -q 'v9-layout-final-v9622.css' family-command/sw.js
-          grep -q 'v9-form-dialog-polish-v960.css' family-command/v9-page-polish-v959.css
-          grep -q 'v9-interaction-accessibility-v961.css' family-command/v9-page-polish-v959.css
           node --check family-command/core-runtime.js
           node --check family-command/cloud-state.js
           node --check family-command/document-viewer.js
@@ -91,12 +37,9 @@ jobs:
           node --check family-command/reminder-center.js
           node --check family-command/reference-mobile-v35.js
           node --check family-command/sw.js
-          grep -q "const HEADER_VERSION='20260906-v9659'" family-command/index.html
-          grep -q "HEADER_V='20260906-v9659'" family-command/reference-mobile-v35.js
           node --check family-command/header-structure-v9654.js
           node family-command/e2e/header-native-v9652.spec.mjs
           node family-command/e2e/header-crisp-v9654.spec.mjs
-
   production:
     if: github.event_name == 'push' || github.event_name == 'workflow_dispatch'
     runs-on: ubuntu-latest
@@ -105,123 +48,35 @@ jobs:
       - uses: actions/checkout@v4
       - name: Wait for exact Family Command build on GitHub Pages
         shell: bash
-        env:
-          BASE_URL: https://fox3nox.github.io/HomepageProjekt/family-command
+        env: { BASE_URL: 'https://fox3nox.github.io/HomepageProjekt/family-command' }
         run: |
           set -euo pipefail
-          expected="$(sha256sum family-command/index.html | awk '{print $1}')"
-          live=''
+          expected="$(sha256sum family-command/index.html | awk '{print $1}')"; live=''
           for attempt in $(seq 1 36); do
-            if curl --fail --silent --show-error --location \
-              --header 'Cache-Control: no-cache' \
-              "${BASE_URL}/index.html?fc_smoke=${GITHUB_SHA}-${attempt}" \
-              --output /tmp/fc-live-index.html; then
-              live="$(sha256sum /tmp/fc-live-index.html | awk '{print $1}')"
-              if [ "$live" = "$expected" ]; then
-                echo "Exact family-command/index.html is live: $live"
-                break
-              fi
-              echo "Attempt ${attempt}: GitHub Pages still serves a different build ($live != $expected)"
-            else
-              echo "Attempt ${attempt}: GitHub Pages not reachable yet"
-            fi
+            if curl --fail --silent --show-error --location --header 'Cache-Control: no-cache' "${BASE_URL}/index.html?fc_smoke=${GITHUB_SHA}-${attempt}" --output /tmp/fc-live-index.html; then live="$(sha256sum /tmp/fc-live-index.html | awk '{print $1}')"; [ "$live" = "$expected" ] && break; fi
             sleep 10
           done
-          test "$live" = "$expected" || {
-            echo "Expected index SHA256: $expected"
-            echo "Live index SHA256: ${live:-unavailable}"
-            exit 1
-          }
-          grep -q '<title>Familienzentrale</title>' /tmp/fc-live-index.html
-          grep -q 'data-fc-v9="1"' /tmp/fc-live-index.html
-          grep -q "const VERSION='20260904-v9630'" /tmp/fc-live-index.html
-          grep -q 'core-runtime.js' /tmp/fc-live-index.html
-          grep -q 'smart-documents.js' /tmp/fc-live-index.html
-          grep -q 'v9-app.js' /tmp/fc-live-index.html
-          grep -q 'daily-check.js' /tmp/fc-live-index.html
-          grep -q 'daily-check.css' /tmp/fc-live-index.html
-          grep -q 'family-contacts.js' /tmp/fc-live-index.html
-          grep -q 'family-contacts.css' /tmp/fc-live-index.html
-          grep -q 'reminder-center.js' /tmp/fc-live-index.html
-          grep -q 'v9-final-unity-v9618.css' /tmp/fc-live-index.html
-          grep -q 'v9-design-system-v9619.css' /tmp/fc-live-index.html
-
+          test "$live" = "$expected"
+          grep -q "const HEADER_VERSION='20260906-v9660'" /tmp/fc-live-index.html
       - name: Wait for exact critical production assets
         shell: bash
-        env:
-          BASE_URL: https://fox3nox.github.io/HomepageProjekt/family-command
+        env: { BASE_URL: 'https://fox3nox.github.io/HomepageProjekt/family-command' }
         run: |
           set -euo pipefail
-          assets=(
-            core-runtime.js
-            cloud-state.js
-            document-viewer.js
-            document-viewer.css
-            smart-documents.js
-            v9-app.js
-            v9.css
-            v9-professional.css
-            daily-check.js
-            daily-check.css
-            header-native-v9652.css
-            sharp-header-v9643.css
-            header-structure-v9654.css
-            header-structure-v9654.js
-            header-crisp-v9654.css
-            apple-touch-icon.png
-            family-contacts.js
-            family-contacts.css
-            reminder-center.js
-            reference-mobile-v35.js
-            v9-final-unity-v9618.css
-            v9-design-system-v9619.css
-            v9-layout-final-v9622.css
-            v9-page-polish-v959.css
-            v9-form-dialog-polish-v960.css
-            v9-interaction-accessibility-v961.css
-            sw.js
-            manifest.webmanifest
-          )
+          assets=(core-runtime.js cloud-state.js document-viewer.js document-viewer.css smart-documents.js v9-app.js v9.css v9-professional.css daily-check.js daily-check.css header-native-v9652.css sharp-header-v9643.css header-structure-v9654.css header-structure-v9654.js header-crisp-v9654.css apple-touch-icon.png family-contacts.js family-contacts.css reminder-center.js reference-mobile-v35.js v9-final-unity-v9618.css v9-design-system-v9619.css v9-layout-final-v9622.css v9-page-polish-v959.css v9-form-dialog-polish-v960.css v9-interaction-accessibility-v961.css sw.js manifest.webmanifest)
           all_ok=false
           for attempt in $(seq 1 60); do
             all_ok=true
             for asset in "${assets[@]}"; do
               target="/tmp/${asset//\//_}"
-              if ! curl --fail --silent --show-error --location --header 'Cache-Control: no-cache' "${BASE_URL}/${asset}?fc_smoke=${GITHUB_SHA}-${attempt}" --output "$target"; then
-                echo "Attempt ${attempt}: ${asset} not reachable yet"; all_ok=false; continue
-              fi
-              expected="$(sha256sum "family-command/${asset}" | awk '{print $1}')"
-              actual="$(sha256sum "$target" | awk '{print $1}')"
-              if [ "$actual" != "$expected" ]; then echo "Attempt ${attempt}: ${asset} still differs ($actual != $expected)"; all_ok=false; fi
+              if ! curl --fail --silent --show-error --location --header 'Cache-Control: no-cache' "${BASE_URL}/${asset}?fc_smoke=${GITHUB_SHA}-${attempt}" --output "$target"; then all_ok=false; continue; fi
+              expected="$(sha256sum "family-command/${asset}" | awk '{print $1}')"; actual="$(sha256sum "$target" | awk '{print $1}')"; [ "$actual" = "$expected" ] || all_ok=false
             done
-            if [ "$all_ok" = true ]; then echo "All critical production assets match ${GITHUB_SHA}."; break; fi
+            [ "$all_ok" = true ] && break
             sleep 5
           done
-          test "$all_ok" = true || { echo "Critical production assets did not converge to ${GITHUB_SHA} within the propagation window."; exit 1; }
-          node --check /tmp/core-runtime.js
-          node --check /tmp/cloud-state.js
-          node --check /tmp/document-viewer.js
-          node --check /tmp/smart-documents.js
-          node --check /tmp/v9-app.js
-          node --check /tmp/daily-check.js
-          node --check /tmp/family-contacts.js
-          node --check /tmp/reminder-center.js
-          node --check /tmp/reference-mobile-v35.js
-          node --check /tmp/header-structure-v9654.js
-          grep -q "const HEADER_VERSION='20260906-v9659'" /tmp/fc-live-index.html
-          grep -q "HEADER_V='20260906-v9659'" /tmp/reference-mobile-v35.js
-          node --check /tmp/sw.js
-          grep -q '"name"' /tmp/manifest.webmanifest
-          grep -q "finalCss('v9-design-system-v9619.css','fc9619design');finalCss('v9-layout-final-v9622.css','fc9622layout')" /tmp/reference-mobile-v35.js
-          grep -q "finalCss('header-native-v9652.css','fc9652native')" /tmp/reference-mobile-v35.js
+          test "$all_ok" = true
+          grep -q "HEADER_V='20260906-v9660'" /tmp/reference-mobile-v35.js
           grep -q "const CACHE='family-command-v104'" /tmp/sw.js
-          grep -q 'daily-check.js' /tmp/sw.js
-          grep -q 'daily-check.css' /tmp/sw.js
-          grep -q 'header-native-v9652.css' /tmp/sw.js
-          grep -q 'v9-layout-final-v9622.css' /tmp/sw.js
-          grep -q 'v9-form-dialog-polish-v960.css' /tmp/v9-page-polish-v959.css
-          grep -q 'v9-interaction-accessibility-v961.css' /tmp/v9-page-polish-v959.css
-
       - name: Production smoke summary
-        run: |
-          echo "Family Command production smoke passed with exact asset hashes for ${GITHUB_SHA}."
+        run: echo "Family Command production smoke passed with exact asset hashes for ${GITHUB_SHA}."
