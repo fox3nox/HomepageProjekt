@@ -10,7 +10,8 @@ const links=[
   {rel:'stylesheet',href:base+'v9-final-unity-v9618.css?v=20260904-v9617',dataset:{}},
   {rel:'stylesheet',href:base+'v9-design-system-v9619.css?v=20260904-v9617',dataset:{}},
   {rel:'stylesheet',href:base+'v9-layout-final-v9622.css?v=20260904-v9617',dataset:{}},
-  {rel:'stylesheet',href:base+'sharp-header-v9643.css?v=20260904-v9617',dataset:{}}
+  {rel:'stylesheet',href:base+'sharp-header-v9643.css?v=20260904-v9617',dataset:{}},
+  {rel:'stylesheet',href:base+'header-native-v9652.css?v=20260904-v9617',dataset:{}}
 ];
 const scripts=[];
 const documentElement={dataset:{}};
@@ -40,12 +41,15 @@ assert.equal(byFile('v9-design-system-v9619.css').length,1);
 assert.equal(byFile('v9-layout-final-v9622.css').length,1);
 assert.equal(byFile('sharp-header-v9643.css').length,1);
 assert.equal(byFile('header-native-v9652.css').length,1);
-assert.deepEqual(links.slice(-6).map(l=>new URL(l.href,base).pathname.split('/').pop()),[
-  'v9-unified-design-v958.css','v9-final-unity-v9618.css','v9-design-system-v9619.css','v9-layout-final-v9622.css','sharp-header-v9643.css','header-native-v9652.css'
-],'isolated native header must be the final cascade layer');
+assert.equal(byFile('header-structure-v9654.css').length,1);
+assert.deepEqual(links.slice(-7).map(l=>new URL(l.href,base).pathname.split('/').pop()),[
+  'v9-unified-design-v958.css','v9-final-unity-v9618.css','v9-design-system-v9619.css','v9-layout-final-v9622.css','sharp-header-v9643.css','header-native-v9652.css','header-structure-v9654.css'
+],'deterministic header structure must be the final cascade layer');
 assert.equal(documentElement.dataset.fcDesignSystem,'v9619');
 assert.equal(documentElement.dataset.fcFinalLayout,'v9622');
 assert.equal(documentElement.dataset.fcSharpHeader,'v9644');
 assert.equal(documentElement.dataset.fcNativeHeader,'v9652');
+assert.equal(documentElement.dataset.fcHeaderStructure,'v9654');
 assert.match(source,/20260903-v9520/,'loader must keep the established compatible asset version');
-console.log('ok reference loader dedupe V9.65.2');
+assert.equal(scripts.filter(s=>String(s.src).includes('header-structure-v9654.js')).length,1,'header structure runtime must be loaded exactly once');
+console.log('ok reference loader dedupe V9.65.4');
