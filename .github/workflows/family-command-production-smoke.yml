@@ -33,7 +33,7 @@ jobs:
           grep -q 'fc-wordmark-2x.png' family-command/header-crisp-v9654.css
           grep -q 'fc-wordmark-3x.png' family-command/header-crisp-v9654.css
           grep -q 'font-size:0!important' family-command/header-crisp-v9654.css
-          grep -q "const CACHE='family-command-v108'" family-command/sw.js
+          grep -q "const CACHE='family-command-v107'" family-command/sw.js
           grep -q 'tomorrow-calendar-v9673.js' family-command/sw.js
           grep -q '"background_color":"#f7f9fc"' family-command/manifest.webmanifest
           grep -q '#fcApp,.app,.fc9-shell{min-height:100vh' family-command/v9-professional.css
@@ -94,7 +94,7 @@ jobs:
           grep -q "fcHeaderRelease='v9669'" /tmp/reference-mobile-v35.js
           grep -q "fcFutureOnly='v9669'" /tmp/reference-mobile-v35.js
           grep -q "DAYTOOLS_V='20260906-v9673'" /tmp/reference-mobile-v35.js
-          grep -q "const CACHE='family-command-v108'" /tmp/sw.js
+          grep -q "const CACHE='family-command-v107'" /tmp/sw.js
           grep -q '"background_color":"#f7f9fc"' /tmp/manifest.webmanifest
       - name: Production smoke summary
         run: echo "Family Command production smoke passed with exact asset hashes for ${GITHUB_SHA}."
