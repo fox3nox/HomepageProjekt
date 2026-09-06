@@ -4,6 +4,9 @@ on:
     branches: [main]
     paths:
       - 'family-command/v9-mobile-polish-v952.css'
+      - 'family-command/header-native-v9652.css'
+      - 'family-command/header-structure-v9654.css'
+      - 'family-command/header-structure-v9654.js'
       - 'family-command/reference-mobile-v35.js'
       - 'family-command/reference-dashboard-v36.js'
       - 'family-command/sw.js'
@@ -13,6 +16,9 @@ on:
     branches: [main]
     paths:
       - 'family-command/v9-mobile-polish-v952.css'
+      - 'family-command/header-native-v9652.css'
+      - 'family-command/header-structure-v9654.css'
+      - 'family-command/header-structure-v9654.js'
       - 'family-command/reference-mobile-v35.js'
       - 'family-command/reference-dashboard-v36.js'
       - 'family-command/sw.js'
@@ -30,9 +36,11 @@ jobs:
       - name: Syntax integration
         run: |
           node --check family-command/reference-mobile-v35.js
+          node --check family-command/header-structure-v9654.js
           node --check family-command/reference-dashboard-v36.js
           node --check family-command/e2e/mobile-polish-v952.spec.mjs
           grep -q "v9-mobile-polish-v952.css" family-command/reference-mobile-v35.js
+          grep -q "header-structure-v9654.css" family-command/reference-mobile-v35.js
           grep -q "family-command-v89" family-command/sw.js
       - name: Install Playwright
         run: npm install --no-save playwright
