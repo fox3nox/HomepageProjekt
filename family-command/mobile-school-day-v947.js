@@ -1,4 +1,4 @@
-/* Familienzentrale V9.49 · iPhone school-day presentation layer */
+/* Familienzentrale V9.67.0 · iPhone school-day presentation layer, today + future only */
 (()=>{
 'use strict';
 if(window.__fcMobileSchoolDayV947)return;
@@ -11,23 +11,25 @@ const schedule=(pid,day)=>{try{return typeof scheduleFor==='function'?(scheduleF
 const color=p=>p?.color||'#718197';
 const initial=p=>(p?.name||'?').trim().charAt(0).toUpperCase()||'?';
 const personMeta=p=>String(p?.schoolClass||p?.class||p?.role||'').replace(/\s*·\s*Schuljahr\b.*$/i,'').trim();
-const state={day:null};
-function week(){const iso=todayIso(),wd=new Date(`${iso}T12:00:00`).getDay(),monday=addDays(iso,wd===0?-6:1-wd);return{iso,wd,monday}}
+const state={date:null};
+function futureSchoolDays(){const out=[],start=todayIso();for(let i=0;out.length<5&&i<14;i++){const date=addDays(start,i),wd=new Date(`${date}T12:00:00`).getDay();if(wd>=1&&wd<=5)out.push({date,wd})}return out}
 function label(slots,p){if(!slots.length)return{kind:'FREI',icon:'—',time:'Kein Unterricht',note:'',free:true};const first=slots[0],last=slots[slots.length-1],start=first.start||'',notes=[...new Set(slots.map(x=>String(x.note||'').trim()).filter(Boolean))];const kg=/elia|kindergarten/i.test(`${p?.id||''} ${p?.name||''} ${first.label||''}`);const early=start&&start<'08:10';return{kind:kg?'KG':early?'FRÜH':'SPÄT',icon:kg?'⌂':early?'☀':'◐',time:`${start||'—'}${start?'–':''}${last.end||'—'}`,note:notes[0]||'',free:false}}
 function render(){
   if(!matchMedia(MOBILE).matches)return;
   const host=document.querySelector('#today .fc38-school');if(!host)return;
-  const people=(D().people||[]).filter(p=>p.id!=='oli'),{wd,monday}=week(),days=[1,2,3,4,5],labs=['Mo','Di','Mi','Do','Fr'];
-  if(!state.day||!days.includes(state.day))state.day=days.includes(wd)?wd:1;
+  const people=(D().people||[]).filter(p=>p.id!=='oli'),days=futureSchoolDays(),today=todayIso();
+  if(!state.date||!days.some(x=>x.date===state.date))state.date=days[0]?.date||today;
   let box=host.querySelector('.fc47-school-mobile');if(!box){box=document.createElement('div');box.className='fc47-school-mobile';host.appendChild(box)}
-  const tabs=days.map((d,i)=>{const date=addDays(monday,i),sel=d===state.day,today=d===wd;return `<button type="button" role="tab" aria-selected="${sel?'true':'false'}" class="fc47-day${sel?' is-selected':''}${today?' is-today':''}" data-fc47-day="${d}"${today?' aria-current="date"':''}><b>${labs[i]}</b><span>${date.slice(8,10)}.${date.slice(5,7)}.</span>${today?'<em>HEUTE</em>':''}</button>`}).join('');
-  const rows=people.map(p=>{const x=label(schedule(p.id,state.day),p),meta=personMeta(p);return `<article class="fc47-child${x.free?' is-free':''}" style="--person:${esc(color(p))}"><span class="fc47-avatar">${esc(initial(p))}</span><div class="fc47-person"><strong>${esc(p.name||'Kind')}</strong>${meta?`<small>${esc(meta)}</small>`:''}</div><div class="fc47-status"><b><i>${x.icon}</i>${esc(x.kind)}</b><span>${esc(x.time)}</span>${x.note?`<small>${esc(x.note)}</small>`:''}</div></article>`}).join('');
-  const html=`<div class="fc47-daytabs" role="tablist" aria-label="Schultag auswählen">${tabs}</div><div class="fc47-schoolday">${rows||'<div class="fc47-empty">Keine Kinder hinterlegt.</div>'}</div>`;
+  const tabs=days.map(({date,wd})=>{const sel=date===state.date,isToday=date===today,lab=['','Mo','Di','Mi','Do','Fr','Sa'][wd];return `<button type="button" role="tab" aria-selected="${sel?'true':'false'}" class="fc47-day${sel?' is-selected':''}${isToday?' is-today':''}" data-fc47-date="${date}"${isToday?' aria-current="date"':''}><b>${lab}</b><span>${date.slice(8,10)}.${date.slice(5,7)}.</span>${isToday?'<em>HEUTE</em>':''}</button>`}).join('');
+  const selected=days.find(x=>x.date===state.date)||days[0],wd=selected?.wd||1;
+  const rows=people.map(p=>{const x=label(schedule(p.id,wd),p),meta=personMeta(p);return `<article class="fc47-child${x.free?' is-free':''}" style="--person:${esc(color(p))}"><span class="fc47-avatar">${esc(initial(p))}</span><div class="fc47-person"><strong>${esc(p.name||'Kind')}</strong>${meta?`<small>${esc(meta)}</small>`:''}</div><div class="fc47-status"><b><i>${x.icon}</i>${esc(x.kind)}</b><span>${esc(x.time)}</span>${x.note?`<small>${esc(x.note)}</small>`:''}</div></article>`}).join('');
+  const html=`<div class="fc47-daytabs" role="tablist" aria-label="Nächste Schultage auswählen">${tabs}</div><div class="fc47-schoolday">${rows||'<div class="fc47-empty">Keine Kinder hinterlegt.</div>'}</div>`;
   if(box.innerHTML!==html)box.innerHTML=html;
-  box.querySelectorAll('[data-fc47-day]').forEach(b=>b.onclick=()=>{state.day=Number(b.dataset.fc47Day);render()});
-  document.documentElement.dataset.fcMobileSchoolDay='v49';
+  box.querySelectorAll('[data-fc47-date]').forEach(b=>b.onclick=()=>{state.date=b.dataset.fc47Date;render()});
+  document.documentElement.dataset.fcMobileSchoolDay='v67';
+  document.documentElement.dataset.fcMobileSchoolStart=days[0]?.date||today;
 }
 let timer;const insideOwnView=node=>{const el=node?.nodeType===1?node:node?.parentElement;return Boolean(el?.closest?.('.fc47-school-mobile'))};const obs=new MutationObserver(mutations=>{if(mutations.length&&mutations.every(m=>insideOwnView(m.target)))return;clearTimeout(timer);timer=setTimeout(render,35)});
 function install(){if(!matchMedia(MOBILE).matches)return;const t=document.getElementById('today');if(!t){setTimeout(install,50);return}obs.observe(t,{childList:true,subtree:true});render();addEventListener('resize',render)}
-window.__fcMobileSchoolDayV947={version:'9.49.0',render};if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',install,{once:true});else install();
+window.__fcMobileSchoolDayV947={version:'9.67.0',render};if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',install,{once:true});else install();
 })();
