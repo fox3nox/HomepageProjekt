@@ -20,7 +20,7 @@ jobs:
         shell: bash
         run: |
           set -euo pipefail
-          for asset in index.html core-runtime.js cloud-state.js document-viewer.js document-viewer.css smart-documents.js v9-app.js v9.css v9-professional.css daily-check.js daily-check.css header-native-v9652.css sharp-header-v9643.css header-structure-v9654.css header-structure-v9654.js header-crisp-v9654.css fc-wordmark-2x.png fc-wordmark-3x.png apple-touch-icon.png family-contacts.js family-contacts.css reminder-center.js reference-mobile-v35.js reference-dashboard-v36.js today-overview-toggle-v9668.js future-only-polish-v9669.js v9-final-unity-v9618.css v9-design-system-v9619.css v9-layout-final-v9622.css v9-page-polish-v959.css v9-form-dialog-polish-v960.css v9-interaction-accessibility-v961.css sw.js manifest.webmanifest; do test -s "family-command/${asset}"; done
+          for asset in index.html core-runtime.js cloud-state.js document-viewer.js document-viewer.css smart-documents.js v9-app.js v9.css v9-professional.css daily-check.js daily-check.css header-native-v9652.css sharp-header-v9643.css header-structure-v9654.css header-structure-v9654.js header-crisp-v9654.css fc-wordmark-2x.png fc-wordmark-3x.png apple-touch-icon.png family-contacts.js family-contacts.css reminder-center.js reference-mobile-v35.js reference-dashboard-v36.js today-overview-toggle-v9668.js future-only-polish-v9669.js mobile-school-day-v947.js mobile-school-day-v947.css tomorrow-calendar-v9673.js tomorrow-calendar-v9673.css v9-final-unity-v9618.css v9-design-system-v9619.css v9-layout-final-v9622.css v9-page-polish-v959.css v9-form-dialog-polish-v960.css v9-interaction-accessibility-v961.css sw.js manifest.webmanifest; do test -s "family-command/${asset}"; done
           grep -q '<title>Familienzentrale</title>' family-command/index.html
           grep -q 'data-fc-v9="1"' family-command/index.html
           grep -q "const VERSION='20260904-v9630'" family-command/index.html
@@ -28,11 +28,15 @@ jobs:
           grep -q "HEADER_V='20260906-v9669'" family-command/reference-mobile-v35.js
           grep -q "fcHeaderRelease='v9669'" family-command/reference-mobile-v35.js
           grep -q "fcFutureOnly='v9669'" family-command/reference-mobile-v35.js
+          grep -q "DAYTOOLS_V='20260906-v9673'" family-command/reference-mobile-v35.js
           grep -q "title.textContent='Familienzentrale'" family-command/header-structure-v9654.js
           grep -q 'fc-wordmark-2x.png' family-command/header-crisp-v9654.css
           grep -q 'fc-wordmark-3x.png' family-command/header-crisp-v9654.css
           grep -q 'font-size:0!important' family-command/header-crisp-v9654.css
-          grep -q "const CACHE='family-command-v107'" family-command/sw.js
+          grep -q "const CACHE='family-command-v108'" family-command/sw.js
+          grep -q 'tomorrow-calendar-v9673.js' family-command/sw.js
+          grep -q '"background_color":"#f7f9fc"' family-command/manifest.webmanifest
+          grep -q '#fcApp,.app,.fc9-shell{min-height:100vh' family-command/v9-professional.css
           node --check family-command/core-runtime.js
           node --check family-command/cloud-state.js
           node --check family-command/document-viewer.js
@@ -44,6 +48,7 @@ jobs:
           node --check family-command/reference-mobile-v35.js
           node --check family-command/today-overview-toggle-v9668.js
           node --check family-command/future-only-polish-v9669.js
+          node --check family-command/tomorrow-calendar-v9673.js
           node --check family-command/sw.js
           node --check family-command/header-structure-v9654.js
           node family-command/e2e/header-native-v9652.spec.mjs
@@ -72,7 +77,7 @@ jobs:
         env: { BASE_URL: 'https://fox3nox.github.io/HomepageProjekt/family-command' }
         run: |
           set -euo pipefail
-          assets=(core-runtime.js cloud-state.js document-viewer.js document-viewer.css smart-documents.js v9-app.js v9.css v9-professional.css daily-check.js daily-check.css header-native-v9652.css sharp-header-v9643.css header-structure-v9654.css header-structure-v9654.js header-crisp-v9654.css fc-wordmark-2x.png fc-wordmark-3x.png apple-touch-icon.png family-contacts.js family-contacts.css reminder-center.js reference-mobile-v35.js reference-dashboard-v36.js today-overview-toggle-v9668.js future-only-polish-v9669.js v9-final-unity-v9618.css v9-design-system-v9619.css v9-layout-final-v9622.css v9-page-polish-v959.css v9-form-dialog-polish-v960.css v9-interaction-accessibility-v961.css sw.js manifest.webmanifest)
+          assets=(core-runtime.js cloud-state.js document-viewer.js document-viewer.css smart-documents.js v9-app.js v9.css v9-professional.css daily-check.js daily-check.css header-native-v9652.css sharp-header-v9643.css header-structure-v9654.css header-structure-v9654.js header-crisp-v9654.css fc-wordmark-2x.png fc-wordmark-3x.png apple-touch-icon.png family-contacts.js family-contacts.css reminder-center.js reference-mobile-v35.js reference-dashboard-v36.js today-overview-toggle-v9668.js future-only-polish-v9669.js mobile-school-day-v947.js mobile-school-day-v947.css tomorrow-calendar-v9673.js tomorrow-calendar-v9673.css v9-final-unity-v9618.css v9-design-system-v9619.css v9-layout-final-v9622.css v9-page-polish-v959.css v9-form-dialog-polish-v960.css v9-interaction-accessibility-v961.css sw.js manifest.webmanifest)
           all_ok=false
           for attempt in $(seq 1 60); do
             all_ok=true
@@ -88,6 +93,8 @@ jobs:
           grep -q "HEADER_V='20260906-v9669'" /tmp/reference-mobile-v35.js
           grep -q "fcHeaderRelease='v9669'" /tmp/reference-mobile-v35.js
           grep -q "fcFutureOnly='v9669'" /tmp/reference-mobile-v35.js
-          grep -q "const CACHE='family-command-v107'" /tmp/sw.js
+          grep -q "DAYTOOLS_V='20260906-v9673'" /tmp/reference-mobile-v35.js
+          grep -q "const CACHE='family-command-v108'" /tmp/sw.js
+          grep -q '"background_color":"#f7f9fc"' /tmp/manifest.webmanifest
       - name: Production smoke summary
         run: echo "Family Command production smoke passed with exact asset hashes for ${GITHUB_SHA}."
