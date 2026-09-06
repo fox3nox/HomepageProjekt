@@ -79,16 +79,22 @@ jobs:
           print('PWA icons valid')
           PY
 
-      - name: Install Playwright WebKit
+      - name: Install Playwright WebKit and Chromium
         run: |
           npm install --no-save --package-lock=false playwright@1.57.0
-          npx playwright install --with-deps webkit
+          npx playwright install --with-deps webkit chromium
 
       - name: Future-only iPhone regression
         run: node family-command/e2e/mobile-school-day-v947.spec.mjs
 
+      - name: Complete calendar and daily flows in iPhone WebKit
+        run: node family-command/e2e/daily-reliability.spec.mjs
+
       - name: Document viewer regression
         run: node family-command/e2e/document-viewer.spec.mjs
+
+      - name: Real service worker offline boot and navigation
+        run: node family-command/e2e/pwa-offline.spec.mjs
 
       - name: Upload UI screenshots
         if: always()

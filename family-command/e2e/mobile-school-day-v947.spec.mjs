@@ -2,7 +2,7 @@ import { webkit } from 'playwright';
 import { spawn } from 'node:child_process';
 import { readFileSync } from 'node:fs';
 import assert from 'node:assert/strict';
-const PORT=4194,BASE=`http://127.0.0.1:${PORT}`,seed=readFileSync('family-command/e2e/mock-private-core.js','utf8');
+const PORT=4194,BASE=`http://127.0.0.1:${PORT}`,seed=readFileSync('family-command/e2e/mock-private-core.js','utf8')+`;{const key='family-command-personal-v4',d=JSON.parse(localStorage.getItem(key));d.reminders=['child-a','child-b','child-c'].map(personId=>({id:'pack-'+personId,personId,days:[1,2,3,4,5],items:['Schultasche','Trinkflasche']}));localStorage.setItem(key,JSON.stringify(d));}`;
 const server=spawn('python3',['-m','http.server',String(PORT),'--directory','family-command'],{stdio:['ignore','pipe','pipe']});
 const sleep=ms=>new Promise(r=>setTimeout(r,ms));async function ready(){for(let i=0;i<50;i++){try{if((await fetch(BASE+'/index.html')).ok)return}catch{}await sleep(100)}throw Error('server not ready')}
 try{await ready();const browser=await webkit.launch({headless:true});

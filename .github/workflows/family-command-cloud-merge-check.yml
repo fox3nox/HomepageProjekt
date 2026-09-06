@@ -5,12 +5,14 @@ on:
     paths:
       - 'family-command/cloud-state.js'
       - 'family-command/e2e/cloud-state-merge.spec.mjs'
+      - 'family-command/e2e/cloud-state-lifecycle.spec.mjs'
       - '.github/workflows/family-command-cloud-merge-check.yml'
   pull_request:
     branches: [main]
     paths:
       - 'family-command/cloud-state.js'
       - 'family-command/e2e/cloud-state-merge.spec.mjs'
+      - 'family-command/e2e/cloud-state-lifecycle.spec.mjs'
       - '.github/workflows/family-command-cloud-merge-check.yml'
 jobs:
   three-way-merge:
@@ -24,3 +26,6 @@ jobs:
           node --check family-command/e2e/cloud-state-merge.spec.mjs
       - name: Three-way merge regression
         run: node family-command/e2e/cloud-state-merge.spec.mjs
+
+      - name: Offline restart and in-flight save regression
+        run: node --test family-command/e2e/cloud-state-lifecycle.spec.mjs
