@@ -28,7 +28,7 @@ jobs:
           grep -q "HEADER_V='20260906-v9669'" family-command/reference-mobile-v35.js
           grep -q "fcHeaderRelease='v9669'" family-command/reference-mobile-v35.js
           grep -q "fcFutureOnly='v9669'" family-command/reference-mobile-v35.js
-          grep -q "DAYTOOLS_V='20260906-v9673'" family-command/reference-mobile-v35.js
+          grep -q "DAYTOOLS_V='20260906-v9674'" family-command/reference-mobile-v35.js
           grep -q "title.textContent='Familienzentrale'" family-command/header-structure-v9654.js
           grep -q 'fc-wordmark-2x.png' family-command/header-crisp-v9654.css
           grep -q 'fc-wordmark-3x.png' family-command/header-crisp-v9654.css
@@ -93,7 +93,7 @@ jobs:
           grep -q "HEADER_V='20260906-v9669'" /tmp/reference-mobile-v35.js
           grep -q "fcHeaderRelease='v9669'" /tmp/reference-mobile-v35.js
           grep -q "fcFutureOnly='v9669'" /tmp/reference-mobile-v35.js
-          grep -q "DAYTOOLS_V='20260906-v9673'" /tmp/reference-mobile-v35.js
+          grep -q "DAYTOOLS_V='20260906-v9674'" /tmp/reference-mobile-v35.js
           grep -q "const CACHE='family-command-v107'" /tmp/sw.js
           grep -q '"background_color":"#f7f9fc"' /tmp/manifest.webmanifest
       - name: Production smoke summary
