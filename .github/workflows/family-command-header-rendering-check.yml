@@ -1,0 +1,38 @@
+name: Family Command header rendering regression
+on:
+  pull_request:
+    branches: [main]
+    paths:
+      - 'family-command/**'
+      - '.github/workflows/family-command-header-rendering-check.yml'
+  push:
+    branches: [main]
+    paths:
+      - 'family-command/**'
+      - '.github/workflows/family-command-header-rendering-check.yml'
+permissions:
+  contents: read
+jobs:
+  header-rendering:
+    runs-on: ubuntu-latest
+    timeout-minutes: 12
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+      - name: Install existing browser test dependency
+        run: npm install --no-save playwright
+      - name: Install WebKit
+        run: npx playwright install --with-deps webkit
+      - name: Header, logo and navigation regression
+        env:
+          FC_HEADER_ARTIFACTS: /tmp/fc-header-rendering
+        run: node family-command/e2e/header-rendering-v9656.spec.mjs
+      - name: Upload generic-fixture screenshots and measurements
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: header-rendering
+          path: /tmp/fc-header-rendering
+          retention-days: 7

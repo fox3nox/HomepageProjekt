@@ -1,6 +1,6 @@
-/* Family Command V9.65.5 · deterministic and compact iPhone header */
+/* Family Command V9.65.6 · clear upper edge and a real cloud-status row */
 @media(max-width:719px){
-  .fc9-topbar-in{display:grid!important;grid-template-columns:38px minmax(0,1fr) auto!important;grid-template-rows:auto 20px!important;column-gap:9px!important;row-gap:2px!important;align-items:center!important;padding:calc(env(safe-area-inset-top,0px) + 6px) 12px 6px!important}
+  .fc9-topbar-in{display:grid!important;grid-template-columns:38px minmax(0,1fr) auto!important;grid-template-rows:auto 20px!important;column-gap:9px!important;row-gap:2px!important;align-items:center!important;padding:calc(var(--fc-header-safe-top,env(safe-area-inset-top,0px)) + 24px) 12px 6px!important}
   .fc9-mark{grid-column:1!important;grid-row:1 / span 2!important;align-self:center!important;width:38px!important;height:38px!important;min-width:38px!important;background-size:38px 38px!important}
   .fc9-brand{grid-column:2!important;grid-row:1!important;display:block!important;min-width:0!important;align-self:end!important;margin:0!important;padding:0!important}
   .fc9-brand>b{display:block!important;font-size:17px!important;line-height:19px!important;white-space:nowrap!important;overflow:hidden!important;text-overflow:ellipsis!important;margin:0!important;padding:0!important}
@@ -8,8 +8,8 @@
   .fc9-brand>.fc-today-anchor,.fc9-brand>.fc9-anchor-source{display:none!important}
   .fc9-head-actions{grid-column:3!important;grid-row:1 / span 2!important;align-self:center!important;gap:6px!important;margin:0!important;padding:0!important}
   .fc9-head-actions .fc9-icon{width:40px!important;height:40px!important;min-width:40px!important;min-height:40px!important}
-  .fc9-header-status{grid-column:2!important;grid-row:2!important;display:flex!important;align-items:center!important;gap:5px!important;min-width:0!important;height:20px!important;align-self:start!important;overflow:hidden!important;margin:0!important;padding:0!important}
-  .fc9-header-status .fc9-sync{box-sizing:border-box!important;position:static!important;display:inline-flex!important;align-items:center!important;height:20px!important;max-height:20px!important;max-width:104px!important;min-width:0!important;margin:0!important;padding:0 6px!important;font-size:10px!important;line-height:18px!important;white-space:nowrap!important;overflow:hidden!important;text-overflow:ellipsis!important;transform:none!important;filter:none!important}
+  .fc9-header-status{grid-column:2!important;grid-row:2!important;display:flex!important;flex-direction:row!important;align-items:center!important;gap:5px!important;min-width:0!important;height:20px!important;align-self:start!important;overflow:hidden!important;margin:0!important;padding:0!important}
+  .fc9-header-status .fc9-sync,.fc9-header-status #fcCloudStatus{box-sizing:border-box!important;position:static!important;display:inline-flex!important;align-items:center!important;height:20px!important;max-height:20px!important;max-width:104px!important;min-width:0!important;margin:0!important;padding:0 6px!important;font-size:10px!important;line-height:18px!important;white-space:nowrap!important;overflow:hidden!important;text-overflow:ellipsis!important;transform:none!important;filter:none!important}
   .fc9-header-today{box-sizing:border-box!important;display:inline-flex!important;align-items:center!important;gap:3px!important;min-width:0!important;height:20px!important;max-height:20px!important;margin:0!important;padding:0 6px!important;border:1px solid #d7e4ff!important;border-radius:999px!important;background:#eef4ff!important;color:#315dc7!important;font-family:-apple-system,BlinkMacSystemFont,"Helvetica Neue",Arial,sans-serif!important;font-size:8.5px!important;line-height:18px!important;font-weight:700!important;letter-spacing:0!important;white-space:nowrap!important;overflow:hidden!important;text-overflow:ellipsis!important;filter:none!important;backdrop-filter:none!important;-webkit-backdrop-filter:none!important;transform:none!important;box-shadow:none!important}
   .fc9-header-today span{font:inherit!important;color:inherit!important;line-height:inherit!important;margin:0!important;padding:0!important;white-space:nowrap!important}
 }
@@ -18,7 +18,7 @@
   .fc9-mark{width:36px!important;height:36px!important;min-width:36px!important;background-size:36px 36px!important}
   .fc9-brand>b{font-size:16.5px!important;line-height:18px!important}
   .fc9-brand>span:not(.fc-today-anchor){font-size:10px!important;line-height:12px!important}
-  .fc9-header-status .fc9-sync{max-width:92px!important;font-size:9.5px!important;padding-left:5px!important;padding-right:5px!important}
+  .fc9-header-status .fc9-sync,.fc9-header-status #fcCloudStatus{max-width:92px!important;font-size:9.5px!important;padding-left:5px!important;padding-right:5px!important}
   .fc9-header-today{font-size:8px!important;padding-left:5px!important;padding-right:5px!important}
   .fc9-head-actions .fc9-icon{width:38px!important;height:38px!important;min-width:38px!important;min-height:38px!important}
 }
