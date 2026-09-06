@@ -98,12 +98,12 @@ try {
     assert.ok(report.image.complete && report.image.naturalWidth >= 180, 'Family logo must finish loading at sufficient source resolution');
     assert.match(report.image.src, /(?:apple-touch-icon\.png|icon\.svg)/, 'Reuse the existing family/house/calendar brand asset');
     if (mobile) {
-      assert.ok(report.header.height <= 88, `Compact header including a separate status row: ${report.header.height}`);
+      assert.ok(report.header.height <= 86, `Compact header including a separate status row: ${report.header.height}`);
       assert.ok(report.titleBox.y >= report.header.y + 24, 'Title stays clear of the upper iPhone edge');
       assert.notEqual(report.titleStyle.fontSmoothing, 'antialiased', 'Do not force grayscale antialiasing on iPhone title');
       assert.equal(report.titleStyle.textRendering, 'auto', 'Use Safari native text rendering for title');
       assert.equal(report.titleStyle.fontSize, '20px');
-      assert.equal(report.titleStyle.lineHeight, '21px');
+      assert.equal(report.titleStyle.lineHeight, '20px');
       assert.equal(report.titleStyle.fontWeight, '700');
       assert.equal(report.titleStyle.letterSpacing, 'normal');
       assert.match(report.titleStyle.textStroke, /0\.3px/,'Use only a hairline same-colour stroke to harden glyph edges');
@@ -158,7 +158,7 @@ try {
         await page.locator('.fc-dc-modal [data-close]').click();
       }
       const after = await inspect(page);
-      assert.ok(after.header.height <= 88, 'Header remains compact after interaction and resize');
+      assert.ok(after.header.height <= 86, 'Header remains compact after interaction and resize');
       writeFileSync(path.join(output, `interactions-${width}.json`), JSON.stringify({ navigation:'passed', quickAdd:'passed', dailyCheck:'passed', safeArea:'passed', resize:width === 402 ? 'passed' : 'not-run', errors, consoleErrors, after }, null, 2));
     }
     writeFileSync(path.join(output, `network-${width}.json`), JSON.stringify({ mockedRequests, unexpectedRequests, badResponses, errors, consoleErrors }, null, 2));
