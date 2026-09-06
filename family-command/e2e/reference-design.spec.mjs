@@ -19,16 +19,16 @@ try{
   await page.waitForFunction(()=>window.__fcReferenceDashboard39?.rebuild&&document.querySelector('#today>.fc38-dashboard'),{timeout:30000});
   await page.evaluate(()=>window.__fcReferenceDashboard39.rebuild(true));
   await page.waitForFunction(()=>document.querySelector('#today>.fc38-dashboard')?.textContent.includes('Pokémon-Karten als Geschenk kaufen'),{timeout:10000});
-  await page.waitForFunction(()=>document.documentElement.dataset.fcMobileSchoolDay==='v49'&&document.querySelector('#today .fc47-school-mobile'),{timeout:30000});
+  await page.waitForFunction(()=>document.documentElement.dataset.fcMobileSchoolDay==='v67'&&document.querySelector('#today .fc47-school-mobile'),{timeout:30000});
 
   const r=await page.evaluate(()=>{
     const before=JSON.stringify({todos:data.todos,events:data.events,homework:data.homework,people:data.people,schedules:data.schedules});
     window.__fcReferenceDashboard39.rebuild(true);
     window.__fcMobileSchoolDayV947?.render();
-    const after=JSON.stringify({todos:data.todos,events:data.events,homework:data.homework,people:data.people,schedules:data.schedules}),dash=document.querySelector('#today>.fc38-dashboard'),source=document.querySelector('#today>.fc9-page'),tasks=[...dash.querySelectorAll('.fc38-task')],school=dash.querySelector('.fc38-schoolgrid'),avatars=[...dash.querySelectorAll('.fc38-avatar')],visibleAvatars=avatars.filter(a=>a.getBoundingClientRect().width>0),todayHead=dash.querySelector('.fc38-th.is-today'),todayCells=[...dash.querySelectorAll('.fc38-schoolcell.is-today')],mobile=dash.querySelector('.fc47-school-mobile'),avatarStyles=visibleAvatars.map(a=>{const c=getComputedStyle(a),b=a.getBoundingClientRect();return{text:a.textContent.trim(),w:b.width,h:b.height,display:c.display,align:c.alignItems,justify:c.justifyContent,font:parseFloat(c.fontSize),color:c.color}}),currentDay=new Date(`${todayISO()}T12:00:00`).getDay(),peopleCount=(data.people||[]).filter(p=>p.id!=='oli').length;
-    return{same:before===after,version:window.__fcReferenceDashboard39.version,dashboard:!!dash,sourceWidth:source.getBoundingClientRect().width,overflow:document.documentElement.scrollWidth<=document.documentElement.clientWidth+1,daybar:dash.querySelector('.fc38-daybar').getBoundingClientRect().height,panels:dash.querySelectorAll('.fc38-panel').length,tasks:tasks.length,heights:tasks.map(x=>x.getBoundingClientRect().height),lines:dash.querySelectorAll('.fc38-line').length,schoolCells:school.children.length,schoolDisplay:getComputedStyle(school).display,reminders:dash.querySelectorAll('.fc38-reminders>*').length,avatars:visibleAvatars.length,avatarText:visibleAvatars.every(a=>a.textContent.trim().length===1),avatarStyles,text:dash.textContent,nav:document.querySelector('.fc9-nav').getBoundingClientRect().height,todayHead:todayHead?.textContent||'',todayCellCount:todayCells.length,currentDay,peopleCount,mobileDisplay:mobile?getComputedStyle(mobile).display:'missing',mobileTabs:mobile?.querySelectorAll('.fc47-day').length||0,mobileRows:mobile?.querySelectorAll('.fc47-child').length||0,mobileSelected:mobile?.querySelectorAll('.fc47-day.is-selected').length||0,mobileToday:mobile?.querySelectorAll('.fc47-day.is-today').length||0}
+    const after=JSON.stringify({todos:data.todos,events:data.events,homework:data.homework,people:data.people,schedules:data.schedules}),dash=document.querySelector('#today>.fc38-dashboard'),source=document.querySelector('#today>.fc9-page'),tasks=[...dash.querySelectorAll('.fc38-task')],school=dash.querySelector('.fc38-schoolgrid'),avatars=[...dash.querySelectorAll('.fc38-avatar')],visibleAvatars=avatars.filter(a=>a.getBoundingClientRect().width>0),todayHead=dash.querySelector('.fc38-th.is-today'),todayCells=[...dash.querySelectorAll('.fc38-schoolcell.is-today')],mobile=dash.querySelector('.fc47-school-mobile'),avatarStyles=visibleAvatars.map(a=>{const c=getComputedStyle(a),b=a.getBoundingClientRect();return{text:a.textContent.trim(),w:b.width,h:b.height,display:c.display,align:c.alignItems,justify:c.justifyContent,font:parseFloat(c.fontSize),color:c.color}}),currentDay=new Date(`${todayISO()}T12:00:00`).getDay(),peopleCount=(data.people||[]).filter(p=>p.id!=='oli').length,mobileDates=[...dash.querySelectorAll('.fc47-day')].map(x=>x.dataset.fc47Date).filter(Boolean),today=todayISO();
+    return{same:before===after,version:window.__fcReferenceDashboard39.version,dashboard:!!dash,sourceWidth:source.getBoundingClientRect().width,overflow:document.documentElement.scrollWidth<=document.documentElement.clientWidth+1,daybar:dash.querySelector('.fc38-daybar').getBoundingClientRect().height,panels:dash.querySelectorAll('.fc38-panel').length,tasks:tasks.length,heights:tasks.map(x=>x.getBoundingClientRect().height),lines:dash.querySelectorAll('.fc38-line').length,schoolCells:school.children.length,schoolDisplay:getComputedStyle(school).display,reminders:dash.querySelectorAll('.fc38-reminders>*').length,avatars:visibleAvatars.length,avatarText:visibleAvatars.every(a=>a.textContent.trim().length===1),avatarStyles,text:dash.textContent,nav:document.querySelector('.fc9-nav').getBoundingClientRect().height,todayHead:todayHead?.textContent||'',todayCellCount:todayCells.length,currentDay,peopleCount,mobileDisplay:mobile?getComputedStyle(mobile).display:'missing',mobileTabs:mobile?.querySelectorAll('.fc47-day').length||0,mobileRows:mobile?.querySelectorAll('.fc47-child').length||0,mobileSelected:mobile?.querySelectorAll('.fc47-day.is-selected').length||0,mobileToday:mobile?.querySelectorAll('.fc47-day.is-today').length||0,mobileDates,today}
   });
-  console.log('reference-v52',JSON.stringify(r));
+  console.log('reference-v67',JSON.stringify(r));
   assert.ok(['9.44.0','9.52.0'].includes(r.version));
   assert.ok(r.dashboard&&r.same&&r.overflow);
   assert.ok(r.sourceWidth<=1.5);
@@ -37,13 +37,14 @@ try{
   for(const h of r.heights)assert.ok(h>=42&&h<=60);
   assert.ok(r.lines>=2);
   assert.ok(r.panels>=4);
-  assert.ok(r.schoolCells>=24,'full Mon-Fri school grid must remain in the DOM for desktop/compatibility');
-  assert.equal(r.schoolDisplay,'none','mobile hides the desktop week matrix on iPhone');
+  assert.ok(r.schoolCells>=24,'future school grid must remain in the DOM for desktop/compatibility');
+  assert.equal(r.schoolDisplay,'none','mobile hides the desktop school matrix on iPhone');
   assert.notEqual(r.mobileDisplay,'none','mobile school-day view must be visible');
-  assert.equal(r.mobileTabs,5,'mobile school-day view must offer Mo-Fr');
+  assert.equal(r.mobileTabs,5,'mobile school-day view must offer the next five school days');
+  assert.ok(r.mobileDates.every(d=>d>=r.today),'mobile school-day dates must never be older than today');
   assert.equal(r.mobileRows,r.peopleCount,'mobile school-day view must show every child');
   assert.equal(r.mobileSelected,1,'exactly one school day must be selected');
-  assert.ok(r.mobileToday<=1,'today marker must be unique when today is a school weekday');
+  assert.ok(r.mobileToday<=1,'today marker must be unique');
   assert.equal(r.reminders,2);
   assert.ok(r.avatars>=3&&r.avatarText,'visible person avatars must be identified');
   for(const a of r.avatarStyles){assert.ok(a.w>=29&&a.h>=29,'avatar must be large enough');assert.ok(a.font>=11,'avatar initial must be readable');assert.equal(a.display,'flex');assert.equal(a.align,'center');assert.equal(a.justify,'center');assert.match(a.color,/rgb\(255, 255, 255\)|rgba\(255, 255, 255/,'avatar initial must be white')}
@@ -53,5 +54,5 @@ try{
   const normalOnly=await page.evaluate(()=>{for(const t of data.todos)t.priority=false;window.__fcReferenceDashboard39.rebuild(true);window.__fcMobileSchoolDayV947?.render();const d=document.querySelector('#today>.fc38-dashboard');return{kicker:d.querySelector('.fc38-kicker')?.textContent||'',subheads:d.querySelectorAll('.fc38-subhead').length}});
   assert.match(normalOnly.kicker,/OFFEN/);assert.equal(normalOnly.subheads,0,'normal-only tasks must not be mislabeled as additional tasks');
   await browser.close();
-  console.log('V9.52 approved iPhone reference regression: ok');
+  console.log('V9.67.0 future-only iPhone reference regression: ok');
 }finally{server.kill('SIGTERM')}
