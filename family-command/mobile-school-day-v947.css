@@ -1,4 +1,4 @@
-/* Familienzentrale V9.47.2 · iPhone school-day presentation polish */
+/* Familienzentrale V9.67.2 · iPhone school-day presentation polish */
 @media (max-width:719px){
   #today .fc38-schoolgrid{display:none!important}
   #today .fc38-school{overflow:visible!important}
@@ -16,8 +16,8 @@
   .fc47-day.is-selected{border-color:#75a9ef;background:#eaf3ff;box-shadow:inset 0 0 0 1px rgba(47,115,223,.12),0 3px 10px rgba(37,99,235,.07)}
   .fc47-day.is-selected b{color:#176fd0}
 
-  .fc47-schoolday{display:grid;gap:8px}
-  .fc47-child{display:grid;grid-template-columns:44px minmax(0,.88fr) minmax(116px,1.12fr);align-items:center;gap:9px;min-height:74px;padding:9px 11px;border:1px solid #dbe4ef;border-radius:17px;background:#fff;box-shadow:0 5px 18px rgba(35,55,80,.045)}
+  .fc47-schoolday{display:grid;gap:9px}
+  .fc47-child{display:grid;grid-template-columns:44px minmax(0,.88fr) minmax(116px,1.12fr);align-items:center;gap:9px;min-height:74px;padding:10px 11px;border:1px solid #dbe4ef;border-radius:17px;background:#fff;box-shadow:0 5px 18px rgba(35,55,80,.045)}
   .fc47-avatar{width:40px;height:40px;border-radius:50%;display:grid;place-items:center;background:var(--person);color:#fff;font-size:16px;font-weight:900;box-shadow:0 0 0 3px #fff,0 0 0 4px color-mix(in srgb,var(--person) 42%,white)}
   .fc47-person{min-width:0;display:flex;flex-direction:column;gap:3px}
   .fc47-person strong{font-size:13.5px;line-height:1.15;color:var(--person);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
@@ -27,10 +27,17 @@
   .fc47-status b i{font-style:normal;font-size:12px}
   .fc47-status span{font-size:11.5px;line-height:1.2;color:#5f7188;font-weight:720;font-variant-numeric:tabular-nums}
   .fc47-status small{font-size:9px;line-height:1.25;color:#7d8998;max-width:100%;overflow-wrap:anywhere}
+  .fc47-reminder{color:#b45309!important;font-weight:820!important}
+  .fc47-pack{grid-column:1/-1;margin-top:1px;padding-top:8px;border-top:1px solid #eef2f7;display:grid;grid-template-columns:auto 1fr;gap:6px 9px;align-items:start}
+  .fc47-pack>b{font-size:7.5px;line-height:21px;color:#728299;font-weight:900;letter-spacing:.1em}
+  .fc47-pack>div{display:flex;flex-wrap:wrap;gap:5px}
+  .fc47-packchip{display:inline-flex;align-items:center;gap:4px;min-height:21px;padding:3px 7px;border-radius:999px;background:#f3f7fb;border:1px solid #e1e8f1;color:#40546d;font-size:8.5px;line-height:1;font-weight:760;white-space:nowrap}
+  .fc47-packchip i{font-style:normal;font-size:10px}
+  .fc47-daynote{grid-column:1/-1;padding:6px 8px;border-radius:9px;background:#fff7ed;border:1px solid #fed7aa;color:#9a4b08;font-size:8.8px;line-height:1.3;font-weight:760}
+  .fc47-child.has-reminder{border-color:#f0d6ad}
   .fc47-child.is-free .fc47-status b,.fc47-child.is-free .fc47-status span{color:#8190a3}
   .fc47-empty{padding:16px;text-align:center;color:#8291a4;font-size:12px}
 
-  /* Keep the final cards fully scrollable above the floating tab bar. */
   body .fc9-main{padding-bottom:170px!important;padding-bottom:calc(170px + env(safe-area-inset-bottom,0px))!important}
   #today .fc38-reminders{margin-bottom:8px!important}
 }
@@ -38,12 +45,14 @@
   .fc47-school-mobile{padding-left:10px;padding-right:10px}
   .fc47-daytabs{gap:5px}
   .fc47-day{min-height:48px;border-radius:12px}
-  .fc47-child{grid-template-columns:40px minmax(0,.82fr) minmax(108px,1.18fr);gap:7px;min-height:70px;padding:8px 9px}
+  .fc47-child{grid-template-columns:40px minmax(0,.82fr) minmax(108px,1.18fr);gap:7px;min-height:70px;padding:9px}
   .fc47-avatar{width:36px;height:36px;font-size:15px}
   .fc47-person strong{font-size:13px}
   .fc47-person small{font-size:9px}
   .fc47-status{padding-left:7px}
   .fc47-status b{font-size:12px}
   .fc47-status span{font-size:11px}
+  .fc47-pack{gap:5px 7px}
+  .fc47-packchip{font-size:8px;padding:3px 6px}
 }
 @media (prefers-reduced-motion:reduce){.fc47-day{transition:none}}
