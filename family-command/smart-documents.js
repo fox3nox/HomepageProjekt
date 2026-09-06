@@ -85,9 +85,7 @@
     renderFilters(m);
   }
   async function load(m){
-    const r=await fetch(DOC+'/list',{headers:headers(),cache:'no-store'}),j=await r.json();
-    if(!r.ok)throw new Error(j.error||'list failed');
-    docs=Array.isArray(j.documents)?j.documents:[];
+    docs=await window.__fcDocumentLibrary.list({refresh:true});
     render(m);
   }
 

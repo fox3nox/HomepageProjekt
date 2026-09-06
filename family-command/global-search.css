@@ -1,0 +1,18 @@
+.fc-search-entry{width:100%;display:flex;align-items:center;justify-content:space-between;min-height:44px;margin:0 0 12px;padding:10px 14px;border:1px solid #dce4ee;border-radius:14px;background:#fff;color:#53667e;font:inherit;font-size:13px;text-align:left;cursor:pointer}
+.fc-search-entry svg{width:20px;height:20px;fill:none;stroke:currentColor;stroke-width:1.7}
+.fc-search-dialog,.fc-search-note{box-sizing:border-box;width:min(640px,calc(100vw - 24px));max-height:calc(100dvh - 32px);padding:20px;border:1px solid #dbe4ef;border-radius:20px;background:#fff;color:#172e4c;box-shadow:0 16px 60px #132e5029;overflow:auto;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif}
+.fc-search-dialog::backdrop,.fc-search-note::backdrop{background:#172b4859}
+.fc-search-dialog header{display:flex;align-items:center;justify-content:space-between;gap:12px}
+.fc-search-dialog h2{margin:0;font-size:19px;letter-spacing:-.02em}
+.fc-search-dialog header button,.fc-search-note button{min-width:44px;min-height:44px;border:0;border-radius:10px;background:#f2f5fa;color:#334a67;font:inherit;font-size:22px}
+.fc-search-field{display:block;margin:16px 0 12px}
+.fc-search-field input{box-sizing:border-box;width:100%;min-height:48px;padding:12px;border:1px solid #cad6e5;border-radius:12px;font:inherit;font-size:16px;color:#172e4c;background:#f8fafc}
+.fc-search-history{display:flex;align-items:center;gap:8px;min-height:44px;font-size:12px;color:#536780}
+.fc-search-history input{width:20px;height:20px;accent-color:#245fac}
+.fc-search-status,.fc-search-empty{font-size:12px;line-height:1.5;color:#596b81}
+.fc-search-results h3{margin:20px 0 8px;font-size:13px;color:#465d78}.fc-search-results h3 span{font-weight:400;margin-left:5px}
+.fc-search-results button{box-sizing:border-box;display:block;width:100%;min-height:56px;border:0;border-top:1px solid #e6ecf3;padding:12px 4px;background:#fff;text-align:left;font:inherit;color:#183451;cursor:pointer}
+.fc-search-results button b{display:block;font-size:14px;line-height:1.4;overflow-wrap:anywhere}.fc-search-results button span{display:block;margin-top:3px;font-size:12px;color:#60738b}
+.fc-search-note div{white-space:pre-wrap;line-height:1.5}.fc-search-note button{font-size:14px;padding:10px 14px;margin-top:16px}
+.fc-search-field .sr-only{position:absolute;width:1px;height:1px;overflow:hidden;clip-path:inset(50%)}
+@media(max-width:719px){.fc-search-dialog{padding:16px;margin:auto;max-height:calc(100dvh - env(safe-area-inset-top) - env(safe-area-inset-bottom) - 24px)}}

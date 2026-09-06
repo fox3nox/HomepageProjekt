@@ -16,7 +16,7 @@ try {
   await page.goto(base+'/?access=test');
   await page.waitForFunction(()=>document.documentElement.dataset.fcReady==='1'&&!!navigator.serviceWorker.controller);
   await page.evaluate(()=>window.__fcLoadExtrasNow());
-  assert.ok((await page.evaluate(()=>caches.keys())).includes('family-command-v108'));
+  assert.ok((await page.evaluate(()=>caches.keys())).includes('family-command-v109'));
   await context.setOffline(true);
   await page.reload({waitUntil:'domcontentloaded'});
   await page.waitForFunction(()=>document.documentElement.dataset.fcReady==='1'&&window.__fcTomorrowCalendarV9674);
@@ -24,6 +24,10 @@ try {
     await page.locator(`.fc9-nav [data-screen="${screen}"]`).tap();
     assert.equal(await page.locator('.fc9-screen.active').getAttribute('id'),screen);
   }
+  await page.locator('.fc-search-entry').tap();
+  await page.getByRole('searchbox',{name:'Suchbegriff',exact:true}).fill('Kind A');
+  assert.match(await page.locator('.fc-search-results').innerText(),/Kind A/,'search scripts and styles must survive offline reload');
+  await page.getByRole('button',{name:'Suche schliessen'}).tap();
   assert.deepEqual(errors,[],'offline reload must not produce unhandled boot errors');
   await context.setOffline(false);await page.reload();await page.waitForFunction(()=>document.documentElement.dataset.fcReady==='1'&&window.__fcV9);
   assert.equal(await page.title(),'Familienzentrale');

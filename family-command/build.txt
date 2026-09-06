@@ -1,3 +1,4 @@
+v9.69.0 · Daily focus, global search, shared document metadata · 2026-09-06
 Familienzentrale personal build
 2026-08-30 v9.14-document-integrity
 2026-08-30 v9.16-document-list-dedupe

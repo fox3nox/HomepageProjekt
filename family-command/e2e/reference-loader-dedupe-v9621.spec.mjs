@@ -12,10 +12,10 @@ const window={};const location={href:base,hostname:'example.test'};vm.runInNewCo
 const byFile=file=>links.filter(l=>new URL(l.href,base).pathname.endsWith('/'+file));
 for(const file of ['v9-global-polish.css','v9-unified-design-v958.css','v9-final-unity-v9618.css','v9-design-system-v9619.css','v9-layout-final-v9622.css','sharp-header-v9643.css','header-native-v9652.css','header-structure-v9654.css','header-crisp-v9654.css'])assert.equal(byFile(file).length,1,file);
 assert.deepEqual(links.slice(-8).map(l=>new URL(l.href,base).pathname.split('/').pop()),['v9-unified-design-v958.css','v9-final-unity-v9618.css','v9-design-system-v9619.css','v9-layout-final-v9622.css','sharp-header-v9643.css','header-native-v9652.css','header-structure-v9654.css','header-crisp-v9654.css']);
-assert.match(source,/20260906-v9680/);assert.equal(scripts.filter(s=>String(s.src).includes('header-structure-v9654.js')).length,1);
+assert.match(source,/20260906-v9690/);assert.equal(scripts.filter(s=>String(s.src).includes('header-structure-v9654.js')).length,1);
 for(const file of ['sharp-header-v9643.css','header-native-v9652.css','header-structure-v9654.css','header-crisp-v9654.css'])assert.equal(new URL(byFile(file)[0].href,base).searchParams.get('v'),'20260906-v9669',file);
 assert.equal(new URL(scripts.find(s=>s.src.includes('header-structure-v9654.js')).src,base).searchParams.get('v'),'20260906-v9669');
-const toggle=scripts.find(s=>String(s.src).includes('today-overview-toggle-v9668.js'));assert.ok(toggle,'today overview toggle loaded');assert.equal(new URL(toggle.src,base).searchParams.get('v'),'20260906-v9680');
+const toggle=scripts.find(s=>String(s.src).includes('today-overview-toggle-v9668.js'));assert.ok(toggle,'today overview toggle loaded');assert.equal(new URL(toggle.src,base).searchParams.get('v'),'20260906-v9690');
 assert.equal(scripts.some(s=>s.src.includes('future-only-polish-v9669.js')),false,'critical boot module is not loaded twice');assert.match(fs.readFileSync(new URL('../index.html',import.meta.url),'utf8'),/future-only-polish-v9669.js/);
 assert.equal(documentElement.dataset.fcHeaderRelease,'v9669');assert.equal(documentElement.dataset.fcTodayOverviewToggle,'v9669');assert.equal(documentElement.dataset.fcFutureOnly,'v9669');
 assert.match(toggleSource,/x\?\.sw!==boundSwitch/,'toggle observer only resyncs when switch identity changes');

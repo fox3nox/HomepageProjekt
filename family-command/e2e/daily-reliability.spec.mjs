@@ -34,6 +34,7 @@ try {
   await check('overdue tasks stay actionable in Today and Tasks; completed history remains accessible',async()=>{
     await p.waitForTimeout(900);
     assert.equal(await p.locator('#today [data-fc38-todo="overdue"]').count(),1);
+    assert.equal(await p.locator('#today [data-fc38-homework="overdue-hw"]').count(),1,'overdue homework must be actionable in the visible mobile Today view');
     await p.locator('.fc9-nav [data-screen="homework"]').tap();await p.waitForTimeout(900);
     assert.equal(await p.locator('#homework [data-todo="overdue"]').count(),1);
     assert.equal(await p.locator('#homework [data-hw="overdue-hw"]').count(),1);
