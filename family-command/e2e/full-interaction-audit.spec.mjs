@@ -59,18 +59,18 @@ try{
     if(!root)return null;
     const probe=document.createElement('div');
     probe.className='fc38-task';
-    probe.innerHTML='<span class="fc38-check" aria-hidden="true"></span><span class="fc38-taskicon" aria-hidden="true">💰</span><div class="fc38-taskcopy"><strong>Probe CHF 8</strong></div><button type="button" class="fc38-go">›</button>';
+    probe.innerHTML='<span class="fc38-check" aria-hidden="true"></span><div class="fc38-taskcopy"><strong>Probe CHF 8</strong></div><button type="button" class="fc38-go">›</button>';
     root.appendChild(probe);
-    const check=probe.querySelector('.fc38-check'),icon=probe.querySelector('.fc38-taskicon');
+    const check=probe.querySelector('.fc38-check'),icon=probe.querySelector('.fc38-go');
     const a=check.getBoundingClientRect(),b=icon.getBoundingClientRect(),visual=getComputedStyle(check,'::after');
     const result={overlap:Math.max(0,Math.min(a.right,b.right)-Math.max(a.left,b.left))*Math.max(0,Math.min(a.bottom,b.bottom)-Math.max(a.top,b.top)),checkW:a.width,checkH:a.height,visualW:parseFloat(visual.width),visualH:parseFloat(visual.height),iconW:b.width,iconH:b.height,iconText:icon.textContent.trim()};
     probe.remove();return result;
   });
   assert.ok(taskSemantics,'today reference dashboard must exist');
-  assert.equal(taskSemantics.overlap,0,'task checkbox and money icon must never overlap');
+  assert.equal(taskSemantics.overlap,0,'task checkbox and edit action must never overlap');
   assert.ok(taskSemantics.checkW>=42&&taskSemantics.checkH>=42,`checkbox must retain an accessible touch target: ${JSON.stringify(taskSemantics)}`);
-  assert.ok(taskSemantics.visualW>=20&&taskSemantics.visualW<=24&&taskSemantics.visualH>=20&&taskSemantics.visualH<=24,`visible checkbox must stay compact and distinct from the money icon: ${JSON.stringify(taskSemantics)}`);
-  assert.ok(taskSemantics.iconW>=30&&taskSemantics.iconW<=36&&taskSemantics.iconH>=30&&taskSemantics.iconH<=36,`money icon tile should remain a separate category tile: ${JSON.stringify(taskSemantics)}`);
+  assert.ok(taskSemantics.visualW>=20&&taskSemantics.visualW<=24&&taskSemantics.visualH>=20&&taskSemantics.visualH<=24,`visible checkbox must stay compact and distinct from the edit action: ${JSON.stringify(taskSemantics)}`);
+  assert.ok(taskSemantics.iconW>=44&&taskSemantics.iconH>=44,`edit action tile should remain a separate accessible action: ${JSON.stringify(taskSemantics)}`);
 
   for(const id of ['today','tomorrow','events','homework','more'])await openScreen(id);
   await openScreen('today');

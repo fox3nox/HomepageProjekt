@@ -15,9 +15,10 @@ Stand: 6. September 2026. Bestandsaufnahme vor der Umsetzung auf main
 - `cloud-state.js` führt Dreiwege-Merges und Tombstones zusammen. Ein persistiertes
   Journal bewahrt ungesendete Offline-Änderungen auch über einen Neustart. Eine
   Serverantwort darf Eingaben während eines laufenden Speichervorgangs nicht löschen.
-- `v9-app.js` besitzt Navigation und Bearbeitungsaktionen. Auf dem iPhone präsentiert
-  `reference-dashboard-v36.js` die sichtbare Heute-Ansicht. Der dahinterliegende
-  Basis-Renderer wird mobil mit `inert` aus der Tastatur-/Assistenznavigation genommen.
+- `v9-app.js` besitzt Navigation und Bearbeitungsaktionen.
+  `reference-dashboard-v36.js` präsentiert dieselbe Heute-Ansicht auf Telefon und PC.
+  Der dahinterliegende Basis-Renderer bleibt für vorhandene Daten-/Modulhaken im DOM
+  und wird mit `inert` aus der Tastatur-/Assistenznavigation genommen.
 - Der Reference-Loader lädt weitere mobile Darstellungen. Viele ältere CSS-Schichten
   sind noch aktiv. Nur nachweislich redundantes Verhalten wurde entfernt: doppeltes
   Laden des Zukunftsfilters, globale Löschdurchläufe über DOM-Aufgaben, doppelte
@@ -121,3 +122,44 @@ Production Smoke vergleicht Index und kritische Assets bytegenau mit dem jeweili
 Merge-Commit nach Pages-Deployment. Die reale öffentliche URL wurde im verbundenen
 Browser geöffnet; dort ist kein Familienzugang gespeichert. Die private Live-UI
 und eine physisch installierte iPhone-PWA sind daher nicht als getestet ausgewiesen.
+
+## Einheitliche Oberfläche V9.70
+
+Ausgangspunkt: main `23ce3c2`, keine offenen PRs. Bildvergleich mit Beispieldaten
+in WebKit (390 × 844) und Chromium (1440 × 1000): Aufgabentitel waren mobil
+11,8 px, Metadaten 8,7 px, Bearbeiten-Flächen 31 px und Eingabefelder 10,5 px.
+Escape schloss die Aufgabenformulare nicht. Auf dem PC stand eine zusätzliche
+Tagescheck-Liste vor dem eigentlichen Fokus.
+
+Die gemeinsame Heute-Darstellung ordnet Fokus, Kinder und offene Arbeit links,
+Termine und Vorbereitung rechts an; auf Telefonen folgt alles untereinander.
+Ein generierter Entwurf diente als Vergleich für Farben, Schrift, Abstände und
+Komponenten. Funktionsbedingte Abweichungen: informative Kinderzeilen ohne
+klickbare Pfeile, neutrale Bearbeiten-Aktion statt Rot und echte Laufzeitdaten.
+Der bestehende native Header bleibt bestehen. Vorhandene CSS-Dateien wurden
+überarbeitet; die höhere Begrenzung auf den gemeinsamen Dashboard-Container
+verhindert, dass spät geladene alte Stilregeln dessen Zeilen wieder umformatieren.
+
+„Mehr“ gruppiert vorhandene Ziele nach Alltag/Haushalt, Familie/Informationen
+und Planung/Verwaltung. Aufgaben und Kalender haben mindestens 14 px Titel,
+12 px Metadaten und 44 px hohe Aktionen. Dialogfelder haben mindestens 16 px
+Schrift und 48 px Höhe. Die gemeinsame Dialogschicht ergänzt Namen, Fokusführung,
+Escape, Rückkehr zum Auslöser, Pflichtfeldmeldungen und inaktive Hintergrundansichten.
+Die verzögerten Fokusaufrufe respektieren ein bereits vom Nutzer ausgewähltes Feld.
+Navigation setzt sowohl den mobilen Scrollcontainer als auch das Desktopfenster zurück.
+
+26 Symbole aus [Lucide](https://lucide.dev/) `lucide-static@1.41.0` sind als kleiner
+lokaler SVG-Katalog eingebunden. Die Paketintegrität wurde vor der Übernahme
+geprüft; Quelle, Version, Integritätswert und vollständige ISC-/MIT-Hinweise liegen
+unter `vendor/lucide/`. Keine zusätzliche Laufzeitbibliothek und kein Icon-CDN.
+Die beiden neuen Skripte gehören zum Startpaket, zum Offline-Cache v110 und zur
+Prüfung der ausgelieferten Produktionsdateien.
+
+`unified-experience.spec.mjs` prüft beide Browser-Engines, echte Aufgabenaktionen,
+lesbare Schrift und Touchflächen, Formularvalidierung ohne Datenmutation,
+Tastaturfokus und verschachtelte Dialoge, Scrollrücksetzung und weitere Bildschirmbreiten.
+Die bisherigen Regressionen bleiben aktiv. Geometrieprüfungen wurden dort angepasst,
+wo der bewusste Entwurf alte Emoji-Kacheln oder das vierspaltige Zielraster ersetzt;
+Dokumenttests warten auf das tatsächlich asynchron geladene Dokument.
+Physische iPhones und private produktive Familiendaten sind nicht Teil der lokalen
+Browserprüfung; Produktions-Smoke prüft Zugriffsschutz, Release und ausgelieferte Assets.

@@ -75,23 +75,15 @@
 #homework .fc9-row-main b{font-size:11.8px!important;line-height:1.3!important}
 #homework .fc9-danger{font-size:9.2px!important;font-weight:620!important}
 
-/* More: existing 2-column order already forms four logical pairs.
-   Give each pair a shared visual family so the page reads as grouped, not random. */
-#more .fc9-more-grid{gap:10px!important;row-gap:12px!important}
-#more .fc9-tile{min-height:104px!important;padding:13px!important;border-radius:18px!important;background:#fff!important;position:relative!important;overflow:hidden!important}
-#more .fc9-tile i{width:32px!important;height:32px!important;border-radius:10px!important;font-size:15px!important;box-shadow:none!important}
-#more .fc9-tile b{font-size:11.8px!important;line-height:1.18!important;font-weight:700!important;margin-top:8px!important}
-#more .fc9-tile span{font-size:8.9px!important;line-height:1.28!important;color:var(--fc22-muted)!important}
-#more .fc9-tile[data-feature="docs"],#more .fc9-tile[data-feature="people"]{border-top:2px solid #8ebaf2!important}
-#more .fc9-tile[data-feature="docs"] i,#more .fc9-tile[data-feature="people"] i{background:#edf5ff!important;color:#236dbf!important}
-#more .fc9-tile[data-feature="ai"],#more .fc9-tile[data-feature="push"]{border-top:2px solid #b4a7e8!important}
-#more .fc9-tile[data-feature="ai"] i,#more .fc9-tile[data-feature="push"] i{background:#f4f0ff!important;color:#6757b2!important}
-#more .fc9-tile[data-feature="daypdf"],#more .fc9-tile[data-feature="weekpdf"]{border-top:2px solid #9ccfba!important}
-#more .fc9-tile[data-feature="daypdf"] i,#more .fc9-tile[data-feature="weekpdf"] i{background:#eef9f4!important;color:#337a5d!important}
-#more .fc9-tile[data-feature="backup"],#more .fc9-tile[data-feature="export"]{border-top:2px solid #b6c2d1!important}
-#more .fc9-tile[data-feature="backup"] i,#more .fc9-tile[data-feature="export"] i{background:#f2f5f8!important;color:#566b82!important}
-#more .fc9-section{margin-top:2px!important}
-#more .fc9-section-head{padding-top:2px!important}
+/* Grouped destinations share a single icon, type and surface treatment. */
+#more .fc-more-group{gap:12px!important;margin-top:6px!important}
+#more .fc-more-group .fc9-more-grid{display:grid!important;grid-template-columns:repeat(3,minmax(0,1fr))!important;gap:12px!important}
+#more .fc-more-group .fc9-tile{display:flex!important;flex-direction:column!important;align-items:flex-start!important;justify-content:flex-start!important;min-height:132px!important;padding:18px!important;border:1px solid var(--fc22-line)!important;border-radius:16px!important;background:white!important;box-shadow:0 3px 12px #182d4a04!important}
+#more .fc-more-group .fc9-tile i{display:grid!important;place-items:center!important;width:36px!important;height:36px!important;border-radius:11px!important;background:#edf4fc!important;color:#35689e!important;margin:0!important}
+#more .fc-more-group .fc9-tile i svg{width:20px;height:20px}
+#more .fc-more-group .fc9-tile b{align-self:stretch!important;text-align:left!important;font-size:15px!important;line-height:1.3!important;font-weight:700!important;margin-top:12px!important;color:var(--fc22-ink)!important}
+#more .fc-more-group .fc9-tile span{align-self:stretch!important;text-align:left!important;font-size:12px!important;line-height:1.4!important;color:#586c82!important;margin-top:4px!important}
+@media(max-width:719px){#more .fc-more-group .fc9-more-grid{grid-template-columns:repeat(2,minmax(0,1fr))!important;gap:10px!important}#more .fc-more-group .fc9-tile{padding:14px!important;min-height:132px!important}#more .fc-more-group .fc9-tile b{align-self:stretch!important;text-align:left!important;font-size:14px!important}}
 
 /* Contacts: keep readability floors, reduce the separate-mini-app feel */
 #people.active #fcContactsModal .fc-contacts-shell>header{padding:3px 1px 9px!important}
@@ -130,4 +122,49 @@ body .fc-dv-readable h3{font-weight:700!important}
   .fc9-page{gap:13px!important}
   .fc9-pagehead h1,#people.active .fc-contacts-shell>header>h2{font-size:28px!important}
   #more .fc9-tile{min-height:104px!important}
+}
+
+/* Readability and operability floors for the existing screens and dialogs. */
+:root{--fc22-bg:#f5f8fc;--fc22-ink:#172e4c;--fc22-muted:#586c82;--fc22-line:#dce5ee;--fc22-radius:16px}
+html body #fcApp .fc9-main{max-width:1240px!important;padding:20px 28px 32px!important}
+html body #fcApp .fc9-page{gap:20px!important}
+html body #fcApp .fc9-pagehead p,html body #fcApp .fc9-date{font-size:13px!important;line-height:1.5!important}
+html body #fcApp .fc9-section-head h2{font-size:16px!important}
+html body #fcApp .fc9-screen .fc9-row-main b{font-size:15px!important;line-height:1.4!important}
+html body #fcApp .fc9-screen .fc9-row-main span,html body #fcApp .fc9-screen .fc9-row-main small{font-size:12px!important;line-height:1.45!important;color:#586c82!important}
+html body #fcApp .fc9-row{min-height:72px!important;padding:12px 14px!important}
+html body #fcApp .fc9-nav button{font-size:12px!important;gap:10px!important}
+html body #fcApp .fc9-nav svg{width:21px!important;height:21px!important}
+html body #fcApp .fc9-filter,html body #fcApp .fc9-segment,html body #fcApp .fc9-segment button,html body #fcApp .fc9-tasktabs,html body #fcApp .fc9-tasktabs button{min-height:44px!important;height:auto!important;font-size:13px!important}
+html body #fcApp .fc9-filter{padding:8px 14px!important}
+html body #fcApp #homework .fc9-task-add button{min-height:44px!important;height:auto!important;font-size:12px!important;padding:10px 12px!important}
+html body #fcApp .fc9-section-head button,html body #fcApp .fc9-link{min-height:44px!important;font-size:12px!important}
+html body #fcApp .fc9-month button,html body #fcApp .fc9-daynav button{min-width:44px!important;min-height:44px!important}
+html body #fcApp .fc9-day-label{font-size:12px!important}
+html body #fcApp .fc9-time{font-size:13px!important}
+html body #fcApp #homework .fc9-row-main b{font-size:15px!important}
+html body #fcApp #homework .fc9-danger{display:grid!important;place-items:center!important;width:44px!important;height:44px!important;min-width:44px!important;border:0!important;background:transparent!important;color:#637b94!important;border-radius:10px!important;padding:0!important}
+html body #fcApp #homework .fc9-danger svg{width:18px;height:18px}
+html body #fcApp #homework .fc9-check{width:44px!important;height:44px!important;min-width:44px!important;padding:11px!important;background-clip:content-box!important;border:0!important;box-shadow:inset 0 0 0 11px white!important;outline:0!important;position:relative!important}
+html body #fcApp #homework .fc9-check:after{content:'';position:absolute;inset:11px;border:1.5px solid #859ab0;border-radius:6px;pointer-events:none}
+html body #fcApp #tomorrow .fc9-person{min-height:76px!important;padding:14px!important}
+html body #fcApp #tomorrow .fc9-person b{font-size:15px!important}html body #fcApp #tomorrow .fc9-person span,html body #fcApp #tomorrow .fc9-person-time{font-size:12px!important;line-height:1.5!important}
+html body #fcApp #tomorrow .fc9-empty{font-size:13px!important;padding:16px!important}
+html body .fc-icon{display:inline-block;flex:none;vertical-align:middle}
+html body button:focus-visible,html body a:focus-visible,html body summary:focus-visible{outline:3px solid #2563ba!important;outline-offset:3px!important}
+html body [role=dialog] input:not([type=checkbox]):not([type=radio]),html body [role=dialog] textarea,html body [role=dialog] select,html body #fc9Modal .fc9-field input,html body #fc9Modal .fc9-field select,html body #fc9Modal .fc9-field textarea{font-size:16px!important;line-height:1.5!important;min-height:48px!important;border-radius:10px!important}
+html body [role=dialog] button{min-height:44px!important}
+html body #fc9Modal .fc9-field>label{font-size:12px!important;letter-spacing:.025em!important;color:#4d6480!important}
+html body #fc9Modal .fc9-sheet-head h2{font-size:21px!important}
+html body [role=dialog] [aria-invalid=true]{border-color:#b64040!important;box-shadow:0 0 0 2px #b6404020!important}
+.fc-form-error{font-size:13px;color:#a93232;padding:10px 12px;border-radius:8px;background:#fff4f3}
+@media(max-width:719px){html body #fcApp .fc9-main{width:100%!important;max-width:520px!important;padding:14px 12px 28px!important}html body #fcApp .fc9-page{gap:16px!important}html body #fcApp .fc9-nav button{font-size:10px!important;gap:4px!important}html body #fcApp .fc9-pagehead{align-items:flex-start!important}}
+html body [role=dialog] footer button,html body [role=dialog] .fc9-sheet-actions button,html body [role=dialog] .fc-event-edit-save,html body [role=dialog] .fc-event-edit-cancel{min-height:48px!important}
+
+/* The intermediate layout uses the same five destinations without the old centering transform. */
+@media(min-width:720px) and (max-width:1023px){
+ html body #fcApp .fc9-nav{position:fixed!important;left:8px!important;right:8px!important;bottom:calc(8px + env(safe-area-inset-bottom,0px))!important;top:auto!important;width:calc(100% - 16px)!important;max-width:none!important;transform:none!important;translate:none!important;height:auto!important;min-height:68px!important;margin:0!important;padding:6px!important;border:1px solid var(--fc22-line)!important;border-radius:18px!important;background:white!important;box-sizing:border-box!important}
+ html body #fcApp .fc9-nav-in{display:grid!important;grid-template-columns:repeat(5,minmax(0,1fr))!important;gap:0!important;width:100%!important;padding:0!important}
+ html body #fcApp .fc9-nav button{display:flex!important;flex-direction:column!important;align-items:center!important;justify-content:center!important;gap:4px!important;min-height:54px!important;padding:6px!important;font-size:11px!important}
+ html body #fcApp .fc9-main{padding-bottom:100px!important}
 }

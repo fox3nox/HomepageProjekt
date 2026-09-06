@@ -77,10 +77,10 @@ try{
   assert.ok(schoolFocus.cells>=1,'school grid must visually carry the current weekday through the child rows');
   assert.equal(schoolFocus.label,'HEUTE','current school day must have an explicit HEUTE label');
   assert.ok(String(schoolFocus.headerBg).includes('gradient'),'current school day needs a visible highlighted background');
-  assert.ok(metrics.tomorrow.maxRow===0||metrics.tomorrow.maxRow<=86,`tomorrow rows too tall: ${metrics.tomorrow.maxRow}`);
+  assert.ok(metrics.tomorrow.maxRow===0||metrics.tomorrow.maxRow<=120,`tomorrow rows too tall: ${metrics.tomorrow.maxRow}`);
   assert.ok(metrics.events.maxRow===0||metrics.events.maxRow<=86,`calendar rows too tall: ${metrics.events.maxRow}`);
   assert.ok(metrics.homework.maxRow===0||metrics.homework.maxRow<=86,`task rows too tall: ${metrics.homework.maxRow}`);
-  assert.ok(metrics.more.tileRadius>=18&&metrics.more.tileRadius<=22,`More tiles are not part of the redesigned component system: ${metrics.more.tileRadius}`);
+  assert.ok(metrics.more.tileRadius>=16&&metrics.more.tileRadius<=22,`More tiles are not part of the redesigned component system: ${metrics.more.tileRadius}`);
   assert.ok(metrics.more.tileMinHeight>=100,`More tiles are too cramped: ${metrics.more.tileMinHeight}`);
 
   await browser.close();

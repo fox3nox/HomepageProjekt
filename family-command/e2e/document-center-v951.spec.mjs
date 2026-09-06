@@ -26,6 +26,7 @@ try{
   await page.click('[data-feature="docs"]');
   await page.waitForSelector('.fc-doc-center',{timeout:20000});
 
+  await page.waitForSelector('[data-doc]');
   assert.equal(await page.locator('[data-doc]').count(),3,'all documents should be visible');
   assert.match(await page.locator('[data-doc-count]').innerText(),/^3 Dokumente$/);
   assert.equal(await page.locator('[data-doc]').first().getAttribute('data-doc'),'doc-multi','newest document should be first');

@@ -23,6 +23,6 @@ try{
  await snapContacts(mobile.page);
  await mobile.ctx.close();
  const desktop=await boot(browser,{width:1440,height:1000});await snapCore(desktop.page,'desktop','desktop');
- await desktop.page.locator('.fc9-nav button[data-screen="more"]').click();const more=await desktop.page.evaluate(()=>{const grid=document.querySelector('#more .fc9-more-grid'),r=grid.getBoundingClientRect();return{w:r.width,cols:getComputedStyle(grid).gridTemplateColumns,overflow:document.documentElement.scrollWidth>document.documentElement.clientWidth+1}});assert.equal(more.overflow,false);assert.ok(more.w>=800);assert.match(more.cols,/px.*px.*px.*px/);await desktop.page.screenshot({path:`${OUT}/desktop-more-full.png`,fullPage:false});
+ await desktop.page.locator('.fc9-nav button[data-screen="more"]').click();const more=await desktop.page.evaluate(()=>{const grid=document.querySelector('#more .fc9-more-grid'),r=grid.getBoundingClientRect();return{w:r.width,cols:getComputedStyle(grid).gridTemplateColumns,overflow:document.documentElement.scrollWidth>document.documentElement.clientWidth+1}});assert.equal(more.overflow,false);assert.ok(more.w>=800);assert.match(more.cols,/px.*px.*px/);await desktop.page.screenshot({path:`${OUT}/desktop-more-full.png`,fullPage:false});
  await desktop.ctx.close();await browser.close();console.log('V9.58 visual audit: ok');
 }finally{server.kill('SIGTERM')}
