@@ -16,7 +16,7 @@ try{
   const mobile=await openApp(browser,{viewport:{width:390,height:844},isMobile:true,hasTouch:true});
   const p=mobile.page;
   await p.waitForFunction(()=>document.documentElement.dataset.fcIphoneDashboard==='v31');
-  await p.waitForFunction(()=>document.documentElement.dataset.fcMobileSchoolDay==='v49');
+  await p.waitForFunction(()=>document.documentElement.dataset.fcMobileSchoolDay==='v672');
   await p.waitForFunction(()=>document.documentElement.dataset.fcIphoneLayout==='v48');
   const x=await p.evaluate(()=>{
     const navEl=document.querySelector('.fc9-nav');
@@ -97,7 +97,7 @@ try{
   assert.equal(x.dashboard,'v31');
   assert.equal(x.reference,'v33');
   assert.equal(x.polish,'v49');
-  assert.equal(x.schoolMode,'v49');
+  assert.equal(x.schoolMode,'v672');
   assert.equal(x.iphoneLayout,'v48');
   assert.equal(x.summary,true,'compact iPhone summary must remain available');
   assert.deepEqual(x.statTexts,['Wichtig','Offen','Termine']);

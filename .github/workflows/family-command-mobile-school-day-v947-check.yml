@@ -5,18 +5,24 @@ on:
     paths:
       - 'family-command/mobile-school-day-v947.js'
       - 'family-command/mobile-school-day-v947.css'
+      - 'family-command/tomorrow-calendar-v9673.js'
+      - 'family-command/tomorrow-calendar-v9673.css'
       - 'family-command/reference-mobile-v35.js'
       - 'family-command/sw.js'
       - 'family-command/e2e/mobile-school-day-v947.spec.mjs'
+      - 'family-command/e2e/tomorrow-calendar-v9673.spec.mjs'
       - '.github/workflows/family-command-mobile-school-day-v947-check.yml'
   push:
     branches: [main]
     paths:
       - 'family-command/mobile-school-day-v947.js'
       - 'family-command/mobile-school-day-v947.css'
+      - 'family-command/tomorrow-calendar-v9673.js'
+      - 'family-command/tomorrow-calendar-v9673.css'
       - 'family-command/reference-mobile-v35.js'
       - 'family-command/sw.js'
       - 'family-command/e2e/mobile-school-day-v947.spec.mjs'
+      - 'family-command/e2e/tomorrow-calendar-v9673.spec.mjs'
       - '.github/workflows/family-command-mobile-school-day-v947-check.yml'
 jobs:
   mobile-school-day:
@@ -30,13 +36,19 @@ jobs:
       - name: Syntax
         run: |
           node --check family-command/mobile-school-day-v947.js
+          node --check family-command/tomorrow-calendar-v9673.js
           node --check family-command/reference-mobile-v35.js
           node --check family-command/e2e/mobile-school-day-v947.spec.mjs
+          node --check family-command/e2e/tomorrow-calendar-v9673.spec.mjs
           grep -q "mobile-school-day-v947.css" family-command/reference-mobile-v35.js
           grep -q "mobile-school-day-v947.js" family-command/reference-mobile-v35.js
+          grep -q "tomorrow-calendar-v9673.css" family-command/reference-mobile-v35.js
+          grep -q "tomorrow-calendar-v9673.js" family-command/reference-mobile-v35.js
       - name: Install Playwright
         run: npm install --no-save playwright
       - name: Install WebKit
         run: npx playwright install --with-deps webkit
       - name: iPhone and desktop regression
-        run: node family-command/e2e/mobile-school-day-v947.spec.mjs
+        run: |
+          node family-command/e2e/mobile-school-day-v947.spec.mjs
+          node family-command/e2e/tomorrow-calendar-v9673.spec.mjs

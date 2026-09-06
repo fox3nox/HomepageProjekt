@@ -1,0 +1,14 @@
+/* Familienzentrale V9.67.3 · tomorrow pack list + calendar day grid */
+.fc673-tomorrow-pack .fc9-section-head>span{font-size:10px;color:#8a98aa;font-weight:700}
+.fc673-packlist{display:grid;gap:9px}
+.fc673-packchild{padding:12px 13px;border:1px solid #dce5ef;border-radius:16px;background:#fff;box-shadow:0 4px 16px rgba(39,59,84,.045)}
+.fc673-packhead{display:flex;align-items:center;justify-content:space-between;gap:10px;margin-bottom:8px}
+.fc673-packhead b{font-size:13.5px;color:#27384e}.fc673-packhead small{font-size:8px;letter-spacing:.07em;color:#1672d6;font-weight:900}
+.fc673-packchips{display:flex;flex-wrap:wrap;gap:6px}.fc673-packchips span{padding:6px 8px;border-radius:999px;background:#f2f6fb;color:#41556f;font-size:10px;font-weight:740;line-height:1}
+.fc673-packnote{margin-top:8px;padding:7px 8px;border-radius:10px;background:#fff8e6;color:#7e5a05;font-size:9.5px;font-weight:750;line-height:1.3}
+.fc673-monthgrid{position:relative;z-index:20;isolation:isolate;pointer-events:auto;margin:10px 0 14px;padding:10px;border:1px solid #dfe7f0;border-radius:17px;background:#fff;box-shadow:0 5px 18px rgba(35,55,80,.04)}
+.fc673-weekheads,.fc673-days{display:grid;grid-template-columns:repeat(7,minmax(0,1fr));gap:4px}.fc673-weekheads{margin-bottom:5px}.fc673-weekheads span{text-align:center;font-size:8px;color:#8a98aa;font-weight:850;text-transform:uppercase}
+.fc673-days{grid-auto-rows:38px;position:relative;z-index:1;pointer-events:auto}.fc673-calblank{display:block}.fc673-calday{position:relative;z-index:2;pointer-events:auto;touch-action:manipulation;-webkit-tap-highlight-color:transparent;border:0;border-radius:10px;background:#f7f9fc;color:#40526a;font:inherit;display:grid;place-items:center;padding:0;min-width:0;cursor:pointer}.fc673-calday b{font-size:11px;pointer-events:none}.fc673-calday i{pointer-events:none;position:absolute;width:4px;height:4px;border-radius:50%;background:#2b79d7;bottom:5px}.fc673-calday.is-weekend{color:#8a97a8;background:#fafbfc}.fc673-calday.is-today{box-shadow:inset 0 0 0 1.5px #6aa5ea;background:#eef6ff;color:#176fd0}.fc673-calday.is-selected{background:#176fd0;color:#fff}.fc673-calday.is-selected i{background:#fff}.fc673-calday:active{transform:scale(.96)}
+.fc673-monthgrid>small{display:block;text-align:center;margin-top:8px;color:#8997a8;font-size:8.5px}
+@media(max-width:719px){.fc673-monthgrid{margin-left:0;margin-right:0}.fc673-days{grid-auto-rows:40px}.fc673-calday{border-radius:11px}.fc673-packchild{padding:11px 12px}}
+@media(prefers-reduced-motion:reduce){.fc673-calday:active{transform:none}}

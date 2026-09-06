@@ -1,5 +1,7 @@
 /* Familienzentrale V9.30 · iPhone-first clarity redesign */
 :root{--fc9-bg:#f7f9fc;--fc9-surface:#fff;--fc9-soft:#f1f5fb;--fc9-text:#13213b;--fc9-sub:#677793;--fc9-muted:#8a98ad;--fc9-line:#e3e9f2;--fc9-blue:#2f6cf6;--fc9-blue-soft:#eef4ff;--fc9-red:#b83d49;--fc9-green:#168b68;--fc9-shadow:0 10px 34px rgba(34,56,96,.065);--fc9-r:19px}
+/* Keep the standalone iOS compositing surface fully opaque before and after boot. */
+html,body,#fcApp,.app,.fc9-shell{background:#f7f9fc!important}#fcApp,.app,.fc9-shell{min-height:100vh;min-height:100dvh}
 .fc9-mark{overflow:hidden;background:#17265d!important;box-shadow:0 7px 18px rgba(27,45,101,.18)}
 .fc9-mark img{display:block;width:100%;height:100%;object-fit:cover}
 .fc9-brand b{letter-spacing:-.035em}.fc9-brand span{color:#8a98ad}
