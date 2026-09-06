@@ -35,3 +35,5 @@ jobs:
         run: node family-command/e2e/family-contacts-stability.spec.mjs
       - name: Full mobile interaction audit
         run: node family-command/e2e/full-interaction-audit.spec.mjs
+      - name: Unified phone and desktop experience
+        run: node family-command/e2e/unified-experience.spec.mjs

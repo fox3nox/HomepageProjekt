@@ -43,6 +43,7 @@ async function runViewport(browser,name,width,height){
   await page.locator('#more [data-feature="docs"]').click();
   await page.waitForSelector('#fc9Modal .fc9-doc-list');
   const doc=page.locator('#fc9Modal [data-doc="doc-fixture"]');
+  await doc.waitFor({state:'visible'});
   assert.ok(await doc.isVisible(),'document fixture must be listed');
   await doc.click();
   await page.waitForSelector('#fcDocumentViewer .fc-dv-readable');

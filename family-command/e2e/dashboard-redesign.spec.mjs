@@ -37,7 +37,7 @@ try{
     const activeStyle=getComputedStyle(document.querySelector('.fc9-nav button.active'));
     const navStyle=getComputedStyle(navEl),mainStyle=getComputedStyle(mainEl),bodyStyle=getComputedStyle(document.body);
 
-    const probe=document.createElement('div');
+    const probe=document.createElement('button');
     probe.className='fc38-line';
     probe.innerHTML='<time>Ganztägig</time><span class="fc38-avatar" style="--person:#3478f6">J</span><div><strong>Probe</strong><span>Layout</span></div><i>›</i>';
     document.querySelector('#today .fc38-dashboard')?.appendChild(probe);
@@ -137,7 +137,7 @@ try{
   assert.equal(d.navPosition,'sticky');
   assert.equal(d.navDirection,'column');
   assert.ok(d.h1>=38,'desktop title hierarchy should scale up');
-  assert.ok(d.moreCols.split(' ').length>=4,'wide desktop utility grid should use four columns');
+  assert.ok(d.moreCols.split(' ').length===3,'grouped desktop destinations should use three columns');
   assert.equal(d.polish,'v49');
   assert.equal(d.iphoneLayout,'v48');
   assert.equal(d.mobileSchoolPresent,false,'desktop must keep the weekly school matrix instead of injecting the mobile school-day view');
