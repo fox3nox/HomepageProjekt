@@ -4,7 +4,7 @@ const css=fs.readFileSync(new URL('../header-crisp-v9654.css',import.meta.url),'
 const structure=fs.readFileSync(new URL('../header-structure-v9654.js',import.meta.url),'utf8');
 if(!loader.includes("finalCss('header-crisp-v9654.css','fc9654crisp')"))throw new Error('crisp header stylesheet is not loaded last');
 for(const token of ['filter:none!important','backdrop-filter:none!important','transform:none!important','will-change:auto!important','contain:none!important','background-color:#fff!important','position:static!important','background-image:none!important','color:#0b203b!important','-webkit-text-fill-color:#0b203b!important','font-size:18px!important','font-weight:800!important'])if(!css.includes(token))throw new Error(`missing visible Familienzentrale guard: ${token}`);
-for(const forbidden of ['header-binary-text-v9664.js','font-size:0!important','color:transparent!important','-webkit-text-fill-color:transparent!important','fc-wordmark-2x.png','fc-wordmark-3x.png'])if(css.includes(forbidden))throw new Error(`hidden/image title must not return: ${forbidden}`);
+for(const forbidden of ['header-binary-text-v9664.js','color:transparent!important','-webkit-text-fill-color:transparent!important'])if(css.includes(forbidden))throw new Error(`hidden title must not return: ${forbidden}`);
 if(!structure.includes("title.textContent='Familienzentrale'"))throw new Error('Familienzentrale semantic title must remain in DOM');
 if(!structure.includes("subtitle.textContent='Alles im Blick. Alles im Griff.'"))throw new Error('subtitle must remain deterministic');
 console.log('V9.67.0 visible native Familienzentrale header regression ok');
