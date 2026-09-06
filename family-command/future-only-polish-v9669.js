@@ -4,7 +4,7 @@
 if(window.__fcFutureOnlyPolishV9669)return;window.__fcFutureOnlyPolishV9669=true;
 let scheduled=false,cleaning=false,lastDashboard=null;
 const D=()=>{try{return typeof data!=='undefined'&&data?data:{}}catch(_){return{}}};
-const esc=s=>String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot',"'":'&#39;'}[c]));
+const esc=s=>String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
 const iso=d=>`${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`;
 const todayIso=()=>{try{return typeof todayISO==='function'?todayISO():iso(new Date())}catch(_){return iso(new Date())}};
 const addDays=(value,n)=>{const d=new Date(`${value}T12:00:00`);d.setDate(d.getDate()+n);return iso(d)};
@@ -22,7 +22,7 @@ function cleanV9(root=document){const t=todos(),h=homeworkMap(),ev=eventMap();
   root.querySelectorAll('[data-todo]').forEach(row=>{const x=t.get(String(row.dataset.todo));if(x&&isPast(x.date))row.remove()});
   root.querySelectorAll('[data-hw]').forEach(row=>{const x=h.get(String(row.dataset.hw));if(x&&isPast(x.dueDate))row.remove()});
   root.querySelectorAll('[data-event]').forEach(row=>{const x=ev.get(String(row.dataset.event));if(x&&isPast(x.date))row.remove()});
-  root.querySelectorAll('.fc9-past-wrap,.fc9-past-section,.fc9-past-event').forEach(x=>x.remove());
+  root.querySelectorAll('.fc9-past-wrap,.fc9-past-section,.fc9-past-event,.fc9-past-toggle').forEach(x=>x.remove());
   root.querySelectorAll('[data-week-date]').forEach(x=>{if(isPast(x.dataset.weekDate))x.remove()});
   root.querySelectorAll('.fc9-doc span').forEach(x=>{const next=x.textContent.replace(/^\s*\d{4}-\d{2}-\d{2}\s*·\s*/,'');if(next!==x.textContent)x.textContent=next});
   pruneEmpty(root);
@@ -40,6 +40,6 @@ function reminderIcons(dash){const strong=dash.querySelector('.fc38-reminders as
 function installStyle(){if(document.getElementById('fc9669-future-style'))return;const s=document.createElement('style');s.id='fc9669-future-style';s.textContent=`@media(max-width:719px){.fc9669-reminder-icons{display:flex!important;gap:9px!important;align-items:center!important;justify-content:flex-start!important;margin:8px 0 6px!important;font-size:0!important}.fc9669-rem-icon{width:34px;height:34px;border-radius:11px;display:grid;place-items:center;background:#f2f6fc;border:1px solid #dce6f3}.fc9669-rem-icon svg{width:21px;height:21px;fill:none;stroke:#315f9f;stroke-width:1.8;stroke-linecap:round;stroke-linejoin:round}.fc9669-rem-icon.vest{background:#fff7e8}.fc9669-rem-icon.vest svg{stroke:#c98220}.fc9669-rem-icon.bottle{background:#edf7ff}.fc9669-rem-icon.bottle svg{stroke:#2f79bd}.fc9669-rem-icon.box{background:#eef8f2}.fc9669-rem-icon.box svg{stroke:#328667}}`;document.head.appendChild(s)}
 function apply(){scheduled=false;if(cleaning)return;cleaning=true;try{installStyle();const dash=document.querySelector('#today > .fc38-dashboard');if(dash){removePastTasks(dash);if(dash!==lastDashboard){futureSchoolGrid(dash);reminderIcons(dash);lastDashboard=dash}}cleanWeekStrip();cleanV9(document);document.documentElement.dataset.fcFutureOnly='v9670';document.documentElement.dataset.fcNoPastDates=todayIso()}finally{cleaning=false}}
 function scheduleApply(){if(scheduled||cleaning)return;scheduled=true;setTimeout(apply,16)}
-function install(){installStyle();apply();new MutationObserver(scheduleApply).observe(document.body,{childList:true,subtree:true,characterData:true});document.addEventListener('click',()=>setTimeout(apply,0));setInterval(apply,1200)}
+function install(){installStyle();apply();document.addEventListener('click',scheduleApply,true);document.addEventListener('fc:v9:render',scheduleApply);setInterval(apply,700)}
 if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',install,{once:true});else install();
 })();
