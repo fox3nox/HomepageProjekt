@@ -74,7 +74,7 @@ jobs:
           grep -q 'v9-design-system-v9619.css' family-command/index.html
           grep -q "finalCss('v9-design-system-v9619.css','fc9619design');finalCss('v9-layout-final-v9622.css','fc9622layout')" family-command/reference-mobile-v35.js
           grep -q "finalCss('header-native-v9652.css','fc9652native')" family-command/reference-mobile-v35.js
-          grep -q "const CACHE='family-command-v103'" family-command/sw.js
+          grep -q "const CACHE='family-command-v104'" family-command/sw.js
           grep -q 'daily-check.js' family-command/sw.js
           grep -q 'daily-check.css' family-command/sw.js
           grep -q 'header-native-v9652.css' family-command/sw.js
@@ -91,10 +91,11 @@ jobs:
           node --check family-command/reminder-center.js
           node --check family-command/reference-mobile-v35.js
           node --check family-command/sw.js
-          grep -q "const HEADER_VERSION='20260906-v9656'" family-command/index.html
-          grep -q "HEADER_V='20260906-v9656'" family-command/reference-mobile-v35.js
+          grep -q "const HEADER_VERSION='20260906-v9659'" family-command/index.html
+          grep -q "HEADER_V='20260906-v9659'" family-command/reference-mobile-v35.js
           node --check family-command/header-structure-v9654.js
           node family-command/e2e/header-native-v9652.spec.mjs
+          node family-command/e2e/header-crisp-v9654.spec.mjs
 
   production:
     if: github.event_name == 'push' || github.event_name == 'workflow_dispatch'
@@ -207,13 +208,13 @@ jobs:
           node --check /tmp/reminder-center.js
           node --check /tmp/reference-mobile-v35.js
           node --check /tmp/header-structure-v9654.js
-          grep -q "const HEADER_VERSION='20260906-v9656'" /tmp/fc-live-index.html
-          grep -q "HEADER_V='20260906-v9656'" /tmp/reference-mobile-v35.js
+          grep -q "const HEADER_VERSION='20260906-v9659'" /tmp/fc-live-index.html
+          grep -q "HEADER_V='20260906-v9659'" /tmp/reference-mobile-v35.js
           node --check /tmp/sw.js
           grep -q '"name"' /tmp/manifest.webmanifest
           grep -q "finalCss('v9-design-system-v9619.css','fc9619design');finalCss('v9-layout-final-v9622.css','fc9622layout')" /tmp/reference-mobile-v35.js
           grep -q "finalCss('header-native-v9652.css','fc9652native')" /tmp/reference-mobile-v35.js
-          grep -q "const CACHE='family-command-v103'" /tmp/sw.js
+          grep -q "const CACHE='family-command-v104'" /tmp/sw.js
           grep -q 'daily-check.js' /tmp/sw.js
           grep -q 'daily-check.css' /tmp/sw.js
           grep -q 'header-native-v9652.css' /tmp/sw.js
