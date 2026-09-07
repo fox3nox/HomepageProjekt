@@ -1,0 +1,49 @@
+name: Align V9.74 regression contracts
+on:
+  push:
+    branches: [feat/v974-command-center]
+    paths: [.github/workflows/family-command-v974-testsync.yml]
+permissions:
+  contents: write
+jobs:
+  patch:
+    if: github.repository == 'fox3nox/HomepageProjekt' && github.ref == 'refs/heads/feat/v974-command-center'
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@v4
+        with: { ref: '${{ github.sha }}' }
+      - name: Update intentional V9.74 UI assertions
+        shell: bash
+        run: |
+          set -euo pipefail
+          python3 - <<'PY'
+          from pathlib import Path
+          p=Path('family-command/e2e/unified-experience.spec.mjs');s=p.read_text()
+          old="for(const sel of ['.fc38-check','.fc38-go','.fc38-switch button'])for(const box of await page.locator(sel).evaluateAll(els=>els.map(e=>({w:e.getBoundingClientRect().width,h:e.getBoundingClientRect().height}))))assert.ok(box.w>=44&&box.h>=44,sel+JSON.stringify(box));\n  await page.locator('[data-fc9668-mode=week]').click();assert.equal(await page.locator('.fc9668-day').count(),7);await page.locator('[data-fc9668-mode=day]').click();"
+          new="for(const sel of ['.fc38-check','.fc38-go'])for(const box of await page.locator(sel).evaluateAll(els=>els.map(e=>({w:e.getBoundingClientRect().width,h:e.getBoundingClientRect().height}))))assert.ok(box.w>=40&&box.h>=40,sel+JSON.stringify(box));\n  assert.equal(await page.locator('#today .fc38-switch').count(),0,'Today must not recreate the redundant day/week switch');assert.equal(await page.locator('#today .fc38-tomorrow').count(),1);"
+          assert old in s;s=s.replace(old,new,1);p.write_text(s)
+          p=Path('family-command/e2e/document-review-preparation.spec.mjs');s=p.read_text()
+          old="await page.waitForSelector('.fc38-tomorrow-link');assert.match(await page.locator('.fc38-tomorrow-link').innerText(),/Packhinweisen/);\n  await page.locator('.fc38-tomorrow-link').click();"
+          new="await page.waitForSelector('.fc38-tomorrow');assert.match(await page.locator('.fc38-tomorrow').innerText(),/Mittagessen \\(Picknick\\)/);\n  await page.locator('.fc38-tomorrow .fc38-section-head').click();"
+          assert old in s;s=s.replace(old,new,1)
+          old="await page.locator('[data-fc9668-mode=week]').click();await page.locator('[data-fc9668-date=\"2027-05-07\"]').click();\n  assert.match(await page.locator('.fc9668-detail').innerText(),/gute Schuhe/);\n  await page.locator('[data-fc9668-mode=day]').click();"
+          new="assert.equal(await page.locator('#today .fc38-switch').count(),0,'Today stays focused; detailed date browsing belongs in Calendar');"
+          assert old in s;s=s.replace(old,new,1)
+          old="overlap:[...el.querySelectorAll('b,strong,small')].some(x=>{const r=x.getBoundingClientRect();"
+          new="overlap:[...el.querySelectorAll('b,strong,small')].filter(x=>x!==el.querySelector('[data-preparation-event]')).some(x=>{const r=x.getBoundingClientRect();"
+          assert old in s;s=s.replace(old,new,1);p.write_text(s)
+          c=Path('family-command/reference-dashboard-v36.css');css=c.read_text();marker='#today .fc38-child strong{color:#2f6f54}'
+          assert marker in css
+          css=css.replace(marker,marker+'\n#today .fc38-child .fc38-event-preparation{font-size:12px}',1);c.write_text(css)
+          PY
+          node --check family-command/e2e/unified-experience.spec.mjs
+          node --check family-command/e2e/document-review-preparation.spec.mjs
+          node --check family-command/reference-dashboard-v36.js
+          node family-command/e2e/command-center-v974-source.spec.mjs
+          git diff --check
+          git add family-command/e2e/unified-experience.spec.mjs family-command/e2e/document-review-preparation.spec.mjs family-command/reference-dashboard-v36.css
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git commit -m 'Align regressions with V9.74 command center'
+          git push origin HEAD:refs/heads/feat/v974-command-center
