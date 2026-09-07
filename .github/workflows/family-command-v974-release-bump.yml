@@ -1,0 +1,39 @@
+name: Prepare Family Command V9.74 release markers
+on:
+  push:
+    branches: [feat/v974-command-center]
+    paths: [.github/workflows/family-command-v974-release-bump.yml]
+permissions:
+  contents: write
+jobs:
+  bump:
+    if: github.repository == 'fox3nox/HomepageProjekt' && github.ref == 'refs/heads/feat/v974-command-center'
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: ${{ github.sha }}
+      - name: Update release and PWA cache contracts
+        shell: bash
+        run: |
+          set -euo pipefail
+          python3 - <<'PY'
+          from pathlib import Path
+          roots=[Path('family-command/index.html'),Path('family-command/sw.js'),*Path('.github/workflows').glob('family-command-*.yml')]
+          changed=[]
+          for p in roots:
+              if not p.exists() or p.name=='family-command-v974-release-bump.yml': continue
+              s=p.read_text()
+              n=s.replace('20260907-v9730','20260907-v9740').replace('family-command-v113','family-command-v114')
+              if n!=s:
+                  p.write_text(n);changed.append(str(p))
+          if not changed: raise SystemExit('no release markers changed')
+          print('\n'.join(changed))
+          PY
+          git diff --check
+          git add family-command/index.html family-command/sw.js .github/workflows
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git commit -m 'Bump Family Command to V9.74 and PWA cache v114'
+          git push origin HEAD:refs/heads/feat/v974-command-center
