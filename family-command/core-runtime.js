@@ -22,7 +22,17 @@ function scheduleFor(id,day){return data.schedules?.[id]?.[day]||[]}
 function remindersFor(day){return(data.reminders||[]).filter(r=>(r.days||[]).map(Number).includes(Number(day)))}
 function eventsOn(date){return(data.events||[]).filter(e=>String(e.date)===String(date)||(e.endDate&&String(e.date)<=String(date)&&String(e.endDate)>=String(date))).sort((a,b)=>String(a.time||'99:99').localeCompare(String(b.time||'99:99')))}
 function schoolBreakFor(id,date){return(data.events||[]).find(e=>(e.personIds||[]).map(String).includes(String(id))&&/(ferien|osterwochenende|auffahrt|pfingsten)/i.test(String(e.title||''))&&String(e.date||'')<=String(date)&&String(e.endDate||e.date||'')>=String(date))||null}
-// Shared read model: packing comes only from saved reminders and school slots.
+// Read-only preparation: only explicit packing text, never guessed tasks or departures.
+function eventPackText(event){
+  const note=String(event?.note||'').trim();
+  const match=/(?:^|[.!?]\s+|[\r\n]\s*)Mitnehmen\s*:\s*([\s\S]+)/i.exec(note);
+  if(!match)return'';
+  return match[1].split(/[.!?]\s+(?=(?:Rückkehr|Besammlung|Treffpunkt|Ende|Abfahrt|Wetter|Bei Regen|Bei stabiler Witterung)\b)|[\r\n]+(?=[A-Za-zÄÖÜäöüß /-]+:)/i)[0].replace(/\s+/g,' ').replace(/\.$/,'').trim();
+}
+function eventPreparationFor(id,date){
+  return eventsOn(date).filter(e=>String(e.date)===String(date)&&(e.personIds||[]).map(String).includes(String(id))).map(event=>({event,text:eventPackText(event)})).filter(x=>x.text);
+}
+// Shared school read model: packing comes only from saved reminders and school slots.
 function schoolDayFor(id,date){
   const day=new Date(String(date)+'T12:00:00').getDay(),schoolBreak=schoolBreakFor(id,date);
   const slots=schoolBreak?[]:[...scheduleFor(id,day)].sort((a,b)=>String(a.start||'').localeCompare(String(b.start||'')));

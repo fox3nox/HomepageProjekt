@@ -2,7 +2,7 @@
 (()=>{
 'use strict';
 if(window.__fcTomorrowCalendarV9674)return;
-const esc=s=>String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot',"'":'&#39;'}[c]));
+const esc=s=>String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
 const D=()=>{try{return typeof data!=='undefined'&&data?data:{}}catch(_){return{}}};
 const iso=d=>`${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`;
 const today=()=>{try{return typeof todayISO==='function'?todayISO():iso(new Date())}catch(_){return iso(new Date())}};
@@ -26,8 +26,9 @@ function enhanceTomorrow(){
     const name=row.querySelector('b')?.textContent?.trim()||'',p=people.find(x=>String(x.name||'').trim()===name);if(!p)continue;
     const info=packFor(p,date),text=compactPackText(info);if(!text&&!info.note)continue;
     const main=row.querySelector('b')?.parentElement;if(!main)continue;
-    const line=document.createElement('span');line.className='fc674-inline-pack';line.textContent=text;main.appendChild(line);
+    if(text){const line=document.createElement('span');line.className='fc674-inline-pack';line.textContent=text;main.appendChild(line)}
     if(info.note&&!text.includes(info.note)){const note=document.createElement('small');note.className='fc674-inline-note';note.textContent=info.note;main.appendChild(note)}
+
   }
   document.documentElement.dataset.fcTomorrowPack='v674';
   document.documentElement.dataset.fcTomorrowCompact='v674';
