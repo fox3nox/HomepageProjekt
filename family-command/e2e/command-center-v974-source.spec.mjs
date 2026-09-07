@@ -1,0 +1,14 @@
+import assert from 'node:assert/strict';
+import {readFile} from 'node:fs/promises';
+const js=await readFile(new URL('../reference-dashboard-v36.js',import.meta.url),'utf8');
+const css=await readFile(new URL('../reference-dashboard-v36.css',import.meta.url),'utf8');
+for(const text of ['JETZT WICHTIG','Heute noch','Morgen vorbereiten','Danach im Blick','Seit ${n} Tagen offen','fcCommandCenter=\'v974\''])assert.ok(js.includes(text),`missing command-center contract: ${text}`);
+assert.ok(js.includes("filter(t=>!t.archived&&!t.done"),'completed tasks must stay out of the command center');
+assert.ok(js.includes("String(t.date||'')<=date"),'older unfinished tasks must remain visible across days');
+assert.ok(js.includes("!window.__fcV9?.eventIsPast?.(e)"),'past timed events must not clutter Today');
+assert.ok(js.includes("eventPackText"),'packing instructions must remain source-based');
+assert.ok(js.includes("fc38-schoolgrid"),'desktop school details remain available');
+assert.ok(css.includes('@media(max-width:719px){#today .fc38-schoolgrid{display:none!important}}'),'weekly grid must stay out of the iPhone overview');
+assert.ok(css.includes('grid-template-columns:40px minmax(0,1fr) 40px'),'mobile tasks need stable touch columns');
+assert.ok(!js.includes('fc38-switch'),'Today must not recreate the redundant day/week switch');
+console.log('V9.74 command center source regression: ok');
