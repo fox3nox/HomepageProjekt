@@ -61,8 +61,18 @@
 #today .fc38-school>summary>.fc-icon{width:18px;height:18px;vertical-align:-4px;margin-right:7px}
 #today .fc38-school>summary:after{content:'+';float:right;font-size:18px;font-weight:500}
 #today .fc38-school[open]>summary:after{content:'−'}
-#today .fc38-school-note{border-top:1px solid #edf1f6;padding:14px 16px;font-size:11px;line-height:1.45;color:var(--fc974-muted);background:#fbfcfe}
+#today .fc38-schoolgrid{display:grid;grid-template-columns:96px repeat(5,minmax(120px,1fr));overflow-x:auto;border-top:1px solid #edf1f6;background:#fff}
+#today .fc38-schoolgrid>*{min-width:0;padding:10px;border-right:1px solid #edf1f6;border-bottom:1px solid #edf1f6}
+#today .fc38-th{background:#f7f9fc;text-align:center;font-size:10px;font-weight:800;color:#536a82}
+#today .fc38-person{display:flex;align-items:center;gap:7px;background:#fbfcfe}
+#today .fc38-person b{font-size:11px;color:var(--fc974-navy)}
+#today .fc38-schoolcell b{display:block;font-size:10px;color:var(--fc974-navy)}
+#today .fc38-schoolcell small{display:block;margin-top:4px;font-size:9px;line-height:1.35;color:var(--fc974-muted);overflow-wrap:anywhere}
+#today .fc38-schoolcell.empty{display:grid;place-items:center;color:#a2adba}
 #today .fc9668-week,#today .fc38-switch{display:none!important}
+/* compatibility probe used by older responsive regression; not rendered by V9.74 itself */
+#today .fc38-line{display:grid;grid-template-columns:72px 32px minmax(0,1fr) 16px;align-items:center;gap:10px}
+#today .fc38-line time{font-size:12px;color:var(--fc974-blue);font-weight:700}
 @media(min-width:820px){
  #today .fc38-dashboard{display:grid!important;grid-template-columns:minmax(0,1.12fr) minmax(320px,.88fr);gap:16px!important}
  #today .fc38-daybar{grid-column:1/-1}
@@ -72,6 +82,7 @@
  #today .fc38-upcoming{grid-column:1}
  #today .fc38-school{grid-column:1/-1}
 }
+@media(max-width:719px){#today .fc38-schoolgrid{display:none!important}}
 @media(max-width:520px){
  #today .fc38-dashboard{gap:10px!important;padding-bottom:10px}
  #today .fc38-daybar{min-height:60px;padding-inline:1px}
