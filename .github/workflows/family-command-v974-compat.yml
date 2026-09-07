@@ -1,0 +1,46 @@
+name: Preserve V9.74 mobile compatibility
+on:
+  push:
+    branches: [feat/v974-command-center]
+    paths: [.github/workflows/family-command-v974-compat.yml]
+permissions:
+  contents: write
+jobs:
+  patch:
+    if: github.repository == 'fox3nox/HomepageProjekt' && github.ref == 'refs/heads/feat/v974-command-center'
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@v4
+        with: { ref: '${{ github.sha }}' }
+      - name: Apply exact compatibility and hierarchy fixes
+        shell: bash
+        run: |
+          set -euo pipefail
+          python3 - <<'PY'
+          from pathlib import Path
+          p=Path('family-command/reference-dashboard-v36.js');s=p.read_text()
+          old="<small>${esc(meta)}</small>"
+          new="<small${!e.time?' class=\"fc52-all-day\"':''}>${esc(meta)}</small>"
+          assert old in s;s=s.replace(old,new,1)
+          old="${actionPanel()}${todayPanel()}${childrenAction()}${tomorrowPanel()}"
+          new="${actionPanel()}${childrenAction()}${todayPanel()}${tomorrowPanel()}"
+          assert old in s;s=s.replace(old,new,1)
+          old="document.documentElement.dataset.fcReferenceDashboard='v40';document.documentElement.dataset.fcCommandCenter='v974'"
+          new="document.documentElement.dataset.fcReferenceDashboard='v40';document.documentElement.dataset.fcMobileDashboardPolish='v52';document.documentElement.dataset.fcCommandCenter='v974'"
+          assert old in s;s=s.replace(old,new,1)
+          p.write_text(s)
+          p=Path('family-command/e2e/mobile-polish-v952.spec.mjs');s=p.read_text()
+          s=s.replace("[...document.querySelectorAll('#today .fc38-line time.fc52-all-day')]","[...document.querySelectorAll('#today .fc38-event-main .fc52-all-day')]",2)
+          s=s.replace("assert.equal(m.legacyDashboard,'v39')","assert.equal(m.legacyDashboard,'v40')",1)
+          p.write_text(s)
+          PY
+          node --check family-command/reference-dashboard-v36.js
+          node --check family-command/e2e/mobile-polish-v952.spec.mjs
+          node family-command/e2e/command-center-v974-source.spec.mjs
+          git diff --check
+          git add family-command/reference-dashboard-v36.js family-command/e2e/mobile-polish-v952.spec.mjs
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git commit -m 'Keep child actions above remaining events and preserve mobile markers'
+          git push origin HEAD:refs/heads/feat/v974-command-center
