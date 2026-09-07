@@ -1,0 +1,35 @@
+/* Family Command · Smart Documents mobile review v9.73 */
+.fc-doc-center .fc-doc-review{max-width:100%;overflow:hidden}
+.fc-doc-center .fc-doc-review>*{min-width:0;max-width:100%}
+.fc-doc-center .fc-doc-proposal{max-width:100%;box-sizing:border-box}
+.fc-doc-center .fc-doc-proposal>span{min-width:0}
+.fc-doc-center .fc-doc-proposal small{overflow-wrap:anywhere;word-break:normal}
+.fc-doc-center .fc-doc-review button{box-sizing:border-box;width:100%;white-space:normal;line-height:1.25}
+@media(max-width:520px){
+  .fc-doc-center{padding:4px!important;box-sizing:border-box!important;align-items:center!important}
+  .fc-doc-center .fc9-sheet{box-sizing:border-box!important;width:100%!important;height:calc(100dvh - 8px)!important;max-height:calc(100dvh - 8px)!important;margin:0!important;border-radius:24px;overflow:hidden!important}
+  .fc-doc-center .fc9-sheet-head{padding:18px 18px 12px!important}
+  .fc-doc-center .fc9-sheet-head p{font-size:14px!important;line-height:1.38!important;margin-top:8px!important}
+  .fc-doc-center .fc-doc-scroll{min-height:0!important;overflow-y:auto!important;overscroll-behavior:contain;padding:0 12px max(18px,env(safe-area-inset-bottom))!important}
+  .fc-doc-center .fc-doc-upload{margin:0 0 14px!important;padding:14px!important;gap:11px!important}
+  .fc-doc-center .fc-doc-library{padding:0!important}
+  .fc-doc-center .fc-doc-review{gap:10px!important;padding:2px 0 0}
+  .fc-doc-center .fc-doc-review h3{font-size:20px!important;line-height:1.15;margin:0!important}
+  .fc-doc-center .fc-doc-review>p{font-size:13px!important;line-height:1.42!important;margin:0!important}
+  .fc-doc-center .fc-doc-review>label:not(.fc-doc-proposal){font-size:12px!important;font-weight:800}
+  .fc-doc-center .fc-doc-review input[type="text"]{box-sizing:border-box!important;width:100%!important;min-height:46px!important;font-size:16px!important;padding:10px 12px!important;margin-top:5px}
+  .fc-doc-center .fc-doc-proposal{grid-template-columns:28px minmax(0,1fr)!important;gap:9px!important;padding:12px!important;border-radius:16px!important}
+  .fc-doc-center .fc-doc-proposal input{width:24px!important;height:24px!important}
+  .fc-doc-center .fc-doc-proposal b{font-size:15px!important;line-height:1.25!important}
+  .fc-doc-center .fc-doc-proposal small{font-size:12px!important;line-height:1.42!important;margin-top:5px!important}
+  .fc-doc-center .fc-doc-review button{min-height:50px!important;padding:12px 14px!important;font-size:14px!important}
+  .fc-doc-center .fc-doc-file-picker{min-height:52px!important}
+  .fc-doc-center .fc-doc-file-name{font-size:12px!important;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+  .fc-doc-center .fc-doc-people{gap:7px!important}
+  .fc-doc-center .fc-doc-person{min-height:44px!important;padding:9px!important;font-size:12px!important}
+  .fc-doc-center .fc-doc-auto-mode{font-size:11px!important;line-height:1.35!important}
+  .fc-doc-center .fc-doc-status{font-size:11px!important;line-height:1.35!important;padding-bottom:4px}
+}
+@media(max-width:370px){
+  .fc-doc-center .fc-doc-people{grid-template-columns:1fr!important}
+}
