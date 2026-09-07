@@ -1,0 +1,70 @@
+name: Apply reviewed Family Command changes
+on:
+  push:
+    branches: [feat/document-review-and-event-preparation-20260907]
+    paths: [.github/workflows/family-command-apply-reviewed-changes.yml]
+permissions:
+  contents: write
+jobs:
+  apply-reviewed-changes:
+    if: github.repository == 'fox3nox/HomepageProjekt' && github.ref == 'refs/heads/feat/document-review-and-event-preparation-20260907'
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: ${{ github.sha }}
+      - name: Apply only exact reviewed app and test edits
+        env:
+          GH_TOKEN: ${{ github.token }}
+        shell: bash
+        run: |
+          set -euo pipefail
+          python3 - <<'PY'
+          import base64, gzip, hashlib, json, os, pathlib, subprocess, urllib.request
+          def blob(value):
+              return hashlib.sha1(b'blob '+str(len(value)).encode()+b'\0'+value).hexdigest()
+          parts = ['2ca5af6cdc71d03dca9f8d7427357d93040c91e1','e5aa2d6ac7df0144f7e481545de7da11c5e26adf','de66c9db2f4e6f598ca73c2e14f12b088c0d68d5','054680685a873d0a8d2447cd9f50abc00ff77ab4']
+          encoded = b''
+          for sha in parts:
+              request = urllib.request.Request('https://api.github.com/repos/fox3nox/HomepageProjekt/git/blobs/'+sha, headers={'Authorization':'Bearer '+os.environ['GH_TOKEN'],'Accept':'application/vnd.github+json','User-Agent':'FamilyCommand-ReviewedChanges'})
+              with urllib.request.urlopen(request, timeout=30) as response:
+                  item = json.load(response)
+              value = base64.b64decode(item['content'])
+              assert blob(value) == sha, 'Transport hash mismatch'
+              encoded += value
+          compressed = base64.b64decode(encoded, validate=True)
+          assert blob(compressed) == '5bbd3d327c723aeb05db4068f031c1bf1742e98a', 'Reviewed bundle hash mismatch'
+          changes = json.loads(gzip.decompress(compressed))
+          assert len(changes) == 17
+          root = pathlib.Path.cwd().resolve()
+          prepared = []
+          for change in changes:
+              relative = pathlib.PurePosixPath(change['path'])
+              assert relative.parts[0] == 'family-command' and '..' not in relative.parts and not relative.is_absolute()
+              path = root.joinpath(relative)
+              assert not path.is_symlink() and path.resolve().is_relative_to(root / 'family-command')
+              old = path.read_bytes() if path.exists() else None
+              assert (blob(old) if old is not None else None) == change['before'], 'Concurrent change: '+str(relative)
+              lines = (old or b'').decode('utf-8').splitlines(keepends=True)
+              for start, end, replacement in reversed(change['edits']):
+                  assert 0 <= start <= end <= len(lines)
+                  lines[start:end] = replacement.splitlines(keepends=True)
+              new = ''.join(lines).encode('utf-8')
+              assert blob(new) == change['after'], 'Result hash mismatch: '+str(relative)
+              prepared.append((path, new))
+          for path, content in prepared:
+              path.parent.mkdir(parents=True, exist_ok=True)
+              path.write_bytes(content)
+              print(path.relative_to(root), blob(content))
+              if path.suffix in ['.js','.mjs']:
+                  subprocess.run(['node','--check',str(path)], check=True)
+          for test in ['event-preparation-unit.spec.mjs','document-review-unit.spec.mjs','reference-loader-dedupe-v9621.spec.mjs']:
+              subprocess.run(['node','family-command/e2e/'+test], check=True)
+          subprocess.run(['git','diff','--check'], check=True)
+          subprocess.run(['git','add','--']+[str(path.relative_to(root)) for path, _ in prepared], check=True)
+          PY
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git commit -m 'Require document review and surface source-based event preparation'
+          git push origin HEAD:refs/heads/feat/document-review-and-event-preparation-20260907
