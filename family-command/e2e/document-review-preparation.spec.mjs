@@ -55,6 +55,7 @@ try{
   await page.goto(`http://127.0.0.1:${server.address().port}/?access=test`);
   await page.waitForFunction(()=>window.__fcTomorrowCalendarV9674&&window.__fcSmartDocumentsHealth?.reviewRequired&&window.__fcReferenceDashboard39&&window.__fcSearch);
   await page.evaluate(()=>window.__fcLoadExtrasNow());
+  await page.waitForFunction(()=>document.documentElement.dataset.fcExtras==='ready'&&Boolean(window.__fcAiBudgetGuard));
   await page.evaluate(()=>{window.__testDate='2027-05-06';window.todayISO=()=>window.__testDate;data.events=[];data.homework=[];data.todos=[];data.schedules={};data.reminders=[];window.__testSaves=0;window.save=()=>{window.__testSaves++;};__fcV9.invalidate();renderToday();});
   await openDocs();const before=await page.evaluate(()=>JSON.stringify(data));await analyzeFile();
   assert.equal(await page.evaluate(()=>JSON.stringify(data)),before,'analysis/review must not change any family data');
@@ -78,6 +79,8 @@ try{
   assert.equal(saved.event.note,note);assert.deepEqual(saved.event.personIds,['child-c']);assert.deepEqual(saved.bytes,[...image]);
   assert.ok(saved.links.some(x=>x.source_kind==='event'&&x.source_id===eventId));
   assert.ok(saved.links.some(x=>x.source_kind==='person'&&x.source_id==='child-c'));
+  // The saved status precedes the separate, asynchronous library refresh.
+  await page.locator('[data-doc="review-doc-1"]').waitFor();
   assert.equal(await page.locator('[data-doc="review-doc-1"]').count(),1);
   console.log('PASS explicit review, original preservation, assignment, validation and retry');
   await closeDocs();
@@ -94,6 +97,7 @@ try{
   assert.match(await calendar.innerText(),/08:20–13:30/);assert.match(await calendar.innerText(),/kleines Znüni/);
   await calendar.click();await page.waitForSelector('#fcEventDetails');
   assert.match(await page.locator('.fc-detail-note').innerText(),/Besammlung: 08:20/);
+  await page.locator('#fcEventDetails [data-doc="review-doc-1"]').waitFor();
   assert.equal(await page.locator('#fcEventDetails [data-doc="review-doc-1"]').count(),1);
   await page.locator('.fc-detail-close').click();
   await page.locator('.fc-search-entry').click();await page.getByRole('searchbox',{name:'Suchbegriff',exact:true}).fill('Ausflug');
