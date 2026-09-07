@@ -36,7 +36,7 @@ try{
   assert.ok(r.dashboard&&r.same&&r.overflow);
   assert.ok(r.sourceWidth<=1.5);
   assert.ok(r.daybar>=48&&r.daybar<=82);
-  assert.equal(r.tasks,3);
+  assert.equal(r.tasks,2,'the command center intentionally shows only the two highest-priority tasks before scrolling');
   for(const h of r.heights)assert.ok(h>=60&&h<=180);
   assert.ok(r.priority&&r.tomorrow,'command center must expose priority and tomorrow sections');
   assert.ok(r.panels>=2);
