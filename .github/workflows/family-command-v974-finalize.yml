@@ -1,0 +1,42 @@
+name: Finalize V9.74 command center logic
+on:
+  push:
+    branches: [feat/v974-command-center]
+    paths: [.github/workflows/family-command-v974-finalize.yml]
+permissions:
+  contents: write
+jobs:
+  finalize:
+    if: github.repository == 'fox3nox/HomepageProjekt' && github.ref == 'refs/heads/feat/v974-command-center'
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: ${{ github.sha }}
+      - name: Apply exact reviewed renderer fixes
+        shell: bash
+        run: |
+          set -euo pipefail
+          python3 - <<'PY'
+          from pathlib import Path
+          p=Path('family-command/reference-dashboard-v36.js')
+          s=p.read_text()
+          old="Number(String(a.date||'')<date)-Number(String(b.date||'')<date)||String(a.date||'').localeCompare(String(b.date||''))"
+          new="Number(String(b.date||'')<date)-Number(String(a.date||'')<date)||String(a.date||'').localeCompare(String(b.date||''))"
+          assert old in s
+          s=s.replace(old,new,1)
+          old2="const status=window.__fcV9?.currentChildState?.(p,date,true),prep=typeof eventPreparationFor==='function'?eventPreparationFor(p.id,date):[],pack=[...new Set([...(info.items||[]),...(info.special||[]),...(info.notes||[]),...prep.map(x=>x.text)].filter(Boolean))];const finished=info.slots?.length&&!status;if(finished&&!pack.length)continue;const label=status?.label||(info.schoolBreak?.title||(!info.slots?.length?'Heute schulfrei':'Unterricht beendet'));"
+          new2="const status=window.__fcV9?.currentChildState?.(p,date,true),finished=info.slots?.length&&!status,prep=(typeof eventPreparationFor==='function'?eventPreparationFor(p.id,date):[]).filter(x=>{try{return !window.__fcV9?.eventIsPast?.(x.event)}catch(_){return true}}),schoolPack=finished?[]:[...(info.items||[]),...(info.special||[]),...(info.notes||[])],pack=[...new Set([...schoolPack,...prep.map(x=>x.text)].filter(Boolean))];if(finished&&!prep.length)continue;const label=status?.label||(info.schoolBreak?.title||(!info.slots?.length?'Heute schulfrei':'Unterricht beendet'));"
+          assert old2 in s
+          s=s.replace(old2,new2,1)
+          p.write_text(s)
+          PY
+          node --check family-command/reference-dashboard-v36.js
+          node family-command/e2e/command-center-v974-source.spec.mjs
+          git diff --check
+          git add family-command/reference-dashboard-v36.js
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git commit -m 'Prioritize overdue work and hide finished school reminders'
+          git push origin HEAD:refs/heads/feat/v974-command-center
