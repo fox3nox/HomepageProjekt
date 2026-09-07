@@ -1,0 +1,35 @@
+name: Family Command document preparation regression
+on:
+  push:
+    branches: [main, feat/document-review-and-event-preparation-20260907]
+    paths: ['family-command/**', '.github/workflows/family-command-document-preparation-check.yml']
+  pull_request:
+    branches: [main]
+    paths: ['family-command/**', '.github/workflows/family-command-document-preparation-check.yml']
+permissions:
+  contents: read
+jobs:
+  document-preparation:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+      - name: Source and preparation invariants
+        run: |
+          node --check family-command/core-runtime.js
+          node --check family-command/reference-dashboard-v36.js
+          node --check family-command/tomorrow-calendar-v9673.js
+          node family-command/e2e/event-preparation-unit.spec.mjs
+      - name: Preserve exact reviewed public source for isolated QA
+        if: github.event_name != 'push' || github.ref != 'refs/heads/main'
+        uses: actions/upload-artifact@v4
+        with:
+          name: document-preparation-reviewed-source
+          path: |
+            family-command/
+            .github/workflows/
+          include-hidden-files: true
+          retention-days: 3
