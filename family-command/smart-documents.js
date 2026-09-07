@@ -215,7 +215,7 @@
       status.textContent='Dokument wird gelesen – noch keine Übernahme …';let parsed=null;
       try{parsed=await analyze(file)}catch(e){console.warn('fc_smart_docs_ai',e)}
       if(!m.isConnected)return;
-      const review={file,items:groupItems(parsed?.parsed?.items||[]),title:semanticTitle('',selectedIds(m),file),document:null,links:null,busy:false};
+      const reviewItems=groupItems(parsed?.parsed?.items||[]);const reviewTitle=window.__fcSemanticDocumentTitleV973?.title?.({items:reviewItems,summary:parsed?.parsed?.summary||'',people:people(),manualIds:selectedIds(m)})||semanticTitle(parsed?.parsed?.summary||'',selectedIds(m),file);const review={file,items:reviewItems,title:reviewTitle,document:null,links:null,busy:false};
       reviews.set(m,review);showReview(m,review);
       status.textContent=parsed?'Personen und Datum prüfen. Die Übernahme erfolgt erst nach deiner Bestätigung.':'Erkennung nicht verfügbar. Du kannst das Original ohne neue Termine oder Aufgaben ablegen.';
     }catch(e){console.error('fc_smart_docs_review',e);status.textContent='Dokument konnte nicht geprüft werden.'}finally{lockInput(m,false)}
