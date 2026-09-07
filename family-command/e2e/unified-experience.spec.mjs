@@ -28,7 +28,11 @@ for(const [name,engine,width,height] of [['iPhone WebKit',webkit,390,844],['Desk
   data.todos=[{id:'permission',title:'Einverständnis für den Ausflug abgeben',date:'2026-09-07',priority:true,done:false}];
   data.homework=[{id:'math',personId:'child-a',title:'Seite 42',subject:'Mathematik',dueDate:'2026-09-07',done:false}];
   data.events=[{id:'dental',title:'Zahnarztkontrolle',date:'2026-09-07',time:'15:00',personIds:['child-b'],note:'Versicherungskarte mitnehmen'}];
-  data.schedules={'child-a':{1:[{start:'07:30',end:'11:55',depart:'07:05',label:'Schule'}]},'child-b':{},'child-c':{}};
+  data.schedules={
+   'child-a':{1:[{start:'07:30',end:'11:55',depart:'07:05',label:'Turnen',note:'Turnschuhe in den Rucksack'}]},
+   'child-b':{1:[{start:'08:20',end:'11:50',label:'Schwimmen',note:'Badekleider mitnehmen'}]},
+   'child-c':{}
+  };
   __fcV9.invalidate();renderToday();
  });
  await check(name+' shares the daily focus without changing data',async()=>{
@@ -40,6 +44,13 @@ for(const [name,engine,width,height] of [['iPhone WebKit',webkit,390,844],['Desk
   assert.equal(await page.locator('.fc38-taskicon').count(),0,'category emoji must not look like a second checkbox');
   for(const sel of ['.fc38-check','.fc38-go','.fc38-switch button'])for(const box of await page.locator(sel).evaluateAll(els=>els.map(e=>({w:e.getBoundingClientRect().width,h:e.getBoundingClientRect().height}))))assert.ok(box.w>=44&&box.h>=44,sel+JSON.stringify(box));
   await page.locator('[data-fc9668-mode=week]').click();assert.equal(await page.locator('.fc9668-day').count(),7);await page.locator('[data-fc9668-mode=day]').click();
+ });
+ await check(name+' school plan makes sport and swimming obvious and readable',async()=>{
+  const details=page.locator('.fc38-school');await details.locator('summary').click();
+  assert.match(await details.innerText(),/TURNEN/);assert.match(await details.innerText(),/SCHWIMMEN/);
+  const sizes=await details.locator('.fc38-schoolcell span,.fc38-schoolcell small,.fc38-school-special,.fc38-th').evaluateAll(els=>els.filter(e=>e.getBoundingClientRect().width&&e.getBoundingClientRect().height).map(e=>parseFloat(getComputedStyle(e).fontSize)));
+  assert.ok(sizes.length&&sizes.every(n=>n>=11),JSON.stringify(sizes));
+  if(width<720){const grid=details.locator('.fc38-schoolgrid');assert.ok(await grid.evaluate(e=>e.scrollWidth>e.clientWidth),'mobile school grid should scroll instead of shrinking text');assert.equal(await details.locator('.fc38-person').first().evaluate(e=>getComputedStyle(e).position),'sticky');}
  });
  await check(name+' navigation restores the actual content scroll position',async()=>{
   await page.locator('.fc9-nav [data-screen=more]').click();
