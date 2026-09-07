@@ -1,16 +1,16 @@
 name: Apply Smart Documents v9.73
 on:
-  push:
-    branches: [fix/smart-documents-mobile-title-20260907]
-    paths: [.github/workflows/apply-smart-documents-v973.yml]
+  pull_request:
+    branches: [main]
 permissions:
   contents: write
 jobs:
   apply:
+    if: github.head_ref == 'fix/smart-documents-mobile-title-20260907'
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
-        with: {ref: '${{ github.sha }}'}
+        with: {ref: 'fix/smart-documents-mobile-title-20260907'}
       - uses: actions/setup-node@v4
         with: {node-version: 22}
       - name: Wire reviewed mobile layout and semantic title helper
