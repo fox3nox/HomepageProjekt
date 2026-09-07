@@ -26,6 +26,7 @@
 #today .fc38-dashboard .fc38-avatar{width:32px!important;height:32px!important;min-width:32px!important;min-height:32px!important;display:flex!important;align-items:center!important;justify-content:center!important;box-sizing:border-box!important;border-radius:50%!important;border:2px solid white!important;outline:1px solid color-mix(in srgb,var(--person) 35%,white)!important;background:var(--person)!important;color:white!important;font-family:inherit!important;font-size:13px!important;font-weight:750!important;line-height:1!important;padding:0!important;margin:0!important;text-indent:0!important;box-shadow:none!important}
 #today .fc38-dashboard .fc38-avatar:before,#today .fc38-dashboard .fc38-avatar:after{content:none!important}
 #today .fc38-dashboard .fc38-child{display:grid;grid-template-columns:32px minmax(0,1fr);gap:14px;padding:14px 18px;border-top:1px solid #e8eef4;align-items:center}
+#today .fc38-dashboard .fc38-child .fc38-event-preparation{grid-column:1 / -1;margin:8px 0 0;font-size:13px;line-height:1.5;color:#355775;overflow-wrap:anywhere}
 #today .fc38-dashboard .fc38-child b{font-size:15px;color:var(--r-navy)}
 #today .fc38-dashboard .fc38-child div>span{display:block;font-size:13px;line-height:1.45;color:var(--r-muted);margin-top:3px}
 #today .fc38-dashboard .fc38-child strong,#today .fc38-dashboard .fc38-child small{display:block;font-size:12px;line-height:1.5;color:#355775;margin-top:4px;overflow-wrap:anywhere;font-weight:550}

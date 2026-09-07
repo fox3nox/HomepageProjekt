@@ -163,3 +163,42 @@ wo der bewusste Entwurf alte Emoji-Kacheln oder das vierspaltige Zielraster erse
 Dokumenttests warten auf das tatsächlich asynchron geladene Dokument.
 Physische iPhones und private produktive Familiendaten sind nicht Teil der lokalen
 Browserprüfung; Produktions-Smoke prüft Zugriffsschutz, Release und ausgelieferte Assets.
+
+
+## Dokumentprüfung und Terminvorbereitung (7. September 2026)
+
+Der Import übernimmt keine KI-Erkennung mehr allein aufgrund ihres Konfidenzwerts.
+Original, vorgeschlagene Person, Datum, Zeiten und Notiz werden vor dem Speichern
+gezeigt. Alle Vorschläge starten unmarkiert. Ungültige Kalenderdaten, Uhrzeiten,
+unbekannte Personen und mehrdeutige bestehende Termine sperren die Übernahme.
+Eine bewusste manuelle Personenauswahl hat weiter Vorrang. Ohne KI kann das Original
+allein archiviert werden; unsichere Einträge werden dadurch nicht angelegt.
+
+Bestehende Termine gleicher Person, gleichen Datums und Titels werden in der
+Prüfung angezeigt und nur verknüpft, nicht mit KI-Feldern überschrieben. Andere
+Kinder bleiben getrennt. Eindeutige IDs und erneute Prüfung vor dem Schreiben
+vermeiden Kollisionen und Teilübernahmen ungültiger Auswahlen. Nach einer fehlgeschlagenen
+Verknüpfung bleibt die bekannte Dokument-ID für Wiederholungen im geöffneten Dialog
+erhalten. Nach Schliessen kann das Original über die bestehende Terminfunktion
+„Vorhandenes Original wählen“ angehängt werden. Dies ist noch keine persistente
+Offline-Importwarteschlange. Ein fehlender Upload-Antwortbeleg beweist nicht, dass
+serverseitig keine Datei angelegt wurde.
+
+`eventPackText` und `eventPreparationFor` lesen ausschliesslich explizite
+„Mitnehmen:“-Abschnitte aus gespeicherten Terminnotizen. Sie erzeugen keine Aufgaben,
+Abfahrten, Schulabsagen oder Änderungen am Cloud-State. Heute zeigt die Hinweise
+mit dem betroffenen Kind; Morgen und Kalender verwenden die kanonische Terminzeile.
+Die Sieben-Tage-Vorschau nutzt dieselbe Quelle. Auch ohne feste Schulzeiten bleiben
+Termin-Packhinweise sichtbar. Die bestehende Desktop-Kindzeile gibt ihnen eine
+separate Grid-Zeile statt überlappender CSS-Positionen.
+
+Neue Prüfungen: `event-preparation-unit.spec.mjs`, `document-review-unit.spec.mjs`
+und `document-review-preparation.spec.mjs`. Letztere verwendet ausschliesslich
+synthetische lokale Daten, simuliert Originalarchiv und Verknüpfungsausfälle und
+prüft WebKit/Chromium sowie mobile und Desktop-Ansichten. Laufprotokolle entscheiden
+über den tatsächlichen Teststatus; diese Beschreibung ist kein Deploymentbeleg.
+
+Unverändert: Cloud-Merge und Revisionen, private Regeln, Header/PWA-Boot,
+Dokumentserver und Zugangsverwaltung. Kein Paperless-Token und keine persönlichen
+Originale im öffentlichen Repository. Physisches iPhone-/Standalone-Rendering muss
+weiter getrennt von Browser-Simulationen bewertet werden.

@@ -1,4 +1,4 @@
-import { webkit } from 'playwright';
+import { webkit, chromium } from 'playwright';
 import { spawn } from 'node:child_process';
 import assert from 'node:assert/strict';
 
@@ -11,7 +11,8 @@ const aiPayload={ok:true,parsed:{summary:'Wochenblatt Schule',items:[{type:'even
 let uploaded=false;
 try{
   await ready();
-  const browser=await webkit.launch({headless:true});
+  const engine=process.env.FC_BROWSER==='chromium'?chromium:webkit;
+  const browser=await engine.launch({headless:true});
   const context=await browser.newContext({viewport:{width:390,height:844},isMobile:true,hasTouch:true,serviceWorkers:'block'});
   const page=await context.newPage();
   const browserConsole=[];
@@ -70,6 +71,12 @@ try{
   await page.check('[data-doc-person][value="fynn"]');
   await page.setInputFiles('[data-doc-file]',{name:'wochenblatt.png',mimeType:'image/png',buffer:Buffer.from('89504e470d0a1a0a','hex')});
   await page.click('[data-doc-upload]');
+  await page.waitForSelector('[data-doc-review]');
+  assert.equal(uploaded,false,'review must not upload before confirmation');
+  assert.equal(await page.locator('[data-doc-proposal]:checked').count(),0,'nothing is preselected');
+  assert.equal(await page.evaluate(()=>window.data.events.length),state.events.length,'review must not create events');
+  for(const index of [0,1,2])await page.check(`[data-doc-proposal="${index}"]`);
+  await page.click('[data-doc-confirm]');
   await page.waitForFunction(()=>document.querySelector('[data-doc-status]')?.textContent.includes('Gespeichert'),{timeout:20000});
   const aiCalls=await page.evaluate(()=>window.__smartDocAiCalls);
   if(aiCalls!==1){
@@ -91,6 +98,8 @@ try{
   assert.deepEqual(result.events.find(e=>e.title==='Manuell korrigierter Termin')?.personIds,['fynn'],'manual Fynn selection must override AI Jayden assignment');
   assert.equal(result.events.some(e=>e.title==='Unsicherer Termin'),false,'low-confidence extraction must not be auto-created');
   assert.equal(result.health.confidenceThreshold,.85);
+  assert.equal(result.health.reviewRequired,true);
+  assert.equal(result.health.automaticImport,false);
   assert.equal(result.health.manualOverride,true);
   await browser.close();
   console.log('smart documents regression: ok');

@@ -20,7 +20,7 @@ try{
   const page=await context.newPage();
   await page.route('**/family-command-documents/list',route=>route.fulfill({status:200,contentType:'application/json',body:JSON.stringify({ok:true,documents})}));
   await page.goto(BASE+'/?access=test',{waitUntil:'domcontentloaded',timeout:20000});
-  await page.waitForFunction(()=>document.documentElement.dataset.fcReady==='1'&&window.__fcSmartDocumentsHealth?.version==='1.2.0',{timeout:20000});
+  await page.waitForFunction(()=>document.documentElement.dataset.fcReady==='1'&&window.__fcSmartDocumentsHealth?.version==='1.3.0',{timeout:20000});
   await page.evaluate(s=>{for(const k of Object.keys(window.data||{}))delete window.data[k];Object.assign(window.data,structuredClone(s));window.save=()=>{}},state);
   await page.click('[data-screen="more"]');
   await page.click('[data-feature="docs"]');
