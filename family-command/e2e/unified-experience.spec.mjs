@@ -46,6 +46,8 @@ for(const [name,engine,width,height] of [['iPhone WebKit',webkit,390,844],['Desk
   await page.locator('[data-fc9668-mode=week]').click();assert.equal(await page.locator('.fc9668-day').count(),7);await page.locator('[data-fc9668-mode=day]').click();
  });
  await check(name+' school plan makes sport and swimming obvious and readable',async()=>{
+  const fixture=await page.evaluate(()=>({raw:data.schedules?.['child-b']?.[1]?.[0]||null,via:typeof scheduleFor==='function'?(scheduleFor('child-b',1)?.[0]||null):null,day:typeof schoolDayFor==='function'?schoolDayFor('child-b','2026-09-07'):null}));
+  console.log(name+' school fixture '+JSON.stringify(fixture));
   const details=page.locator('.fc38-school');await details.locator('summary').click();
   if(width<720){
    await page.waitForFunction(()=>document.querySelectorAll('.fc47-school-mobile .fc47-child').length>0);
