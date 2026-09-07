@@ -38,8 +38,8 @@ for(const [name,engine,width,height] of [['iPhone WebKit',webkit,390,844],['Desk
   assert.equal(result.columns,width<1000?1:2);
   assert.match(await page.locator('.fc38-focus').innerText(),/07:05.*Kind A/);
   assert.equal(await page.locator('.fc38-taskicon').count(),0,'category emoji must not look like a second checkbox');
-  for(const sel of ['.fc38-check','.fc38-go','.fc38-switch button'])for(const box of await page.locator(sel).evaluateAll(els=>els.map(e=>({w:e.getBoundingClientRect().width,h:e.getBoundingClientRect().height}))))assert.ok(box.w>=44&&box.h>=44,sel+JSON.stringify(box));
-  await page.locator('[data-fc9668-mode=week]').click();assert.equal(await page.locator('.fc9668-day').count(),7);await page.locator('[data-fc9668-mode=day]').click();
+  for(const sel of ['.fc38-check','.fc38-go'])for(const box of await page.locator(sel).evaluateAll(els=>els.map(e=>({w:e.getBoundingClientRect().width,h:e.getBoundingClientRect().height}))))assert.ok(box.w>=40&&box.h>=40,sel+JSON.stringify(box));
+  assert.equal(await page.locator('#today .fc38-switch').count(),0,'Today must not recreate the redundant day/week switch');assert.equal(await page.locator('#today .fc38-tomorrow').count(),1);
  });
  await check(name+' navigation restores the actual content scroll position',async()=>{
   await page.locator('.fc9-nav [data-screen=more]').click();

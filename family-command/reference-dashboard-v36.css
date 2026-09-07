@@ -48,6 +48,7 @@
 #today .fc38-child b{display:block;font-size:14px;color:var(--fc974-navy)}
 #today .fc38-child span,#today .fc38-child strong{display:block;margin-top:3px;font-size:11px;line-height:1.4;color:var(--fc974-muted);overflow-wrap:anywhere}
 #today .fc38-child strong{color:#2f6f54}
+#today .fc38-child .fc38-event-preparation{font-size:12px}
 #today .fc38-done-strip{display:grid;grid-template-columns:34px minmax(0,1fr);gap:10px;align-items:center;padding:12px 14px;background:#f8fcfa;border-color:#dcece4}
 #today .fc38-done-strip>span{display:grid;place-items:center;width:30px;height:30px;border-radius:50%;background:#e7f5ed;color:var(--fc974-green);font-weight:900}
 #today .fc38-done-strip b{display:block;font-size:13px;color:#285b47}
