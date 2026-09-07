@@ -2,14 +2,15 @@
 (()=>{
 'use strict';
 if(window.__fcTomorrowCalendarV9674)return;
-const esc=s=>String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot',"'":'&#39;'}[c]));
+const esc=s=>String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
 const D=()=>{try{return typeof data!=='undefined'&&data?data:{}}catch(_){return{}}};
 const iso=d=>`${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`;
 const today=()=>{try{return typeof todayISO==='function'?todayISO():iso(new Date())}catch(_){return iso(new Date())}};
 const addDays=(value,n)=>{const d=new Date(`${value}T12:00:00`);d.setDate(d.getDate()+n);return iso(d)};
 function packFor(p,date){
-  if(typeof schoolDayFor==='function'){const x=schoolDayFor(p.id,date);return{items:x.items,special:x.special,note:x.notes.join(' · ')}}
-  return{items:[],special:[],note:''};
+  const events=typeof eventPreparationFor==='function'?eventPreparationFor(p.id,date):[];
+  if(typeof schoolDayFor==='function'){const x=schoolDayFor(p.id,date);return{items:x.items,special:x.special,note:x.notes.join(' · '),events}}
+  return{items:[],special:[],note:'',events};
 }
 function compactPackText(info){
   if(info.special.length){const extra=info.items.filter(x=>!/(Turnzeug|Schwimmsachen)/i.test(x));return [...info.special,...extra].join(' · ')}
@@ -24,10 +25,14 @@ function enhanceTomorrow(){
   for(const row of section.querySelectorAll('.fc9-person')){
     row.querySelectorAll('.fc674-inline-pack,.fc674-inline-note').forEach(x=>x.remove());
     const name=row.querySelector('b')?.textContent?.trim()||'',p=people.find(x=>String(x.name||'').trim()===name);if(!p)continue;
-    const info=packFor(p,date),text=compactPackText(info);if(!text&&!info.note)continue;
+    const info=packFor(p,date),text=compactPackText(info);if(!text&&!info.note&&!info.events.length)continue;
     const main=row.querySelector('b')?.parentElement;if(!main)continue;
-    const line=document.createElement('span');line.className='fc674-inline-pack';line.textContent=text;main.appendChild(line);
+    if(text){const line=document.createElement('span');line.className='fc674-inline-pack';line.textContent=text;main.appendChild(line)}
     if(info.note&&!text.includes(info.note)){const note=document.createElement('small');note.className='fc674-inline-note';note.textContent=info.note;main.appendChild(note)}
+    for(const {event,text:packing} of info.events){
+      const line=document.createElement('small');line.className='fc674-inline-note';line.dataset.preparationEvent=String(event.id);
+      line.textContent=[event.title,[event.time,event.end].filter(Boolean).join('–'),'Mitnehmen: '+packing].filter(Boolean).join(' · ');main.appendChild(line);
+    }
   }
   document.documentElement.dataset.fcTomorrowPack='v674';
   document.documentElement.dataset.fcTomorrowCompact='v674';
