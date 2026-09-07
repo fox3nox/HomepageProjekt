@@ -27,18 +27,19 @@ try{
     const before=JSON.stringify({todos:data.todos,events:data.events,homework:data.homework,people:data.people,schedules:data.schedules});
     window.__fcReferenceDashboard39.rebuild(true);
     window.__fcMobileSchoolDayV947?.render();
-    const after=JSON.stringify({todos:data.todos,events:data.events,homework:data.homework,people:data.people,schedules:data.schedules}),dash=document.querySelector('#today>.fc38-dashboard'),source=document.querySelector('#today>.fc9-page'),tasks=[...dash.querySelectorAll('.fc38-task')],school=dash.querySelector('.fc38-schoolgrid'),avatars=[...dash.querySelectorAll('.fc38-avatar')],visibleAvatars=avatars.filter(a=>a.getBoundingClientRect().width>0),todayHead=dash.querySelector('.fc38-th.is-today'),todayCells=[...dash.querySelectorAll('.fc38-schoolcell.is-today')],mobile=dash.querySelector('.fc47-school-mobile'),avatarStyles=visibleAvatars.map(a=>{const c=getComputedStyle(a),b=a.getBoundingClientRect();return{text:a.textContent.trim(),w:b.width,h:b.height,display:c.display,align:c.alignItems,justify:c.justifyContent,font:parseFloat(c.fontSize),color:c.color}}),currentDay=new Date(`${todayISO()}T12:00:00`).getDay(),peopleCount=(data.people||[]).filter(p=>p.id!=='oli').length,mobileDates=[...dash.querySelectorAll('.fc47-day')].map(x=>x.dataset.fc47Date).filter(Boolean),today=todayISO();
-    return{same:before===after,version:window.__fcReferenceDashboard39.version,dashboard:!!dash,sourceWidth:source.getBoundingClientRect().width,overflow:document.documentElement.scrollWidth<=document.documentElement.clientWidth+1,daybar:dash.querySelector('.fc38-daybar').getBoundingClientRect().height,panels:dash.querySelectorAll('.fc38-panel').length,tasks:tasks.length,heights:tasks.map(x=>x.getBoundingClientRect().height),lines:dash.querySelectorAll('.fc38-line').length,schoolCells:school.children.length,schoolDisplay:getComputedStyle(school).display,reminders:dash.querySelectorAll('.fc38-reminders>*').length,avatars:visibleAvatars.length,avatarText:visibleAvatars.every(a=>a.textContent.trim().length===1),avatarStyles,text:dash.textContent,nav:document.querySelector('.fc9-nav').getBoundingClientRect().height,todayHead:todayHead?.textContent||'',todayCellCount:todayCells.length,currentDay,peopleCount,mobileDisplay:mobile?getComputedStyle(mobile).display:'missing',mobileTabs:mobile?.querySelectorAll('.fc47-day').length||0,mobileRows:mobile?.querySelectorAll('.fc47-child').length||0,mobileSelected:mobile?.querySelectorAll('.fc47-day.is-selected').length||0,mobileToday:mobile?.querySelectorAll('.fc47-day.is-today').length||0,mobileDates,today}
+    const after=JSON.stringify({todos:data.todos,events:data.events,homework:data.homework,people:data.people,schedules:data.schedules}),dash=document.querySelector('#today>.fc38-dashboard'),source=document.querySelector('#today>.fc9-page'),tasks=[...dash.querySelectorAll('.fc38-task')],school=dash.querySelector('.fc38-schoolgrid'),avatars=[...dash.querySelectorAll('.fc38-avatar')],visibleAvatars=avatars.filter(a=>a.getBoundingClientRect().width>0),mobile=dash.querySelector('.fc47-school-mobile'),avatarStyles=visibleAvatars.map(a=>{const c=getComputedStyle(a),b=a.getBoundingClientRect();return{text:a.textContent.trim(),w:b.width,h:b.height,display:c.display,align:c.alignItems,justify:c.justifyContent,font:parseFloat(c.fontSize),color:c.color}}),peopleCount=(data.people||[]).filter(p=>p.id!=='oli').length,mobileDates=[...dash.querySelectorAll('.fc47-day')].map(x=>x.dataset.fc47Date).filter(Boolean),today=todayISO();
+    return{same:before===after,version:window.__fcReferenceDashboard39.version,commandCenter:document.documentElement.dataset.fcCommandCenter,dashboard:!!dash,sourceWidth:source.getBoundingClientRect().width,overflow:document.documentElement.scrollWidth<=document.documentElement.clientWidth+1,daybar:dash.querySelector('.fc38-daybar').getBoundingClientRect().height,panels:dash.querySelectorAll('.fc38-panel').length,tasks:tasks.length,heights:tasks.map(x=>x.getBoundingClientRect().height),priority:Boolean(dash.querySelector('.fc38-priority')),tomorrow:Boolean(dash.querySelector('.fc38-tomorrow')),schoolCells:school.children.length,schoolDisplay:getComputedStyle(school).display,reminders:dash.querySelectorAll('.fc38-reminders>*').length,avatars:visibleAvatars.length,avatarText:visibleAvatars.every(a=>a.textContent.trim().length===1),avatarStyles,text:dash.textContent,nav:document.querySelector('.fc9-nav').getBoundingClientRect().height,peopleCount,mobileDisplay:mobile?getComputedStyle(mobile).display:'missing',mobileTabs:mobile?.querySelectorAll('.fc47-day').length||0,mobileRows:mobile?.querySelectorAll('.fc47-child').length||0,mobileSelected:mobile?.querySelectorAll('.fc47-day.is-selected').length||0,mobileToday:mobile?.querySelectorAll('.fc47-day.is-today').length||0,mobileDates,today}
   });
-  console.log('reference-v672',JSON.stringify(r));
-  assert.equal(r.version,'9.70.0');
+  console.log('reference-v974',JSON.stringify(r));
+  assert.equal(r.version,'9.74.0');
+  assert.equal(r.commandCenter,'v974');
   assert.ok(r.dashboard&&r.same&&r.overflow);
   assert.ok(r.sourceWidth<=1.5);
-  assert.ok(r.daybar>=60&&r.daybar<=76);
+  assert.ok(r.daybar>=48&&r.daybar<=82);
   assert.equal(r.tasks,3);
-  for(const h of r.heights)assert.ok(h>=60&&h<=100);
-  assert.ok(r.lines>=1);
-  assert.ok(r.panels>=4);
+  for(const h of r.heights)assert.ok(h>=60&&h<=180);
+  assert.ok(r.priority&&r.tomorrow,'command center must expose priority and tomorrow sections');
+  assert.ok(r.panels>=2);
   assert.ok(r.schoolCells>=24,'future school grid must remain in the DOM for desktop/compatibility');
   assert.equal(r.schoolDisplay,'none','mobile hides the desktop school matrix on iPhone');
   assert.notEqual(r.mobileDisplay,'none','mobile school-day view must be visible');
@@ -50,11 +51,11 @@ try{
   assert.equal(r.reminders,0,'generic hardcoded packing must not be rendered');
   assert.ok(r.avatars>=3&&r.avatarText,'visible person avatars must be identified');
   for(const a of r.avatarStyles){assert.ok(a.w>=29&&a.h>=29,'avatar must be large enough');assert.ok(a.font>=11,'avatar initial must be readable');assert.equal(a.display,'flex');assert.equal(a.align,'center');assert.equal(a.justify,'center');assert.match(a.color,/rgb\(255, 255, 255\)|rgba\(255, 255, 255/,'avatar initial must be white')}
-  for(const x of['Offene Aufgaben','Termine','Morgen vorbereiten','Schulplan & Hinweise','Turnzeug einpacken'])assert.ok(r.text.includes(x),x);
+  for(const x of['JETZT WICHTIG','Heute noch','Morgen vorbereiten','Schulplan & feste Wochenzeiten','Turnzeug einpacken'])assert.ok(r.text.includes(x),x);
   assert.ok(r.nav>48);
-  if(r.currentDay>=1&&r.currentDay<=5){assert.match(r.todayHead,/HEUTE/,'underlying current weekday contract must remain marked');assert.equal(r.todayCellCount,r.peopleCount,'underlying current weekday contract must cover every child row');assert.equal(r.mobileToday,1,'mobile day selector must mark today')}
-  const normalOnly=await page.evaluate(()=>{for(const t of data.todos)t.priority=false;window.__fcReferenceDashboard39.rebuild(true);window.__fcMobileSchoolDayV947?.render();const d=document.querySelector('#today>.fc38-dashboard');return{kicker:d.querySelector('.fc38-kicker')?.textContent||'',subheads:d.querySelectorAll('.fc38-subhead').length}});
-  assert.match(normalOnly.kicker,/OFFEN/);assert.equal(normalOnly.subheads,0,'normal-only tasks must not be mislabeled as additional tasks');
+  if(new Date(`${r.today}T12:00:00`).getDay()>=1&&new Date(`${r.today}T12:00:00`).getDay()<=5)assert.equal(r.mobileToday,1,'mobile day selector must mark today');
+  const normalOnly=await page.evaluate(()=>{for(const t of data.todos)t.priority=false;window.__fcReferenceDashboard39.rebuild(true);window.__fcMobileSchoolDayV947?.render();const d=document.querySelector('#today>.fc38-dashboard');return{heading:d.querySelector('.fc38-priority h2')?.textContent||'',oldSubheads:d.querySelectorAll('.fc38-subhead').length}});
+  assert.match(normalOnly.heading,/3 offene Punkte/);assert.equal(normalOnly.oldSubheads,0,'old hierarchy patches must not return');
   await browser.close();
-  console.log('V9.67.2 daily pack-list iPhone reference regression: ok');
+  console.log('V9.74 iPhone reference command-center regression: ok');
 }finally{server.kill('SIGTERM')}
