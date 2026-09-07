@@ -1,0 +1,45 @@
+name: Apply Smart Documents v9.73
+on:
+  push:
+    branches: [fix/smart-documents-mobile-title-20260907]
+    paths: [.github/workflows/apply-smart-documents-v973.yml]
+permissions:
+  contents: write
+jobs:
+  apply:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with: {ref: '${{ github.sha }}'}
+      - uses: actions/setup-node@v4
+        with: {node-version: 22}
+      - name: Wire reviewed mobile layout and semantic title helper
+        shell: bash
+        run: |
+          set -euo pipefail
+          python3 - <<'PY'
+          from pathlib import Path
+          p=Path('family-command/index.html'); s=p.read_text()
+          s=s.replace("const VERSION='20260907-v9720'","const VERSION='20260907-v9730'")
+          s=s.replace("'document-library.js','smart-documents.js'","'document-library.js','smart-documents-title-v973.js','smart-documents.js'")
+          s=s.replace("'daily-check.css','global-search.css'","'daily-check.css','global-search.css','smart-documents-mobile-v973.css'")
+          p.write_text(s)
+          p=Path('family-command/smart-documents.js'); s=p.read_text()
+          old="const review={file,items:groupItems(parsed?.parsed?.items||[]),title:semanticTitle('',selectedIds(m),file),document:null,links:null,busy:false};"
+          new="const reviewItems=groupItems(parsed?.parsed?.items||[]);const reviewTitle=window.__fcSemanticDocumentTitleV973?.title?.({items:reviewItems,summary:parsed?.parsed?.summary||'',people:people(),manualIds:selectedIds(m)})||semanticTitle(parsed?.parsed?.summary||'',selectedIds(m),file);const review={file,items:reviewItems,title:reviewTitle,document:null,links:null,busy:false};"
+          assert old in s
+          p.write_text(s.replace(old,new))
+          p=Path('family-command/sw.js'); s=p.read_text().replace("const CACHE='family-command-v112'","const CACHE='family-command-v113'")
+          s=s.replace("'./document-library.js','./global-search.js'","'./document-library.js','./smart-documents-title-v973.js','./smart-documents-mobile-v973.css','./global-search.js'")
+          p.write_text(s)
+          PY
+          node --check family-command/smart-documents.js
+          node --check family-command/smart-documents-title-v973.js
+          node family-command/e2e/smart-documents-title-v973.spec.mjs
+          node family-command/e2e/document-review-unit.spec.mjs
+          git diff --check
+          git add family-command/index.html family-command/smart-documents.js family-command/sw.js
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git commit -m 'Wire mobile document review and semantic titles'
+          git push origin HEAD:refs/heads/fix/smart-documents-mobile-title-20260907
