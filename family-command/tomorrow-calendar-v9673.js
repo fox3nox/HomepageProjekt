@@ -1,8 +1,8 @@
-/* Familienzentrale V9.67.4 · reliable calendar day switching + compact tomorrow school rows */
+/* Familienzentrale V9.67.5 · reliable calendar day switching + compact tomorrow school rows */
 (()=>{
 'use strict';
-if(window.__fcTomorrowCalendarV9674)return;
-const esc=s=>String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot',"'":'&#39;'}[c]));
+if(window.__fcTomorrowCalendarV9675)return;
+const esc=s=>String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
 const D=()=>{try{return typeof data!=='undefined'&&data?data:{}}catch(_){return{}}};
 const iso=d=>`${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`;
 const today=()=>{try{return typeof todayISO==='function'?todayISO():iso(new Date())}catch(_){return iso(new Date())}};
@@ -65,7 +65,7 @@ function install(){
   },true);
   run();
 }
-const api={version:'9.67.4',render:run,packFor,openCalendarDate};
-window.__fcTomorrowCalendarV9674=api;window.__fcTomorrowCalendarV9673=api;
+const api={version:'9.67.5',render:run,packFor,openCalendarDate};
+window.__fcTomorrowCalendarV9675=api;window.__fcTomorrowCalendarV9674=api;window.__fcTomorrowCalendarV9673=api;
 if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',install,{once:true});else install();
 })();

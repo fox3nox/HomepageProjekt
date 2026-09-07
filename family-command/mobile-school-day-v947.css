@@ -1,17 +1,17 @@
-/* Familienzentrale V9.67.2 · iPhone school-day presentation polish */
+/* Familienzentrale V9.71 · iPhone school-day readability polish */
 @media (max-width:719px){
   #today .fc38-schoolgrid{display:none!important}
   #today .fc38-school{overflow:visible!important}
   #today .fc38-school>header{position:static!important;min-width:0!important;padding-bottom:10px!important}
-  #today .fc38-school>header .fc38-legend{font-size:8.5px!important;line-height:1.3!important}
+  #today .fc38-school>header .fc38-legend{font-size:10px!important;line-height:1.35!important}
 
   .fc47-school-mobile{display:block;padding:10px 12px 14px}
   .fc47-daytabs{display:grid;grid-template-columns:repeat(5,minmax(0,1fr));gap:6px;margin-bottom:11px}
   .fc47-day{min-width:0;min-height:50px;padding:6px 3px;border:1px solid #d9e2ee;border-radius:13px;background:#f8fafc;color:#6b7b91;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:2px;font:inherit;box-shadow:none;transition:background .16s ease,border-color .16s ease,transform .16s ease}
   .fc47-day:active{transform:scale(.98)}
-  .fc47-day b{font-size:11.5px;line-height:1;font-weight:820;color:#344861}
-  .fc47-day span{font-size:8.5px;line-height:1.1;font-weight:680;color:#8493a7;font-variant-numeric:tabular-nums}
-  .fc47-day em{font-size:6.5px;line-height:1;padding:3px 5px;border-radius:999px;background:#dbeafe;color:#1466c3;font-style:normal;font-weight:900;letter-spacing:.05em}
+  .fc47-day b{font-size:12px;line-height:1;font-weight:820;color:#344861}
+  .fc47-day span{font-size:10px;line-height:1.1;font-weight:680;color:#74869d;font-variant-numeric:tabular-nums}
+  .fc47-day em{font-size:8px;line-height:1;padding:3px 5px;border-radius:999px;background:#dbeafe;color:#1466c3;font-style:normal;font-weight:900;letter-spacing:.04em}
   .fc47-day.is-today:not(.is-selected){border-color:#bfd4f2;background:#f4f8ff}
   .fc47-day.is-selected{border-color:#75a9ef;background:#eaf3ff;box-shadow:inset 0 0 0 1px rgba(47,115,223,.12),0 3px 10px rgba(37,99,235,.07)}
   .fc47-day.is-selected b{color:#176fd0}
@@ -20,23 +20,23 @@
   .fc47-child{display:grid;grid-template-columns:44px minmax(0,.88fr) minmax(116px,1.12fr);align-items:center;gap:9px;min-height:74px;padding:10px 11px;border:1px solid #dbe4ef;border-radius:17px;background:#fff;box-shadow:0 5px 18px rgba(35,55,80,.045)}
   .fc47-avatar{width:40px;height:40px;border-radius:50%;display:grid;place-items:center;background:var(--person);color:#fff;font-size:16px;font-weight:900;box-shadow:0 0 0 3px #fff,0 0 0 4px color-mix(in srgb,var(--person) 42%,white)}
   .fc47-person{min-width:0;display:flex;flex-direction:column;gap:3px}
-  .fc47-person strong{font-size:13.5px;line-height:1.15;color:var(--person);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
-  .fc47-person small{font-size:9.5px;line-height:1.2;color:#8796a9;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+  .fc47-person strong{font-size:14px;line-height:1.15;color:var(--person);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+  .fc47-person small{font-size:10.5px;line-height:1.25;color:#74869d;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
   .fc47-status{min-width:0;display:flex;flex-direction:column;align-items:flex-start;gap:3px;padding-left:9px;border-left:1px solid #edf1f6}
-  .fc47-status b{display:flex;align-items:center;gap:5px;font-size:12.5px;line-height:1.1;color:#176fd0;font-weight:900;letter-spacing:-.01em}
+  .fc47-status b{display:flex;align-items:center;gap:5px;font-size:13px;line-height:1.1;color:#176fd0;font-weight:900;letter-spacing:-.01em}
   .fc47-status b i{font-style:normal;font-size:12px}
-  .fc47-status span{font-size:11.5px;line-height:1.2;color:#5f7188;font-weight:720;font-variant-numeric:tabular-nums}
-  .fc47-status small{font-size:9px;line-height:1.25;color:#7d8998;max-width:100%;overflow-wrap:anywhere}
-  .fc47-reminder{color:#b45309!important;font-weight:820!important}
+  .fc47-status span{font-size:12px;line-height:1.2;color:#50657e;font-weight:720;font-variant-numeric:tabular-nums}
+  .fc47-status small{font-size:10.5px;line-height:1.3;color:#6f7f92;max-width:100%;overflow-wrap:anywhere}
+  .fc47-reminder{color:#a64b08!important;font-weight:820!important}
   .fc47-pack{grid-column:1/-1;margin-top:1px;padding-top:8px;border-top:1px solid #eef2f7;display:grid;grid-template-columns:auto 1fr;gap:6px 9px;align-items:start}
-  .fc47-pack>b{font-size:7.5px;line-height:21px;color:#728299;font-weight:900;letter-spacing:.1em}
+  .fc47-pack>b{font-size:9px;line-height:23px;color:#63758b;font-weight:900;letter-spacing:.08em}
   .fc47-pack>div{display:flex;flex-wrap:wrap;gap:5px}
-  .fc47-packchip{display:inline-flex;align-items:center;gap:4px;min-height:21px;padding:3px 7px;border-radius:999px;background:#f3f7fb;border:1px solid #e1e8f1;color:#40546d;font-size:8.5px;line-height:1;font-weight:760;white-space:nowrap}
-  .fc47-packchip i{font-style:normal;font-size:10px}
-  .fc47-daynote{grid-column:1/-1;padding:6px 8px;border-radius:9px;background:#fff7ed;border:1px solid #fed7aa;color:#9a4b08;font-size:8.8px;line-height:1.3;font-weight:760}
+  .fc47-packchip{display:inline-flex;align-items:center;gap:4px;min-height:23px;padding:4px 8px;border-radius:999px;background:#f3f7fb;border:1px solid #e1e8f1;color:#344b67;font-size:10px;line-height:1.1;font-weight:760;white-space:nowrap}
+  .fc47-packchip i{font-style:normal;font-size:11px}
+  .fc47-daynote{grid-column:1/-1;padding:7px 9px;border-radius:9px;background:#fff7ed;border:1px solid #fed7aa;color:#91460a;font-size:10.5px;line-height:1.35;font-weight:760}
   .fc47-child.has-reminder{border-color:#f0d6ad}
-  .fc47-child.is-free .fc47-status b,.fc47-child.is-free .fc47-status span{color:#8190a3}
-  .fc47-empty{padding:16px;text-align:center;color:#8291a4;font-size:12px}
+  .fc47-child.is-free .fc47-status b,.fc47-child.is-free .fc47-status span{color:#748399}
+  .fc47-empty{padding:16px;text-align:center;color:#718398;font-size:12px}
 
   body .fc9-main{padding-bottom:170px!important;padding-bottom:calc(170px + env(safe-area-inset-bottom,0px))!important}
   #today .fc38-reminders{margin-bottom:8px!important}
@@ -44,15 +44,18 @@
 @media (max-width:390px){
   .fc47-school-mobile{padding-left:10px;padding-right:10px}
   .fc47-daytabs{gap:5px}
-  .fc47-day{min-height:48px;border-radius:12px}
-  .fc47-child{grid-template-columns:40px minmax(0,.82fr) minmax(108px,1.18fr);gap:7px;min-height:70px;padding:9px}
+  .fc47-day{min-height:50px;border-radius:12px}
+  .fc47-child{grid-template-columns:40px minmax(0,.82fr) minmax(108px,1.18fr);gap:7px;min-height:72px;padding:9px}
   .fc47-avatar{width:36px;height:36px;font-size:15px}
-  .fc47-person strong{font-size:13px}
-  .fc47-person small{font-size:9px}
+  .fc47-person strong{font-size:13.5px}
+  .fc47-person small{font-size:10px}
   .fc47-status{padding-left:7px}
-  .fc47-status b{font-size:12px}
-  .fc47-status span{font-size:11px}
+  .fc47-status b{font-size:12.5px}
+  .fc47-status span{font-size:11.5px}
+  .fc47-status small{font-size:10px}
   .fc47-pack{gap:5px 7px}
-  .fc47-packchip{font-size:8px;padding:3px 6px}
+  .fc47-pack>b{font-size:8.5px}
+  .fc47-packchip{font-size:9.5px;padding:4px 7px}
+  .fc47-daynote{font-size:10px}
 }
 @media (prefers-reduced-motion:reduce){.fc47-day{transition:none}}
