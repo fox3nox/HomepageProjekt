@@ -54,13 +54,12 @@ try {
     await p.evaluate(()=>__fcV9.render('events',true));
     assert.equal(await p.locator('#events [data-week-date].active').getAttribute('data-week-date'),'2026-09-12');
   });
-  await check('Today week can select a date in the next calendar week',async()=>{
+  await check('Today stays focused while date browsing remains in Calendar',async()=>{
     await p.locator('.fc9-nav [data-screen="today"]').tap();
-    await p.evaluate(()=>{todayISO=()=> '2026-09-11';renderToday();});await p.waitForTimeout(200);
-    await p.locator('[data-fc9668-mode="week"]').last().tap();await p.waitForTimeout(900);
-    await p.locator('[data-fc9668-date="2026-09-14"]').tap();await p.waitForTimeout(100);
-    assert.equal(await p.evaluate(()=>__fcTodayOverviewToggleV9668API.selectedDate),'2026-09-14');
-    assert.match(await p.locator('.fc9668-detail header').innerText(),/14/);
+    await p.evaluate(()=>{todayISO=()=> '2026-09-11';renderToday();window.__fcReferenceDashboard39?.rebuild(true)});await p.waitForTimeout(200);
+    assert.equal(await p.locator('#today [data-fc9668-mode]').count(),0,'Today must not recreate the redundant day/week browser');
+    await p.locator('.fc9-nav [data-screen="events"]').tap();await p.waitForTimeout(300);
+    assert.ok(await p.locator('#events [data-week-date]').count()>=7,'Calendar remains the dedicated date-browsing surface');
   });
   await check('tomorrow packing is idempotent and suppressed during school holidays',async()=>{
     await p.evaluate(()=>{todayISO=()=> '2026-09-07';__fcV9.invalidate();});
