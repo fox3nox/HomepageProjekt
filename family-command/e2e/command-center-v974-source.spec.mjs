@@ -5,6 +5,9 @@ const css=await readFile(new URL('../reference-dashboard-v36.css',import.meta.ur
 for(const text of ['JETZT WICHTIG','Heute noch','Morgen vorbereiten','Danach im Blick','Seit ${n} Tagen offen','fcCommandCenter=\'v974\''])assert.ok(js.includes(text),`missing command-center contract: ${text}`);
 assert.ok(js.includes("filter(t=>!t.archived&&!t.done"),'completed tasks must stay out of the command center');
 assert.ok(js.includes("String(t.date||'')<=date"),'older unfinished tasks must remain visible across days');
+assert.ok(js.includes("Number(String(b.date||'')<date)-Number(String(a.date||'')<date)"),'overdue unfinished work must sort ahead of ordinary same-priority work');
+assert.ok(js.includes("schoolPack=finished?[]"),'finished school-day packing reminders must stop cluttering the evening overview');
+assert.ok(js.includes("if(finished&&!prep.length)continue"),'finished children without a remaining event preparation must collapse out of Today');
 assert.ok(js.includes("!window.__fcV9?.eventIsPast?.(e)"),'past timed events must not clutter Today');
 assert.ok(js.includes("eventPackText"),'packing instructions must remain source-based');
 assert.ok(js.includes("fc38-schoolgrid"),'desktop school details remain available');
