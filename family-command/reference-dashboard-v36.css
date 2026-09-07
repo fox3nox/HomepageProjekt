@@ -108,4 +108,5 @@
  #today .fc38-section-head b{font-size:16px}
  #today .fc38-pack{padding:9px 12px}
  #today .fc38-done-strip{padding:10px 12px}
+ #today .fc38-priority>.fc38-show-more{display:none}
 }
