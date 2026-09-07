@@ -2,7 +2,7 @@
 (()=>{
 'use strict';
 if(window.__fcReferenceDashboard40)return;window.__fcReferenceDashboard40=true;
-const esc=s=>String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot',"'":'&#39;'}[c]));
+const esc=s=>String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
 const D=()=>{try{return typeof data!=='undefined'&&data?data:{}}catch(_){return{}}};
 const personBy=id=>(D().people||[]).find(p=>String(p.id)===String(id))||null;
 const color=id=>personBy(id)?.color||({jayden:'#2f73df',fynn:'#c46a17',eliyah:'#16a47d',oli:'#20324d'}[id]||'#718197');
