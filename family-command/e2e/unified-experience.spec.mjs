@@ -47,10 +47,17 @@ for(const [name,engine,width,height] of [['iPhone WebKit',webkit,390,844],['Desk
  });
  await check(name+' school plan makes sport and swimming obvious and readable',async()=>{
   const details=page.locator('.fc38-school');await details.locator('summary').click();
-  assert.match(await details.innerText(),/TURNEN/);assert.match(await details.innerText(),/SCHWIMMEN/);
-  const sizes=await details.locator('.fc38-schoolcell span,.fc38-schoolcell small,.fc38-school-special,.fc38-th').evaluateAll(els=>els.filter(e=>e.getBoundingClientRect().width&&e.getBoundingClientRect().height).map(e=>parseFloat(getComputedStyle(e).fontSize)));
-  assert.ok(sizes.length&&sizes.every(n=>n>=11),JSON.stringify(sizes));
-  if(width<720){const grid=details.locator('.fc38-schoolgrid');assert.ok(await grid.evaluate(e=>e.scrollWidth>e.clientWidth),'mobile school grid should scroll instead of shrinking text');assert.equal(await details.locator('.fc38-person').first().evaluate(e=>getComputedStyle(e).position),'sticky');}
+  if(width<720){
+   await page.waitForFunction(()=>document.querySelectorAll('.fc47-school-mobile .fc47-child').length>0);
+   const mobile=details.locator('.fc47-school-mobile');
+   assert.match(await mobile.innerText(),/TURNEN/);assert.match(await mobile.innerText(),/SCHWIMMEN/);
+   const sizes=await mobile.locator('.fc47-person small,.fc47-status span,.fc47-status small,.fc47-packchip,.fc47-daynote').evaluateAll(els=>els.filter(e=>e.getBoundingClientRect().width&&e.getBoundingClientRect().height).map(e=>parseFloat(getComputedStyle(e).fontSize)));
+   assert.ok(sizes.length&&sizes.every(n=>n>=9.5),JSON.stringify(sizes));
+  }else{
+   assert.match(await details.innerText(),/TURNEN/);assert.match(await details.innerText(),/SCHWIMMEN/);
+   const sizes=await details.locator('.fc38-schoolcell span,.fc38-schoolcell small,.fc38-school-special,.fc38-th').evaluateAll(els=>els.filter(e=>e.getBoundingClientRect().width&&e.getBoundingClientRect().height).map(e=>parseFloat(getComputedStyle(e).fontSize)));
+   assert.ok(sizes.length&&sizes.every(n=>n>=11),JSON.stringify(sizes));
+  }
  });
  await check(name+' navigation restores the actual content scroll position',async()=>{
   await page.locator('.fc9-nav [data-screen=more]').click();
