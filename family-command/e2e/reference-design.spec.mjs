@@ -30,8 +30,8 @@ try{
     const after=JSON.stringify({todos:data.todos,events:data.events,homework:data.homework,people:data.people,schedules:data.schedules}),dash=document.querySelector('#today>.fc38-dashboard'),source=document.querySelector('#today>.fc9-page'),tasks=[...dash.querySelectorAll('.fc38-task')],school=dash.querySelector('.fc38-schoolgrid'),avatars=[...dash.querySelectorAll('.fc38-avatar')],visibleAvatars=avatars.filter(a=>a.getBoundingClientRect().width>0),todayHead=dash.querySelector('.fc38-th.is-today'),todayCells=[...dash.querySelectorAll('.fc38-schoolcell.is-today')],mobile=dash.querySelector('.fc47-school-mobile'),avatarStyles=visibleAvatars.map(a=>{const c=getComputedStyle(a),b=a.getBoundingClientRect();return{text:a.textContent.trim(),w:b.width,h:b.height,display:c.display,align:c.alignItems,justify:c.justifyContent,font:parseFloat(c.fontSize),color:c.color}}),currentDay=new Date(`${todayISO()}T12:00:00`).getDay(),peopleCount=(data.people||[]).filter(p=>p.id!=='oli').length,mobileDates=[...dash.querySelectorAll('.fc47-day')].map(x=>x.dataset.fc47Date).filter(Boolean),today=todayISO();
     return{same:before===after,version:window.__fcReferenceDashboard39.version,dashboard:!!dash,sourceWidth:source.getBoundingClientRect().width,overflow:document.documentElement.scrollWidth<=document.documentElement.clientWidth+1,daybar:dash.querySelector('.fc38-daybar').getBoundingClientRect().height,panels:dash.querySelectorAll('.fc38-panel').length,tasks:tasks.length,heights:tasks.map(x=>x.getBoundingClientRect().height),lines:dash.querySelectorAll('.fc38-line').length,schoolCells:school.children.length,schoolDisplay:getComputedStyle(school).display,reminders:dash.querySelectorAll('.fc38-reminders>*').length,avatars:visibleAvatars.length,avatarText:visibleAvatars.every(a=>a.textContent.trim().length===1),avatarStyles,text:dash.textContent,nav:document.querySelector('.fc9-nav').getBoundingClientRect().height,todayHead:todayHead?.textContent||'',todayCellCount:todayCells.length,currentDay,peopleCount,mobileDisplay:mobile?getComputedStyle(mobile).display:'missing',mobileTabs:mobile?.querySelectorAll('.fc47-day').length||0,mobileRows:mobile?.querySelectorAll('.fc47-child').length||0,mobileSelected:mobile?.querySelectorAll('.fc47-day.is-selected').length||0,mobileToday:mobile?.querySelectorAll('.fc47-day.is-today').length||0,mobileDates,today}
   });
-  console.log('reference-v672',JSON.stringify(r));
-  assert.equal(r.version,'9.70.0');
+  console.log('reference-v671',JSON.stringify(r));
+  assert.equal(r.version,'9.71.0');
   assert.ok(r.dashboard&&r.same&&r.overflow);
   assert.ok(r.sourceWidth<=1.5);
   assert.ok(r.daybar>=60&&r.daybar<=76);
@@ -56,5 +56,5 @@ try{
   const normalOnly=await page.evaluate(()=>{for(const t of data.todos)t.priority=false;window.__fcReferenceDashboard39.rebuild(true);window.__fcMobileSchoolDayV947?.render();const d=document.querySelector('#today>.fc38-dashboard');return{kicker:d.querySelector('.fc38-kicker')?.textContent||'',subheads:d.querySelectorAll('.fc38-subhead').length}});
   assert.match(normalOnly.kicker,/OFFEN/);assert.equal(normalOnly.subheads,0,'normal-only tasks must not be mislabeled as additional tasks');
   await browser.close();
-  console.log('V9.67.2 daily pack-list iPhone reference regression: ok');
+  console.log('V9.71 daily clarity iPhone reference regression: ok');
 }finally{server.kill('SIGTERM')}
