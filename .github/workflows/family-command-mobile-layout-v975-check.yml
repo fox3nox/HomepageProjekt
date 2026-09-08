@@ -1,0 +1,21 @@
+name: Family Command V9.75 mobile layout regression
+on:
+  push:
+    branches: [main, fix/v975-mobile-layout]
+    paths: ['family-command/mobile-layout-v975.css','family-command/reference-mobile-v35.js','family-command/e2e/mobile-layout-v975-source.spec.mjs','.github/workflows/family-command-mobile-layout-v975-check.yml']
+  pull_request:
+    branches: [main]
+    paths: ['family-command/mobile-layout-v975.css','family-command/reference-mobile-v35.js','family-command/e2e/mobile-layout-v975-source.spec.mjs','.github/workflows/family-command-mobile-layout-v975-check.yml']
+permissions:
+  contents: read
+jobs:
+  mobile-layout:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+      - run: node --check family-command/reference-mobile-v35.js
+      - run: node family-command/e2e/mobile-layout-v975-source.spec.mjs
