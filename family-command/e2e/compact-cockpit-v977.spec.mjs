@@ -5,11 +5,12 @@ const css=await readFile(new URL('../compact-cockpit-v977.css',import.meta.url),
 const sw=await readFile(new URL('../sw.js',import.meta.url),'utf8');
 const loader=await readFile(new URL('../reference-mobile-v35.js',import.meta.url),'utf8');
 assert.match(js,/keine persönlichen to-dos für morgen/i,'empty tomorrow todo noise must be removed');
-assert.match(js,/fc977-manage-toggle/,'secondary management tools must be collapsible');
+assert.match(js,/fc977-management-compact/,'secondary management tools must use compact visible layout');
+assert.doesNotMatch(js,/grid\.hidden\s*=\s*true/,'management features must never be hidden by default');
 assert.match(css,/#today[\s\S]*fc38-dashboard/,'today cockpit must be compacted');
 assert.match(css,/#tomorrow[\s\S]*fc674-tomorrow-children/,'tomorrow child preparation must be compacted');
 assert.match(css,/#homework[\s\S]*fc9-tasktabs/,'tasks must be compacted');
-assert.match(css,/#more[\s\S]*fc9-tile/,'more screen tiles must be compacted');
+assert.match(css,/#more[\s\S]*fc977-management-compact/,'more screen management tiles must be visibly compacted');
 assert.match(loader,/compact-cockpit-v977\.css/);
 assert.match(loader,/compact-cockpit-v977\.js/);
 assert.match(sw,/family-command-v115/);
