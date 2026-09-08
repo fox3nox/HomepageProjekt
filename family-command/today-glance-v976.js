@@ -2,7 +2,7 @@
 (()=>{
 'use strict';
 if(window.__fcTodayGlanceV976)return;
-const esc=s=>String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot',"'":'&#39;'}[c]));
+const esc=s=>String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
 const D=()=>{try{return typeof data!=='undefined'&&data?data:{}}catch(_){return{}}};
 const person=id=>(D().people||[]).find(p=>String(p.id)===String(id))||null;
 const today=()=>{try{return typeof todayISO==='function'?todayISO():new Date().toISOString().slice(0,10)}catch(_){return new Date().toISOString().slice(0,10)}};
@@ -29,6 +29,6 @@ function renderChildren(root,list){
 }
 function render(){const root=document.querySelector('#today .fc38-dashboard');if(!root)return;const list=importantEvents();renderFocus(root,list);renderChildren(root,list);document.documentElement.dataset.fcTodayGlance='v976'}
 let timer;const schedule=()=>{clearTimeout(timer);timer=setTimeout(render,30)};
-document.addEventListener('fc:v9:render',e=>{if(e.detail?.screen==='today')schedule()});addEventListener('fc:cloud-status',schedule);addEventListener('pageshow',schedule);
+document.addEventListener('fc:v9:render',e=>{if(e.detail?.screen==='today')schedule()});if(typeof addEventListener==='function'){addEventListener('fc:cloud-status',schedule);addEventListener('pageshow',schedule)}
 window.__fcTodayGlanceV976={version:'9.76.1',render,importantEvents};if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',schedule,{once:true});else schedule();
 })();
