@@ -22,7 +22,7 @@ try{
   await p.route('**/family-command-documents/list',r=>{documentRequests++;return documentsOffline?r.abort('internetdisconnected'):r.fulfill({json:{documents:[{id:'doc-search',title:'Zahnarztrechnung',document_type:'Rechnung',summary:'Kontrolle',metadata:{deadline:'2026-09-18'},tags:['Versicherung'],links:[{source_kind:'person',source_id:'child-a'}]}]}});});
   await p.route('**/family-command-documents/readable?id=doc-search',r=>r.fulfill({json:{title:'Zahnarztrechnung',content:{title:'Zahnarztrechnung',sections:[{paragraph:'Testdokument für Kind A'}]}}}));
   await p.goto(`http://127.0.0.1:${server.address().port}/?access=test`);
-  await p.waitForFunction(()=>window.__fcSearch&&window.__fcMobileSchoolDayV947&&document.querySelector('.fc38-child'));
+  await p.waitForFunction(()=>document.documentElement.dataset.fcReady==='1'&&window.__fcSearch&&window.__fcMobileSchoolDayV947&&document.querySelector('.fc38-child'));
   await p.evaluate(()=>{
     todayISO=()=> '2026-09-07';
     data.events=[{id:'dental',title:'Zahnarzt',date:'2026-09-17',personIds:['child-a'],time:'10:00'}, {id:'past-dental',title:'Zahnarzt früher',date:'2026-01-02'}, {id:'today-event',title:'Bibliothek',date:'2026-09-07',time:'16:00',personIds:['child-a']}];

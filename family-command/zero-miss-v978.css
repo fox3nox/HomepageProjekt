@@ -1,34 +1,21 @@
-/* Familienzentrale V9.78 · Zero-Miss mobile density */
+/* One event list, independent open pendencies and readable child context. */
 #today .fc978-digest{border-top:1px solid #e7edf4;background:#fbfdff}
-#today .fc978-digest-group,#today .fc978-pendencies{padding:8px 11px}
+#today .fc978-pendencies{padding:10px 12px}
 #today .fc978-pendencies{border-top:1px solid #edf1f6;background:#fffdf8}
 #today .fc978-digest-head{display:flex;align-items:center;justify-content:space-between;gap:8px;margin-bottom:5px}
-#today .fc978-digest-head>span{font-size:9px;line-height:1.2;font-weight:850;letter-spacing:.07em;color:#637b95}
-#today .fc978-digest-head button{min-width:38px;min-height:38px;border:0;background:transparent;color:#2f6ed8;font-size:11px;font-weight:800}
-#today .fc978-digest-row{display:grid;grid-template-columns:50px minmax(0,1fr);align-items:center;gap:8px;width:100%;min-height:42px;padding:4px 2px;border:0;border-top:1px solid #edf1f6;background:transparent;text-align:left;color:#18314f;font:inherit}
-#today .fc978-digest-row:first-of-type{border-top:0}
-#today .fc978-time{font-size:10.5px;font-weight:850;color:#315b87;white-space:nowrap}
-#today .fc978-digest-row b{display:block;font-size:12px;line-height:1.2;overflow-wrap:anywhere}
-#today .fc978-digest-row small{display:block;margin-top:1px;font-size:9.5px;line-height:1.2;color:#718197}
-#today .fc978-pendency{display:grid;grid-template-columns:42px minmax(0,1fr) auto;align-items:center;gap:7px;width:100%;min-height:42px;padding:4px 2px;border:0;border-top:1px solid #f0eadf;background:transparent;text-align:left;color:#4b3a22;font:inherit}
+#today .fc978-digest-head>span{font-size:10px;line-height:1.4;font-weight:800;letter-spacing:.06em;color:#526881}
+#today .fc978-digest-head button{min-width:44px;min-height:44px;border:0;background:transparent;color:#285db5;font-size:12px;font-weight:800}
+#today .fc978-pendency{display:grid;grid-template-columns:42px minmax(0,1fr) auto;align-items:center;gap:7px;width:100%;min-height:44px;padding:7px 2px;border:0;border-top:1px solid #eee5d5;background:transparent;text-align:left;color:#4b3a22;font:inherit}
 #today .fc978-pendency:first-of-type{border-top:0}
-#today .fc978-pendency>span{font-size:8.5px;font-weight:850;letter-spacing:.05em;color:#96671f}
-#today .fc978-pendency>b{font-size:11.5px;line-height:1.2;overflow-wrap:anywhere}
-#today .fc978-pendency>strong{font-size:10.5px;white-space:nowrap;color:#79551d}
-#today .fc978-child-events{display:flex;flex-wrap:wrap;gap:4px;margin-top:5px}
-#today .fc978-child-events button{display:inline-flex;align-items:center;gap:4px;min-height:30px;max-width:100%;padding:4px 7px;border:0;border-radius:999px;background:#edf5ff;color:#2d5f95;font:inherit;text-align:left}
-#today .fc978-child-events span{font-size:8.5px!important;font-weight:850!important;color:#2f6ed8!important;white-space:nowrap}
-#today .fc978-child-events b{font-size:9.5px!important;line-height:1.15!important;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+#today .fc978-pendency>span{font-size:10px;font-weight:800;letter-spacing:.03em;color:#80591b}
+#today .fc978-pendency>b{font-size:13px;line-height:1.35;overflow-wrap:anywhere}
+#today .fc978-pendency>strong{font-size:12px;white-space:nowrap;color:#79551d}
+#today .fc978-child-events{display:grid;gap:5px;margin-top:6px}
+#today .fc978-child-events button{display:flex;align-items:center;gap:7px;min-height:44px;width:100%;min-width:44px;max-width:100%;padding:7px 9px;border:0;border-radius:10px;background:#edf5ff;color:#285783;font:inherit;font-size:12px;text-align:left}
+html body #fcApp #today .fc978-child-events span{font-size:11px!important;font-weight:800!important;color:#285db5!important;white-space:nowrap}
+html body #fcApp #today .fc978-child-events b{min-width:0;font-size:13px!important;line-height:1.35!important;white-space:normal!important;overflow:visible!important;overflow-wrap:anywhere}
 @media(max-width:719px){
-  #today .fc38-dashboard{gap:8px!important}
-  #today .fc38-daybar{padding-bottom:2px!important}
-  #today .fc38-daybar p{font-size:10.5px!important;line-height:1.25!important}
+  #today .fc38-daybar p{font-size:11px!important;line-height:1.35!important}
   #today .fc38-priority{overflow:hidden}
-  #today .fc38-priority>header{padding-bottom:7px!important}
-  #today .fc38-focus{padding-top:7px!important;padding-bottom:7px!important}
-  #today .fc978-digest-group,#today .fc978-pendencies{padding-top:7px;padding-bottom:7px}
-  #today .fc978-digest-row{min-height:40px}
-  #today .fc978-pendency{min-height:40px}
   #today .fc38-children{margin-top:0!important}
-  #today .fc38-child{min-height:50px!important}
 }

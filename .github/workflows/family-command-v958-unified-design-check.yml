@@ -30,7 +30,7 @@ jobs:
       - name: Syntax and wiring
         run: |
           node --check family-command/e2e/visual-audit-v958.spec.mjs
-          grep -q "v9-unified-design-v958.css" family-command/index.html
+          grep -q "v9-unified-design-v958.css" family-command/reference-mobile-v35.js
           grep -q "family-command-v95" family-command/sw.js
       - name: Install Playwright
         run: npm install --no-save playwright

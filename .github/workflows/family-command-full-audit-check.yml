@@ -24,8 +24,9 @@ jobs:
       - name: Boot, cache and private-config invariants
         run: |
           set -euo pipefail
+          absent(){ ! grep -q "$1" "$2"; }
           check(){ label="$1"; shift; if "$@"; then echo "ok: $label"; else echo "FAILED: $label"; exit 1; fi; }
-          check "boot version" grep -q "const VERSION='20260908-v9780'" family-command/index.html
+          check "boot version" grep -q "const VERSION='20260908-v9781'" family-command/index.html
           check "current build marker" grep -q "v9.61.7-reminder-surface" family-command/build.txt
           check "private rules version" grep -q "PRIVATE_RULES_VERSION='2026-08-31-v2'" family-command/index.html
           check "smart documents wired" grep -q "smart-documents.js" family-command/index.html
@@ -46,15 +47,15 @@ jobs:
           check "contacts wired" grep -q "family-contacts.js" family-command/index.html
           check "contacts styles wired" grep -q "family-contacts.css" family-command/index.html
           check "reminder center wired" grep -q "reminder-center.js" family-command/index.html
-          check "unified design wired" grep -q "v9-unified-design-v958.css" family-command/index.html
+          check "unified design wired" grep -q "v9-unified-design-v958.css" family-command/reference-mobile-v35.js
           check "page polish wired" grep -q "v9-page-polish-v959.css" family-command/index.html
           check "form dialog polish imported" grep -q "v9-form-dialog-polish-v960.css" family-command/v9-page-polish-v959.css
           check "interaction accessibility polish imported" grep -q "v9-interaction-accessibility-v961.css" family-command/v9-page-polish-v959.css
-          check "supported PWA cache" grep -Eq "const CACHE='family-command-v(68|69|70|71|72|73|74|75|76|77|78|79|80|81|82|83|84|85|86|87|88|89|90|91|92|93|94|95|96|97|98|99|100|101|102|103|104|105|106|107|108|109|110|111|112|113|114|115|116)'" family-command/sw.js
+          check "supported PWA cache" grep -q "const CACHE='family-command-v117'" family-command/sw.js
           check "zero-miss JS cached" grep -q "zero-miss-v978.js" family-command/sw.js
           check "zero-miss CSS cached" grep -q "zero-miss-v978.css" family-command/sw.js
-          check "retired glance JS not cached" grep -qv "today-glance-v976.js" family-command/sw.js
-          check "retired glance CSS not cached" grep -qv "today-glance-v976.css" family-command/sw.js
+          check "retired glance JS not cached" absent "today-glance-v976.js" family-command/sw.js
+          check "retired glance CSS not cached" absent "today-glance-v976.css" family-command/sw.js
           check "smart document title helper cached" grep -q "smart-documents-title-v973.js" family-command/sw.js
           check "smart document mobile CSS cached" grep -q "smart-documents-mobile-v973.css" family-command/sw.js
           check "daily check JS cached" grep -q "daily-check.js" family-command/sw.js
@@ -101,8 +102,8 @@ jobs:
           check "final layout loaded" grep -q "v9-layout-final-v9622.css" family-command/reference-mobile-v35.js
           check "zero-miss JS loaded" grep -q "zero-miss-v978.js" family-command/reference-mobile-v35.js
           check "zero-miss CSS loaded" grep -q "zero-miss-v978.css" family-command/reference-mobile-v35.js
-          check "retired glance JS not loaded" grep -qv "today-glance-v976.js" family-command/reference-mobile-v35.js
-          check "retired glance CSS not loaded" grep -qv "today-glance-v976.css" family-command/reference-mobile-v35.js
+          check "retired glance JS not loaded" absent "today-glance-v976.js" family-command/reference-mobile-v35.js
+          check "retired glance CSS not loaded" absent "today-glance-v976.css" family-command/reference-mobile-v35.js
           check "zero-miss marker" grep -q "fcZeroMiss='v978'" family-command/reference-mobile-v35.js
           check "final layout marker" grep -q "fcFinalLayout='v9622'" family-command/reference-mobile-v35.js
           check "responsive design version" grep -q "20260907-v9720" family-command/reference-mobile-v35.js
