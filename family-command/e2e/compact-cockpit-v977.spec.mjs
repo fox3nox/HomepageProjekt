@@ -12,7 +12,7 @@ assert.match(css,/#homework[\s\S]*fc9-tasktabs/,'tasks must be compacted');
 assert.match(css,/#more[\s\S]*fc9-tile/,'more screen tiles must be compacted');
 assert.match(loader,/compact-cockpit-v977\.css/);
 assert.match(loader,/compact-cockpit-v977\.js/);
-assert.match(sw,/family-command-v116/);
+assert.match(sw,/family-command-v115/);
 assert.match(sw,/compact-cockpit-v977\.css/);
 assert.match(sw,/compact-cockpit-v977\.js/);
 console.log('V9.77 compact cockpit regression: ok');
