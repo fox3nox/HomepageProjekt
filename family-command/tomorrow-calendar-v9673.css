@@ -12,3 +12,12 @@
 @media(prefers-reduced-motion:reduce){.fc673-calday:active{transform:none}}
 
 #events .fc9-weekdays{grid-template-columns:repeat(7,minmax(0,1fr))!important}
+
+.fc-calendar-disclosure{min-width:0}
+.fc-calendar-disclosure>summary{display:flex;align-items:center;justify-content:space-between;min-height:44px;padding:8px 12px;border:1px solid #dfe7f0;border-radius:12px;background:#fff;color:#345575;font-size:13px;font-weight:700;cursor:pointer;list-style:none}
+.fc-calendar-disclosure>summary::after{content:'+';font-size:20px}
+.fc-calendar-disclosure[open]>summary::after{content:'−'}
+.fc-calendar-disclosure>summary::-webkit-details-marker{display:none}
+.fc-calendar-disclosure .fc673-monthgrid{margin-top:6px}
+.fc-calendar-disclosure .fc673-weekheads span,.fc-calendar-disclosure .fc673-monthgrid>small{font-size:11px;color:#526881}
+html body #fcApp #tomorrow .fc674-inline-pack,html body #fcApp #tomorrow .fc674-inline-note{font-size:12px!important;line-height:1.35!important}

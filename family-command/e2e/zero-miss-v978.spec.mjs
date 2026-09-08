@@ -29,14 +29,14 @@ assert.deepEqual([...api.pendencies().map(x=>x.id)],['rebi','jayden-debt'],'all 
 assert.equal(api.work().length,1,'overdue unfinished work must remain part of the daily state');
 assert.match(js,/HEUTE UNBEDINGT WISSEN/);
 assert.match(js,/BLEIBT OFFEN, BIS ERLEDIGT/);
-assert.match(js,/fc978-child-events/,'child rows must receive same-day exceptional events');
+assert.match(await readFile(new URL('../reference-dashboard-v36.js',import.meta.url),'utf8'),/fc978-child-events/,'the canonical renderer includes child events without a second DOM scan');
 assert.match(css,/fc978-pendency/);
 assert.match(loader,/zero-miss-v978\.css/);
 assert.match(loader,/zero-miss-v978\.js/);
 assert.doesNotMatch(loader,/today-glance-v976/,'duplicate V9.76 glance renderer must no longer load');
-assert.match(sw,/family-command-v117/);
+assert.match(sw,/family-command-v118/);
 assert.match(sw,/zero-miss-v978\.css/);
 assert.match(sw,/zero-miss-v978\.js/);
 assert.doesNotMatch(sw,/today-glance-v976/,'retired duplicate glance must not be precached');
-assert.match(index,/20260908-v9781/,'boot must invalidate the previous mobile loader cache');
+assert.match(index,/20260908-v9800/,'boot must invalidate the previous mobile loader cache');
 console.log('V9.78 zero-miss dashboard regression: ok');

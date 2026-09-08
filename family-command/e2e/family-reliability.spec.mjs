@@ -1,0 +1,93 @@
+import assert from 'node:assert/strict';
+import {createServer} from 'node:http';
+import {readFile, mkdir} from 'node:fs/promises';
+import {resolve,extname,sep} from 'node:path';
+import {chromium,webkit} from 'playwright';
+const root=resolve('family-command'),engine=process.env.FC_BROWSER||'webkit';
+const server=createServer(async(req,res)=>{const path=new URL(req.url,'http://localhost').pathname,file=resolve(root,'.'+(path==='/'?'/index.html':path));if(!file.startsWith(root+sep))return res.writeHead(403).end();try{res.setHeader('Content-Type',({'.html':'text/html','.js':'text/javascript','.css':'text/css','.png':'image/png','.svg':'image/svg+xml'})[extname(file)]||'application/octet-stream');res.end(await readFile(file));}catch{res.writeHead(404).end();}});
+await new Promise(r=>server.listen(0,'127.0.0.1',r));
+const browser=await({chromium,webkit})[engine].launch({headless:true});
+try{
+ const context=await browser.newContext({viewport:{width:390,height:844},isMobile:true,hasTouch:true,timezoneId:'Europe/Zurich',serviceWorkers:'block'});
+ await context.addInitScript({content:await readFile(root+'/e2e/mock-private-core.js','utf8')});
+ await context.route('https://lmrvapstojcecljjdgds.supabase.co/**',route=>route.fulfill({json:{ok:true,commands:[],documents:[],snapshots:[],skipped:true}}));
+ const page=await context.newPage(),errors=[];page.on('pageerror',e=>errors.push(e.message));
+ page.setDefaultTimeout(6000);
+ await page.clock.install({time:new Date('2026-08-28T07:30:00+02:00')});
+ await page.goto(`http://127.0.0.1:${server.address().port}/?access=test`);
+ await page.waitForFunction(()=>document.documentElement.dataset.fcReady==='1'&&window.__fcV9);
+ await page.evaluate(()=>{data.events=[{id:'shared',title:'Gemeinsamer Ausflug',date:todayISO(),time:'09:00',end:'12:00',personIds:['child-a','child-b'],note:'Mitnehmen: Trinkflasche'}];__fcV9.invalidate();});
+ await page.evaluate(()=>fcEditEventDetails('shared'));
+ await page.locator('#fcEventEditName').fill('Gemeinsamer Ausflug aktualisiert');
+ await page.locator('.fc-event-edit-save').click();
+ assert.deepEqual(await page.evaluate(()=>data.events[0].personIds),['child-a','child-b'],'editing a title must preserve every assigned person');
+ console.log('PASS shared event title edit preserves people');
+ await page.evaluate(()=>fcEditEventDetails('shared'));
+ await page.locator('#fcEventEditPerson input[value="child-b"]').uncheck();
+ await page.locator('#fcEventEditPerson input[value="child-c"]').check();
+ await page.evaluate(()=>data.events[0].personIds.push('oli'));
+ await page.locator('.fc-event-edit-save').click();
+ assert.deepEqual(await page.evaluate(()=>data.events[0].personIds),['child-a','oli','child-c'],'intentional assignment changes merge with assignments received while form was open');
+ await page.evaluate(()=>__fcV9.editEvent('shared'));
+ await page.locator('#fc9EvTitle').fill('Neuer Titel im zweiten Formular');
+ await page.locator('#fc9Modal [data-save]').click();
+ assert.deepEqual(await page.evaluate(()=>data.events[0].personIds),['child-a','oli','child-c']);
+ await page.evaluate(()=>__fcV9.editEvent('shared'));
+ await page.evaluate(()=>data.events=[]);
+ await page.locator('#fc9Modal [data-save]').click();
+ assert.equal(await page.evaluate(()=>data.events.length),0,'saving an editor cannot resurrect a remotely deleted event');
+ await page.keyboard.press('Escape');
+ console.log('PASS both event editors preserve explicit multi-person changes and remote deletion');
+ await page.evaluate(()=>{
+  data.events=[{id:'bike',title:'Veloprüfung',date:todayISO(),personIds:['child-a'],note:'Mitnehmen: Velohelm'},{id:'call',title:'Telefonat',date:todayISO(),time:'08:45',personIds:['oli']},{id:'swim',title:'Schwimmen',date:'2026-08-29',time:'08:00',personIds:['child-b'],note:'Mitnehmen: Badezeug'}];
+  data.todos=[{id:'admin',title:'Versicherung ablegen',date:todayISO(),done:false},{id:'undated',title:'Ohne Frist',done:false}];
+  data.homework=[{id:'hw1',personId:'child-a',dueDate:todayISO(),title:'Seite 42',subject:'Mathe',done:false},{id:'tomorrow-work',personId:'child-c',dueDate:'2026-08-29',title:'Lesebuch einpacken',done:false}];
+  data.reminders=[{id:'bag',personId:'child-b',days:[6],items:['Wochenheft']}];
+  data.pendencies=[{id:'debt',title:'Rückzahlung',amount:20,done:false}];
+  for(const p of data.people.filter(x=>x.id!=='oli'))data.schedules[p.id]={5:[{start:'08:20',end:'11:50',depart:'07:55',label:'Schule'}],6:[{start:'08:20',end:'11:50',depart:'07:55',label:'Schule'}]};
+  __fcV9.invalidate();__fcV9.open('today');renderToday();
+ });
+ const dash=page.locator('#today > .fc38-dashboard');
+ const before=await page.evaluate(()=>JSON.stringify(data));
+ assert.equal(await dash.locator('.fc38-task').first().getAttribute('data-fc38-homework'),'hw1','due school work precedes ordinary admin work');
+ assert.match(await dash.locator('.fc38-task').first().innerText(),/Kind A/,'task owner is rendered in Today');
+ assert.match(await dash.locator('.fc38-tomorrow').innerText(),/Lesebuch einpacken/,'homework due tomorrow belongs to the preparation preview');
+ const focus=await dash.locator('.fc38-focus').boundingBox(),task=await dash.locator('.fc38-task').first().boundingBox();assert.ok(focus.y<task.y,'next departure is before tasks');
+ const kids=await dash.locator('.fc38-children').boundingBox(),debt=await dash.locator('.fc978-digest').boundingBox();assert.ok(debt.y>=kids.y+kids.height,'administration follows children');
+ for(const width of [390,393,402,430,768,1024,1440]){
+  await page.setViewportSize({width,height:844});
+  await page.waitForFunction(()=>document.querySelector('#today [data-focus-child="child-c"]')?.getClientRects().length);
+  assert.equal(await page.evaluate(()=>document.documentElement.scrollWidth>innerWidth),false,`${width}px page overflow`);
+  await page.waitForFunction(()=>{const buttons=[...document.querySelectorAll('#today > .fc38-dashboard .fc38-check,#today > .fc38-dashboard .fc38-go')];return buttons.length>=2&&buttons.every(e=>{const r=e.getBoundingClientRect();return r.width>=43.9&&r.height>=43.9})});
+  if(width<=430)await page.waitForFunction(()=>{const child=document.querySelector('#today [data-focus-child="child-c"]')?.getBoundingClientRect(),nav=document.querySelector('.fc9-nav')?.getBoundingClientRect();return child&&nav&&child.bottom<=nav.top});
+  if(process.env.FC_QA_DIR){await mkdir(process.env.FC_QA_DIR,{recursive:true});await page.screenshot({path:resolve(process.env.FC_QA_DIR,`family-${engine}-${width}.png`)});}
+ }
+ assert.equal(await page.evaluate(()=>JSON.stringify(data)),before,'presentation does not mutate family state');
+ await page.setViewportSize({width:390,height:844});
+ await page.locator('.fc9-nav [data-screen="homework"]').click();
+ assert.match(await page.locator('#homework [data-hw="hw1"]').innerText(),/Kind A/);
+ assert.equal(await page.locator('#homework [data-hw="hw1"] .fc-person-badge').count(),1);
+ assert.match(await page.locator('#homework [data-todo="admin"]').innerText(),/Heute/);
+ await page.locator('.fc9-nav [data-screen="tomorrow"]').click();
+ assert.match(await page.locator('#tomorrow [data-person="child-b"]').innerText(),/Wochenheft.*Badezeug|Badezeug.*Wochenheft/s);
+ await page.locator('.fc9-nav [data-screen="events"]').click();
+ assert.equal(await page.locator('.fc-calendar-disclosure').evaluate(e=>e.open),false);
+ const event=await page.locator('#events [data-event="bike"]').boundingBox(),nav=await page.locator('.fc9-nav').boundingBox();assert.ok(event.y<nav.y,'agenda visible before expanding month');
+ for(const width of [390,393,402,430,768,1024,1440]){
+  await page.setViewportSize({width,height:844});
+  const clipped=await page.locator('#events [data-event]').evaluateAll(rows=>rows.filter(row=>[...row.querySelectorAll('.fc9-event-preparation,.fc9-row-main')].some(child=>child.getBoundingClientRect().bottom>row.getBoundingClientRect().bottom+1)).map(row=>row.dataset.event));
+  assert.deepEqual(clipped,[],`${width}px calendar packing remains inside its row`);
+  if(process.env.FC_QA_DIR)await page.screenshot({path:resolve(process.env.FC_QA_DIR,`calendar-${engine}-${width}.png`)});
+ }
+ await page.setViewportSize({width:390,height:844});
+ await page.locator('.fc-calendar-disclosure summary').click();
+ await page.locator('[data-fc673-date="2026-08-29"]').click();
+ assert.equal(await page.evaluate(()=>__fcV9.state.weekDate),'2026-08-29');
+ await page.locator('.fc-search-entry').click();await page.getByRole('searchbox',{name:'Suchbegriff',exact:true}).fill('Kind B Wochenheft');
+ assert.match(await page.locator('.fc-search-results').innerText(),/Erinnerungen/);
+ await page.locator('.fc-search-results [data-result]').first().click();
+ assert.match(await page.locator('#fcReminderCenter').innerText(),/Wochenheft/);
+ await page.keyboard.press('Escape');
+ assert.deepEqual(errors,[]);
+ console.log(`PASS ${engine}: task ownership, semantic hierarchy, all requested widths, preparation, compact calendar and reminder search`);
+}finally{await browser.close();await new Promise(r=>server.close(r));}

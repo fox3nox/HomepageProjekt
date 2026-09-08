@@ -8,7 +8,7 @@ const iso=d=>`${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${Str
 const today=()=>{try{return typeof todayISO==='function'?todayISO():iso(new Date())}catch(_){return iso(new Date())}};
 const addDays=(value,n)=>{const d=new Date(`${value}T12:00:00`);d.setDate(d.getDate()+n);return iso(d)};
 function packFor(p,date){
-  if(typeof schoolDayFor==='function'){const x=schoolDayFor(p.id,date);return{items:x.items,special:x.special,note:x.notes.join(' · ')}}
+  if(typeof schoolDayFor==='function'){const x=schoolDayFor(p.id,date);const prep=typeof eventPreparationFor==='function'?eventPreparationFor(p.id,date):[];return{items:[...new Set([...x.items,...prep.map(v=>v.text)])],special:x.special,note:x.notes.join(' · ')}}
   return{items:[],special:[],note:''};
 }
 function compactPackText(info){
@@ -16,14 +16,14 @@ function compactPackText(info){
   return info.items.join(' · ');
 }
 function enhanceTomorrow(){
-  const root=document.getElementById('tomorrow');if(!root||!root.classList.contains('active'))return;
+  const root=document.getElementById('tomorrow');if(!root)return;
   root.querySelector('.fc673-tomorrow-pack')?.remove();
   const section=[...root.querySelectorAll('.fc9-section')].find(s=>/Kinder morgen/i.test(s.querySelector('.fc9-section-head h2')?.textContent||''));if(!section)return;
   const date=addDays(today(),1),people=(D().people||[]).filter(p=>p.id!=='oli');
   section.classList.add('fc674-tomorrow-children');
   for(const row of section.querySelectorAll('.fc9-person')){
     row.querySelectorAll('.fc674-inline-pack,.fc674-inline-note').forEach(x=>x.remove());
-    const name=row.querySelector('b')?.textContent?.trim()||'',p=people.find(x=>String(x.name||'').trim()===name);if(!p)continue;
+    const p=people.find(x=>String(x.id)===row.dataset.person);if(!p)continue;
     const info=packFor(p,date),text=compactPackText(info);if(!text&&!info.note)continue;
     const main=row.querySelector('b')?.parentElement;if(!main)continue;
     if(text){const line=document.createElement('span');line.className='fc674-inline-pack';line.textContent=text;main.appendChild(line)}
@@ -44,25 +44,23 @@ function openCalendarDate(date){
   return true;
 }
 function enhanceCalendar(){
-  const root=document.getElementById('events');if(!root||!root.classList.contains('active')||window.__fcV9?.state?.calendarMode!=='agenda')return;
+  const root=document.getElementById('events');if(!root||window.__fcV9?.state?.calendarMode!=='agenda')return;
   const month=root.querySelector('.fc9-month');if(!month)return;
-  const {y,m,days,offset}=monthData(),selected=window.__fcV9?.state?.weekDate||'',now=today(),eventSig=(D().events||[]).map(e=>`${e.id||''}:${e.date||''}:${e.endDate||''}`).join('|'),signature=`${y}-${m}-${selected}-${eventSig}`;
+  const {y,m,days,offset}=monthData(),selected=window.__fcV9?.state?.weekDate||'',now=today(),filter=window.__fcV9?.state?.calendarFilter||'all',filtered=(D().events||[]).filter(e=>filter==='all'||(e.personIds||[]).includes(filter)),eventSig=filtered.map(e=>`${e.id||''}:${e.date||''}:${e.endDate||''}`).join('|'),signature=`${y}-${m}-${selected}-${filter}-${eventSig}`;
   let grid=root.querySelector('.fc673-monthgrid');
   if(grid?.dataset.fc673Signature===signature){document.documentElement.dataset.fcCalendarDays='v674';return}
   const cells=[];for(let i=0;i<offset;i++)cells.push('<span class="fc673-calblank"></span>');
-  for(let day=1;day<=days;day++){const date=`${y}-${String(m+1).padStart(2,'0')}-${String(day).padStart(2,'0')}`,wd=new Date(`${date}T12:00:00`).getDay(),has=(D().events||[]).some(e=>String(e.date||'')<=date&&String(e.endDate||e.date||'')>=date);cells.push(`<button type="button" class="fc673-calday${date===now?' is-today':''}${date===selected?' is-selected':''}${wd===0||wd===6?' is-weekend':''}" data-fc673-date="${date}" aria-label="${day}. ${m+1}. öffnen"><b>${day}</b>${has?'<i aria-hidden="true"></i>':''}</button>`)}
+  for(let day=1;day<=days;day++){const date=`${y}-${String(m+1).padStart(2,'0')}-${String(day).padStart(2,'0')}`,wd=new Date(`${date}T12:00:00`).getDay(),has=filtered.some(e=>String(e.date||'')<=date&&String(e.endDate||e.date||'')>=date);cells.push(`<button type="button" class="fc673-calday${date===now?' is-today':''}${date===selected?' is-selected':''}${wd===0||wd===6?' is-weekend':''}" data-fc673-date="${date}" aria-label="${day}. ${m+1}. öffnen"><b>${day}</b>${has?'<i aria-hidden="true"></i>':''}</button>`)}
   const html=`<div class="fc673-monthgrid" data-fc673-signature="${esc(signature)}"><div class="fc673-weekheads"><span>Mo</span><span>Di</span><span>Mi</span><span>Do</span><span>Fr</span><span>Sa</span><span>So</span></div><div class="fc673-days">${cells.join('')}</div><small>Datum antippen, um den Tag zu öffnen</small></div>`;
-  if(grid)grid.outerHTML=html;else month.insertAdjacentHTML('afterend',html);
+  if(grid)grid.outerHTML=html;else{month.insertAdjacentHTML('afterend',`<details class="fc-calendar-disclosure" ${window.__fcV9.state.calendarExpanded?'open':''}><summary>Monat auswählen</summary>${html}</details>`);const details=root.querySelector('.fc-calendar-disclosure');details.addEventListener('toggle',()=>{window.__fcV9.state.calendarExpanded=details.open})}
   document.documentElement.dataset.fcCalendarDays='v674';
 }
-let timer=0;function run(){clearTimeout(timer);timer=setTimeout(()=>{enhanceTomorrow();enhanceCalendar()},20)}
-const obs=new MutationObserver(ms=>{if(ms.every(m=>m.target?.closest?.('.fc674-tomorrow-children,.fc673-monthgrid')))return;run()});
+function run(){enhanceTomorrow();enhanceCalendar()}
 function install(){
-  const app=document.getElementById('fcApp')||document.body;obs.observe(app,{childList:true,subtree:true});
+  document.addEventListener('fc:v9:render',e=>{if(e.detail?.screen==='tomorrow'||e.detail?.screen==='events')run()});
   document.addEventListener('click',e=>{
-    const monthDay=e.target?.closest?.('[data-fc673-date]');if(monthDay){e.preventDefault();e.stopImmediatePropagation();openCalendarDate(monthDay.dataset.fc673Date);return}
-    const weekDay=e.target?.closest?.('#events [data-week-date]');if(weekDay){e.preventDefault();e.stopImmediatePropagation();openCalendarDate(weekDay.dataset.weekDate);return}
-    if(e.target.closest?.('[data-screen="tomorrow"],[data-screen="events"]'))setTimeout(run,30)
+    const day=e.target?.closest?.('[data-fc673-date],#events [data-week-date]');
+    if(day){e.preventDefault();e.stopImmediatePropagation();openCalendarDate(day.dataset.fc673Date||day.dataset.weekDate)}
   },true);
   run();
 }

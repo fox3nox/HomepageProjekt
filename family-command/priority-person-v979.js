@@ -1,8 +1,11 @@
-/* V9.79 · read-only task ownership enhancer. */
-(()=>{'use strict';if(window.__fcPriorityPersonV979)return;window.__fcPriorityPersonV979=true;
-const D=()=>{try{return typeof data!=='undefined'&&data?data:{}}catch(_){return{}}};
-const people=()=>new Map((D().people||[]).map(p=>[String(p.id),p]));
-const colors={jayden:'#2563eb',fynn:'#b45309',eliyah:'#059669',oli:'#111827'};
-function enhanceTasks(){const root=document.getElementById('homework');if(!root)return;const pm=people();root.querySelectorAll('[data-homework]').forEach(row=>{const id=row.dataset.homework,h=(D().homework||[]).find(x=>String(x.id)===String(id));if(!h?.personId)return;mark(row,h.personId,pm)});root.querySelectorAll('[data-todo]').forEach(row=>{const id=row.dataset.todo,t=(D().todos||[]).find(x=>String(x.sourceCommandId||x.clientRef||x.id||`${x.date}|${x.title}`)===String(id));if(t?.personId)mark(row,t.personId,pm)});document.documentElement.dataset.fcPriorityPerson='v979'}
-function mark(row,pid,pm){const p=pm.get(String(pid));if(!p)return;row.classList.add('fc979-person-row');row.style.setProperty('--fc979-person',p.color||colors[pid]||'#526881');const main=row.querySelector('.fc9-row-main');if(!main||main.querySelector('.fc979-person-badge'))return;const badge=document.createElement('span');badge.className='fc979-person-badge';badge.textContent=p.name;main.prepend(badge)}
-document.addEventListener('fc:v9:render',e=>{if(e.detail?.screen==='homework')enhanceTasks()});if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',enhanceTasks,{once:true});else enhanceTasks();window.__fcPriorityPersonV979API={enhanceTasks};})();
+/* Shared person identity and explicit assignment controls. No DOM enhancement pass. */
+(()=>{'use strict';
+const esc=s=>String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+const people=()=>typeof data!=='undefined'?(data.people||[]):[];
+const ids=value=>[...new Set((Array.isArray(value)?value:[]).map(String).filter(Boolean))];
+function badge(id){const p=people().find(x=>String(x.id)===String(id));if(!p)return'';const color=/^#[\da-f]{3,8}$/i.test(p.color||'')?p.color:'#526881';return `<span class="fc-person-badge" data-person-id="${esc(p.id)}" style="--fc-person:${color}"><i aria-hidden="true">${esc(String(p.name||'?').trim().charAt(0))}</i>${esc(p.name)}</span>`}
+function picker(id,selected=[]){const chosen=ids(selected),known=people().map(p=>String(p.id)),all=[...people(),...chosen.filter(x=>!known.includes(x)).map(id=>({id,name:'Nicht mehr hinterlegte Person ('+id+')'}))];return `<fieldset class="fc-person-picker" id="${esc(id)}"><legend>Personen</legend>${all.map(p=>`<label><input type="checkbox" value="${esc(p.id)}" ${chosen.includes(String(p.id))?'checked':''}>${badge(p.id)||esc(p.name)}</label>`).join('')}</fieldset>`}
+function selection(root,original=[],latest=original){const initial=ids(original),selected=ids([...root.querySelectorAll('input:checked')].map(x=>x.value)),removed=initial.filter(x=>!selected.includes(x));return ids([...ids(latest).filter(x=>!removed.includes(x)),...selected.filter(x=>!initial.includes(x))])}
+function compareWork(a,b,date){const rank=x=>{const d=String(x.date||'');if(d&&d<date)return 0;if(d&&d>date)return 4;if(x.priority)return 1;if(x.kind==='homework')return 2;return d?3:5};return rank(a)-rank(b)||String(a.date||'9999').localeCompare(String(b.date||'9999'))||Number(!!b.priority)-Number(!!a.priority)||Number(b.kind==='homework')-Number(a.kind==='homework')}
+window.__fcPersonIdentity={badge,picker,selection,compareWork};
+})();

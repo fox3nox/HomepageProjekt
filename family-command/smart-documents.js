@@ -86,7 +86,7 @@
     if(count)count.textContent=`${shown.length} ${shown.length===1?'Dokument':'Dokumente'}`;
     root.innerHTML=shown.length?shown.map(d=>{
       const ids=linkedPeople(d),type=typeMeta(d),date=dateLabel(d.created_at);
-      return `<button type="button" class="fc-doc-item" data-doc="${esc(d.id)}" aria-label="${esc(d.title||'Dokument')} öffnen"><span class="fc-doc-type" aria-hidden="true">${type.icon}</span><span class="fc-doc-main"><b>${esc(d.title||'Dokument')}</b><span class="fc-doc-meta"><span class="fc-doc-chip">${esc(personLabel(ids))}</span>${date?`<span>${esc(date)}</span>`:''}<span>${type.label}</span></span></span><span class="fc-doc-chevron" aria-hidden="true">›</span></button>`;
+      return `<button type="button" class="fc-doc-item" data-doc="${esc(d.id)}" aria-label="${esc(d.title||'Dokument')} öffnen"><span class="fc-doc-type" aria-hidden="true">${type.icon}</span><span class="fc-doc-main"><b>${esc(d.title||'Dokument')}</b><span class="fc-doc-meta">${ids.length?ids.map(id=>window.__fcPersonIdentity?.badge(id)||'').join(' '):'<span class="fc-doc-chip">'+esc(personLabel(ids))+'</span>'}${date?`<span>${esc(date)}</span>`:''}<span>${type.label}</span></span></span><span class="fc-doc-chevron" aria-hidden="true">›</span></button>`;
     }).join(''):`<div class="fc9-empty">${search?'Keine Dokumente passen zu deiner Suche.':'Keine Dokumente in diesem Filter.'}</div>`;
     root.querySelectorAll('[data-doc]').forEach(b=>b.onclick=()=>window.fcOpenOriginal?.(b.dataset.doc));
     renderFilters(m);

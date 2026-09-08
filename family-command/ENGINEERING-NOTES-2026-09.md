@@ -1,5 +1,73 @@
 # Familienzentrale: Zuverlässigkeit und täglicher Fokus
 
+## Optimierungszyklus V9.80 (8. September 2026)
+
+Ausgangsstand: `31f1e7885631504a1423bdb511b55872e9aea0e9` (PR #168).
+Aktuelle Actions, Pages und Production Smoke waren grün. Der ältere offene PR #156
+wurde geprüft und bleibt unberührt. Alle folgenden Tests verwenden generische
+lokale Daten; produktive Familiendaten und Datenbankschema wurden nicht verändert.
+
+Der neue Verhaltenstest reproduzierte einen P0-Fehler: Beide Terminformulare
+ersetzten beim blossen Ändern eines Titels mehrere Personen durch eine einzige.
+Sie verwenden jetzt denselben expliziten Mehrpersonen-Picker. Nur bewusst geänderte
+Zuordnungen werden auf den beim Speichern aktuellen Datensatz angewendet; neue
+Zuordnungen aus einer zwischenzeitlichen Aktualisierung bleiben erhalten. Ein
+inzwischen gelöschter Termin wird durch das zweite Formular nicht wieder angelegt.
+
+Die bestehende Datei `priority-person-v979.js` ist jetzt ein synchroner, gemeinsam
+genutzter Baustein für Personenanzeigen, Auswahlfelder und Aufgabenpriorität. Sie
+wird vor den Renderern geladen und enthält keinen nachträglichen DOM-Durchlauf.
+Der bisherige Hausaufgaben-Selektor `data-homework` passte nicht zum tatsächlichen
+`data-hw`; Heute, Aufgaben, Kalender, Dokumentlisten, Erinnerungen und passende
+Suchergebnisse rendern die Personenanzeige nun direkt. Gespeicherte Namen und
+Farben bleiben die Quelle. Die zugehörige CSS-Datei besitzt diesen Baustein.
+
+Heute zeigt den nächsten gespeicherten Zeitpunkt vor den Aufgaben. Überfällige
+Punkte bleiben vorn; bei vergleichbarer Dringlichkeit folgt Schule vor Routinearbeit.
+Ein wichtiger Punkt wird direkt angezeigt, bei überfälliger/markierter Arbeit bis
+zu zwei; die Gesamtzahl und „Alle Aufgaben“ halten weitere Arbeit erreichbar.
+Pendenzen bleiben bis zur ausdrücklichen Erledigung sichtbar, folgen aber dem
+Familientag. Kinderereignisse entstehen direkt im kanonischen Heute-Renderer;
+der zusätzliche Kinder-DOM-Durchlauf aus V9.78 entfällt. Die Morgen-Vorschau
+berücksichtigt auch fällige Aufgaben und Hausaufgaben.
+
+Morgen verbindet explizite Termin-Packtexte mit der jeweiligen Kinderzeile,
+auch ohne feste Schulzeit. Der leere To-do-Abschnitt entfällt an seiner Quelle.
+Der Kalender zeigt die Agenda sofort; „Monat auswählen“ öffnet das Datumsraster.
+Tagesmarkierungen respektieren den Personenfilter. Bestehende Tag-/Wochenwechsel,
+Historie und offene Kalenderauswahl bleiben erhalten. Morgen/Kalender und die
+Erinnerungskachel reagieren auf `fc:v9:render`; ihre MutationObserver und
+verzögerten Render-Timer entfallen. Auch ein zunächst unsichtbar vorgerenderter
+Bereich erhält seine Ergänzungen vor dem nächsten Öffnen.
+
+Die globale Suche durchsucht nun zusätzlich gespeicherte Mitnehm-Erinnerungen
+nach Inhalt und Person und öffnet die bestehende Erinnerungszentrale. Die sichere
+Dokumentprüfung mit ausdrücklicher Bestätigung bleibt unverändert.
+
+Boot/Loader: `20260908-v9800`, PWA-Cache: `family-command-v118`. Der Cache-Vertrag
+enthält alle verwalteten Start-/Loader-Dateien einschliesslich Personenbaustein
+und verzögert geladenen AI-Modulen. Schlägt ein erforderlicher Download fehl,
+scheitert die Installation und entfernt nur den unvollständigen neuen Cache.
+Der bisherige aktive Cache bleibt bestehen. Erst nach vollständiger Installation
+folgen Aktivierung und Bereinigung alter Releases. Der Offline-Leseweg verwendet
+nur den Cache seines Releases. Header-Version und Header-Dateien bleiben unverändert.
+
+Neue Regressionen: `family-reliability.spec.mjs` (beide Formulare, konkurrierende
+Zuordnungen, gelöschter Termin, Rangfolge, Personen, Vorbereitung, Kalender,
+Erinnerungssuche und 390/393/402/430/768/1024/1440 Pixel in WebKit/Chromium) sowie
+`pwa-release.spec.mjs` (vollständiger Asset-Vertrag, abgebrochene Installation und
+Aktivierung). Bestehende Offline-, Cloud-, Dokument-, Tages-, Fokus-, Header- und
+Interaktionsregressionen bleiben Release-Bedingung. CI/Deployment-Status ist im
+zugehörigen PR und den Actions zu prüfen, nicht aus diesem Text abzuleiten.
+
+Verbleibende Schulden: mehrere historische CSS-Dateien und weitere Modul-Observer;
+der Heute-Basisrenderer besteht als inerte Kompatibilitätsquelle weiter. Smart
+Inbox besitzt keine dauerhafte Offline-Importwarteschlange; die Dokumentübersicht
+und „Mehr“ können noch kompakter werden. Server-Advisors melden EXECUTE-Rechte auf
+einer Triggerfunktion und die ungenutzte Passwortschutz-Einstellung; kein belegter
+direkter Tabellenzugriff (RLS aktiv, State-RPC nur service_role). Die private Live-UI
+und eine physisch installierte iPhone-PWA sind ohne dortigen Zugang nicht geprüft.
+
 Stand: 6. September 2026. Bestandsaufnahme vor der Umsetzung auf main
 `047e52e` (PR #152), keine offenen PRs. Die erste Korrekturgruppe wurde über
 [#153](https://github.com/fox3nox/HomepageProjekt/pull/153) ausgeliefert.

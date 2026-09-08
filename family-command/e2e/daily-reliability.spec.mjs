@@ -47,7 +47,7 @@ try {
     assert.doesNotMatch(await p.locator('#events .fc9-day-label').allTextContents().then(a=>a.join(' ')),/5\. September/);
   });
   await check('weekend selection survives repeated taps, view changes, rerenders and navigation',async()=>{
-    await p.locator('[data-fc673-date="2026-09-12"]').tap();await p.waitForTimeout(100);
+    await p.locator('.fc-calendar-disclosure summary').tap();await p.locator('[data-fc673-date="2026-09-12"]').tap();await p.waitForTimeout(100);
     assert.equal(await p.evaluate(()=>__fcV9.state.weekDate),'2026-09-12');
     for(const date of ['2026-09-13','2026-09-07','2026-09-12']){await p.locator(`[data-week-date="${date}"]`).tap();assert.equal(await p.evaluate(()=>__fcV9.state.weekDate),date);}
     for(const screen of ['tomorrow','homework','today','events'])await p.locator(`.fc9-nav [data-screen="${screen}"]`).tap();
