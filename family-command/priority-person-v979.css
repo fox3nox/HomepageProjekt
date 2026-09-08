@@ -2,7 +2,7 @@
 #today .fc978-pendencies{background:#fbfcfe!important;padding:7px 12px!important;border-top:1px solid #edf1f6!important}
 #today .fc978-digest-head{margin:0!important}
 #today .fc978-digest-head>span{font-size:9px!important;color:#718197!important}
-#today .fc978-pendency{min-height:38px!important;padding:5px 2px!important;color:#526881!important;grid-template-columns:34px minmax(0,1fr) auto!important}
+#today .fc978-pendency{min-height:44px!important;padding:5px 2px!important;color:#526881!important;grid-template-columns:34px minmax(0,1fr) auto!important}
 #today .fc978-pendency>span{font-size:9px!important;color:#8290a1!important}
 #today .fc978-pendency>b{font-size:11px!important;font-weight:700!important;line-height:1.25!important}
 #today .fc978-pendency>strong{font-size:10px!important;color:#718197!important}
