@@ -1,0 +1,35 @@
+name: Family Command V9.78 zero-miss regression
+on:
+  push:
+    branches: [main, feat/v978-zero-miss-dashboard]
+    paths:
+      - 'family-command/zero-miss-v978.js'
+      - 'family-command/zero-miss-v978.css'
+      - 'family-command/reference-mobile-v35.js'
+      - 'family-command/sw.js'
+      - 'family-command/index.html'
+      - 'family-command/e2e/zero-miss-v978.spec.mjs'
+      - '.github/workflows/family-command-zero-miss-v978-check.yml'
+  pull_request:
+    branches: [main]
+    paths:
+      - 'family-command/zero-miss-v978.js'
+      - 'family-command/zero-miss-v978.css'
+      - 'family-command/reference-mobile-v35.js'
+      - 'family-command/sw.js'
+      - 'family-command/index.html'
+      - 'family-command/e2e/zero-miss-v978.spec.mjs'
+      - '.github/workflows/family-command-zero-miss-v978-check.yml'
+permissions:
+  contents: read
+jobs:
+  zero-miss:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+      - run: node --check family-command/zero-miss-v978.js
+      - run: node family-command/e2e/zero-miss-v978.spec.mjs
