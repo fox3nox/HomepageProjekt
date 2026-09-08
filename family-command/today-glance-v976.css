@@ -1,0 +1,10 @@
+/* Familienzentrale V9.76 · compact event-centric glance */
+#today .fc38-focus .fc976-next-line{display:block;margin-top:6px;padding-top:6px;border-top:1px solid #d8e5f3;font-size:10.5px;line-height:1.35;color:#3f6389;white-space:normal;overflow-wrap:break-word}
+#today .fc38-focus .fc976-next-line b{display:inline;margin:0 4px 0 0;font-size:9px;line-height:inherit;letter-spacing:.07em;color:#557493}
+#today .fc976-child-events{display:flex;flex-wrap:wrap;gap:4px;margin-top:5px;min-width:0}
+#today .fc976-child-events span{display:inline-block;max-width:100%;padding:4px 7px;border-radius:999px;background:#edf5ff;color:#315d8e;font-size:10.5px;line-height:1.22;font-weight:760;white-space:normal;overflow-wrap:break-word}
+@media(max-width:390px){
+ #today .fc38-focus .fc976-next-line{font-size:10px;margin-top:5px;padding-top:5px}
+ #today .fc976-child-events{gap:3px;margin-top:4px}
+ #today .fc976-child-events span{font-size:10px;padding:3px 6px}
+}
