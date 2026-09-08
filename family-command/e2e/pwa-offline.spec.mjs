@@ -16,10 +16,10 @@ try {
   await page.goto(base+'/?access=test');
   await page.waitForFunction(()=>document.documentElement.dataset.fcReady==='1'&&!!navigator.serviceWorker.controller);
   await page.evaluate(()=>window.__fcLoadExtrasNow());
-  assert.ok((await page.evaluate(()=>caches.keys())).includes('family-command-v114'));
+  assert.ok((await page.evaluate(()=>caches.keys())).includes('family-command-v115'));
   await context.setOffline(true);
   await page.reload({waitUntil:'domcontentloaded'});
-  await page.waitForFunction(()=>document.documentElement.dataset.fcReady==='1'&&window.__fcTomorrowCalendarV9674);
+  await page.waitForFunction(()=>document.documentElement.dataset.fcReady==='1'&&window.__fcTomorrowCalendarV9674&&window.__fcTodayGlanceV976);
   for(const screen of ['tomorrow','events','homework','more','today']){
     await page.locator(`.fc9-nav [data-screen="${screen}"]`).tap();
     assert.equal(await page.locator('.fc9-screen.active').getAttribute('id'),screen);
@@ -31,5 +31,5 @@ try {
   assert.deepEqual(errors,[],'offline reload must not produce unhandled boot errors');
   await context.setOffline(false);await page.reload();await page.waitForFunction(()=>document.documentElement.dataset.fcReady==='1'&&window.__fcV9);
   assert.equal(await page.title(),'Familienzentrale');
-  console.log('PASS real service-worker warm install, offline reload, navigation and reconnect');
+  console.log('PASS real service-worker warm install, offline reload, V9.76 glance, navigation and reconnect');
 } finally {await browser?.close();server.kill();}
