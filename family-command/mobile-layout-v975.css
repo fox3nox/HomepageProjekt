@@ -1,0 +1,160 @@
+/* Familienzentrale V9.75 · smartphone layout repair
+   Screenshot-driven fixes for Today task width, Tomorrow child rows and safe mobile scrolling. */
+@media (max-width:719px){
+  /* Today: keep task text in the real content column. Grid overrides from older layers must not squeeze it. */
+  html body #fcApp #today .fc38-task{
+    display:flex!important;
+    align-items:center!important;
+    gap:8px!important;
+    width:100%!important;
+    min-width:0!important;
+    min-height:64px!important;
+    height:auto!important;
+    padding:8px 10px!important;
+  }
+  html body #fcApp #today .fc38-check,
+  html body #fcApp #today .fc38-go{
+    flex:0 0 42px!important;
+    width:42px!important;
+    min-width:42px!important;
+    height:42px!important;
+  }
+  html body #fcApp #today .fc38-taskcopy{
+    display:block!important;
+    flex:1 1 auto!important;
+    width:auto!important;
+    min-width:0!important;
+    max-width:none!important;
+    overflow:visible!important;
+  }
+  html body #fcApp #today .fc38-taskcopy strong,
+  html body #fcApp #today .fc38-taskcopy small{
+    display:block!important;
+    width:auto!important;
+    max-width:none!important;
+    white-space:normal!important;
+    word-break:normal!important;
+    overflow-wrap:break-word!important;
+    hyphens:auto!important;
+  }
+  html body #fcApp #today .fc38-taskcopy strong{
+    font-size:14px!important;
+    line-height:1.32!important;
+  }
+  html body #fcApp #today .fc38-taskcopy small{
+    margin-top:4px!important;
+    font-size:11px!important;
+    line-height:1.35!important;
+  }
+
+  /* Keep all dashboard text readable without turning cards into tall one-word columns. */
+  html body #fcApp #today .fc38-priority,
+  html body #fcApp #today .fc38-panel,
+  html body #fcApp #today .fc38-tomorrow{
+    width:100%!important;
+    min-width:0!important;
+  }
+  html body #fcApp #today .fc38-event-main,
+  html body #fcApp #today .fc38-pack>div,
+  html body #fcApp #today .fc38-child>div{
+    min-width:0!important;
+    width:auto!important;
+  }
+
+  /* Tomorrow: each child row grows with its preparation text instead of clipping into the next row. */
+  html body #fcApp #tomorrow .fc674-tomorrow-children .fc9-card{
+    overflow:hidden!important;
+  }
+  html body #fcApp #tomorrow .fc674-tomorrow-children .fc9-person{
+    display:grid!important;
+    grid-template-columns:18px minmax(0,1fr) 64px!important;
+    align-items:start!important;
+    column-gap:10px!important;
+    row-gap:3px!important;
+    width:100%!important;
+    min-width:0!important;
+    min-height:0!important;
+    height:auto!important;
+    max-height:none!important;
+    padding:14px 12px 14px 14px!important;
+    overflow:visible!important;
+  }
+  html body #fcApp #tomorrow .fc674-tomorrow-children .fc9-person>div:not(.fc9-person-time){
+    min-width:0!important;
+    width:auto!important;
+    max-width:none!important;
+    overflow:visible!important;
+  }
+  html body #fcApp #tomorrow .fc674-tomorrow-children .fc9-person b{
+    font-size:15px!important;
+    line-height:1.25!important;
+  }
+  html body #fcApp #tomorrow .fc674-tomorrow-children .fc9-person span,
+  html body #fcApp #tomorrow .fc674-tomorrow-children .fc9-person small{
+    white-space:normal!important;
+    word-break:normal!important;
+    overflow-wrap:break-word!important;
+  }
+  html body #fcApp #tomorrow .fc674-tomorrow-children .fc9-person>div:not(.fc9-person-time)>span:not(.fc674-inline-pack){
+    margin-top:4px!important;
+    font-size:12px!important;
+    line-height:1.38!important;
+  }
+  html body #fcApp #tomorrow .fc674-inline-pack{
+    display:block!important;
+    margin-top:7px!important;
+    font-size:11.5px!important;
+    line-height:1.42!important;
+    font-weight:720!important;
+    color:#405a76!important;
+    white-space:normal!important;
+    word-break:normal!important;
+    overflow-wrap:break-word!important;
+  }
+  html body #fcApp #tomorrow .fc674-inline-note{
+    display:block!important;
+    margin-top:5px!important;
+    font-size:10.5px!important;
+    line-height:1.38!important;
+    white-space:normal!important;
+    word-break:normal!important;
+    overflow-wrap:break-word!important;
+  }
+  html body #fcApp #tomorrow .fc9-person-time{
+    align-self:center!important;
+    justify-self:end!important;
+    width:64px!important;
+    min-width:64px!important;
+    font-size:12px!important;
+    line-height:1.2!important;
+    text-align:right!important;
+    white-space:nowrap!important;
+  }
+  html body #fcApp #tomorrow .fc9-person-time small{
+    margin-top:4px!important;
+    font-size:9px!important;
+    line-height:1.2!important;
+  }
+
+  /* Mobile page rhythm: enough room around sections and below the last card; never hide content behind navigation. */
+  html body #fcApp .fc9-main{
+    padding-left:12px!important;
+    padding-right:12px!important;
+    padding-bottom:34px!important;
+    scroll-padding-bottom:34px!important;
+  }
+  html body #fcApp #tomorrow .fc9-page{
+    gap:18px!important;
+  }
+  html body #fcApp #tomorrow .fc9-section{
+    gap:8px!important;
+  }
+}
+
+@media (max-width:390px){
+  html body #fcApp #today .fc38-task{gap:6px!important;padding-left:8px!important;padding-right:8px!important}
+  html body #fcApp #today .fc38-check,
+  html body #fcApp #today .fc38-go{flex-basis:40px!important;width:40px!important;min-width:40px!important;height:40px!important}
+  html body #fcApp #tomorrow .fc674-tomorrow-children .fc9-person{grid-template-columns:16px minmax(0,1fr) 58px!important;column-gap:8px!important;padding-left:12px!important;padding-right:10px!important}
+  html body #fcApp #tomorrow .fc9-person-time{width:58px!important;min-width:58px!important}
+}
