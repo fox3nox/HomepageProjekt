@@ -17,18 +17,7 @@ function compactMore(){
   const root=document.getElementById('more');if(!root)return;
   const groups=[...root.querySelectorAll('.fc-more-group')];
   const manage=groups.find(g=>/planung\s*&\s*verwaltung/i.test(String(g.querySelector('h2')?.textContent||'')));
-  if(manage&&!manage.dataset.fc977Ready){
-    manage.dataset.fc977Ready='1';
-    manage.classList.add('fc977-collapsible');
-    const head=manage.querySelector('.fc9-section-head');
-    const grid=manage.querySelector('.fc9-more-grid');
-    if(head&&grid){
-      const btn=document.createElement('button');
-      btn.type='button';btn.className='fc977-manage-toggle';btn.setAttribute('aria-expanded','false');btn.textContent='Anzeigen';
-      head.appendChild(btn);grid.hidden=true;
-      btn.addEventListener('click',()=>{const show=grid.hidden;grid.hidden=!show;btn.setAttribute('aria-expanded',String(show));btn.textContent=show?'Ausblenden':'Anzeigen'});
-    }
-  }
+  if(manage)manage.classList.add('fc977-management-compact');
 }
 
 function markScreens(){
