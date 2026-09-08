@@ -22,7 +22,7 @@ for(const [name,engine,width,height] of [['iPhone WebKit',webkit,390,844],['Desk
  const page=await context.newPage(),errors=[];page.setDefaultTimeout(8000);page.on('pageerror',e=>errors.push(e.message));
  await page.clock.setFixedTime(new Date('2026-09-07T06:30:00+02:00'));
  await page.goto(`http://127.0.0.1:${server.address().port}/?access=test`);
- await page.waitForFunction(()=>window.__fcTomorrowCalendarV9674&&window.__fcV9&&window.__fcDialogs);
+ await page.waitForFunction(()=>document.documentElement.dataset.fcReady==='1'&&window.__fcTomorrowCalendarV9674&&window.__fcV9&&window.__fcDialogs);
  await page.evaluate(()=>{
   todayISO=()=> '2026-09-07';
   data.todos=[{id:'permission',title:'Einverständnis für den Ausflug abgeben',date:'2026-09-07',priority:true,done:false}];
