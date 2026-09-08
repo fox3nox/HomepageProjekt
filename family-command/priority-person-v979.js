@@ -1,0 +1,8 @@
+/* V9.79 · read-only task ownership enhancer. */
+(()=>{'use strict';if(window.__fcPriorityPersonV979)return;window.__fcPriorityPersonV979=true;
+const D=()=>{try{return typeof data!=='undefined'&&data?data:{}}catch(_){return{}}};
+const people=()=>new Map((D().people||[]).map(p=>[String(p.id),p]));
+const colors={jayden:'#2563eb',fynn:'#b45309',eliyah:'#059669',oli:'#111827'};
+function enhanceTasks(){const root=document.getElementById('homework');if(!root)return;const pm=people();root.querySelectorAll('[data-homework]').forEach(row=>{const id=row.dataset.homework,h=(D().homework||[]).find(x=>String(x.id)===String(id));if(!h?.personId)return;mark(row,h.personId,pm)});root.querySelectorAll('[data-todo]').forEach(row=>{const id=row.dataset.todo,t=(D().todos||[]).find(x=>String(x.sourceCommandId||x.clientRef||x.id||`${x.date}|${x.title}`)===String(id));if(t?.personId)mark(row,t.personId,pm)});document.documentElement.dataset.fcPriorityPerson='v979'}
+function mark(row,pid,pm){const p=pm.get(String(pid));if(!p)return;row.classList.add('fc979-person-row');row.style.setProperty('--fc979-person',p.color||colors[pid]||'#526881');const main=row.querySelector('.fc9-row-main');if(!main||main.querySelector('.fc979-person-badge'))return;const badge=document.createElement('span');badge.className='fc979-person-badge';badge.textContent=p.name;main.prepend(badge)}
+document.addEventListener('fc:v9:render',e=>{if(e.detail?.screen==='homework')enhanceTasks()});if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',enhanceTasks,{once:true});else enhanceTasks();window.__fcPriorityPersonV979API={enhanceTasks};})();
