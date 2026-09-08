@@ -1,0 +1,4 @@
+import assert from 'node:assert/strict';import{readFile}from'node:fs/promises';
+const js=await readFile(new URL('../semantic-priority-v979.js',import.meta.url),'utf8');const css=await readFile(new URL('../semantic-priority-v979.css',import.meta.url),'utf8');const loader=await readFile(new URL('../reference-mobile-v35.js',import.meta.url),'utf8');
+for(const token of ['fc979-person','fc979-money','semantic-priority-v979.css','semantic-priority-v979.js'])assert.ok(js.includes(token)||css.includes(token)||loader.includes(token),token);
+assert.match(css,/border-left:4px solid var\(--fc-person\)/);assert.match(css,/\.fc38-task\.fc979-money/);assert.ok(loader.indexOf("zero-miss-v978.js")<loader.indexOf("semantic-priority-v979.js"));assert.ok(loader.includes("dataset.fcSemanticPriority='v979'"));console.log('semantic priority v979: ok');
