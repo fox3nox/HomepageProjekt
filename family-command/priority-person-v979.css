@@ -1,0 +1,14 @@
+/* V9.79 · Termine/Schule vor Geld; Personen auf Aufgaben sofort erkennbar. */
+#today .fc978-pendencies{background:#fbfcfe!important;padding:7px 12px!important;border-top:1px solid #edf1f6!important}
+#today .fc978-digest-head{margin:0!important}
+#today .fc978-digest-head>span{font-size:9px!important;color:#718197!important}
+#today .fc978-pendency{min-height:38px!important;padding:5px 2px!important;color:#526881!important;grid-template-columns:34px minmax(0,1fr) auto!important}
+#today .fc978-pendency>span{font-size:9px!important;color:#8290a1!important}
+#today .fc978-pendency>b{font-size:11px!important;font-weight:700!important;line-height:1.25!important}
+#today .fc978-pendency>strong{font-size:10px!important;color:#718197!important}
+#homework .fc979-person-badge{display:inline-flex;align-items:center;gap:5px;margin:0 0 4px;padding:3px 7px;border-radius:999px;background:color-mix(in srgb,var(--fc979-person) 11%,white);color:var(--fc979-person);font-size:10px;line-height:1.2;font-weight:900;letter-spacing:.045em;text-transform:uppercase}
+#homework .fc979-person-badge::before{content:'';width:7px;height:7px;border-radius:50%;background:var(--fc979-person);flex:none}
+#homework .fc9-row.fc979-person-row{border-left:4px solid var(--fc979-person)}
+#homework .fc9-row.fc979-person-row .fc9-row-main>b{font-size:15px;line-height:1.28}
+#homework .fc9-row.fc979-person-row .fc9-row-main>span:not(.fc979-person-badge){font-size:11px}
+@media(max-width:430px){#today .fc978-pendencies{padding-block:5px!important}#homework .fc9-row.fc979-person-row{padding-left:10px!important}}
