@@ -128,6 +128,13 @@ try {
       assert.equal(m.overflow, false, `${width}px horizontal overflow`);
       assert.equal(m.digest, 1); assert.deepEqual(m.small, [], `${width}px touch targets`);
       assert.deepEqual(m.clipped, [], `${width}px clipped text`); assert.equal(m.nav, true);
+      if(width>=1024){
+        const empty=await dashboard.locator('.fc38-priority').evaluate(el=>el.getBoundingClientRect().bottom-el.lastElementChild.getBoundingClientRect().bottom);
+        assert.ok(empty<24,`${width}px priority card must not stretch into an empty second grid row`);
+        const events=await dashboard.locator('.fc978-today-detail').boundingBox(),tomorrow=await dashboard.locator('.fc38-tomorrow').boundingBox();
+        assert.ok(Math.abs(events.y-tomorrow.y)<2,'today and tomorrow share the next desktop row');
+        assert.ok(events.x+events.width<=tomorrow.x,'today and tomorrow must occupy separate columns without overlap');
+      }
       if (process.env.FC_QA_DIR) {
         await mkdir(process.env.FC_QA_DIR, { recursive: true });
         await page.screenshot({ path: resolve(process.env.FC_QA_DIR, `zero-miss-${engine}-${width}.png`), fullPage: true });
