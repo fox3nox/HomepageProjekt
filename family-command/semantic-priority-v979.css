@@ -1,0 +1,16 @@
+/* V9.79 · recognize WHO before reading WHAT */
+#homework [data-fc979-person]{position:relative;border-left:4px solid var(--fc-person)!important;padding-left:10px!important}
+#homework .fc979-personline{display:flex;align-items:center;margin:0 0 5px}
+.fc979-person{display:inline-flex;align-items:center;gap:6px;min-height:24px;padding:2px 8px 2px 3px;border-radius:999px;background:color-mix(in srgb,var(--person) 10%,white);color:var(--person);font-size:11px;line-height:1;font-weight:850;letter-spacing:.025em;text-transform:uppercase}
+.fc979-person i{display:grid;place-items:center;width:20px;height:20px;border-radius:50%;background:var(--person);color:#fff;font-style:normal;font-size:10px;font-weight:900}
+#homework [data-fc979-person="jayden"] .fc979-personline+*,#homework [data-fc979-person="fynn"] .fc979-personline+*,#homework [data-fc979-person="eliyah"] .fc979-personline+*{margin-top:0}
+#today .fc38-priority-list{display:flex;flex-direction:column}
+#today .fc38-priority-list>.fc38-task.fc979-money{order:20;background:#fbfcfe}
+#today .fc38-priority-list>.fc38-task:not(.fc979-money){order:1}
+#today .fc38-task.fc979-money .fc38-taskcopy strong{font-weight:720;color:#4b5e74}
+#today .fc38-task.fc979-money .fc38-taskcopy small{color:#8a98a9}
+#today .fc978-pendencies.fc979-secondary{background:#fbfcfe;border-top:1px solid #edf1f5}
+#today .fc978-pendencies.fc979-secondary .fc978-digest-head span{color:#7a8797}
+#today .fc978-pendencies.fc979-secondary .fc978-pendency{min-height:40px;opacity:.84}
+#today .fc979-important{position:relative}
+@media(max-width:430px){#homework [data-fc979-person]{padding-top:9px!important;padding-bottom:9px!important}.fc979-person{font-size:10.5px}#today .fc978-pendencies.fc979-secondary .fc978-pendency{padding-top:7px;padding-bottom:7px}}
