@@ -8,12 +8,12 @@
   html body #fcApp .fc977-compact .fc9-section-head{min-height:36px!important;margin:0!important}
   html body #fcApp .fc977-compact .fc9-section-head h2{font-size:16px!important;line-height:1.2!important}
 
-  /* Today: denser command center, but keep full touch targets. */
+  /* Today: denser command center, while retaining established readability and target floors. */
   html body #fcApp #today .fc38-dashboard{gap:10px!important}
   html body #fcApp #today .fc38-priority,
   html body #fcApp #today .fc38-panel,
   html body #fcApp #today .fc38-tomorrow{border-radius:16px!important}
-  html body #fcApp #today .fc38-task{min-height:58px!important;padding-top:6px!important;padding-bottom:6px!important}
+  html body #fcApp #today .fc38-task{min-height:60px!important;padding-top:6px!important;padding-bottom:6px!important}
   html body #fcApp #today .fc38-taskcopy strong{font-size:13.5px!important;line-height:1.26!important}
   html body #fcApp #today .fc38-taskcopy small{font-size:10.5px!important;margin-top:2px!important}
   html body #fcApp #today .fc38-child{min-height:52px!important;padding-top:7px!important;padding-bottom:7px!important}
@@ -36,38 +36,38 @@
   html body #fcApp #tomorrow .fc9-person-time{font-size:11px!important}
   html body #fcApp #tomorrow .fc9-person-time small{font-size:8.5px!important;margin-top:2px!important}
 
-  /* Calendar: prioritize agenda rows over chrome. */
+  /* Calendar: prioritize agenda rows over chrome without dropping accessibility floors. */
   html body #fcApp #events .fc9-page{gap:10px!important}
   html body #fcApp #events .fc9-segment{min-height:44px!important}
   html body #fcApp #events .fc9-filters{gap:6px!important;overflow-x:auto!important;padding-bottom:2px!important}
-  html body #fcApp #events .fc9-filter{min-height:40px!important;padding:0 14px!important;white-space:nowrap!important}
+  html body #fcApp #events .fc9-filter{min-height:44px!important;padding:0 14px!important;white-space:nowrap!important}
   html body #fcApp #events .fc9-month{margin-top:2px!important;margin-bottom:2px!important;min-height:58px!important}
   html body #fcApp #events .fc9-day-label{font-size:12px!important;margin:8px 2px 5px!important}
-  html body #fcApp #events .fc9-event{min-height:58px!important;padding-top:7px!important;padding-bottom:7px!important}
-  html body #fcApp #events .fc9-row-main b{font-size:13px!important;line-height:1.22!important}
-  html body #fcApp #events .fc9-row-main span{font-size:10.5px!important;line-height:1.28!important}
+  html body #fcApp #events .fc9-event{min-height:60px!important;padding-top:7px!important;padding-bottom:7px!important}
+  html body #fcApp #events .fc9-row-main b{font-size:14px!important;line-height:1.22!important}
+  html body #fcApp #events .fc9-row-main span{font-size:12px!important;line-height:1.28!important}
   html body #fcApp #events .fc9-time{font-size:11px!important}
 
-  /* Tasks: compact controls and rows, preserve clarity. */
+  /* Tasks: compact layout, established readable type, 44px actions. */
   html body #fcApp #homework .fc9-page{gap:10px!important}
   html body #fcApp #homework .fc9-pagehead{align-items:center!important}
   html body #fcApp #homework .fc9-task-add{gap:6px!important}
-  html body #fcApp #homework .fc9-task-add button{min-height:42px!important;padding:0 12px!important;font-size:11px!important}
+  html body #fcApp #homework .fc9-task-add button{min-height:44px!important;padding:0 12px!important;font-size:11px!important}
   html body #fcApp #homework .fc9-tasktabs{min-height:44px!important}
   html body #fcApp #homework .fc9-row{min-height:64px!important;padding-top:8px!important;padding-bottom:8px!important}
-  html body #fcApp #homework .fc9-row-main b{font-size:13.5px!important;line-height:1.25!important}
-  html body #fcApp #homework .fc9-row-main span{font-size:10.5px!important}
+  html body #fcApp #homework .fc9-row-main b{font-size:14px!important;line-height:1.25!important}
+  html body #fcApp #homework .fc9-row-main span{font-size:12px!important}
 
-  /* More: essential family tools stay prominent; administration becomes denser but remains visible. */
+  /* More: essential family tools stay prominent; administration is denser but remains visible. */
   html body #fcApp #more .fc9-page{gap:14px!important}
   html body #fcApp #more .fc-more-group{gap:6px!important}
   html body #fcApp #more .fc9-more-grid{gap:8px!important}
-  html body #fcApp #more .fc9-tile{min-height:112px!important;padding:11px!important;border-radius:15px!important}
+  html body #fcApp #more .fc9-tile{min-height:112px!important;padding:11px!important;border-radius:16px!important}
   html body #fcApp #more .fc9-tile i{width:40px!important;height:40px!important}
   html body #fcApp #more .fc9-tile b{font-size:13px!important;line-height:1.2!important}
   html body #fcApp #more .fc9-tile span{font-size:10.5px!important;line-height:1.25!important}
   html body #fcApp #more .fc977-management-compact .fc9-more-grid{gap:6px!important}
-  html body #fcApp #more .fc977-management-compact .fc9-tile{min-height:82px!important;padding:9px 10px!important;grid-template-columns:32px minmax(0,1fr)!important;grid-template-rows:auto!important;column-gap:8px!important;align-content:center!important}
+  html body #fcApp #more .fc977-management-compact .fc9-tile{min-height:100px!important;padding:9px 10px!important;grid-template-columns:32px minmax(0,1fr)!important;grid-template-rows:auto!important;column-gap:8px!important;align-content:center!important}
   html body #fcApp #more .fc977-management-compact .fc9-tile i{width:32px!important;height:32px!important;grid-row:1 / span 2!important}
   html body #fcApp #more .fc977-management-compact .fc9-tile b{font-size:11.5px!important;line-height:1.15!important;align-self:end!important}
   html body #fcApp #more .fc977-management-compact .fc9-tile span{font-size:9.5px!important;line-height:1.15!important;align-self:start!important}
