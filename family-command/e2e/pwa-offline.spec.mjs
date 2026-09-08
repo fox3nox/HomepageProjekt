@@ -13,10 +13,13 @@ try {
   await context.addInitScript({content:`if(!localStorage.getItem('family-command-personal-v4')){${readFileSync('family-command/e2e/mock-private-core.js','utf8')}}`});
   await context.route('https://lmrvapstojcecljjdgds.supabase.co/**',route=>route.fulfill({status:200,contentType:'application/json',body:JSON.stringify({ok:true,commands:[],documents:[],snapshots:[],skipped:true})}));
   const page=await context.newPage(),errors=[];page.on('pageerror',e=>errors.push(e.message));
+  await page.goto(base+'/icon.svg');
+  await page.evaluate(async()=>{const old=await caches.open('family-command-v116');await old.put('/index.html',new Response('previous release'));});
   await page.goto(base+'/?access=test');
   await page.waitForFunction(()=>document.documentElement.dataset.fcReady==='1'&&!!navigator.serviceWorker.controller);
   await page.evaluate(()=>window.__fcLoadExtrasNow());
-  assert.ok((await page.evaluate(()=>caches.keys())).includes('family-command-v116'));
+  assert.ok((await page.evaluate(()=>caches.keys())).includes('family-command-v117'));
+  assert.ok(!(await page.evaluate(()=>caches.keys())).includes('family-command-v116'),'activating the new worker removes the previous release cache');
   await context.setOffline(true);
   await page.reload({waitUntil:'domcontentloaded'});
   await page.waitForFunction(()=>document.documentElement.dataset.fcReady==='1'&&window.__fcTomorrowCalendarV9674&&window.__fcZeroMissV978);

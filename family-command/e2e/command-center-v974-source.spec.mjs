@@ -7,7 +7,7 @@ assert.ok(js.includes("filter(t=>!t.archived&&!t.done"),'completed tasks must st
 assert.ok(js.includes("String(t.date||'')<=date"),'older unfinished tasks must remain visible across days');
 assert.ok(js.includes("Number(String(b.date||'')<date)-Number(String(a.date||'')<date)"),'overdue unfinished work must sort ahead of ordinary same-priority work');
 assert.ok(js.includes("schoolPack=finished?[]"),'finished school-day packing reminders must stop cluttering the evening overview');
-assert.ok(js.includes("if(finished&&!prep.length)continue"),'finished children without a remaining event preparation must collapse out of Today');
+assert.ok(js.includes("if(finished&&!prep.length&&!remainingEvents().some"),'finished children collapse only when no preparation or later appointment remains');
 assert.ok(js.includes("!window.__fcV9?.eventIsPast?.(e)"),'past timed events must not clutter Today');
 assert.ok(js.includes("eventPackText"),'packing instructions must remain source-based');
 assert.ok(js.includes("fc38-schoolgrid"),'desktop school details remain available');

@@ -161,6 +161,7 @@ async function runViewport(browser,name,width,height){
   await page.waitForSelector('#fcBackupSheet .fc-bu-sheet');
   const backupHealth=await page.evaluate(()=>window.__fcBackupHealth||null);
   assert.equal(backupHealth?.v9Native,true);assert.equal(backupHealth?.legacySelectors,false);assert.equal(backupHealth?.renderWrapper,false);
+  await page.locator('#fcBackupSheet').getByText('Aktuellste Sicherung',{exact:true}).waitFor({state:'visible'});
   assert.ok(await page.getByText('Aktuellste Sicherung',{exact:false}).last().isVisible());
   const backupGeom=await page.evaluate(()=>({vw:innerWidth,scrollW:document.getElementById('fcBackupSheet')?.scrollWidth||0}));
   assert.ok(backupGeom.scrollW<=backupGeom.vw+1,`backup sheet overflow: ${JSON.stringify(backupGeom)}`);

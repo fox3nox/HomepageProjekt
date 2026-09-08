@@ -5,27 +5,36 @@ on:
     paths:
       - 'family-command/zero-miss-v978.js'
       - 'family-command/zero-miss-v978.css'
+      - 'family-command/reference-dashboard-v36.js'
       - 'family-command/reference-mobile-v35.js'
       - 'family-command/sw.js'
       - 'family-command/index.html'
       - 'family-command/e2e/zero-miss-v978.spec.mjs'
+      - 'family-command/e2e/zero-miss-lifecycle.spec.mjs'
       - '.github/workflows/family-command-zero-miss-v978-check.yml'
   pull_request:
     branches: [main]
     paths:
       - 'family-command/zero-miss-v978.js'
       - 'family-command/zero-miss-v978.css'
+      - 'family-command/reference-dashboard-v36.js'
       - 'family-command/reference-mobile-v35.js'
       - 'family-command/sw.js'
       - 'family-command/index.html'
       - 'family-command/e2e/zero-miss-v978.spec.mjs'
+      - 'family-command/e2e/zero-miss-lifecycle.spec.mjs'
       - '.github/workflows/family-command-zero-miss-v978-check.yml'
 permissions:
   contents: read
 jobs:
   zero-miss:
     runs-on: ubuntu-latest
-    timeout-minutes: 5
+    timeout-minutes: 10
+    container: mcr.microsoft.com/playwright:v1.57.0-noble
+    strategy:
+      fail-fast: false
+      matrix:
+        browser: [webkit, chromium]
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-node@v4
@@ -33,3 +42,14 @@ jobs:
           node-version: 22
       - run: node --check family-command/zero-miss-v978.js
       - run: node family-command/e2e/zero-miss-v978.spec.mjs
+      - run: npm install --no-save playwright@1.57.0
+      - run: node family-command/e2e/zero-miss-lifecycle.spec.mjs
+        env:
+          FC_BROWSER: ${{ matrix.browser }}
+          FC_QA_DIR: /tmp/zero-miss
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: zero-miss-${{ matrix.browser }}
+          path: /tmp/zero-miss
+          retention-days: 7
