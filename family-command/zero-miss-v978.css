@@ -31,6 +31,4 @@
   #today .fc978-pendency{min-height:40px}
   #today .fc38-children{margin-top:0!important}
   #today .fc38-child{min-height:50px!important}
-  #today .fc978-today-detail .fc38-event:nth-of-type(n+4),
-  #today .fc978-upcoming-detail .fc38-event:nth-of-type(n+4){display:none}
 }
