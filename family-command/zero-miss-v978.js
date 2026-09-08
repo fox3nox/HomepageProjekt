@@ -3,7 +3,7 @@
 'use strict';
 if(window.__fcZeroMissV978)return;window.__fcZeroMissV978=true;
 const D=()=>{try{return typeof data!=='undefined'&&data?data:{}}catch(_){return{}}};
-const esc=s=>String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot',"'":'&#39;'}[c]));
+const esc=s=>String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
 const today=()=>{try{return typeof todayISO==='function'?todayISO():new Date().toISOString().slice(0,10)}catch(_){return new Date().toISOString().slice(0,10)}};
 const person=id=>(D().people||[]).find(p=>String(p.id)===String(id));
 const personNames=e=>(e.personIds||[]).map(id=>person(id)?.name).filter(Boolean).join(' · ');
