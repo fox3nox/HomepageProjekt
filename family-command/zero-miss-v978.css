@@ -1,5 +1,5 @@
 /* One event list, independent open pendencies and readable child context. */
-#today .fc978-digest{border-top:1px solid #e7edf4;background:#fbfdff}
+#today .fc978-digest{grid-column:1/-1;border-top:1px solid #e7edf4;background:transparent;border-radius:12px}
 #today .fc978-pendencies{padding:10px 12px}
 #today .fc978-pendencies{border-top:1px solid #edf1f6;background:#fffdf8}
 #today .fc978-digest-head{display:flex;align-items:center;justify-content:space-between;gap:8px;margin-bottom:5px}

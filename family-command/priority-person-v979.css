@@ -1,14 +1,16 @@
-/* V9.79 · Termine/Schule vor Geld; Personen auf Aufgaben sofort erkennbar. */
-#today .fc978-pendencies{background:#fbfcfe!important;padding:7px 12px!important;border-top:1px solid #edf1f6!important}
-#today .fc978-digest-head{margin:0!important}
-#today .fc978-digest-head>span{font-size:9px!important;color:#718197!important}
-#today .fc978-pendency{min-height:44px!important;padding:5px 2px!important;color:#526881!important;grid-template-columns:34px minmax(0,1fr) auto!important}
-#today .fc978-pendency>span{font-size:9px!important;color:#8290a1!important}
-#today .fc978-pendency>b{font-size:11px!important;font-weight:700!important;line-height:1.25!important}
-#today .fc978-pendency>strong{font-size:10px!important;color:#718197!important}
-#homework .fc979-person-badge{display:inline-flex;align-items:center;gap:5px;margin:0 0 4px;padding:3px 7px;border-radius:999px;background:color-mix(in srgb,var(--fc979-person) 11%,white);color:var(--fc979-person);font-size:10px;line-height:1.2;font-weight:900;letter-spacing:.045em;text-transform:uppercase}
-#homework .fc979-person-badge::before{content:'';width:7px;height:7px;border-radius:50%;background:var(--fc979-person);flex:none}
-#homework .fc9-row.fc979-person-row{border-left:4px solid var(--fc979-person)}
-#homework .fc9-row.fc979-person-row .fc9-row-main>b{font-size:15px;line-height:1.28}
-#homework .fc9-row.fc979-person-row .fc9-row-main>span:not(.fc979-person-badge){font-size:11px}
-@media(max-width:430px){#today .fc978-pendencies{padding-block:5px!important}#homework .fc9-row.fc979-person-row{padding-left:10px!important}}
+/* Canonical identity component used at render time. */
+:root{--fc-person:#526881;--fc-touch:44px;--fc-meta-size:12px;--fc-row-size:14px}
+html body #fcApp .fc-person-badge,html body .fc-person-badge{display:inline-flex;align-items:center;gap:5px;max-width:100%;color:#29415e;font-size:var(--fc-meta-size);line-height:1.4;font-weight:750;vertical-align:middle}
+html body .fc-person-badge i{display:inline-grid;place-items:center;width:20px;height:20px;min-width:20px;margin:0;border-radius:50%;background:var(--fc-person);color:white;font:700 11px/1 system-ui;font-style:normal}
+html body .fc-person-picker{display:flex;flex-wrap:wrap;gap:8px;margin:0;padding:0;border:0;min-width:0}
+html body .fc-person-picker legend{margin-bottom:8px;color:#40556e;font-size:13px;font-weight:700}
+html body .fc-person-picker label{display:flex;align-items:center;gap:8px;min-height:var(--fc-touch);padding:6px 10px;border:1px solid #dce5ef;border-radius:10px;background:#fff;cursor:pointer}
+html body .fc-person-picker input[type=checkbox]{appearance:auto;width:20px;min-width:20px;height:20px;min-height:20px;margin:0;accent-color:#2563eb}
+html body #fcApp .fc9-row-main>.fc-person-badge{margin-bottom:3px}
+html body #fcApp #today .fc38-taskcopy .fc-person-badge{margin-bottom:2px}
+html body #fcApp #today .fc38-check,html body #fcApp #today .fc38-go{width:var(--fc-touch)!important;height:var(--fc-touch)!important}
+html body #fcApp #today .fc38-task{grid-template-columns:44px minmax(0,1fr) 44px!important}
+html body #fcApp #today .fc38-taskcopy small,html body #fcApp #today .fc38-child span:not(.fc38-avatar),html body #fcApp #today .fc38-focus span{font-size:var(--fc-meta-size)!important;line-height:1.35!important}
+html body #fcApp #today .fc38-taskcopy strong,html body #fcApp #today .fc38-child b{font-size:var(--fc-row-size)!important}
+html body #fcApp #today .fc38-child{align-items:start}
+html body #fcApp #today .fc38-child .fc38-avatar{margin-top:2px}

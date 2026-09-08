@@ -6,7 +6,7 @@
 
   #today .fc9-card,#tomorrow .fc9-card,#events .fc9-card,#homework .fc9-card,#more .fc9-card,#people .fc9-card{border-radius:18px!important;border-color:#e2e9f2!important;box-shadow:0 8px 28px rgba(27,51,83,.065)!important}
   #today .fc9-person-list,#tomorrow .fc9-person-list{border-radius:19px!important}
-  #today .fc9-person,#tomorrow .fc9-person,#events .fc9-row,#homework .fc9-row{min-height:61px!important;max-height:86px!important}
+  #today .fc9-person,#tomorrow .fc9-person,#events .fc9-row,#homework .fc9-row{min-height:61px!important}
 
   #events .fc9-segment,#homework .fc9-segment{height:44px!important;border-radius:14px!important;background:#edf2f7!important;border-color:#dfe7f0!important}
   #events .fc9-segment button,#homework .fc9-segment button{border-radius:11px!important}
