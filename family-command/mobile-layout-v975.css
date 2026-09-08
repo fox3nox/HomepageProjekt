@@ -14,10 +14,10 @@
   }
   html body #fcApp #today .fc38-check,
   html body #fcApp #today .fc38-go{
-    flex:0 0 42px!important;
-    width:42px!important;
-    min-width:42px!important;
-    height:42px!important;
+    flex:0 0 46px!important;
+    width:46px!important;
+    min-width:46px!important;
+    height:46px!important;
   }
   html body #fcApp #today .fc38-taskcopy{
     display:block!important;
@@ -153,8 +153,9 @@
 
 @media (max-width:390px){
   html body #fcApp #today .fc38-task{gap:6px!important;padding-left:8px!important;padding-right:8px!important}
+  /* Keep both task actions at a full iPhone touch target. Shrinking them was the cause of the mobile regression. */
   html body #fcApp #today .fc38-check,
-  html body #fcApp #today .fc38-go{flex-basis:40px!important;width:40px!important;min-width:40px!important;height:40px!important}
+  html body #fcApp #today .fc38-go{flex-basis:46px!important;width:46px!important;min-width:46px!important;height:46px!important}
   html body #fcApp #tomorrow .fc674-tomorrow-children .fc9-person{grid-template-columns:16px minmax(0,1fr) 58px!important;column-gap:8px!important;padding-left:12px!important;padding-right:10px!important}
   html body #fcApp #tomorrow .fc9-person-time{width:58px!important;min-width:58px!important}
 }
