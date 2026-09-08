@@ -39,12 +39,12 @@ try{
   });
   await check('next action uses recorded departures; urgent work and per-child packing are visible',async()=>{
     assert.match(await p.locator('.fc38-focus').innerText(),/07:05 · Kind B los/);
-    assert.match(await p.locator('.fc38-focus button').innerText(),/2 dringende Aufgaben/);
+    assert.match(await p.locator('.fc38-priority').innerText(),/2 offene Punkte/);
     const child=p.locator('[data-focus-child="child-a"]');assert.match(await child.innerText(),/08:20.*11:55/);assert.match(await child.innerText(),/Trinkflasche/);assert.match(await child.innerText(),/Turnschuhe/);
     assert.doesNotMatch(await child.innerText(),/07:55|Leuchtweste|Znüni/);
     assert.equal(await p.locator('.fc38-reminders').count(),0);
     assert.equal(await p.locator('.fc38-school').getAttribute('open'),null);
-    const urgentBox=await p.locator('.fc38-focus button').boundingBox();assert.ok(urgentBox.y+urgentBox.height<760,'urgent action is above the navigation without scrolling');
+    const urgentBox=await p.locator('.fc38-focus').boundingBox();assert.ok(urgentBox.y+urgentBox.height<760,'next action is above the navigation without scrolling');
     const firstChild=await child.boundingBox();assert.ok(firstChild.y+firstChild.height<760,'first child with packing is above the navigation');
     await p.locator('[data-fc38-homework="hw-focus"] .fc38-check').tap();
     assert.equal(await p.evaluate(()=>data.homework[0].done),true);

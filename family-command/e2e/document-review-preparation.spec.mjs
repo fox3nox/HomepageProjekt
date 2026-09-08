@@ -85,8 +85,8 @@ try{
   console.log('PASS explicit review, original preservation, assignment, validation and retry');
   await closeDocs();
   await page.locator('.fc9-nav [data-screen="today"]').click();
-  await page.waitForSelector('.fc38-tomorrow-link');assert.match(await page.locator('.fc38-tomorrow-link').innerText(),/Packhinweisen/);
-  await page.locator('.fc38-tomorrow-link').click();
+  await page.waitForSelector('.fc38-tomorrow');assert.match(await page.locator('.fc38-tomorrow').innerText(),/Mittagessen \(Picknick\)/);
+  await page.locator('.fc38-tomorrow .fc38-section-head').click();
   const tomorrow=page.locator(`#tomorrow [data-preparation-event="${eventId}"]`);
   await tomorrow.waitFor();assert.equal(await tomorrow.count(),1);assert.match(await tomorrow.innerText(),/Mittagessen \(Picknick\)/);
   for(let i=0;i<3;i++)await page.evaluate(()=>renderTomorrow());
@@ -105,9 +105,7 @@ try{
   const groups=await page.evaluate(()=>__fcSearch.search('Ausflug').map(x=>x.group));assert.ok(groups.includes('Termine'));assert.ok(groups.includes('Dokumente'));
   await page.getByRole('button',{name:'Suche schliessen'}).click();
   await page.locator('.fc9-nav [data-screen="today"]').click();
-  await page.locator('[data-fc9668-mode="week"]').click();await page.locator('[data-fc9668-date="2027-05-07"]').click();
-  assert.match(await page.locator('.fc9668-detail').innerText(),/gute Schuhe/);
-  await page.locator('[data-fc9668-mode="day"]').click();
+  assert.equal(await page.locator('#today .fc38-switch').count(),0,'Today stays focused; detailed date browsing belongs in Calendar');
   console.log('PASS tomorrow without school slots, coming days, calendar, search and original link');
   await page.clock.setFixedTime(new Date('2027-05-07T07:00:00+02:00'));
   await page.evaluate(()=>{__testDate='2027-05-07';data.schedules={'child-c':{5:[{start:'08:20',end:'11:50',label:'Kindergarten',note:'Leuchtweste mitnehmen'}]}};data.reminders=[{id:'school-pack',personId:'child-c',days:[5],items:['Trinkflasche']}];__fcV9.invalidate();renderToday();});
@@ -115,7 +113,7 @@ try{
     await page.setViewportSize({width,height:width>1000?1000:844});await page.evaluate(()=>__fcReferenceDashboard39.rebuild(true));
     const child=page.locator('.fc38-child[data-focus-child="child-c"]'),packing=child.locator('[data-preparation-event]');await packing.waitFor();
     assert.equal(await packing.count(),1);assert.match(await packing.innerText(),/Ausflug · 08:20–13:30/);
-    const geometry=await child.evaluate(el=>{const prep=el.querySelector('[data-preparation-event]').getBoundingClientRect();return{overflow:document.documentElement.scrollWidth>innerWidth+1,font:parseFloat(getComputedStyle(el.querySelector('[data-preparation-event]')).fontSize),overlap:[...el.querySelectorAll('b,strong,small')].some(x=>{const r=x.getBoundingClientRect();return r.width>0&&r.height>0&&Math.min(r.right,prep.right)>Math.max(r.left,prep.left)+1&&Math.min(r.bottom,prep.bottom)>Math.max(r.top,prep.top)+1;})}});
+    const geometry=await child.evaluate(el=>{const prep=el.querySelector('[data-preparation-event]').getBoundingClientRect();return{overflow:document.documentElement.scrollWidth>innerWidth+1,font:parseFloat(getComputedStyle(el.querySelector('[data-preparation-event]')).fontSize),overlap:[...el.querySelectorAll('b,strong,small')].filter(x=>x!==el.querySelector('[data-preparation-event]')).some(x=>{const r=x.getBoundingClientRect();return r.width>0&&r.height>0&&Math.min(r.right,prep.right)>Math.max(r.left,prep.left)+1&&Math.min(r.bottom,prep.bottom)>Math.max(r.top,prep.top)+1;})}});
     assert.equal(geometry.overflow,false);assert.equal(geometry.overlap,false);assert.ok(geometry.font>=12);
     await screenshot('today-'+width);
   }

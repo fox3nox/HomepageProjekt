@@ -1,0 +1,21 @@
+name: Family Command command center regression
+on:
+  push:
+    branches: [main, feat/v974-command-center]
+    paths: ['family-command/reference-dashboard-v36.js','family-command/reference-dashboard-v36.css','family-command/e2e/command-center-v974-source.spec.mjs','.github/workflows/family-command-command-center-check.yml']
+  pull_request:
+    branches: [main]
+    paths: ['family-command/reference-dashboard-v36.js','family-command/reference-dashboard-v36.css','family-command/e2e/command-center-v974-source.spec.mjs','.github/workflows/family-command-command-center-check.yml']
+permissions:
+  contents: read
+jobs:
+  command-center:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+      - run: node --check family-command/reference-dashboard-v36.js
+      - run: node family-command/e2e/command-center-v974-source.spec.mjs

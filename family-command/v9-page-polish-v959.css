@@ -48,6 +48,14 @@
 #tomorrow .fc9-mini{min-height:48px!important;padding:10px 13px!important;grid-template-columns:58px minmax(0,1fr)!important}
 #tomorrow .fc9-mini em{color:var(--fc59-blue-ink)!important;font-size:8.6px!important}
 #tomorrow .fc9-mini b{color:#17304f!important;font-weight:800!important}
+/* V9.74: packing/preparation lines must grow the child row instead of being clipped by the next divider. */
+#tomorrow .fc674-tomorrow-children .fc9-person{height:auto!important;min-height:0!important;align-items:flex-start!important;padding-top:12px!important;padding-bottom:14px!important;overflow:visible!important}
+#tomorrow .fc674-tomorrow-children .fc9-person>div{min-width:0!important}
+#tomorrow .fc674-tomorrow-children .fc674-inline-pack,
+#tomorrow .fc674-tomorrow-children .fc674-inline-note{display:block!important;height:auto!important;max-height:none!important;overflow:visible!important;white-space:normal!important;text-overflow:clip!important;line-height:1.4!important}
+#tomorrow .fc674-tomorrow-children .fc674-inline-pack{margin-top:5px!important;padding-bottom:1px!important;font-size:12px!important;font-weight:750!important;color:#66778e!important}
+#tomorrow .fc674-tomorrow-children .fc674-inline-note{margin-top:4px!important;font-size:11px!important;color:#71839b!important}
+#tomorrow .fc674-tomorrow-children .fc9-person-time{align-self:center!important}
 
 /* Kalender: controls read as one coherent toolbar */
 #events .fc9-segment{height:44px!important;border-radius:14px!important;padding:4px!important}
@@ -108,6 +116,9 @@ body .fc9-nav button.active svg{stroke-width:2.05!important}
   #today .fc9-focus-time strong{font-size:21px!important}
 
   #tomorrow .fc9-mini{grid-template-columns:55px minmax(0,1fr)!important;padding:9px 12px!important}
+  #tomorrow .fc674-tomorrow-children .fc9-person{padding-top:11px!important;padding-bottom:13px!important}
+  #tomorrow .fc674-tomorrow-children .fc674-inline-pack{font-size:12px!important;line-height:1.38!important;margin-top:4px!important}
+  #tomorrow .fc674-tomorrow-children .fc674-inline-note{font-size:11px!important;line-height:1.35!important}
 
   #events .fc9-filter{height:36px!important;padding-inline:12px!important}
   #events .fc9-event{min-height:58px!important}
