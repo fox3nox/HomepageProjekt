@@ -1,0 +1,18 @@
+import assert from 'node:assert/strict';
+import {readFile} from 'node:fs/promises';
+const js=await readFile(new URL('../compact-cockpit-v977.js',import.meta.url),'utf8');
+const css=await readFile(new URL('../compact-cockpit-v977.css',import.meta.url),'utf8');
+const sw=await readFile(new URL('../sw.js',import.meta.url),'utf8');
+const loader=await readFile(new URL('../reference-mobile-v35.js',import.meta.url),'utf8');
+assert.match(js,/keine persönlichen to-dos für morgen/i,'empty tomorrow todo noise must be removed');
+assert.match(js,/fc977-manage-toggle/,'secondary management tools must be collapsible');
+assert.match(css,/#today[\s\S]*fc38-dashboard/,'today cockpit must be compacted');
+assert.match(css,/#tomorrow[\s\S]*fc674-tomorrow-children/,'tomorrow child preparation must be compacted');
+assert.match(css,/#homework[\s\S]*fc9-tasktabs/,'tasks must be compacted');
+assert.match(css,/#more[\s\S]*fc9-tile/,'more screen tiles must be compacted');
+assert.match(loader,/compact-cockpit-v977\.css/);
+assert.match(loader,/compact-cockpit-v977\.js/);
+assert.match(sw,/family-command-v116/);
+assert.match(sw,/compact-cockpit-v977\.css/);
+assert.match(sw,/compact-cockpit-v977\.js/);
+console.log('V9.77 compact cockpit regression: ok');
