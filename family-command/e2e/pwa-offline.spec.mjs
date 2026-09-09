@@ -18,7 +18,7 @@ try {
   await page.goto(base+'/?access=test');
   await page.waitForFunction(()=>document.documentElement.dataset.fcReady==='1'&&!!navigator.serviceWorker.controller);
   await page.evaluate(()=>window.__fcLoadExtrasNow());
-  assert.ok((await page.evaluate(()=>caches.keys())).includes('family-command-v118'));
+  assert.ok((await page.evaluate(()=>caches.keys())).includes('family-command-v119'));
   assert.ok(!(await page.evaluate(()=>caches.keys())).includes('family-command-v116'),'activating the new worker removes the previous release cache');
   await context.setOffline(true);
   await page.reload({waitUntil:'domcontentloaded'});
@@ -27,7 +27,7 @@ try {
     await page.locator(`.fc9-nav [data-screen="${screen}"]`).tap();
     assert.equal(await page.locator('.fc9-screen.active').getAttribute('id'),screen);
   }
-  await page.locator('.fc-search-entry').tap();
+  await page.locator('.fc9-search-icon').tap();
   await page.getByRole('searchbox',{name:'Suchbegriff',exact:true}).fill('Kind A');
   assert.match(await page.locator('.fc-search-results').innerText(),/Kind A/,'search scripts and styles must survive offline reload');
   await page.getByRole('button',{name:'Suche schliessen'}).tap();
