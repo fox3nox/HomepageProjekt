@@ -35,9 +35,7 @@ jobs:
       - name: Install Playwright
         run: npm install --no-save playwright
       - name: Install WebKit
-        run: |
-          sudo rm -f /etc/apt/sources.list.d/google-chrome.list
-          npx playwright install --with-deps webkit
+        run: npx playwright install --with-deps webkit
       - name: Cross-screen visual audit
         run: node family-command/e2e/visual-audit-v958.spec.mjs
       - name: Upload visual audit screenshots
