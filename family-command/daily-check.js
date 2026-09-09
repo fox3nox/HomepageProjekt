@@ -3,7 +3,7 @@
 if(window.__fcDailyCheckInstalled)return;
 window.__fcDailyCheckInstalled=true;
 
-const VERSION='9.63.2';
+const VERSION='9.82.0';
 const DATE_RE=/^\d{4}-\d{2}-\d{2}$/;
 const PACK_RE=/(mitnehmen|rucksack|turn|bad|schwimm|zeug|angezogen|abfahrt|los|einpack|bereit|trinkflasche|znüni|leuchtweste)/i;
 const FLOW_RE=/(tagesschule|abhol|holt|betreuung|transport|fahrdienst)/i;
@@ -92,6 +92,14 @@ function uniq(arr){
   const seen=new Set();
   return arr.filter(x=>{const key=[x.personId||'',(x.personIds||[]).join(','),String(x.title||'').toLowerCase().replace(/\s+/g,' ').trim(),x.time||''].join('|');if(!key||seen.has(key))return false;seen.add(key);return true});
 }
+function groupPackItems(items){
+  const grouped=new Map();
+  for(const item of items){
+    const key=String(item.personId||'family'),current=grouped.get(key)||{...item,title:'',kind:'pack-group',_titles:[]};
+    const title=String(item.title||'').trim();if(title&&!current._titles.includes(title))current._titles.push(title);grouped.set(key,current);
+  }
+  return[...grouped.values()].map(({_titles,...item})=>({...item,title:_titles.join(' · ')}));
+}
 function todoItem(x,overdue=false){
   const section=sectionLabel(x.section);
   return{title:x.title||'To-do',personId:x.personId||'',time:overdue?`Überfällig seit ${shortDate(x.date)}${section?` · ${section}`:''}`:section,priority:!!x.priority,overdue,dueDate:String(x.date),kind:'todo'};
@@ -107,7 +115,7 @@ function sortOverdue(a,b){return Number(!!b.priority)-Number(!!a.priority)||Stri
 function dataFor(date){
   if(!validDate(date))date=currentDate();
   const schedule=scheduleInfo(date),todo=todoBuckets(date),homework=homeworkBuckets(date);
-  const pack=uniq([...reminders(date),...schedule.pack]);
+  const pack=groupPackItems(uniq([...reminders(date),...schedule.pack]));
   const overdue=[...todo.overdue.map(x=>todoItem(x,true)),...homework.overdue.map(x=>homeworkItem(x,true))].sort(sortOverdue);
   const important=[...todo.exact.map(x=>todoItem(x,false)),...homework.exact.map(x=>homeworkItem(x,false))].sort(sortImportant);
   const eventTimeline=events(date).filter(e=>!HOLIDAY_RE.test(String(e.title||''))).map(e=>({title:e.title||'Termin',personIds:e.personIds||[],time:e.time||'Ganztägig',sortTime:e.time||'00:00',note:e.note||'',kind:'event'}));
