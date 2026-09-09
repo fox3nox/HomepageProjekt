@@ -10,6 +10,7 @@
 #today .fc978-pendency>span{font-size:10px;font-weight:800;letter-spacing:.03em;color:#80591b}
 #today .fc978-pendency>b{font-size:13px;line-height:1.35;overflow-wrap:anywhere}
 #today .fc978-pendency>strong{font-size:12px;white-space:nowrap;color:#79551d}
+#today .fc978-pendency-summary{grid-template-columns:54px minmax(0,1fr) auto}
 #today .fc978-child-events{display:grid;gap:5px;margin-top:6px}
 #today .fc978-child-events button{display:flex;align-items:center;gap:7px;min-height:44px;width:100%;min-width:44px;max-width:100%;padding:7px 9px;border:0;border-radius:10px;background:#edf5ff;color:#285783;font:inherit;font-size:12px;text-align:left}
 html body #fcApp #today .fc978-child-events span{font-size:11px!important;font-weight:800!important;color:#285db5!important;white-space:nowrap}
@@ -18,4 +19,8 @@ html body #fcApp #today .fc978-child-events b{min-width:0;font-size:13px!importa
   #today .fc38-daybar p{font-size:11px!important;line-height:1.35!important}
   #today .fc38-priority{overflow:hidden}
   #today .fc38-children{margin-top:0!important}
+  #today .fc978-pendencies{padding:7px 10px!important}
+  #today .fc978-digest-head{margin-bottom:1px!important}
+  #today .fc978-pendency-summary{min-height:46px!important;padding:4px 2px!important}
+  #today .fc978-pendency-summary>b{font-size:12px!important;line-height:1.25!important}
 }
