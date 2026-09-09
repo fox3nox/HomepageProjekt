@@ -1,0 +1,26 @@
+import assert from 'node:assert/strict';
+import {readFileSync} from 'node:fs';
+import vm from 'node:vm';
+import {buildDigest} from '../../supabase/functions/family-command-push3/digest.mjs';
+const date='2026-09-10',now=new Date('2026-09-10T04:30:00Z');
+const state={people:[{id:'oli',name:'Elternteil'},{id:'child-a',name:'Kind A'},{id:'child-b',name:'Kind B'},{id:'child-c',name:'Kind C'}],rules:[{personId:'child-a',day:4,time:'07:40',start:'08:00',end:'11:50'},{personId:'child-b',day:4,time:'08:20',start:'08:20',end:'11:50'},{personId:'child-c',day:4,time:'08:30',start:'08:30',end:'11:45'},{personId:'oli',day:4,title:'Arbeit',time:'07:00',start:'07:00',end:'16:00'}],tasks:[{id:'rem-b',personId:'child-b',date,title:'Kind B: Turnzeug'},{id:'hw-a',personId:'child-a',date,title:'HAUSAUFGABE: Mathe Seite 12',done:false},{id:'hw-overdue',personId:'child-b',date:'2026-09-09',title:'HAUSAUFGABE: Wochenheft',done:false},{id:'done-task',personId:'oli',date,title:'Erledigte Aufgabe',done:true},{id:'todo-global',date,title:'Stuhl bereitstellen',done:false}],events:[{id:'visit-a',personId:'child-a',date,time:'15:00',title:'Besuch'},{id:'visit-b',personId:'child-b',date,time:'15:00',title:'Besuch'},{id:'trip',personId:'child-c',date,title:'Herbstbummel',note:'Mitnehmen: Leuchtweste und Trinkflasche'}]};
+const before=JSON.stringify(state),p=buildDigest(state,'Europe/Zurich',0,'morning',now);
+assert.match(p.body.split('\n')[0],/^07:40 los: Kind A$/);
+assert.match(p.body,/Kind A: .*08:00–11:50.*Mathe Seite 12/);
+assert.match(p.body,/Kind B: .*Turnzeug.*Überfällig: Wochenheft/);
+assert.match(p.body,/Kind C: .*Mitnehmen: Leuchtweste und Trinkflasche/);
+assert.match(p.body,/Elternteil: Arbeit · 07:00–16:00/);
+assert.match(p.body,/Stuhl bereitstellen/);assert.doesNotMatch(p.body,/Erledigte Aufgabe|08:20 los|NM frei/);
+assert.match(p.body,/15:00 · Kind A · Besuch/);assert.match(p.body,/15:00 · Kind B · Besuch/,'same title/time for different children cannot be collapsed');
+assert.equal(JSON.stringify(state),before,'formatting never changes stored data');
+const partial={...state,events:[...state.events,{id:'break-a',personId:'child-a',date,title:'Ferien'}]};
+const p2=buildDigest(partial,'Europe/Zurich',0,'morning',now);assert.match(p2.body,/Kind A: Ferien/);assert.match(p2.body,/Kind B: 08:20–11:50.*Turnzeug/,'one child’s holiday cannot cancel another child’s timetable');
+assert.match(p2.body,/Mathe Seite 12/,'homework and explicit tasks remain visible during holidays');
+const evening=buildDigest(state,'Europe/Zurich',1,'evening',new Date('2026-09-09T17:00:00Z'));assert.equal(evening.date,date);assert.match(evening.title,/Morgen vorbereiten/);assert.match(evening.url,/screen=tomorrow/);
+const dst=buildDigest({},'Europe/Zurich',1,'evening',new Date('2026-10-24T22:30:00Z'));assert.equal(dst.date,'2026-10-26','calendar-day arithmetic survives the 25-hour DST day');
+const large=buildDigest({...state,people:Array.from({length:20},(_,i)=>({id:'p'+i,name:'Langer Personenname '+i})),rules:Array.from({length:20},(_,i)=>({personId:'p'+i,day:4,time:'07:00',start:'08:00',end:'16:00',note:'Mitnehmen: '+('ü'.repeat(230))}))},'Europe/Zurich',0,'morning',now);assert.ok(new TextEncoder().encode(JSON.stringify(large)).length<3200,'large households cannot exceed the Web Push payload budget');assert.match(large.body,/in der App/);
+console.log('PASS push digest: per-person packing, actual times, overdue school work, independent holidays, no lost appointments and DST');
+
+const core=readFileSync('family-command/core-runtime.js','utf8'),source=core.slice(core.indexOf('function homeworkTasks()'),core.indexOf('function todoTasks()'));
+const tasks=vm.runInNewContext(source+';homeworkTasks()', {data:{homework:[{id:'open',title:'Offen',dueDate:date},{id:'old',title:'Archiviert',dueDate:date,archived:true}]}});
+assert.deepEqual(Array.from(tasks,t=>t.id),['hw-open'],'archived homework must not reappear in device snapshots');

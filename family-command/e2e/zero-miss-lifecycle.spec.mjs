@@ -145,7 +145,7 @@ try {
     await page.clock.fastForward(2000);
     assert.equal(await page.evaluate(() => fcQaRoot === document.querySelector('#today > .fc38-dashboard') && fcQaDigest === fcQaRoot.querySelector('.fc978-digest')), true, 'idle app does not rebuild repeatedly');
   });
-  await check('open pendencies prevent a false all-done status, and explicit completion clears them', async () => {
+  await check('pendencies remain accessible without changing the daily urgency status', async () => {
     await page.evaluate(() => { data.todos = []; data.events = []; renderToday(); });
     assert.doesNotMatch(await dashboard.locator('.fc38-priority').innerText(), /Alles erledigt|nichts Dringendes/);
     await dashboard.locator('.fc978-pendency').first().click();
@@ -154,7 +154,7 @@ try {
     await page.locator('.fc9-nav [data-screen="today"]').click();
     assert.doesNotMatch(await dashboard.innerText(), /Rückzahlung bestätigen/);
     await page.evaluate(() => { data.pendencies.forEach(x => { x.done = true; }); renderToday(); });
-    assert.match(await dashboard.locator('.fc38-priority').innerText(), /Alles erledigt/);
+    assert.match(await dashboard.locator('.fc38-priority').innerText(), /Keine offenen Tagesaufgaben/);
     assert.equal(await dashboard.locator('.fc978-pendency').count(), 0);
   });
   await check('managed boot loads each JS/CSS once and does not load the retired glance layer', async () => {

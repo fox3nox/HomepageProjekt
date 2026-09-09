@@ -17,6 +17,7 @@ on:
 jobs:
   today-clarity:
     runs-on: ubuntu-latest
+    container: mcr.microsoft.com/playwright:v1.57.0-noble
     timeout-minutes: 10
     steps:
       - uses: actions/checkout@v4
@@ -25,6 +26,5 @@ jobs:
       - name: Install Playwright WebKit
         run: |
           npm install --no-save --package-lock=false playwright@1.57.0
-          npx playwright install --with-deps webkit
       - name: iPhone Today clarity regression
         run: node family-command/e2e/today-clarity.spec.mjs

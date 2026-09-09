@@ -19,6 +19,7 @@ on:
 jobs:
   form-dialog:
     runs-on: ubuntu-latest
+    container: mcr.microsoft.com/playwright:v1.57.0-noble
     timeout-minutes: 12
     steps:
       - uses: actions/checkout@v4
@@ -32,8 +33,6 @@ jobs:
           grep -q "v9-form-dialog-polish-v960.css" family-command/sw.js
           grep -q "family-command-v97" family-command/sw.js
       - name: Install Playwright
-        run: npm install --no-save playwright
-      - name: Install WebKit
-        run: npx playwright install --with-deps webkit
+        run: npm install --no-save --package-lock=false playwright@1.57.0
       - name: iPhone and desktop form dialog regression
         run: node family-command/e2e/form-dialog-v960.spec.mjs

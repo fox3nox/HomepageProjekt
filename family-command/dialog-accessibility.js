@@ -2,14 +2,14 @@
    Only direct body children are observed; edits inside dialogs never retrigger it. */
 (()=>{'use strict';
 if(window.__fcDialogs)return;
-const selector=['.fc9-modal','.fc-detail-modal','.fc-picker-modal','.fc-event-edit-modal','.fc-shopping-modal','.fc-shopping-edit-modal','.fc-meal-modal','.fc-meal-edit-modal','.fc-recipes-modal','.fc-recipe-edit-modal','.fc-recipe-plan-modal','.fc-budget-modal','.fc-budget-edit-modal','.fc-contact-edit-modal','.fc-dv-modal','.fc-dc-modal'].join(',');
+const selector=['.fc9-modal','.aimodal','.fc-detail-modal','.fc-picker-modal','.fc-event-edit-modal','.fc-shopping-modal','.fc-shopping-edit-modal','.fc-meal-modal','.fc-meal-edit-modal','.fc-recipes-modal','.fc-recipe-edit-modal','.fc-recipe-plan-modal','.fc-budget-modal','.fc-budget-edit-modal','.fc-contact-edit-modal','.fc-dv-modal','.fc-dc-modal'].join(',');
 const records=new Map();let serial=0,stack=[],appWasInert=false,lastActivation=null;
 const visible=e=>e instanceof HTMLElement&&!e.hidden&&!e.closest('[hidden],[inert]')&&e.getClientRects().length>0;
 const focusable=root=>[...root.querySelectorAll('button,a[href],input:not([type="hidden"]),select,textarea,[tabindex]')].filter(e=>!e.disabled&&e.tabIndex>=0&&visible(e));
 const nativeOpen=()=>document.querySelector('dialog[open]');
 function enhance(root){
   if(records.has(root))return;
-  const opener=lastActivation?.target.isConnected&&performance.now()-lastActivation.at<1000?lastActivation.target:document.activeElement,heading=root.querySelector('h1,h2,h3'),focus=()=>{if(stack.at(-1)!==root||nativeOpen()||root.contains(document.activeElement))return;(root.querySelector('input:not([type="hidden"]):not([type="checkbox"]),textarea,select')||focusable(root)[0]||root).focus({preventScroll:true});};
+  const opener=lastActivation?.target.isConnected&&performance.now()-lastActivation.at<1000?lastActivation.target:document.activeElement,heading=root.querySelector('h1,h2,h3,#fcAiTitle'),focus=()=>{if(stack.at(-1)!==root||nativeOpen()||root.contains(document.activeElement))return;(root.querySelector('input:not([type="hidden"]):not([type="checkbox"]),textarea,select')||focusable(root)[0]||root).focus({preventScroll:true});};
   for(const nested of root.querySelectorAll('[role=dialog]')){nested.removeAttribute('role');nested.removeAttribute('aria-modal');}
   root.setAttribute('role','dialog');root.setAttribute('aria-modal','true');root.tabIndex=-1;
   if(heading){heading.id ||= 'fcDialogHeading'+(++serial);root.setAttribute('aria-labelledby',heading.id);}else root.setAttribute('aria-label','Familienzentrale');
@@ -39,7 +39,7 @@ document.addEventListener('click',e=>{const save=e.target.closest('#fc9Modal [da
 document.addEventListener('input',e=>{if(e.target.matches?.('[aria-invalid]')&&e.target.checkValidity())e.target.removeAttribute('aria-invalid');});
 document.addEventListener('keydown',e=>{
   if(nativeOpen())return;const top=stack.at(-1);if(!top)return;
-  if(e.key==='Escape'){e.preventDefault();e.stopPropagation();const close=top.querySelector('.fc9-close,.fc-detail-close,.fc-picker-close,.fc-event-edit-close,.fc-shopping-close,.fc-meal-close,.fc-recipes-close,.fc-budget-close,.fc-dv-close,[data-close],[data-cancel]');if(close)close.click();else top.remove();return;}
+  if(e.key==='Escape'){e.preventDefault();e.stopPropagation();const close=top.querySelector('.fc9-close,.aix,.fc-detail-close,.fc-picker-close,.fc-event-edit-close,.fc-shopping-close,.fc-meal-close,.fc-recipes-close,.fc-budget-close,.fc-dv-close,[data-close],[data-cancel]');if(close)close.click();else top.remove();return;}
   if(e.key==='Tab'){const items=focusable(top),first=items[0],last=items.at(-1);if(!first){e.preventDefault();top.focus();}else if(e.shiftKey&&(document.activeElement===first||!top.contains(document.activeElement))){e.preventDefault();last.focus();}else if(!e.shiftKey&&(document.activeElement===last||!top.contains(document.activeElement))){e.preventDefault();first.focus();}}
 },true);
 document.addEventListener('focusin',e=>{const top=stack.at(-1);if(top&&!nativeOpen()&&!top.contains(e.target))records.get(top)?.focus();});

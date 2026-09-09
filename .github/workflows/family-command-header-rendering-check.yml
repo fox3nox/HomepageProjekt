@@ -15,6 +15,7 @@ permissions:
 jobs:
   header-rendering:
     runs-on: ubuntu-latest
+    container: mcr.microsoft.com/playwright:v1.57.0-noble
     timeout-minutes: 12
     steps:
       - uses: actions/checkout@v4
@@ -22,9 +23,7 @@ jobs:
         with:
           node-version: 22
       - name: Install existing browser test dependency
-        run: npm install --no-save playwright
-      - name: Install WebKit
-        run: npx playwright install --with-deps webkit
+        run: npm install --no-save --package-lock=false playwright@1.57.0
       - name: Header, logo and navigation regression
         env:
           FC_HEADER_ARTIFACTS: /tmp/fc-header-rendering
