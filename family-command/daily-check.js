@@ -3,7 +3,7 @@
 if(window.__fcDailyCheckInstalled)return;
 window.__fcDailyCheckInstalled=true;
 
-const VERSION='9.82.0';
+const VERSION='9.63.2';
 const DATE_RE=/^\d{4}-\d{2}-\d{2}$/;
 const PACK_RE=/(mitnehmen|rucksack|turn|bad|schwimm|zeug|angezogen|abfahrt|los|einpack|bereit|trinkflasche|znüni|leuchtweste)/i;
 const FLOW_RE=/(tagesschule|abhol|holt|betreuung|transport|fahrdienst)/i;
