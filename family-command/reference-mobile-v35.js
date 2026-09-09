@@ -4,7 +4,7 @@
 if(window.__fcReferenceMobileV35)return;window.__fcReferenceMobileV35=true;
 const assetLoads=[];let ready,failed;window.__fcReferenceReady=new Promise((resolve,reject)=>{ready=resolve;failed=reject});
 function trackAsset(el){assetLoads.push(new Promise((resolve,reject)=>{el.onload=resolve;el.onerror=()=>reject(new Error('Datei konnte nicht geladen werden: '+(el.href||el.src)))}))}
-const V='20260909-v9830',HEADER_V='20260906-v9669',TODAY_V='20260908-v9781',SCHOOL_V='20260907-v9720',DAYTOOLS_V='20260908-v9800';
+const V='20260909-v9840',HEADER_V='20260906-v9669',TODAY_V='20260908-v9781',SCHOOL_V='20260907-v9720',DAYTOOLS_V='20260908-v9800';
 const headerAsset=file=>/^(header-|sharp-header-)/.test(file);const schoolAsset=file=>file==='mobile-school-day-v947.js'||file==='mobile-school-day-v947.css';const dayToolsAsset=file=>file==='tomorrow-calendar-v9673.js'||file==='tomorrow-calendar-v9673.css';const assetVersion=file=>dayToolsAsset(file)?DAYTOOLS_V:schoolAsset(file)?SCHOOL_V:(file==='today-overview-toggle-v9668.js'||file==='future-only-polish-v9669.js')?TODAY_V:(headerAsset(file)?HEADER_V:V);
 function findLink(file){return[...document.querySelectorAll('link[rel="stylesheet"]')].find(x=>{try{return new URL(x.href,location.href).pathname.endsWith('/'+file)}catch(_){return false}})}
 function css(file,key){let l=findLink(file);if(l){l.href=`./${file}?v=${assetVersion(file)}`;l.dataset[key]='1';return l}l=document.createElement('link');l.rel='stylesheet';trackAsset(l);l.href=`./${file}?v=${assetVersion(file)}`;l.dataset[key]='1';document.head.appendChild(l);return l}

@@ -10,7 +10,7 @@ const events=()=> (D().events||[]).filter(e=>e&&(e.date===today()||(e.endDate&&e
 // Tasks and pendencies have independent completion state. Similar titles are not identities.
 const pendencies=()=> (D().pendencies||[]).filter(p=>p&&!p.done);
 function allTodos(){const m=new Map(),add=arr=>{for(const t of Array.isArray(arr)?arr:[]){if(!t)continue;const key=String(t.sourceCommandId||t.clientRef||t.id||`${t.date}|${t.title}`);m.set(key,{...(m.get(key)||{}),...t})}};try{add(window.__fcChatCommandSync?.all?.())}catch(_){}add(D().todos);return[...m.values()]}
-const work=()=>{const d=today(),todos=allTodos().filter(x=>x&&!x.done&&!x.archived&&String(x.date||'')<=d),home=(D().homework||[]).filter(x=>x&&!x.done&&!x.archived&&String(x.dueDate||'')<=d);return [...todos,...home]};
+const work=()=>{const d=today(),todos=allTodos().filter(x=>x&&!x.done&&!x.archived&&!window.__fcPersonIdentity?.isMoneyNote?.(x)&&String(x.date||'')<=d),home=(D().homework||[]).filter(x=>x&&!x.done&&!x.archived&&String(x.dueDate||'')<=d);return [...todos,...home]};
 function openPendency(id){
   document.querySelector('.fc9-nav button[data-screen="more"]')?.click();
   const target=[...document.querySelectorAll('#more [data-pend]')].find(x=>!id||x.dataset.pend===id);
@@ -20,16 +20,16 @@ function priorityDigest(root){
   const box=root.querySelector('.fc38-priority');if(!box)return;
   // The next event already appears in the focus; the canonical day list keeps full details.
   root.querySelector('.fc978-today-detail')?.setAttribute('aria-label','HEUTE UNBEDINGT WISSEN');
-  root.querySelector('.fc978-digest')?.remove();
+  const expanded=!!root.querySelector('.fc978-digest')?.open;root.querySelector('.fc978-digest')?.remove();
   const pd=pendencies();if(!pd.length)return;
-  const digest=document.createElement('div');digest.className='fc978-digest';
+  const digest=document.createElement('details');digest.className='fc978-digest';digest.open=expanded;const summary=document.createElement('summary');summary.textContent='Geld & Pendenzen · '+pd.length;digest.appendChild(summary);
   if(pd.length){
     const group=document.createElement('div'),currencies=[...new Set(pd.filter(p=>Number(p.amount)>0).map(p=>p.currency||'CHF'))],total=pd.reduce((sum,p)=>sum+(Number(p.amount)||0),0);
     group.className='fc978-pendencies';
     group.innerHTML=`<div class="fc978-digest-head"><span>BLEIBT OFFEN, BIS ERLEDIGT</span><span class="fc982-pendency-total">${total>0&&currencies.length===1?`${esc(currencies[0])} ${esc(total.toFixed(0))}`:''}</span>${pd.length>3?`<button type="button" data-pendencies="${esc(pd[3].id)}" aria-label="${pd.length-3} weitere Pendenzen anzeigen">+${pd.length-3}</button>`:''}</div><div class="fc982-pendency-strip">${pd.slice(0,3).map(p=>`<button type="button" class="fc978-pendency" data-pendencies="${esc(p.id)}"><span>OFFEN</span><b>${esc(p.title||'Pendenz')}</b>${Number(p.amount)>0?`<strong>${esc(p.currency||'CHF')} ${esc(Number(p.amount).toFixed(0))}</strong>`:''}</button>`).join('')}</div>`;
     group.querySelectorAll('[data-pendencies]').forEach(b=>b.onclick=()=>openPendency(b.dataset.pendencies));digest.appendChild(group);
   }
-  root.querySelector('.fc38-school')?.before(digest);
+  root.appendChild(digest);
 }
 function enhance(){
   const root=document.querySelector('#today > .fc38-dashboard');if(!root)return false;

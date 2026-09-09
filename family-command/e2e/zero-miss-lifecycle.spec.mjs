@@ -71,9 +71,12 @@ try {
   const dashboard = page.locator('#today > .fc38-dashboard');
   await page.waitForTimeout(150);
   await check('independent open debts are never suppressed by similar task titles or old dates', async () => {
+    assert.equal(await dashboard.locator('.fc978-digest').evaluate(x=>x.open),false);
+    await dashboard.locator('.fc978-digest > summary').click();
     assert.match(await dashboard.innerText(), /Anna schuldet CHF 10/);
     assert.doesNotMatch(await dashboard.innerText(), /Bereits bezahlt|Vergangener Termin/);
     assert.equal(await dashboard.locator('.fc978-pendency').count(), 3);
+    if(!await dashboard.locator('.fc978-digest').evaluate(x=>x.open))await dashboard.locator('.fc978-digest > summary').click();
     await dashboard.locator('.fc978-pendency').first().click();
     await page.waitForFunction(() => document.activeElement?.getAttribute('data-pend') === 'debt');
     assert.equal(await page.locator('[data-pend="fourth-pend"]').count(), 1);
@@ -148,6 +151,7 @@ try {
   await check('pendencies remain accessible without changing the daily urgency status', async () => {
     await page.evaluate(() => { data.todos = []; data.events = []; renderToday(); });
     assert.doesNotMatch(await dashboard.locator('.fc38-priority').innerText(), /Alles erledigt|nichts Dringendes/);
+    if(!await dashboard.locator('.fc978-digest').evaluate(x=>x.open))await dashboard.locator('.fc978-digest > summary').click();
     await dashboard.locator('.fc978-pendency').first().click();
     await page.locator('[data-pend="other"]').click();
     assert.equal(await page.evaluate(() => data.pendencies.find(x => x.id === 'other').done), true);

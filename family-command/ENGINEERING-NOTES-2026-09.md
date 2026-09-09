@@ -330,3 +330,38 @@ CI-/Deployment-Ergebnisse sind getrennte Belege. Technische Schulden bleiben:
 persistente Offline-Importwarteschlange fehlt, bestehende CSS-/Renderer-Schichten,
 geräteabhängige Push-Zustellung. Der Formatter allein garantiert weder vollständige
 KI-Erkennung noch Aktualität und Zustellung aller Geräte-Snapshots.
+
+## Schulden als alte Aufgaben: Tagespriorität V9.84 (9. September 2026)
+
+Ausgangspunkt: main `c47355a23e1539f4728fe13882332e25098fd1fc` (V9.83).
+Nutzerbeobachtung und lesende Prüfung des Cloud-State belegten, dass die beiden
+Geldnotizen zusätzlich als datierte To-dos vorhanden waren; eine davon trug
+`priority:true`. Daher ordnete der Renderer sie als überfällige Arbeit vor
+Schulaufgaben ein. Die vorherige Korrektur hatte nur `pendencies` berücksichtigt.
+`daily-school-first.spec.mjs` reproduziert diese Struktur mit generischen Daten
+und scheiterte vor der Korrektur an den Schuldenzeilen unter „Jetzt wichtig“.
+
+Der gemeinsame Prioritätshelfer erkennt eng begrenzte Aussagen „… schuldet mir …“
+und „Ich schulde …“ als Geldnotizen. Konkrete Zahlungs-/Einziehungsaktionen und
+ausdrückliche Fristen bleiben Tagesaufgaben. Geldnotizen bleiben in den Daten und
+in der Aufgabenverwaltung; ihre ursprünglichen Beträge und Erledigungszustände
+werden nicht geändert. Die Tagesansichten und neue Push-Snapshots enthalten sie
+nicht mehr als akute Aufgaben. Die separate Geldübersicht ist standardmäßig
+eingeklappt und folgt am Ende auf Schule, Termine und Vorbereitung.
+
+Die bestehenden Kinderzeilen ergänzen fällige Hausaufgaben mit unveränderter Frist.
+Ab 17 Uhr zeigen sie den ausdrücklich bezeichneten Folgetag, sobald kein
+Unterricht mehr läuft oder bevorsteht. Vormittag und Nachmittag bleiben getrennte
+Zeitspannen; Abfahrten stammen ausschließlich aus gespeicherten Angaben. Der Fokus
+verwendet weiterhin verbleibende heutige Termine und sonst den frühesten bekannten
+Schritt für morgen. Heute fällige Hausaufgaben werden dabei nicht auf morgen
+verschoben. Unbekannte Schulzeiten werden nicht als Schulfrei behauptet.
+
+Keine Cloud-Migration, keine Änderung produktiver Familienrecords, kein neuer
+Renderer, Observer oder Timer. Die vorhandenen Render- und Push-Pfade teilen den
+Prioritätshelfer. Regression: echte Struktur alter Geld-To-dos, relevante
+Zahlungsfrist, Morgen/Abend, Personen, Mitnehmen, Fristen, 390–1440 px und
+unveränderte Daten; beide Browser-Engines in der CI. Bestehende Geldtests öffnen
+jetzt die eingeklappte Verwaltung, bevor sie deren Inhalt und Aktionen prüfen.
+Release `20260909-v9840`, Service-Worker-Cache v121. Tatsächliche CI- und
+Production-Smoke-Ergebnisse sind weiterhin der Deploymentbeleg.
