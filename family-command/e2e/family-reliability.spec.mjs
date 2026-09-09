@@ -83,7 +83,7 @@ try{
  await page.locator('.fc-calendar-disclosure summary').click();
  await page.locator('[data-fc673-date="2026-08-29"]').click();
  assert.equal(await page.evaluate(()=>__fcV9.state.weekDate),'2026-08-29');
- await page.locator('.fc-search-entry').click();await page.getByRole('searchbox',{name:'Suchbegriff',exact:true}).fill('Kind B Wochenheft');
+ await page.locator('.fc9-search-icon').click();await page.getByRole('searchbox',{name:'Suchbegriff',exact:true}).fill('Kind B Wochenheft');
  assert.match(await page.locator('.fc-search-results').innerText(),/Erinnerungen/);
  await page.locator('.fc-search-results [data-result]').first().click();
  assert.match(await page.locator('#fcReminderCenter').innerText(),/Wochenheft/);
