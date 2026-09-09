@@ -47,9 +47,7 @@ jobs:
       - name: Install Playwright
         run: npm install --no-save playwright
       - name: Install WebKit
-        run: |
-          sudo rm -f /etc/apt/sources.list.d/google-chrome.list
-          npx playwright install --with-deps webkit
+        run: npx playwright install --with-deps webkit
       - name: iPhone and desktop regression
         run: |
           node family-command/e2e/mobile-school-day-v947.spec.mjs
