@@ -4,7 +4,7 @@
   html body #fcApp .fc9-topbar-in{grid-template-columns:36px minmax(0,1fr) auto!important;grid-template-rows:22px 20px!important;column-gap:8px!important;row-gap:0!important;min-height:56px!important;padding:calc(var(--fc-header-safe-top,env(safe-area-inset-top,0px)) + 7px) 10px 5px!important}
   html body #fcApp .fc9-mark{width:36px!important;height:36px!important;min-width:36px!important;background-size:36px 36px!important}
   html body #fcApp .fc9-brand{align-self:center!important}
-  html body #fcApp .fc9-brand>b{font-size:17px!important;line-height:20px!important}
+  html body #fcApp .fc9-brand>b{font-size:18px!important;line-height:20px!important}
   html body #fcApp .fc9-brand>span:not(.fc-today-anchor){display:none!important}
   html body #fcApp .fc9-head-actions{gap:5px!important}
   html body #fcApp .fc9-head-actions .fc9-icon{width:44px!important;height:44px!important;min-width:44px!important;min-height:44px!important;border-radius:12px!important}
@@ -143,6 +143,6 @@
 @media (max-width:390px){
   html body #fcApp .fc9-topbar-in{grid-template-columns:34px minmax(0,1fr) auto!important;column-gap:6px!important;padding-left:8px!important;padding-right:8px!important}
   html body #fcApp .fc9-mark{width:34px!important;height:34px!important;min-width:34px!important;background-size:34px 34px!important}
-  html body #fcApp .fc9-brand>b{font-size:16px!important}
+  html body #fcApp .fc9-brand>b{font-size:18px!important}
   html body #fcApp #events .fc982-calendar-controls{grid-template-columns:104px minmax(0,1fr)!important}
 }
