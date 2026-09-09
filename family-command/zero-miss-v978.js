@@ -29,10 +29,10 @@ function priorityDigest(root){
   const pd=pendencies();if(!pd.length)return;
   const digest=document.createElement('div');digest.className='fc978-digest';
   if(pd.length){
-    const group=document.createElement('div'),currencies=[...new Set(pd.filter(p=>Number(p.amount)>0).map(p=>p.currency||'CHF'))],total=pd.reduce((sum,p)=>sum+(Number(p.amount)||0),0),labels=pd.slice(0,2).map(p=>`${p.title||'Pendenz'}${Number(p.amount)>0?` · ${p.currency||'CHF'} ${Number(p.amount).toFixed(0)}`:''}`);
+    const group=document.createElement('div'),currencies=[...new Set(pd.filter(p=>Number(p.amount)>0).map(p=>p.currency||'CHF'))],total=pd.reduce((sum,p)=>sum+(Number(p.amount)||0),0);
     group.className='fc978-pendencies';
-    group.innerHTML=`<div class="fc978-digest-head"><span>BLEIBT OFFEN, BIS ERLEDIGT</span></div><button type="button" class="fc978-pendency fc978-pendency-summary" data-pendencies="${esc(pd[0].id)}"><span>${pd.length} OFFEN</span><b>${esc(labels.join(' · '))}${pd.length>2?` · +${pd.length-2}`:''}</b>${total>0&&currencies.length===1?`<strong>${esc(currencies[0])} ${esc(total.toFixed(0))}</strong>`:''}</button>`;
-    group.querySelector('[data-pendencies]').onclick=()=>openPendency(pd[0].id);digest.appendChild(group);
+    group.innerHTML=`<div class="fc978-digest-head"><span>BLEIBT OFFEN, BIS ERLEDIGT</span>${total>0&&currencies.length===1?`<strong>${esc(currencies[0])} ${esc(total.toFixed(0))}</strong>`:''}</div><div class="fc982-pendency-strip">${pd.map(p=>`<button type="button" class="fc978-pendency" data-pendencies="${esc(p.id)}"><span>OFFEN</span><b>${esc(p.title||'Pendenz')}</b>${Number(p.amount)>0?`<strong>${esc(p.currency||'CHF')} ${esc(Number(p.amount).toFixed(0))}</strong>`:''}</button>`).join('')}</div>`;
+    group.querySelectorAll('[data-pendencies]').forEach(b=>b.onclick=()=>openPendency(b.dataset.pendencies));digest.appendChild(group);
   }
   root.querySelector('.fc38-school')?.before(digest);
 }
