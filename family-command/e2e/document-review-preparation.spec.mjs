@@ -100,7 +100,7 @@ try{
   await page.locator('#fcEventDetails [data-doc="review-doc-1"]').waitFor();
   assert.equal(await page.locator('#fcEventDetails [data-doc="review-doc-1"]').count(),1);
   await page.locator('.fc-detail-close').click();
-  await page.locator('.fc-search-entry').click();await page.getByRole('searchbox',{name:'Suchbegriff',exact:true}).fill('Ausflug');
+  await page.locator('.fc9-search-icon').click();await page.getByRole('searchbox',{name:'Suchbegriff',exact:true}).fill('Ausflug');
   await page.waitForFunction(()=>__fcSearch.search('Ausflug').some(x=>x.group==='Dokumente'));
   const groups=await page.evaluate(()=>__fcSearch.search('Ausflug').map(x=>x.group));assert.ok(groups.includes('Termine'));assert.ok(groups.includes('Dokumente'));
   await page.getByRole('button',{name:'Suche schliessen'}).click();
