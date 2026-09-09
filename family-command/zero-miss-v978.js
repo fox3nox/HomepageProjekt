@@ -29,8 +29,9 @@ function priorityDigest(root){
   const pd=pendencies();if(!pd.length)return;
   const digest=document.createElement('div');digest.className='fc978-digest';
   if(pd.length){
-    const group=document.createElement('div');group.className='fc978-pendencies';
-    group.innerHTML=`<div class="fc978-digest-head"><span>BLEIBT OFFEN, BIS ERLEDIGT</span>${pd.length>3?`<button type="button" data-pendencies="${esc(pd[3].id)}" aria-label="${pd.length-3} weitere Pendenzen anzeigen">+${pd.length-3}</button>`:''}</div>${pd.slice(0,3).map(p=>`<button type="button" class="fc978-pendency" data-pendencies="${esc(p.id)}"><span>OFFEN</span><b>${esc(p.title||'Pendenz')}</b>${p.amount!=null?`<strong>${esc(p.currency||'CHF')} ${esc(p.amount)}</strong>`:''}</button>`).join('')}`;
+    const group=document.createElement('div'),currencies=[...new Set(pd.filter(p=>Number(p.amount)>0).map(p=>p.currency||'CHF'))],total=pd.reduce((sum,p)=>sum+(Number(p.amount)||0),0);
+    group.className='fc978-pendencies';
+    group.innerHTML=`<div class="fc978-digest-head"><span>BLEIBT OFFEN, BIS ERLEDIGT</span><span class="fc982-pendency-total">${total>0&&currencies.length===1?`${esc(currencies[0])} ${esc(total.toFixed(0))}`:''}</span>${pd.length>3?`<button type="button" data-pendencies="${esc(pd[3].id)}" aria-label="${pd.length-3} weitere Pendenzen anzeigen">+${pd.length-3}</button>`:''}</div><div class="fc982-pendency-strip">${pd.slice(0,3).map(p=>`<button type="button" class="fc978-pendency" data-pendencies="${esc(p.id)}"><span>OFFEN</span><b>${esc(p.title||'Pendenz')}</b>${Number(p.amount)>0?`<strong>${esc(p.currency||'CHF')} ${esc(Number(p.amount).toFixed(0))}</strong>`:''}</button>`).join('')}</div>`;
     group.querySelectorAll('[data-pendencies]').forEach(b=>b.onclick=()=>openPendency(b.dataset.pendencies));digest.appendChild(group);
   }
   root.querySelector('.fc38-school')?.before(digest);
@@ -39,10 +40,10 @@ function enhance(){
   const root=document.querySelector('#today > .fc38-dashboard');if(!root)return false;
   compactHeader(root);priorityDigest(root);
   root.querySelector('.fc38-upcoming')?.classList.add('fc978-upcoming-detail');
-  document.documentElement.dataset.fcZeroMiss='v978';return true;
+  document.documentElement.dataset.fcZeroMiss='v982';return true;
 }
 // The canonical renderer owns updates, including minute ticks, resume and cloud state.
 document.addEventListener('fc:today:render',enhance);
 if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',enhance,{once:true});else enhance();
-window.__fcZeroMissV978API={version:'9.78.1',enhance,events,pendencies,work};
+window.__fcZeroMissV978API={version:'9.82.0',enhance,events,pendencies,work};
 })();

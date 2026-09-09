@@ -65,7 +65,7 @@ try{
     await p.evaluate(()=>{todayISO=()=> '2026-09-07';data.events=data.events.filter(x=>x.id!=='holiday');renderToday();});
   });
   await check('search groups existing sources, people links, metadata, umlauts and typos without mutating state',async()=>{
-    await p.locator('.fc-search-entry').tap();
+    await p.locator('.fc9-search-icon').tap();
     await p.waitForFunction(()=>__fcDocumentLibrary.cached().length===1);
     const result=await p.evaluate(()=>{const before=JSON.stringify(data),matches=__fcSearch.search('Zahnarzt'),after=JSON.stringify(data);return{same:before===after,groups:[...new Set(matches.map(x=>x.group))],doc:matches.find(x=>x.group==='Dokumente'),typo:__fcSearch.search('Zahnarztz').length,umlaut:__fcSearch.search('Muller').map(x=>x.title),metadata:__fcSearch.search('Versicherung').length,people:__fcSearch.search('Kind A').map(x=>x.group),past:matches.filter(x=>x.id==='past-dental'||x.id==='done-dental')}});
     assert.equal(result.same,true,'search must not mutate canonical data');assert.deepEqual(result.groups.sort(),['Termine','Aufgaben','Hausaufgaben','Dokumente','Notizen','Kontakte','Einkauf','Rezepte','Pendenzen'].sort());
@@ -75,9 +75,9 @@ try{
     await p.getByRole('checkbox',{name:'Vergangenes und Erledigtes einbeziehen'}).check();
     assert.match(await p.locator('.fc-search-results').innerText(),/Zahnarzt früher/);assert.match(await p.locator('.fc-search-results').innerText(),/Zahnarzt erledigt/);
     await p.getByRole('button',{name:'Suche schliessen'}).tap();
-    assert.equal(await p.locator('.fc-search-entry').evaluate(x=>x===document.activeElement),true,'search close restores focus to entry');
+    assert.equal(await p.locator('.fc9-search-icon').evaluate(x=>x===document.activeElement),true,'search close restores focus to header search');
   });
-  async function findAndTap(query,title){await p.locator('.fc-search-entry').tap();await p.getByRole('searchbox',{name:'Suchbegriff',exact:true}).fill(query);await p.locator('.fc-search-results button').filter({hasText:title}).first().tap();}
+  async function findAndTap(query,title){await p.locator('.fc9-search-icon').tap();await p.getByRole('searchbox',{name:'Suchbegriff',exact:true}).fill(query);await p.locator('.fc-search-results button').filter({hasText:title}).first().tap();}
   await check('search actions open the matching task, note, contact, shopping list and recipe',async()=>{
     await findAndTap('Zahnarztrechnung','Zahnarztrechnung');await p.waitForSelector('.fc-dv-readable');assert.match(await p.locator('#fcDocumentViewer').innerText(),/Testdokument für Kind A/);await p.locator('.fc-dv-close').tap();
     await findAndTap('Zahnarzt 17','Zahnarzt');await p.waitForSelector('#fcEventDetails');assert.equal(await p.locator('#fcEventDetails h2').innerText(),'Zahnarzt');await p.locator('.fc-detail-close').tap();
@@ -91,7 +91,7 @@ try{
   });
   await check('document failure preserves local and cached search, safe rendering and keyboard escape',async()=>{
     documentsOffline=true;await p.evaluate(()=>__fcDocumentLibrary.invalidate());
-    await p.locator('.fc-search-entry').tap();await p.waitForFunction(()=>document.querySelector('.fc-search-status')?.textContent.includes('momentan nicht erreichbar'));
+    await p.locator('.fc9-search-icon').tap();await p.waitForFunction(()=>document.querySelector('.fc-search-status')?.textContent.includes('momentan nicht erreichbar'));
     await p.getByRole('searchbox',{name:'Suchbegriff',exact:true}).fill('Zahnarzt');assert.match(await p.locator('.fc-search-results').innerText(),/Zahnarztrechnung/);assert.match(await p.locator('.fc-search-results').innerText(),/Zahnarzt anrufen/);
     await p.keyboard.press('Escape');await p.waitForSelector('#fcSearchDialog',{state:'detached'});
     await p.keyboard.press('Control+k');await p.keyboard.press('Control+k');assert.equal(await p.locator('#fcSearchDialog').count(),1);await p.keyboard.press('Escape');await p.waitForSelector('#fcSearchDialog',{state:'detached'});
@@ -101,7 +101,7 @@ try{
   });
   await check('navigation, touch targets, responsive search, unique IDs and no JavaScript errors',async()=>{
     for(const screen of ['today','tomorrow','homework','today','events','more','today']){await p.locator(`.fc9-nav [data-screen="${screen}"]`).tap();assert.equal(await p.locator('.fc9-screen.active').getAttribute('id'),screen);}
-    for(const width of [375,390,430,1024]){await p.setViewportSize({width,height:844});await p.locator('.fc-search-entry').click();await p.getByRole('searchbox',{name:'Suchbegriff',exact:true}).fill('Zahnarzt');const metrics=await p.locator('#fcSearchDialog').evaluate(m=>({overflow:m.scrollWidth>m.clientWidth,small:[...m.querySelectorAll('button')].filter(b=>b.getBoundingClientRect().height<44).length}));assert.equal(metrics.overflow,false);assert.equal(metrics.small,0);await p.keyboard.press('Escape');}
+    for(const width of [375,390,430,1024]){await p.setViewportSize({width,height:844});await p.locator('.fc9-search-icon').click();await p.getByRole('searchbox',{name:'Suchbegriff',exact:true}).fill('Zahnarzt');const metrics=await p.locator('#fcSearchDialog').evaluate(m=>({overflow:m.scrollWidth>m.clientWidth,small:[...m.querySelectorAll('button')].filter(b=>b.getBoundingClientRect().height<44).length}));assert.equal(metrics.overflow,false);assert.equal(metrics.small,0);await p.keyboard.press('Escape');}
     assert.deepEqual(await p.evaluate(()=>__fcV9.health().dup),[]);assert.deepEqual(errors,[]);
     assert.equal(smartDocumentLoads,1,'managed boot must not also load the obsolete standalone document script');
     await p.setViewportSize({width:390,height:844});await p.locator('.fc9-nav [data-screen="today"]').tap();
