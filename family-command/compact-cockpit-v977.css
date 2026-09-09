@@ -1,4 +1,4 @@
-/* Familienzentrale V9.77 · Compact Family Cockpit */
+/* Familienzentrale V9.81 · Compact Family Cockpit · information hierarchy pass */
 @media (max-width:719px){
   html body #fcApp .fc977-compact .fc9-page{gap:12px!important}
   html body #fcApp .fc977-compact .fc9-section{gap:6px!important}
@@ -31,8 +31,8 @@
   html body #fcApp #tomorrow .fc674-tomorrow-children .fc9-person{padding-top:10px!important;padding-bottom:10px!important}
   html body #fcApp #tomorrow .fc674-tomorrow-children .fc9-person b{font-size:14px!important}
   html body #fcApp #tomorrow .fc674-tomorrow-children .fc9-person>div:not(.fc9-person-time)>span:not(.fc674-inline-pack){font-size:11px!important;line-height:1.28!important;margin-top:2px!important}
-  html body #fcApp #tomorrow .fc674-inline-pack{font-size:10.8px!important;line-height:1.32!important;margin-top:4px!important}
-  html body #fcApp #tomorrow .fc674-inline-note{font-size:10px!important;line-height:1.3!important;margin-top:3px!important}
+  html body #fcApp #tomorrow .fc674-tomorrow-children .fc674-inline-pack{font-size:10.8px!important;line-height:1.32!important;margin-top:4px!important}
+  html body #fcApp #tomorrow .fc674-tomorrow-children .fc674-inline-note{font-size:10px!important;line-height:1.3!important;margin-top:3px!important}
   html body #fcApp #tomorrow .fc9-person-time{font-size:11px!important}
   html body #fcApp #tomorrow .fc9-person-time small{font-size:8.5px!important;margin-top:2px!important}
 
@@ -58,21 +58,26 @@
   html body #fcApp #homework .fc9-row-main b{font-size:14px!important;line-height:1.25!important}
   html body #fcApp #homework .fc9-row-main span{font-size:12px!important}
 
-  /* More: essential family tools stay prominent; administration is denser but remains visible. */
-  html body #fcApp #more .fc9-page{gap:14px!important}
-  html body #fcApp #more .fc-more-group{gap:6px!important}
-  html body #fcApp #more .fc9-more-grid{gap:8px!important}
-  html body #fcApp #more .fc9-tile{min-height:112px!important;padding:11px!important;border-radius:16px!important}
-  html body #fcApp #more .fc9-tile i{width:40px!important;height:40px!important}
-  html body #fcApp #more .fc9-tile b{font-size:13px!important;line-height:1.2!important}
-  html body #fcApp #more .fc9-tile span{font-size:10.5px!important;line-height:1.25!important}
+  /* More: family tools are scannable rows, administration is quieter. Nothing is hidden. */
+  html body #fcApp #more .fc9-page{gap:10px!important}
+  html body #fcApp #more .fc-more-group{gap:5px!important}
+  html body #fcApp #more .fc9-section-head{min-height:30px!important}
+  html body #fcApp #more .fc9-more-grid{gap:6px!important}
+  html body #fcApp #more [data-more-group="family"] .fc9-tile,
+  html body #fcApp #more [data-more-group="manage"] .fc9-tile{min-height:68px!important;padding:9px 10px!important;border-radius:14px!important;display:grid!important;grid-template-columns:36px minmax(0,1fr)!important;grid-template-rows:auto auto!important;column-gap:9px!important;row-gap:1px!important;align-content:center!important;align-items:center!important}
+  html body #fcApp #more [data-more-group="family"] .fc9-tile i,
+  html body #fcApp #more [data-more-group="manage"] .fc9-tile i{width:36px!important;height:36px!important;grid-column:1!important;grid-row:1 / span 2!important;margin:0!important;border-radius:10px!important}
+  html body #fcApp #more [data-more-group="family"] .fc9-tile b,
+  html body #fcApp #more [data-more-group="manage"] .fc9-tile b{grid-column:2!important;margin:0!important;font-size:12px!important;line-height:1.18!important;align-self:end!important}
+  html body #fcApp #more [data-more-group="family"] .fc9-tile span,
+  html body #fcApp #more [data-more-group="manage"] .fc9-tile span{grid-column:2!important;margin:1px 0 0!important;font-size:10px!important;line-height:1.18!important;align-self:start!important;color:#748398!important}
+  html body #fcApp #more [data-more-group="manage"] .fc9-tile{min-height:60px!important;padding-block:7px!important;background:#fafbfd!important;box-shadow:none!important}
+  html body #fcApp #more [data-more-group="manage"] .fc9-tile i{width:32px!important;height:32px!important;justify-self:center!important}
   html body #fcApp #more .fc977-management-compact .fc9-more-grid{gap:6px!important}
-  html body #fcApp #more .fc977-management-compact .fc9-tile{min-height:100px!important;padding:9px 10px!important;grid-template-columns:32px minmax(0,1fr)!important;grid-template-rows:auto!important;column-gap:8px!important;align-content:center!important}
-  html body #fcApp #more .fc977-management-compact .fc9-tile i{width:32px!important;height:32px!important;grid-row:1 / span 2!important}
-  html body #fcApp #more .fc977-management-compact .fc9-tile b{font-size:11.5px!important;line-height:1.15!important;align-self:end!important}
-  html body #fcApp #more .fc977-management-compact .fc9-tile span{font-size:9.5px!important;line-height:1.15!important;align-self:start!important}
-  html body #fcApp #more .fc9-pend-row{min-height:62px!important;padding-top:8px!important;padding-bottom:8px!important}
-  html body #fcApp #more .fc9-pend-row .fc9-row-main b{font-size:13px!important}
-  html body #fcApp #more .fc9-pend-row .fc9-row-main span{font-size:10.5px!important}
-  html body #fcApp #more .fc9-amount{font-size:11px!important}
+  html body #fcApp #more .fc977-management-compact .fc9-tile{min-height:60px!important}
+  html body #fcApp #more .fc9-pend-row{min-height:54px!important;padding-top:6px!important;padding-bottom:6px!important}
+  html body #fcApp #more .fc9-pend-row .fc9-row-main b{font-size:12px!important;line-height:1.2!important}
+  html body #fcApp #more .fc9-pend-row .fc9-row-main span{font-size:10px!important;line-height:1.22!important}
+  html body #fcApp #more .fc9-amount{font-size:10.5px!important}
+  html body #fcApp #more .fc9-empty{padding-block:9px!important}
 }

@@ -57,7 +57,7 @@ try{
     headerBg:getComputedStyle(document.querySelector('#today .fc38-th.is-today')).backgroundImage
   }));
   const after=await page.evaluate(()=>JSON.stringify({todos:data.todos,events:data.events,homework:data.homework,people:data.people,schedules:data.schedules}));
-  console.log('global-design-v44',JSON.stringify({...metrics,schoolFocus}));
+  console.log('global-design-v81',JSON.stringify({...metrics,schoolFocus}));
   assert.equal(before,after,'visual redesign must not mutate family state');
 
   for(const [id,m] of Object.entries(metrics)){
@@ -80,9 +80,9 @@ try{
   assert.ok(metrics.tomorrow.maxRow===0||metrics.tomorrow.maxRow<=120,`tomorrow rows too tall: ${metrics.tomorrow.maxRow}`);
   assert.ok(metrics.events.maxRow===0||metrics.events.maxRow<=86,`calendar rows too tall: ${metrics.events.maxRow}`);
   assert.ok(metrics.homework.maxRow===0||metrics.homework.maxRow<=86,`task rows too tall: ${metrics.homework.maxRow}`);
-  assert.ok(metrics.more.tileRadius>=16&&metrics.more.tileRadius<=22,`More tiles are not part of the redesigned component system: ${metrics.more.tileRadius}`);
-  assert.ok(metrics.more.tileMinHeight>=100,`More tiles are too cramped: ${metrics.more.tileMinHeight}`);
+  assert.ok(metrics.more.tileRadius>=14&&metrics.more.tileRadius<=22,`More tiles are not part of the redesigned component system: ${metrics.more.tileRadius}`);
+  assert.ok(metrics.more.tileMinHeight>=60&&metrics.more.tileMinHeight<=76,`More tiles must stay compact and tappable: ${metrics.more.tileMinHeight}`);
 
   await browser.close();
-  console.log('V9.44 complete mobile visual regression: ok');
+  console.log('V9.81 complete mobile visual regression: ok');
 }finally{server.kill('SIGTERM')}
