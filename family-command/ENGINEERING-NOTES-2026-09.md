@@ -1,5 +1,16 @@
 # Familienzentrale: Zuverlässigkeit und täglicher Fokus
 
+## Optimierungszyklus V9.82 (9. September 2026)
+
+Die mobile Oberfläche nutzt jetzt eine kompakte Kopfzeile mit direkter Suche. Leere
+Heute-Abschnitte entfallen, Pendenzen werden zu einer weiterhin anklickbaren
+Kurzzeile zusammengefasst und Vorschauen zeigen die wichtigsten Einträge mit einem
+eindeutigen Link zu allen weiteren Punkten. Im Tagescheck werden Mitnehm-Hinweise
+pro Person gruppiert. Kalender-Modus und Personenfilter teilen sich eine Zeile;
+Aufgaben wiederholen den Status „Überfällig“ nicht mehr als zusätzliches Badge.
+Alle Bearbeitungs-, Kalender-, Such-, Verwaltungs- und Synchronisationswege bleiben
+erhalten. Boot/Loader: `20260909-v9820`, PWA-Cache: `family-command-v119`.
+
 ## Optimierungszyklus V9.80 (8. September 2026)
 
 Ausgangsstand: `31f1e7885631504a1423bdb511b55872e9aea0e9` (PR #168).
@@ -44,7 +55,7 @@ Die globale Suche durchsucht nun zusätzlich gespeicherte Mitnehm-Erinnerungen
 nach Inhalt und Person und öffnet die bestehende Erinnerungszentrale. Die sichere
 Dokumentprüfung mit ausdrücklicher Bestätigung bleibt unverändert.
 
-Boot/Loader: `20260908-v9800`, PWA-Cache: `family-command-v118`. Der Cache-Vertrag
+Boot/Loader dieses Zyklus: `20260908-v9800`, PWA-Cache: `family-command-v118`. Der Cache-Vertrag
 enthält alle verwalteten Start-/Loader-Dateien einschliesslich Personenbaustein
 und verzögert geladenen AI-Modulen. Schlägt ein erforderlicher Download fehl,
 scheitert die Installation und entfernt nur den unvollständigen neuen Cache.
