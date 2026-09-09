@@ -1,0 +1,17 @@
+import assert from 'node:assert/strict';
+import {readFile} from 'node:fs/promises';
+import vm from 'node:vm';
+const data={events:[{id:'event-opaque',personIds:['child-a'],title:'Herbstbummel',note:'Mitnehmen: Leuchtweste',date:'2026-09-10'}],homework:[{id:'hw-opaque',personId:'child-b',title:'Mathetest'}],todos:[]};
+const raw={id:'doc-1',title:'Schulbrief',links:[{source_kind:'event',source_id:'event-opaque'},{source_kind:'homework',source_id:'hw-opaque'}]};
+let calls=0;const sandbox={data,localStorage:{getItem:()=>''},fetch:async()=>{calls++;return{ok:true,json:async()=>({documents:[raw]})}}};sandbox.window=sandbox;vm.createContext(sandbox);
+vm.runInContext(await readFile(new URL('../document-library.js',import.meta.url),'utf8'),sandbox);
+const api=sandbox.__fcDocumentLibrary,clean=x=>JSON.parse(JSON.stringify(x));
+const [doc]=await api.list();assert.deepEqual(clean(doc.personIds),['child-a','child-b']);assert.match(doc.searchText,/Herbstbummel.*Leuchtweste.*Mathetest/);
+data.events[0].personIds=['child-c'];data.events[0].title='Aktualisierter Ausflug';
+assert.deepEqual(clean(api.normalize(doc).personIds),['child-c','child-b'],'derived identities follow current assignments without retaining obsolete people');
+assert.deepEqual(clean((await api.list())[0].personIds),['child-c','child-b']);assert.equal(calls,1,'assignment changes do not require another metadata request');
+assert.match(api.cached()[0].searchText,/Aktualisierter Ausflug/);
+assert.deepEqual(clean(api.normalize({id:'explicit',person_ids:['oli'],links:raw.links}).personIds),['oli','child-c','child-b'],'explicit document ownership is retained alongside linked records');
+assert.deepEqual(clean(api.normalize({id:'unknown',links:[{source_kind:'event',source_id:'child-a-guessed-prefix'}]}).personIds),[],'never infer ownership from an ID prefix');
+assert.deepEqual(raw.links,[{source_kind:'event',source_id:'event-opaque'},{source_kind:'homework',source_id:'hw-opaque'}]);
+console.log('PASS document identity: current event/homework links, explicit ownership, searchable context and no guessed assignments');

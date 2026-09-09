@@ -9,6 +9,7 @@ on:
 jobs:
   shopping-lists:
     runs-on: ubuntu-latest
+    container: mcr.microsoft.com/playwright:v1.57.0-noble
     timeout-minutes: 12
     steps:
       - uses: actions/checkout@v4
@@ -16,6 +17,5 @@ jobs:
         with:
           node-version: 22
       - run: node --check family-command/shopping-lists.js && node --check family-command/e2e/shopping-lists-v953.spec.mjs
-      - run: npm install --no-save playwright
-      - run: npx playwright install --with-deps webkit
+      - run: npm install --no-save --package-lock=false playwright@1.57.0
       - run: node family-command/e2e/shopping-lists-v953.spec.mjs

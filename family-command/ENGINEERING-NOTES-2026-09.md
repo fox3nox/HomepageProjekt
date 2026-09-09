@@ -281,3 +281,52 @@ Unverändert: Cloud-Merge und Revisionen, private Regeln, Header/PWA-Boot,
 Dokumentserver und Zugangsverwaltung. Kein Paperless-Token und keine persönlichen
 Originale im öffentlichen Repository. Physisches iPhone-/Standalone-Rendering muss
 weiter getrennt von Browser-Simulationen bewertet werden.
+
+## Familienalltag und sichere Erfassung V9.83 (9. September 2026)
+
+Ausgangspunkt: main `b822f9449acee9352b6bee15bad6b6a27bc03c4a` (V9.82).
+Audit und neue Regressionen belegten vier Vertrauenslücken: Geld allein konnte
+„Jetzt wichtig“ auslösen; kommende Hausaufgaben fehlten in der Sieben-Tage-Vorschau;
+Text/Sprach-KI startete mit ausgewählten Vorschlägen und ersetzte unbekannte
+Personen durch die erste Person; Dokumentzuordnung erriet teils IDs.
+
+Der bestehende Tagesrenderer hält Geld im nachgeordneten Bereich und zeigt
+kommende offene Schul- und Tagesaufgaben. Eine leere Aufgabenliste bedeutet nicht
+mehr pauschal „Alles erledigt“. Text und Sprache verwenden die Validierung und
+Übernahme aus Smart Documents: bewusste Auswahl, mehrere Personen, keine ungültige
+Teilübernahme und kein Überschreiben bestehender Korrekturen. Fehlende Erinnerungswahl
+bleibt „Automatisch“. Der Dokument-Reiter öffnet die kanonische Originalprüfung.
+Zusätzlicher Importpfad und produktiver Fetch-/Zeitstempel-Interceptor
+`family-ai-original-links.js` entfallen.
+
+Der Dokumentadapter leitet Personen und Suchkontext aus aktuellen Verknüpfungen
+ab. Explizite Dokumentzuordnungen bleiben erhalten; Änderungen an verknüpften
+Terminen aktualisieren abgeleitete Personen im Cache ohne erneuten Abruf.
+Keine Cloud-State-Migration oder Metadaten-Schreibzugriffe beim Lesen.
+Der KI-Dialog liegt über der Navigation, hat erreichbare Aktionen, 16-px-Felder
+und verwendet die bestehende Fokus-/Escape-Schicht. Keine neue CSS-Datei,
+kein zusätzlicher Observer oder Render-Timer.
+
+Die vorhandene Push-Funktion liegt jetzt unter `supabase/functions/` im Repository.
+Der separat testbare Formatter bündelt Schule, Mitnehmen und Hausaufgaben pro
+Person, erhält gleichnamige Termine verschiedener Kinder, begrenzt Ferien auf
+betroffene Kinder und erfindet keine Abfahrten oder freien Nachmittage.
+Kalenderarithmetik berücksichtigt Zeitumstellungen. Morgenberichte öffnen Heute,
+Abendberichte öffnen Morgen. Backend-Bereitstellung und Rückleseprüfung sind ein
+separater Schritt nach dem Merge; ein Commit allein belegt kein Deployment.
+
+Neue Tests: `family-trust`, `document-identity`, `push-digest`. Browserprüfung mit
+WebKit/Chromium und 390, 393, 402, 430, 768, 1024, 1440 px. Vorhandene Cloud-,
+Import-, Konflikt-, Lösch-, Offline-, Header- und Interaktionsprüfungen bleiben aktiv.
+Frühere CI-Fehler wurden bis zum Chrome-APT-Hash-Mismatch in der Browserinstallation
+zurückverfolgt. Betroffene Jobs verwenden nun wie die bereits grünen Jobs das
+passende Playwright-1.57-Containerimage. Kein Test entfällt.
+Release: `20260909-v9830`, Service-Worker-Cache v120; Header bleibt v9669.
+
+Prüfgrenzen: Der vorhandene produktive Browserzugang antwortete mit 401; private
+Familiendaten und ein physisches iPhone wurden nicht zur Prüfung verändert.
+Synthetische Browserdaten, bytegenauer Production Smoke und tatsächliche
+CI-/Deployment-Ergebnisse sind getrennte Belege. Technische Schulden bleiben:
+persistente Offline-Importwarteschlange fehlt, bestehende CSS-/Renderer-Schichten,
+geräteabhängige Push-Zustellung. Der Formatter allein garantiert weder vollständige
+KI-Erkennung noch Aktualität und Zustellung aller Geräte-Snapshots.

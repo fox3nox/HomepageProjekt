@@ -27,6 +27,7 @@ on:
 jobs:
   mobile-school-day:
     runs-on: ubuntu-latest
+    container: mcr.microsoft.com/playwright:v1.57.0-noble
     timeout-minutes: 12
     steps:
       - uses: actions/checkout@v4
@@ -45,9 +46,7 @@ jobs:
           grep -q "tomorrow-calendar-v9673.css" family-command/reference-mobile-v35.js
           grep -q "tomorrow-calendar-v9673.js" family-command/reference-mobile-v35.js
       - name: Install Playwright
-        run: npm install --no-save playwright
-      - name: Install WebKit
-        run: npx playwright install --with-deps webkit
+        run: npm install --no-save --package-lock=false playwright@1.57.0
       - name: iPhone and desktop regression
         run: |
           node family-command/e2e/mobile-school-day-v947.spec.mjs

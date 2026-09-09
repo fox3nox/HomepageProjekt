@@ -25,6 +25,7 @@ on:
 jobs:
   smart-documents:
     runs-on: ubuntu-latest
+    container: mcr.microsoft.com/playwright:v1.57.0-noble
     timeout-minutes: 12
     steps:
       - uses: actions/checkout@v4
@@ -41,9 +42,7 @@ jobs:
           grep -q "smart-documents.js" family-command/index.html
           grep -q "__fcSmartDocumentsHealth" family-command/smart-documents.js
       - name: Install Playwright
-        run: npm install --no-save playwright
-      - name: Install WebKit
-        run: npx playwright install --with-deps webkit
+        run: npm install --no-save --package-lock=false playwright@1.57.0
       - name: iPhone smart documents regression
         id: smarttest
         shell: bash

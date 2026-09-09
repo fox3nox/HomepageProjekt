@@ -51,16 +51,7 @@
     document.head.appendChild(s);
   }
 
-  function linkedPeople(d){
-    const ids=new Set();
-    if(d.person_id)ids.add(String(d.person_id));
-    for(const l of d.links||[]){
-      if(String(l.source_kind)==='person'&&l.source_id)ids.add(String(l.source_id));
-      const m=String(l.source_id||'').match(/^(jayden|fynn|eliyah|oli)(?:-|$)/);
-      if(m)ids.add(m[1]);
-    }
-    return [...ids];
-  }
+  function linkedPeople(d){return window.__fcDocumentLibrary.normalize(d).personIds}
   function personLabel(ids){return ids.map(id=>people().find(p=>p.id===id)?.name||id).join(' · ')||'Nicht zugeordnet'}
   function dateLabel(raw){const s=String(raw||'').slice(0,10);if(!/^\d{4}-\d{2}-\d{2}$/.test(s))return'';const [y,m,d]=s.split('-');return `${d}.${m}.${y}`}
   function typeMeta(d){const mime=String(d.mime_type||'').toLowerCase();if(mime.includes('pdf'))return{icon:'📄',label:'PDF'};if(mime.startsWith('image/'))return{icon:'🖼️',label:'Bild'};return{icon:'📎',label:'Datei'}}
@@ -69,7 +60,7 @@
     return docs.filter(d=>filter==='all'||linkedPeople(d).includes(filter)).filter(d=>{
       if(!q)return true;
       const ids=linkedPeople(d);
-      return norm([d.title,personLabel(ids),d.mime_type,dateLabel(d.created_at)].join(' ')).includes(q);
+      return norm([d.title,personLabel(ids),window.__fcDocumentLibrary.normalize(d).searchText,d.mime_type,dateLabel(d.created_at)].join(' ')).includes(q);
     }).sort((a,b)=>String(b.created_at||'').localeCompare(String(a.created_at||'')));
   }
   function filterCount(id){return id==='all'?docs.length:docs.filter(d=>linkedPeople(d).includes(id)).length}
@@ -271,5 +262,7 @@
 
   document.addEventListener('click',e=>{const b=e.target?.closest?.('[data-feature="docs"]');if(!b)return;e.preventDefault();e.stopPropagation();e.stopImmediatePropagation();open()},true);
   window.fcOpenSmartDocuments=open;
+  // Text, voice and documents share validation, deduplication and explicit writes.
+  window.__fcEntryReview={issues,applyItems};
   window.__fcSmartDocumentsHealth={version:'1.3.0',reviewRequired:true,automaticImport:false,filters:true,filterCounts:true,search:true,newestFirst:true,directUpload:true,multiPerson:true,selectAll:true,aiAutoAssign:true,manualOverride:true,autoLink:true,dedupe:true,confidenceThreshold:.85,preservesOriginal:true,semanticNaming:true};
 })();

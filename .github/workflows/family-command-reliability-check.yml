@@ -2,10 +2,10 @@ name: Family Command reliability and preparation
 on:
   pull_request:
     branches: [main]
-    paths: ['family-command/**', '.github/workflows/family-command-reliability-check.yml']
+    paths: ['family-command/**', 'supabase/functions/family-command-push3/**', '.github/workflows/family-command-reliability-check.yml']
   push:
     branches: [main]
-    paths: ['family-command/**', '.github/workflows/family-command-reliability-check.yml']
+    paths: ['family-command/**', 'supabase/functions/family-command-push3/**', '.github/workflows/family-command-reliability-check.yml']
 permissions:
   contents: read
 jobs:
@@ -23,8 +23,15 @@ jobs:
         with:
           node-version: 22
       - run: npm install --no-save --package-lock=false playwright@1.57.0
+      - run: node --check supabase/functions/family-command-push3/index.ts
+      - run: node family-command/e2e/push-digest.spec.mjs
+      - run: node family-command/e2e/document-identity.spec.mjs
       - run: node family-command/e2e/pwa-release.spec.mjs
       - run: node family-command/e2e/cloud-state-lifecycle.spec.mjs
+      - run: node family-command/e2e/family-trust.spec.mjs
+        env:
+          FC_BROWSER: ${{ matrix.browser }}
+          FC_QA_DIR: /tmp/family-reliability
       - run: node family-command/e2e/family-reliability.spec.mjs
         env:
           FC_BROWSER: ${{ matrix.browser }}

@@ -16,11 +16,6 @@ function openPendency(id){
   const target=[...document.querySelectorAll('#more [data-pend]')].find(x=>!id||x.dataset.pend===id);
   target?.scrollIntoView({block:'center'});target?.focus({preventScroll:true});
 }
-function compactHeader(root){
-  const bar=root.querySelector('.fc38-daybar p');if(!bar)return;
-  const base=bar.dataset.fc978BaseStatus||bar.textContent;bar.dataset.fc978BaseStatus=base;
-  const count=pendencies().length;bar.textContent=count?`${base} · ${count} ${count===1?'Pendenz':'Pendenzen'}`:base;
-}
 function priorityDigest(root){
   const box=root.querySelector('.fc38-priority');if(!box)return;
   // The next event already appears in the focus; the canonical day list keeps full details.
@@ -38,7 +33,7 @@ function priorityDigest(root){
 }
 function enhance(){
   const root=document.querySelector('#today > .fc38-dashboard');if(!root)return false;
-  compactHeader(root);priorityDigest(root);
+  priorityDigest(root);
   root.querySelector('.fc38-upcoming')?.classList.add('fc978-upcoming-detail');
   document.documentElement.dataset.fcZeroMiss='v982';return true;
 }
