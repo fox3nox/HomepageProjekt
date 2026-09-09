@@ -17,7 +17,7 @@
 #today .fc38-priority>header small,#today .fc38-section-head small{display:block;font-size:10px;font-weight:850;letter-spacing:.1em;color:#577493}
 #today .fc38-priority>header h2,#today .fc38-panel>header h2{margin:3px 0 0;font-size:19px;line-height:1.15;letter-spacing:-.025em;color:var(--fc974-navy)}
 #today .fc38-panel>header small{display:block;margin-top:3px;color:var(--fc974-muted);font-size:11px}
-#today .fc38-priority>header button,#today .fc38-panel>header button{min-height:40px;padding:7px 5px;border:0;background:transparent;color:var(--fc974-blue);font-size:12px;font-weight:750}
+#today .fc38-priority>header button,#today .fc38-panel>header button{min-height:44px;padding:7px 5px;border:0;background:transparent;color:var(--fc974-blue);font-size:12px;font-weight:750}
 #today .fc38-focus{padding:11px 14px;border-bottom:1px solid #e4ebf4;background:#eef5ff}
 #today .fc38-focus small{display:block;font-size:9px;font-weight:850;letter-spacing:.09em;color:#52739a}
 #today .fc38-focus b{display:block;margin-top:3px;font-size:15px;line-height:1.25;color:#18314f}

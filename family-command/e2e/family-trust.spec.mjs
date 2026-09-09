@@ -20,6 +20,8 @@ try{
   const dash=page.locator('#today > .fc38-dashboard');
   assert.doesNotMatch(await dash.locator('.fc38-priority').innerText(),/Pendenz|Alles erledigt/,'money alone is not urgent and no blanket all-done promise');
   assert.doesNotMatch(await dash.locator('.fc38-daybar').innerText(),/Pendenz/,'money stays out of the daily attention summary');
+  assert.equal(await dash.locator('.fc978-digest').evaluate(x=>x.open),false);
+  await dash.locator('.fc978-digest > summary').click();
   assert.match(await dash.locator('.fc978-digest').innerText(),/Rückzahlung/,'money remains findable until explicitly completed');
   await page.evaluate(()=>{data.homework=[{id:'future-test',title:'Mathetest üben',personId:'child-b',dueDate:'2026-08-31',done:false},{id:'done-work',title:'Schon erledigt',personId:'child-a',dueDate:'2026-08-30',done:true},{id:'old-work',title:'Frist bleibt offen',personId:'child-a',dueDate:'2026-08-27',done:false}];__fcV9.invalidate();renderToday()});
   assert.match(await dash.locator('.fc38-upcoming').innerText(),/Mathetest üben/,'school work appears before the day it is due, even without calendar events');
