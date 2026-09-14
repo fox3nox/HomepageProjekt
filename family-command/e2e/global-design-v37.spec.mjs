@@ -79,7 +79,7 @@ try{
   assert.ok(String(schoolFocus.headerBg).includes('gradient'),'current school day needs a visible highlighted background');
   assert.ok(metrics.tomorrow.maxRow===0||metrics.tomorrow.maxRow<=120,`tomorrow rows too tall: ${metrics.tomorrow.maxRow}`);
   assert.ok(metrics.events.maxRow===0||metrics.events.maxRow<=86,`calendar rows too tall: ${metrics.events.maxRow}`);
-  assert.ok(metrics.homework.maxRow===0||metrics.homework.maxRow<=86,`task rows too tall: ${metrics.homework.maxRow}`);
+  assert.ok(metrics.homework.maxRow===0||metrics.homework.maxRow<=120,`task rows with explicit owner and relative/exact deadline too tall: ${metrics.homework.maxRow}`);
   assert.ok(metrics.more.tileRadius>=14&&metrics.more.tileRadius<=22,`More tiles are not part of the redesigned component system: ${metrics.more.tileRadius}`);
   assert.ok(metrics.more.tileMinHeight>=60&&metrics.more.tileMinHeight<=76,`More tiles must stay compact and tappable: ${metrics.more.tileMinHeight}`);
 
