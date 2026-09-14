@@ -59,6 +59,45 @@ try{
   assert.equal(await page.locator('.fc-calendar-disclosure').evaluate(e=>e.open),true);
   assert.equal(await page.evaluate(()=>document.documentElement.scrollWidth>innerWidth),false);
   if(process.env.FC_QA_DIR)await page.screenshot({path:resolve(process.env.FC_QA_DIR,`calendar-mobile-${engine}.png`)});
+  // A realistic evening: preserve every field while reducing duplicate preparation.
+  await page.clock.setFixedTime(new Date('2026-09-14T20:12:00+02:00'));
+  await page.evaluate(()=>{
+    data.homework=[{id:'sign',personId:'child-b',title:'Wochenheft unterschreiben',dueDate:'2026-09-15',done:false}];
+    data.todos=[];
+    data.reminders=[{id:'bag',personId:'child-c',days:[2],items:['Rucksack','Znüni-Box']}];
+    for(const p of data.people.filter(p=>p.id!=='oli'))data.schedules[p.id]={2:[{start:'08:20',end:'11:50',depart:'07:55',label:'Schule'},{start:'13:30',end:'15:05',label:'Schule'}]};
+    data.events=[{id:'all-day',personIds:['child-a'],title:'Zähneputzen',date:'2026-09-14'},
+      {id:'ended',personIds:['oli'],title:'Fertiger Termin',date:'2026-09-14',time:'16:00',end:'17:00'},
+      {id:'unknown-end',personIds:['oli'],title:'Begonnener Termin',date:'2026-09-14',time:'20:00'},
+      {id:'future',personIds:['oli','child-a'],title:'Gemeinsamer Ausflug',date:'2026-09-17',time:'09:00'},
+      {id:'tomorrow-event',personIds:['oli'],title:'Morgen Termin',date:'2026-09-15',time:'10:00'}];
+    __fcV9.invalidate();__fcV9.open('today');__fcReferenceDashboard39.rebuild(true);
+  });
+  const before=await page.evaluate(()=>JSON.stringify(data)),dash=page.locator('#today > .fc38-dashboard');
+  assert.match(await dash.locator('.fc38-focus').innerText(),/Morgen.*07:55/s);
+  assert.equal(await dash.locator('.fc38-child').count(),3);
+  assert.equal(await dash.locator('.fc38-tomorrow .fc38-pack').count(),0,'school preparation is not duplicated in the evening');
+  assert.doesNotMatch(await dash.locator('.fc38-tomorrow').innerText(),/Wochenheft|Rucksack/);
+  assert.equal(await dash.locator('.fc978-today-detail').count(),0,'expired starts and untimed notes cannot claim to be upcoming');
+  assert.equal(await dash.locator('.fc986-day-notes').evaluate(e=>e.open),false);
+  await dash.locator('.fc986-day-notes summary').click();
+  assert.match(await dash.locator('.fc986-day-notes').innerText(),/Zähneputzen.*Beginn vorbei · Ende offen/s);
+  assert.match(await dash.locator('.fc38-upcoming').innerText(),/In 3 Tagen/);
+  assert.equal(await dash.locator('[data-focus-event="future"] .fc-person-badge').count(),2);
+  await dash.locator('.fc986-day-notes summary').click();
+  for(const width of [375,390,430,1280]){
+    await page.setViewportSize({width,height:844});
+    const header=await page.locator('.fc9-brand>b').evaluate(e=>{const s=getComputedStyle(e),top=getComputedStyle(document.querySelector('.fc9-topbar-in'));return {filter:s.filter,shadow:s.textShadow,transform:s.transform,padding:parseFloat(top.paddingTop)}});
+    if(width<720){assert.ok(header.padding>=24);assert.equal(header.filter,'none');assert.equal(header.shadow,'none');assert.equal(header.transform,'none');}
+    assert.equal(await page.evaluate(()=>document.documentElement.scrollWidth>innerWidth),false,`${width}px overflow`);
+    if(process.env.FC_QA_DIR)await page.screenshot({path:resolve(process.env.FC_QA_DIR,`glance-evening-${engine}-${width}.png`)});
+  }
+  await page.setViewportSize({width:390,height:844});
+  await page.locator('.fc9-nav [data-screen="events"]').click();
+  assert.match(await page.locator('#events').innerText(),/In 3 Tagen/);
+  // Labels survive daylight-saving calendar-day boundaries, not just 24h intervals.
+  assert.equal(await page.evaluate(()=>{const original=todayISO;todayISO=()=> '2026-10-24';try{return __fcGlanceTime.day('2026-10-26')}finally{todayISO=original}}),'Übermorgen');
+  assert.equal(await page.evaluate(()=>JSON.stringify(data)),before,'view-only changes preserve all dates, times, colors and completion flags');
   assert.deepEqual(errors,[]);
   console.log(`PASS ${engine}: access guidance, next-action-first Today and compact calendar month picker`);
 }finally{await browser.close();await new Promise(r=>server.close(r));}

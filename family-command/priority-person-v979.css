@@ -14,3 +14,52 @@ html body #fcApp #today .fc38-taskcopy small,html body #fcApp #today .fc38-child
 html body #fcApp #today .fc38-taskcopy strong,html body #fcApp #today .fc38-child b{font-size:var(--fc-row-size)!important}
 html body #fcApp #today .fc38-child{align-items:start}
 html body #fcApp #today .fc38-child .fc38-avatar{margin-top:2px}
+
+/* V9.86 · scan by person, action and time. Existing colors remain canonical. */
+html body #fcApp .fc-person-badge{padding:2px 7px 2px 3px;border-radius:7px;background:color-mix(in srgb,var(--fc-person) 10%,white);font-size:12px;white-space:nowrap}
+html body #fcApp #today .fc38-daybar{text-align:left!important;min-height:48px!important}
+html body #fcApp #today .fc38-daybar>div{text-align:left!important}
+html body #fcApp #today .fc38-daybar h1{font-size:24px!important}
+html body #fcApp #today .fc38-daybar p{display:none!important}
+html body #fcApp #today .fc38-priority{background:#fff!important;box-shadow:none!important}
+html body #fcApp #today .fc38-focus{padding:12px!important;background:#eaf2ff!important;border:0!important;border-left:4px solid #246be0!important}
+html body #fcApp #today .fc38-focus>small{font-size:11px!important;letter-spacing:.06em!important;color:#315b95!important}
+html body #fcApp #today .fc986-focus-line{display:grid;grid-template-columns:auto minmax(0,1fr);gap:12px;align-items:center;margin:5px 0}
+html body #fcApp #today .fc986-focus-line>b{font-size:16px!important;line-height:1.3!important;margin:0!important}
+html body #fcApp #today .fc986-focus-line>.fc986-clock{font-size:27px!important;letter-spacing:-.03em;font-variant-numeric:tabular-nums}
+html body #fcApp #today .fc38-priority>header{min-height:40px!important;padding:6px 12px!important}
+html body #fcApp #today .fc38-priority>header small{display:none!important}
+html body #fcApp #today .fc38-priority>header h2{font-size:14px!important}
+html body #fcApp #today .fc38-children{background:transparent!important;border:0!important;box-shadow:none!important;overflow:visible!important}
+html body #fcApp #today .fc38-children>header{padding:5px 2px!important;min-height:38px!important}
+html body #fcApp #today .fc38-child{grid-template-columns:30px minmax(0,1fr)!important;gap:9px!important;padding:10px!important;margin-bottom:8px;background:#fff;border:1px solid #dfe6ef!important;border-left:4px solid var(--person)!important;border-radius:13px}
+html body #fcApp #today .fc38-child .fc38-avatar{width:28px!important;height:28px!important;min-width:28px!important;font-size:13px!important;box-shadow:none!important}
+html body #fcApp #today .fc986-child-head{display:flex;justify-content:space-between;align-items:center;gap:8px}
+html body #fcApp #today .fc986-child-head>b{font-size:16px!important;line-height:1.3!important}
+html body #fcApp #today .fc986-child-head>.fc986-depart{font-size:15px!important;font-weight:750;color:#142d4b;white-space:nowrap;font-variant-numeric:tabular-nums}
+html body #fcApp #today .fc986-school-times{display:flex;flex-wrap:wrap;gap:4px 9px;margin-top:2px;color:#53657a;font-variant-numeric:tabular-nums}
+html body #fcApp #today .fc986-school-times span{margin:0!important;font-size:12px!important}
+html body #fcApp #today .fc986-child-state{color:#53657a!important;font-size:12px!important}
+html body #fcApp #today .fc38-child strong{font-size:12px!important;line-height:1.45!important;font-weight:600!important}
+html body #fcApp #today .fc38-child-homework{padding:5px 7px;background:#fff4db;border-radius:7px;color:#724900!important}
+html body #fcApp #today .fc986-pack-label{color:#28476a!important}
+html body #fcApp #today .fc38-event{grid-template-columns:86px minmax(0,1fr) 16px!important;align-items:start!important;gap:8px!important;border-left:4px solid var(--person)!important;text-align:left!important}
+html body #fcApp #today .fc986-when{display:flex!important;flex-direction:column;gap:3px;color:#214872;padding-top:2px}
+html body #fcApp #today .fc986-when>b{font-size:13px!important;line-height:1.3!important}
+html body #fcApp #today .fc986-when>small{font-size:12px!important;font-variant-numeric:tabular-nums}
+html body #fcApp #today .fc38-event-main>b{font-size:14px!important;line-height:1.35!important}
+html body #fcApp #today .fc38-event-main em{font-size:12px!important;line-height:1.35!important}
+html body #fcApp #today .fc986-people{display:flex;flex-wrap:wrap;gap:4px;margin-bottom:4px}
+html body #fcApp #today .fc38-task{border-left:4px solid var(--person)!important}
+html body #fcApp #today .fc986-day-notes>summary{padding:10px 12px;min-height:44px;box-sizing:border-box;font-size:13px;font-weight:650;color:#52657b;cursor:pointer}
+html body #fcApp #today .fc986-day-notes>p{font-size:12px;line-height:1.4;padding:0 12px;color:#52657b}
+html body #fcApp .fc9-row-main{text-align:left!important}
+html body #fcApp .fc9-time .fc986-relative{display:block!important;font-size:11px!important;line-height:1.35;margin-top:5px;color:#315b95;font-weight:650}
+html body #fcApp .fc9-event{align-items:start!important}
+html body #fcApp .fc9-day-label{color:#244b7b!important;font-weight:750!important}
+html body #fcApp .fc9-row-main>.fc-person-badge{margin-bottom:5px!important}
+@media(min-width:1000px){
+ html body #fcApp #today .fc38-children{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:10px}
+ html body #fcApp #today .fc38-children>header{grid-column:1/-1}
+ html body #fcApp #today .fc38-child{margin:0;align-content:start}
+}
