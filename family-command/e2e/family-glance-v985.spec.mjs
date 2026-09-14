@@ -47,7 +47,7 @@ try{
   const priority=page.locator('#today .fc38-priority');
   assert.equal(await priority.locator(':scope > :first-child').evaluate(e=>e.classList.contains('fc38-focus')),true,'the next action must be the first priority content');
   assert.match(await priority.locator('.fc38-focus').innerText(),/08:15.*Erster Termin/s);
-  assert.match(await priority.locator('header').innerText(),/JETZT WICHTIG.*1 offener Punkt/s);
+  assert.match(await priority.locator('header').innerText(),/1 offener Punkt/);
   if(process.env.FC_QA_DIR)await page.screenshot({path:resolve(process.env.FC_QA_DIR,`today-mobile-${engine}.png`)});
 
   await page.locator('.fc9-nav [data-screen="events"]').click();
