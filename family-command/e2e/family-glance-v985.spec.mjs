@@ -24,7 +24,7 @@ try{
   assert.ok((await accessPage.locator('#fcAccessRetry').boundingBox()).height>=44);
   assert.equal(await accessPage.evaluate(()=>document.documentElement.scrollWidth>innerWidth),false);
   if(process.env.FC_QA_DIR){await mkdir(process.env.FC_QA_DIR,{recursive:true});await accessPage.screenshot({path:resolve(process.env.FC_QA_DIR,`access-mobile-${engine}.png`)});}
-  await Promise.all([accessPage.waitForLoadState('domcontentloaded'),accessPage.locator('#fcAccessRetry').click()]);
+  await Promise.all([accessPage.waitForEvent('domcontentloaded'),accessPage.locator('#fcAccessRetry').click()]);
   await accessPage.waitForFunction(()=>document.documentElement.dataset.fcAccess==='required');
   await access.close();
 
@@ -38,6 +38,8 @@ try{
   await page.waitForFunction(()=>document.documentElement.dataset.fcReady==='1'&&window.__fcV9&&window.__fcReferenceDashboard39);
   await page.evaluate(()=>{
     todayISO=()=> '2026-09-14';
+    data.homework=[];
+    data.schedules={};
     data.todos=[{id:'today-important',title:'Wichtige Unterlagen mitnehmen',date:'2026-09-14',done:false,priority:true}];
     data.events=[{id:'first-event',personIds:['oli'],title:'Erster Termin',date:'2026-09-14',time:'08:15'}];
     window.__fcV9.invalidate();renderToday();
