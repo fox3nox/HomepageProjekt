@@ -38,7 +38,7 @@ try{
     __fcV9.invalidate();renderToday();
   });
   await check('next action uses recorded departures; urgent work and per-child packing are visible',async()=>{
-    assert.match(await p.locator('.fc38-focus').innerText(),/07:05 · Kind B los/);
+    assert.match(await p.locator('.fc38-focus').innerText(),/07:05\s+Kind B los/);
     assert.match(await p.locator('.fc38-priority').innerText(),/2 offene Punkte/);
     const child=p.locator('[data-focus-child="child-a"]');assert.match(await child.innerText(),/08:20.*11:55/);assert.match(await child.innerText(),/Trinkflasche/);assert.match(await child.innerText(),/Turnschuhe/);
     assert.doesNotMatch(await child.innerText(),/07:55|Leuchtweste|Znüni/);

@@ -24,8 +24,8 @@ jobs:
           grep -q '<title>Familienzentrale</title>' family-command/index.html
           grep -q 'data-fc-v9="1"' family-command/index.html
           grep -q "const VERSION='20260914-v9860'" family-command/index.html
-          grep -q "const HEADER_VERSION='20260906-v9669'" family-command/index.html
-          grep -q "HEADER_V='20260906-v9669'" family-command/reference-mobile-v35.js
+          grep -q "const HEADER_VERSION='20260914-v9860'" family-command/index.html
+          grep -q "HEADER_V='20260914-v9860'" family-command/reference-mobile-v35.js
           grep -q "fcHeaderRelease='v9669'" family-command/reference-mobile-v35.js
           grep -q "fcFutureOnly='v9669'" family-command/reference-mobile-v35.js
           grep -q "fcZeroMiss='v982'" family-command/reference-mobile-v35.js
@@ -86,7 +86,7 @@ jobs:
             sleep 10
           done
           test "$live" = "$expected"
-          grep -q "const HEADER_VERSION='20260906-v9669'" /tmp/fc-live-index.html
+          grep -q "const HEADER_VERSION='20260914-v9860'" /tmp/fc-live-index.html
           grep -q "const VERSION='20260914-v9860'" /tmp/fc-live-index.html
       - name: Wait for exact critical production assets
         shell: bash
@@ -106,7 +106,7 @@ jobs:
             sleep 5
           done
           test "$all_ok" = true
-          grep -q "HEADER_V='20260906-v9669'" /tmp/reference-mobile-v35.js
+          grep -q "HEADER_V='20260914-v9860'" /tmp/reference-mobile-v35.js
           grep -q "fcHeaderRelease='v9669'" /tmp/reference-mobile-v35.js
           grep -q "fcFutureOnly='v9669'" /tmp/reference-mobile-v35.js
           grep -q "fcZeroMiss='v982'" /tmp/reference-mobile-v35.js
