@@ -1,3 +1,4 @@
+V9.85 · 2026-09-14 · Verständlicher privater Zugang, «Als Nächstes» zuerst und kompakter Monatswähler im Kalender.
 V9.84 · 2026-09-09 · Schuldennotizen aus Tagespriorität entfernt; Schule und Vorbereitung pro Kind am Morgen und Abend.
 V9.83 · 2026-09-09 · Bestätigte KI-Eingaben, frühzeitige Schulvorbereitung und klare Push-Übersichten.
 20260908-v9800 — V9.80 family reliability and preparation
