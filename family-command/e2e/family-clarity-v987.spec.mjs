@@ -75,8 +75,8 @@ try{
     for(const width of [375,390,430,1280]){
       await page.setViewportSize({width,height:844});
       assert.equal(await page.evaluate(()=>document.documentElement.scrollWidth>innerWidth),false,screen+' overflows '+width);
-      const small=await page.locator('#'+screen+' .fc987-person-filters button,#'+screen+' .fc987-week-navigation button').evaluateAll(buttons=>buttons.filter(b=>b.getBoundingClientRect().width<44||b.getBoundingClientRect().height<44).map(b=>b.textContent));
-      assert.deepEqual(small,[],screen+' filter touch targets');
+      const small=await page.locator('#'+screen+' .fc987-person-filters button,#'+screen+' .fc987-week-navigation button').evaluateAll(buttons=>buttons.filter(b=>b.getBoundingClientRect().width<44||b.getBoundingClientRect().height<44||b.scrollWidth>b.clientWidth+1||b.scrollHeight>b.clientHeight+1).map(b=>b.textContent));
+      assert.deepEqual(small,[],screen+' filter touch targets and unclipped labels');
       if(process.env.FC_QA_EMBED_PREVIEW==='1'&&engine==='chromium'&&width===390)console.log('FC_VISUAL_'+screen+':'+(await page.screenshot({type:'jpeg',quality:65})).toString('base64'));
       if(process.env.FC_QA_DIR){await mkdir(process.env.FC_QA_DIR,{recursive:true});await page.screenshot({path:resolve(process.env.FC_QA_DIR,`clarity-${screen}-${engine}-${width}.png`)});}
     }
