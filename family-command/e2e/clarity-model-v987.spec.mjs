@@ -10,6 +10,7 @@ const event={date:'2026-09-14',time:'08:00',end:'09:00',personIds:['oli','a']};
 assert.equal(c.eventState(event),'running');assert.match(t.event(event),/Läuft · noch 1 Std/);
 clock='2026-09-14T09:00:00';assert.equal(c.eventState(event),'past');assert.equal(t.event(event),'Beendet');
 assert.equal(c.eventState({...event,end:''}),'started');assert.equal(t.event({...event,end:''}),'Beginn vorbei · Ende offen');
+assert.equal(c.eventState({...event,end:'07:00'}),'time-conflict');assert.equal(t.event({...event,end:'07:00'}),'Endzeit prüfen');
 assert.equal(c.eventState({date:'2026-09-14'}),'untimed');assert.equal(c.exact({date:'2026-09-14'}),'Ohne Uhrzeit');
 assert.equal(c.eventState({...event,endDate:'2026-09-15'}),'running');
 assert.equal(c.eventState({...event,date:'2026-09-13',endDate:'2026-09-16',end:''}),'spanning');

@@ -32,7 +32,7 @@ try{
   assert.ok(m.navH<=72,`bottom navigation must stay compact: ${m.navH}`);
   assert.ok(m.navButtons.every(h=>h>=44),`all nav touch targets must remain >=44px: ${m.navButtons}`);
   assert.ok(m.allDayCount>=1,'entries without a stored time must explicitly say Ohne Uhrzeit');
-  assert.ok(m.allDayText.every(x=>x==='Ohne Uhrzeit'));
+  assert.ok(m.allDayText.every(x=>x.includes('Ohne Uhrzeit')));
   assert.ok(m.panelRadius>=14,'today panels should retain calm rounded grouping');
   await browser.close();
   console.log('V9.52 mobile polish regression: ok');

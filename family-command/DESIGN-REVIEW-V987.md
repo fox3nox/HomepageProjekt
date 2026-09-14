@@ -4,7 +4,7 @@ Stand: 14. September 2026. Ziel: Person, nächste Handlung, Zeitpunkt und Restze
 
 ## Grundlage und Grenzen
 
-Geprüft: Quellcode der fünf Hauptansichten, Detail- und Bearbeitungswege, bestehende automatisierte Tests und die vom Nutzer gelieferten Screenshots. Der aktuelle persönliche Live-Zugang steht im Prüf-Browser nicht zur Verfügung. Die lokale Browserinstallation ist durch einen fehlgeschlagenen Browser-Download blockiert. Daher keine Behauptung einer vollständigen aktuellen visuellen Live-Prüfung. Browserprüfungen laufen mit isolierten synthetischen Daten in Chromium und WebKit in der vorhandenen CI. Screenshots werden dort als Prüfartefakte erzeugt; ein erfolgreicher Test ersetzt keine Sichtprüfung auf dem persönlichen iPhone.
+Geprüft: Quellcode der fünf Hauptansichten, Detail- und Bearbeitungswege, bestehende automatisierte Tests und die vom Nutzer gelieferten Screenshots. Der aktuelle persönliche Live-Zugang steht im Prüf-Browser nicht zur Verfügung. Die lokale Browserinstallation ist durch einen fehlgeschlagenen Browser-Download blockiert. Daher keine Behauptung einer vollständigen aktuellen visuellen Live-Prüfung. Browserprüfungen laufen mit isolierten synthetischen Daten in Chromium und WebKit in der vorhandenen CI. Die dort erzeugten Screenshots aller fünf Hauptansichten wurden für 390 px betrachtet. Dabei gefundene uneinheitliche Kalenderfilter und native dunkle Terminränder wurden korrigiert. Das ersetzt keine Sichtprüfung auf dem persönlichen iPhone.
 
 ## Vergleich und Entscheidungen
 
@@ -25,6 +25,7 @@ Geprüft: Quellcode der fünf Hauptansichten, Detail- und Bearbeitungswege, best
 | Kalender | Tageslinks öffneten Monat; Personenfilter ließ alle Schulkinder stehen; keine direkte Wochennavigation | Richtiger Tag, Filter auch auf Schulzeilen, vorherige/nächste Woche, gut sichtbares relatives und genaues Datum. |
 | Aufgaben | Lange flache Liste; undatierte Priorität konnte aktuelle Schulaufgaben verdrängen | Fristgruppen, Heute/Morgen-Filter und Personenfilter; undatierte Aufgaben klar getrennt. |
 | Haushalt/Mehr | Uneinheitliche Kachelhöhen, zu viel Dekoration | Gemeinsame Schrift-/Karten-/Abstandsregeln, kompaktere Kacheln, bestehende Funktionen behalten. |
+| Leere Kinderkarten | Karten ohne Schulzeit, Aufgabe, Packhinweis oder heutigen Termin verdrängten relevante Informationen | Im Überblick entfallen nur vollständig inhaltsleere Kinderkarten; die Person und alle Daten bleiben erhalten. |
 | Wiederaufbau | Geöffnete Tagesdetails verloren ihren Zustand | Offen-Zustand und direkte Tastaturziele bei Zeitaktualisierung erhalten; kein regulärer Wiederaufbau während gedrücktem Zeiger. |
 
 ## Daten- und Funktionsgrenzen

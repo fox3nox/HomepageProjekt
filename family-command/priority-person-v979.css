@@ -118,3 +118,11 @@ html body #fcApp button:focus-visible,html body #fcApp summary:focus-visible{out
 @media(prefers-reduced-motion:reduce){html body #fcApp *,html body #fcApp *::before,html body #fcApp *::after{animation:none!important;transition:none!important;scroll-behavior:auto!important}}
 
 @media(min-width:1100px){html body #fcApp .fc9-pagehead h1{font-size:38px!important}}
+/* Visual review: consistent filter grid and no native button bevel on event rows. */
+html body #fcApp .fc982-calendar-controls{display:flex!important;flex-direction:column!important;align-items:stretch!important;gap:0!important}
+html body #fcApp .fc982-calendar-controls>.fc9-segment{width:100%!important;min-height:44px!important}
+html body #fcApp .fc987-person-filters{display:grid!important;grid-template-columns:repeat(3,minmax(0,1fr))!important}
+html body #fcApp .fc987-person-filters .fc9-filter{min-width:0!important;width:100%!important;white-space:normal!important;overflow-wrap:anywhere}
+html body #fcApp .fc9-event{border:0!important;border-left:4px solid var(--event)!important;border-bottom:1px solid var(--fc-line)!important;border-radius:0!important;box-shadow:none!important}
+html body #fcApp .fc9-event:last-child{border-bottom:0!important}
+@media(min-width:720px){html body #fcApp .fc987-person-filters{grid-template-columns:repeat(6,minmax(0,1fr))!important}}

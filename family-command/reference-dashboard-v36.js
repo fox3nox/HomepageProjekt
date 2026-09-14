@@ -42,6 +42,7 @@ function childrenAction(){
   const status=window.__fcV9?.currentChildState?.(p,date,live),finished=live&&info.slots?.length&&!status;
   const homework=(D().homework||[]).filter(h=>!h.done&&!h.archived&&String(h.personId)===String(p.id)&&String(h.dueDate||'')<=date).sort((a,b)=>String(a.dueDate||'').localeCompare(String(b.dueDate||'')));
   const prep=(typeof eventPreparationFor==='function'?eventPreparationFor(p.id,date):[]).filter(x=>{try{return !live||!window.__fcV9?.eventIsPast?.(x.event)}catch(_){return true}}),schoolPack=finished?[]:[...(info.items||[]),...(info.special||[])];
+  if(!info.slots?.length&&!info.schoolBreak&&!homework.length&&!prep.length&&!schoolPack.length&&!info.notes?.length&&!remainingEvents(date).some(e=>(e.personIds||[]).map(String).includes(String(p.id))))continue;
   if(finished&&!homework.length&&!prep.length&&!remainingEvents(date).some(e=>(e.personIds||[]).map(String).includes(String(p.id))))continue;
   const slots=info.slots||[],times=slots.map(s=>[s.start,s.end].filter(Boolean).join('–')).join(' · '),first=slots[0];
   const label=info.schoolBreak?.title||(!slots.length?'Keine Schulzeit eingetragen':!live?[(first.depart?first.depart+' los':'Abfahrt nicht eingetragen'),times].join(' · '):status?.label||'Unterricht beendet');
