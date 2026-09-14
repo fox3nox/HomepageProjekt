@@ -126,3 +126,5 @@ html body #fcApp .fc987-person-filters .fc9-filter{min-width:0!important;width:1
 html body #fcApp .fc9-event{border:0!important;border-left:4px solid var(--event)!important;border-bottom:1px solid var(--fc-line)!important;border-radius:0!important;box-shadow:none!important}
 html body #fcApp .fc9-event:last-child{border-bottom:0!important}
 @media(min-width:720px){html body #fcApp .fc987-person-filters{grid-template-columns:repeat(6,minmax(0,1fr))!important}}
+/* Selected names remain readable even when a stored family color is very light. */
+html body #fcApp .fc987-person-filters .fc9-filter.active{background:color-mix(in srgb,var(--person,#526881) 16%,white)!important;color:var(--fc-ink)!important;border-color:var(--person,#526881)!important;box-shadow:inset 0 -2px 0 var(--person,#526881)!important}
