@@ -365,3 +365,10 @@ unveränderte Daten; beide Browser-Engines in der CI. Bestehende Geldtests öffn
 jetzt die eingeklappte Verwaltung, bevor sie deren Inhalt und Aktionen prüfen.
 Release `20260909-v9840`, Service-Worker-Cache v121. Tatsächliche CI- und
 Production-Smoke-Ergebnisse sind weiterhin der Deploymentbeleg.
+## Ein-Blick-Optimierung V9.85 (14. September 2026)
+
+- Der Bildschirm ohne privaten Schlüssel ist nun eine lesbare Zugangshilfe statt einer kleinen Fehlermeldung. Er erklärt den einmaligen Safari-Schritt, zeigt keinen Schlüssel an und bietet eine 48-Pixel-Aktion zum erneuten Prüfen.
+- Im Heute-Cockpit wird `Als Nächstes` vor der Zusammenfassung offener Aufgaben gerendert. Die bestehende Sortierung, Geldnotiz-Trennung und Erledigungslogik bleiben unverändert.
+- Die Monatsauswahl des Kalenders liegt auf dem iPhone als 44-Pixel-Kalenderknopf in derselben Zeile wie die Monatsnavigation. Der eigentliche Monatskalender bleibt standardmässig geschlossen.
+- Release `20260914-v9850`, Service-Worker-Cache `family-command-v122`.
+- Neue WebKit-/Chromium-Prüfung `family-glance-v985.spec.mjs` deckt Zugangshilfe, Neuladen, Next-Action-Reihenfolge, mobilen Kalenderkopf, Touch-Fläche und horizontales Überlaufen ab.

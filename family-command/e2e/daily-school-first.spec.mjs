@@ -53,7 +53,7 @@ try{
  assert.match(await kids.locator('[data-focus-child="child-b"]').innerText(),/Lesebuch/);
  assert.match(await kids.locator('[data-focus-child="child-a"]').innerText(),/heute f\u00e4llig/,'today homework cannot silently become due tomorrow');
  assert.match(await kids.locator('[data-focus-child="child-c"]').innerText(),/Leuchtweste/);
- assert.match(await dash.locator('.fc38-focus').innerText(),/morgen.*07:35|07:35.*morgen/i);
+ assert.match(await dash.locator('.fc38-focus').innerText(),/morgen.*07:35|07:35.*morgen/is);
  for(const width of [390,393,402,430,768,1024,1440]){
   await page.setViewportSize({width,height:844});
   assert.equal(await page.evaluate(()=>document.documentElement.scrollWidth>innerWidth),false,`${width}px overflow`);

@@ -14,4 +14,5 @@ assert.ok(js.includes("fc38-schoolgrid"),'desktop school details remain availabl
 assert.ok(css.includes('@media(max-width:719px){#today .fc38-schoolgrid{display:none!important}}'),'weekly grid must stay out of the iPhone overview');
 assert.ok(css.includes('grid-template-columns:40px minmax(0,1fr) 40px'),'mobile tasks need stable touch columns');
 assert.ok(!js.includes('fc38-switch'),'Today must not recreate the redundant day/week switch');
+assert.ok(js.includes('fc38-priority${action?\' has-focus\':\'\'}">${focus}${count?`<header'),'the next action must render before the task summary');
 console.log('V9.74 command center source regression: ok');

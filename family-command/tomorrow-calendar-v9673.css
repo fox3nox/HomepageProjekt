@@ -14,10 +14,21 @@
 #events .fc9-weekdays{grid-template-columns:repeat(7,minmax(0,1fr))!important}
 
 .fc-calendar-disclosure{min-width:0}
-.fc-calendar-disclosure>summary{display:flex;align-items:center;justify-content:space-between;min-height:44px;padding:8px 12px;border:1px solid #dfe7f0;border-radius:12px;background:#fff;color:#345575;font-size:13px;font-weight:700;cursor:pointer;list-style:none}
+.fc-calendar-disclosure>summary{position:relative;display:flex;align-items:center;justify-content:space-between;min-height:44px;padding:8px 12px;border:1px solid #dfe7f0;border-radius:12px;background:#fff;color:#345575;font-size:13px;font-weight:700;cursor:pointer;list-style:none}
+.fc-calendar-disclosure>summary .fc-icon{width:19px;height:19px}
 .fc-calendar-disclosure>summary::after{content:'+';font-size:20px}
 .fc-calendar-disclosure[open]>summary::after{content:'−'}
 .fc-calendar-disclosure>summary::-webkit-details-marker{display:none}
-.fc-calendar-disclosure .fc673-monthgrid{margin-top:6px}
+.fc-calendar-disclosure .fc673-monthgrid{margin-top:6px;pointer-events:auto}
 .fc-calendar-disclosure .fc673-weekheads span,.fc-calendar-disclosure .fc673-monthgrid>small{font-size:11px;color:#526881}
+@media(max-width:719px){
+  #events .fc9-month{display:grid!important;grid-template-columns:44px minmax(0,1fr) 44px 44px!important;gap:6px!important}
+  #events .fc9-month>div{min-width:0}
+  #events .fc9-month b,#events .fc9-month span{overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+  #events .fc-calendar-disclosure{position:relative;margin-top:-58px;pointer-events:none}
+  #events .fc-calendar-disclosure>summary{width:44px;min-height:44px;margin-left:auto;padding:0;justify-content:center;font-size:0;pointer-events:auto}
+  #events .fc-calendar-disclosure>summary span{position:absolute;width:1px;height:1px;padding:0;margin:-1px;overflow:hidden;clip:rect(0,0,0,0);white-space:nowrap;border:0}
+  #events .fc-calendar-disclosure>summary::after{position:absolute;right:3px;bottom:1px;display:grid;width:14px;height:14px;place-items:center;border-radius:50%;background:#eaf3ff;color:#176fdd;font-size:13px;font-weight:900;line-height:1}
+  #events .fc-calendar-disclosure[open]>summary{background:#edf5ff;border-color:#b9d3f4;color:#176fdd}
+}
 html body #fcApp #tomorrow .fc674-inline-pack,html body #fcApp #tomorrow .fc674-inline-note{font-size:12px!important;line-height:1.35!important}
