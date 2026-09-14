@@ -39,7 +39,7 @@ for(const [name,engine,width,height] of [['iPhone WebKit',webkit,390,844],['Desk
   assert.match(await page.locator('.fc38-focus').innerText(),/07:05.*Kind A/s);
   assert.equal(await page.locator('.fc38-taskicon').count(),0,'category emoji must not look like a second checkbox');
   for(const sel of ['.fc38-check','.fc38-go'])for(const box of await page.locator(sel).evaluateAll(els=>els.map(e=>({w:e.getBoundingClientRect().width,h:e.getBoundingClientRect().height}))))assert.ok(box.w>=40&&box.h>=40,sel+JSON.stringify(box));
-  assert.equal(await page.locator('#today .fc38-switch').count(),0,'Today must not recreate the redundant day/week switch');assert.equal(await page.locator('#today .fc38-tomorrow').count(),1);
+  assert.equal(await page.locator('#today .fc38-switch').count(),0,'Today must not recreate the redundant day/week switch');assert.equal(await page.locator('#today .fc38-tomorrow').count(),0,'empty tomorrow previews do not consume overview space');
  });
  await check(name+' navigation restores the actual content scroll position',async()=>{
   await page.locator('.fc9-nav [data-screen=more]').click();
