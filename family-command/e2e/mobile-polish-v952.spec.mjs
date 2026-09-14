@@ -18,7 +18,7 @@ try{
   await page.waitForFunction(()=>document.documentElement.dataset.fcReady==='1');
   await page.waitForFunction(()=>document.documentElement.dataset.fcMobilePolish==='v52'&&document.documentElement.dataset.fcMobileDashboardPolish==='v52',{timeout:20000});
   await page.evaluate(()=>{const iso=typeof todayISO==='function'?todayISO():new Date().toISOString().slice(0,10);window.data.events=Array.isArray(window.data.events)?window.data.events:[];window.data.events.push({id:'v952-all-day',date:iso,time:'',title:'V9.52 Ganztagstest',personIds:['jayden'],note:''});window.__fcReferenceDashboard39?.rebuild(true)});
-  await page.waitForFunction(()=>[...document.querySelectorAll('#today .fc38-event .fc52-all-day')].some(x=>x.textContent==='Ganztägig'));
+  await page.waitForFunction(()=>[...document.querySelectorAll('#today .fc38-event .fc52-all-day')].some(x=>x.textContent==='Ohne Uhrzeit'));
   const m=await page.evaluate(()=>{
     const header=document.querySelector('.fc9-topbar-in'),nav=document.querySelector('.fc9-nav'),buttons=[...document.querySelectorAll('.fc9-nav button')],main=document.querySelector('.fc9-main'),taskIcon=document.querySelector('#today .fc38-taskicon');
     const allDay=[...document.querySelectorAll('#today .fc38-event .fc52-all-day')];
@@ -31,8 +31,8 @@ try{
   assert.ok(m.headerH<=86,`mobile header must stay compact: ${m.headerH}`);
   assert.ok(m.navH<=72,`bottom navigation must stay compact: ${m.navH}`);
   assert.ok(m.navButtons.every(h=>h>=44),`all nav touch targets must remain >=44px: ${m.navButtons}`);
-  assert.ok(m.allDayCount>=1,'all-day agenda entries must use the dedicated status badge');
-  assert.ok(m.allDayText.every(x=>x==='Ganztägig'));
+  assert.ok(m.allDayCount>=1,'entries without a stored time must explicitly say Ohne Uhrzeit');
+  assert.ok(m.allDayText.every(x=>x.includes('Ohne Uhrzeit')));
   assert.ok(m.panelRadius>=14,'today panels should retain calm rounded grouping');
   await browser.close();
   console.log('V9.52 mobile polish regression: ok');

@@ -1,0 +1,27 @@
+import assert from 'node:assert/strict';
+import vm from 'node:vm';
+import {readFile} from 'node:fs/promises';
+const NativeDate=Date;let clock='2026-09-14T08:00:00';
+class Clock extends NativeDate{constructor(...args){super(...(args.length?args:[clock]))}static now(){return new NativeDate(clock).getTime()}}
+const s={Date:Clock,Set,Map,JSON,Number,String,Math,document:{addEventListener(){},querySelectorAll(){return[]}},setInterval(){},addEventListener(){},todayISO:()=> '2026-09-14',data:{people:[{id:'oli',name:'Oli',color:'#123456'},{id:'a',name:'Kind A',color:'#008800'},{id:'b',name:'Kind B',color:'#0066cc'}],events:[],todos:[]},schoolDayFor:(pid,date)=>({slots:date==='2026-09-15'?[{start:'08:20',end:'11:50',depart:'07:55'}]:[]})};
+s.window=s;vm.createContext(s);vm.runInContext(await readFile(new URL('../priority-person-v979.js',import.meta.url),'utf8'),s);
+const c=s.__fcClarity,t=s.__fcGlanceTime,before=JSON.stringify(s.data);
+const event={date:'2026-09-14',time:'08:00',end:'09:00',personIds:['oli','a']};
+assert.equal(c.eventState(event),'running');assert.match(t.event(event),/Läuft · noch 1 Std/);
+clock='2026-09-14T09:00:00';assert.equal(c.eventState(event),'past');assert.equal(t.event(event),'Beendet');
+assert.equal(c.eventState({...event,end:''}),'started');assert.equal(t.event({...event,end:''}),'Beginn vorbei · Ende offen');
+assert.equal(c.eventState({...event,end:'07:00'}),'time-conflict');assert.equal(t.event({...event,end:'07:00'}),'Endzeit prüfen');
+assert.equal(c.eventState({date:'2026-09-14'}),'untimed');assert.equal(c.exact({date:'2026-09-14'}),'Ohne Uhrzeit');
+assert.equal(c.eventState({...event,endDate:'2026-09-15'}),'running');
+assert.equal(c.eventState({...event,date:'2026-09-13',endDate:'2026-09-16',end:''}),'spanning');
+assert.equal(c.matches(event,'a'),true);assert.equal(c.matches(event,'b'),false);assert.equal(c.matches({},'oli'),false);assert.equal(c.matches({},'unassigned'),true);
+assert.match(c.who({}),/Nicht zugeordnet/);assert.equal((c.who(event).match(/fc-person-badge/g)||[]).length,2);
+assert.match(t.time('2026-09-15','07:55'),/Morgen · in 22 Std. 55 Min/);
+assert.equal(t.day('2026-09-16'),'Übermorgen');s.todayISO=()=> '2026-10-24';assert.equal(t.day('2026-10-26'),'Übermorgen');s.todayISO=()=> '2026-09-14';
+const n=c.next('2026-09-15');assert.equal(n.time,'07:55');assert.equal(n.items.length,2);assert.match(n.title,/Kind A los.*Kind B los/);
+s.data.events=[{...event,id:'spanning',date:'2026-09-13',endDate:'2026-09-16',time:'10:00'},{id:'future',date:'2026-09-14',time:'11:00',title:'Termin',personIds:['oli']}];
+assert.equal(c.next().eventId,'future','multi-day appointments cannot produce a new start every day');
+s.data.events=[];
+assert.equal(JSON.stringify(s.data),before,'all derived values leave stored data unchanged');
+assert.ok(s.__fcPersonIdentity.compareWork({date:'2026-09-14',kind:'homework'},{priority:true},'2026-09-14')<0,'undated priority does not outrank school work due today');
+console.log('PASS clarity model: time boundaries, end unknown, multi-day events, canonical school slots, ownership, DST and no mutation');
