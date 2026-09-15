@@ -35,6 +35,7 @@ try{
   });
   const before=await page.evaluate(()=>JSON.stringify(data));
   assert.deepEqual(await page.locator('.fc9-nav button > span:first-of-type').allTextContents(),['Übersicht','Plan','Familie']);
+  assert.equal(await page.locator('.fc34-nav-badge').count(),0,'old hidden-view counters cannot imply urgency');
   assert.equal(await page.locator('#today > .fc38-dashboard [data-next-event="next"]').count(),1);
   assert.equal(await page.locator('#today > .fc38-dashboard [data-focus-event="next"]').count(),0,'focus event is not repeated in the day list');
   assert.equal((await page.locator('#today > .fc38-dashboard').innerText()).match(/Heute lesen/g)?.length,1,'task appears once with its owner');
@@ -78,7 +79,8 @@ try{
   await page.locator('#events [data-filter="all"]').click();
   assert.equal(await page.locator('#events .fc9-person').count(),3);
   for(const screen of ['today','tomorrow','events','homework','more']){
-    await openView(page,'+screen+');
+    await openView(page,screen);
+    assert.equal(await page.locator('.fc9-nav button[aria-current="page"]').getAttribute('data-screen'),({tomorrow:'today',homework:'events'}[screen]||screen));
     for(const width of [375,390,430,1280]){
       await page.setViewportSize({width,height:844});
       assert.equal(await page.evaluate(()=>document.documentElement.scrollWidth>innerWidth),false,screen+' overflows '+width);

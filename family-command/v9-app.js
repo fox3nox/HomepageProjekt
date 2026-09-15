@@ -8,7 +8,7 @@ const state={screen:'today',calendarMode:'agenda',calendarFilter:'all',calendarM
 const dirty=new Set(IDS),rendering=new Set();
 const MONTHS=['Januar','Februar','März','April','Mai','Juni','Juli','August','September','Oktober','November','Dezember'];
 const DAY=['So','Mo','Di','Mi','Do','Fr','Sa'];
-const svg=Object.fromEntries(Object.entries({today:'house',tomorrow:'sun',events:'calendar-days',homework:'list-checks',more:'ellipsis'}).map(([id,name])=>[id,fcIcon(name)]));
+const svg=Object.fromEntries(Object.entries({today:'house',tomorrow:'sun',events:'calendar-days',homework:'list-checks',more:'users'}).map(([id,name])=>[id,fcIcon(name)]));
 const esc=s=>String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
 const q=s=>JSON.stringify(String(s??''));
 const D=()=>typeof data!=='undefined'&&data?data:{};
