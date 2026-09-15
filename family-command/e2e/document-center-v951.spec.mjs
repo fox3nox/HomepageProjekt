@@ -1,3 +1,4 @@
+import {openView} from './navigation.mjs';
 import { webkit } from 'playwright';
 import { spawn } from 'node:child_process';
 import assert from 'node:assert/strict';
@@ -22,7 +23,7 @@ try{
   await page.goto(BASE+'/?access=test',{waitUntil:'domcontentloaded',timeout:20000});
   await page.waitForFunction(()=>document.documentElement.dataset.fcReady==='1'&&window.__fcSmartDocumentsHealth?.version==='1.3.0',{timeout:20000});
   await page.evaluate(s=>{for(const k of Object.keys(window.data||{}))delete window.data[k];Object.assign(window.data,structuredClone(s));window.save=()=>{}},state);
-  await page.click('[data-screen="more"]');
+  await openView(page,'more');
   await page.click('[data-feature="docs"]');
   await page.waitForSelector('.fc-doc-center',{timeout:20000});
 

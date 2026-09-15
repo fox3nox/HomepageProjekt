@@ -1,3 +1,4 @@
+import {openView} from './navigation.mjs';
 import { webkit } from 'playwright';
 import { spawn } from 'node:child_process';
 import { readFileSync, mkdirSync } from 'node:fs';
@@ -26,10 +27,10 @@ try{
   const metrics={};
 
   for(const id of screens){
-    await page.locator(`.fc9-nav button[data-screen="${id}"]`).click();
+    await openView(page,id);
     await page.waitForTimeout(140);
     metrics[id]=await page.evaluate(id=>{
-      const s=document.getElementById(id),nav=document.querySelector('.fc9-nav'),active=document.querySelector(`.fc9-nav button[data-screen="${id}"]`);
+      const s=document.getElementById(id),nav=document.querySelector('.fc9-nav'),active=document.querySelector('.fc9-nav button.active');
       const h=s.querySelector('.fc9-pagehead h1'),cards=[...s.querySelectorAll('.fc9-card')],rows=[...s.querySelectorAll('.fc9-row,.fc9-person')],tiles=[...s.querySelectorAll('.fc9-tile')];
       const nr=nav.getBoundingClientRect(),ar=active.getBoundingClientRect(),main=document.querySelector('.fc9-main');
       return {

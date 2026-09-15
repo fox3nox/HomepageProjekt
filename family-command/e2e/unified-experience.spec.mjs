@@ -1,3 +1,4 @@
+import {openView} from './navigation.mjs';
 import { webkit, chromium } from 'playwright';
 import { createServer } from 'node:http';
 import { readFile, readFileSync } from 'node:fs';
@@ -32,32 +33,32 @@ for(const [name,engine,width,height] of [['iPhone WebKit',webkit,390,844],['Desk
   __fcV9.invalidate();renderToday();
  });
  await check(name+' shares the daily focus without changing data',async()=>{
-  const result=await page.evaluate(()=>{const before=JSON.stringify(data);__fcReferenceDashboard39.rebuild(true);const dashboard=document.querySelector('.fc38-dashboard'),focus=dashboard.querySelector('.fc38-focus').getBoundingClientRect(),child=dashboard.querySelector('.fc38-child').getBoundingClientRect(),main=document.querySelector('.fc9-main').getBoundingClientRect();return{same:before===JSON.stringify(data),basisInert:document.querySelector('#today>.fc9-page').inert,focusBottom:focus.bottom,childBottom:child.bottom,mainBottom:main.bottom,columns:getComputedStyle(dashboard).gridTemplateColumns.split(' ').length};});
+  const result=await page.evaluate(()=>{const before=JSON.stringify(data);__fcReferenceDashboard39.rebuild(true);const dashboard=document.querySelector('.fc38-dashboard'),focus=dashboard.querySelector('.fc38-focus').getBoundingClientRect(),child=dashboard.querySelector('.fc38-child').getBoundingClientRect(),main=document.querySelector('.fc9-main').getBoundingClientRect();return{same:before===JSON.stringify(data),basisInert:document.querySelector('#today>.fc9-page').inert,focusBottom:focus.bottom,childBottom:child.bottom,mainBottom:main.bottom,layout:getComputedStyle(dashboard).display};});
   assert.equal(result.same,true);assert.equal(result.basisInert,true);
   assert.ok(result.focusBottom<result.mainBottom&&result.childBottom<result.mainBottom,'next action and first child are visible before scrolling');
-  assert.equal(result.columns,width<1000?1:2);
+  assert.equal(result.layout,'flex','one reading order for the simplified overview on every device');
   assert.match(await page.locator('.fc38-focus').innerText(),/07:05.*Kind A/s);
   assert.equal(await page.locator('.fc38-taskicon').count(),0,'category emoji must not look like a second checkbox');
   for(const sel of ['.fc38-check','.fc38-go'])for(const box of await page.locator(sel).evaluateAll(els=>els.map(e=>({w:e.getBoundingClientRect().width,h:e.getBoundingClientRect().height}))))assert.ok(box.w>=40&&box.h>=40,sel+JSON.stringify(box));
   assert.equal(await page.locator('#today .fc38-switch').count(),0,'Today must not recreate the redundant day/week switch');assert.equal(await page.locator('#today .fc38-tomorrow').count(),0,'empty tomorrow previews do not consume overview space');
  });
  await check(name+' navigation restores the actual content scroll position',async()=>{
-  await page.locator('.fc9-nav [data-screen=more]').click();
+  await openView(page,'more');
   await page.locator('[data-fc-budget]').waitFor();
   await page.evaluate(()=>{document.querySelector('.fc9-main').scrollTop=900;window.scrollTo(0,900);});
   assert.ok(await page.evaluate(()=>document.querySelector('.fc9-main').scrollTop+window.scrollY)>0);
-  await page.locator('.fc9-nav [data-screen=homework]').click();
+  await openView(page,'homework');
   assert.equal(await page.evaluate(()=>document.querySelector('.fc9-main').scrollTop+window.scrollY),0);
  });
  await check(name+' tasks and calendar meet readable type and touch sizes',async()=>{
   for(const screen of ['homework','events']){
-   await page.locator(`.fc9-nav [data-screen=${screen}]`).click();
+   await openView(page,screen);
    const result=await page.locator('#'+screen).evaluate(root=>({title:[...root.querySelectorAll('.fc9-row-main b')].map(e=>parseFloat(getComputedStyle(e).fontSize)),meta:[...root.querySelectorAll('.fc9-row-main span')].map(e=>parseFloat(getComputedStyle(e).fontSize)),small:[...root.querySelectorAll('button')].filter(e=>{const r=e.getBoundingClientRect();return r.width&&r.height&&r.height<44}).map(e=>e.outerHTML.slice(0,100))}));
    assert.ok(result.title.length);assert.ok(result.title.every(n=>n>=14),JSON.stringify(result));assert.ok(result.meta.every(n=>n>=12),JSON.stringify(result));assert.deepEqual(result.small,[]);
   }
  });
  await check(name+' task dialog validates, traps focus and closes with Escape',async()=>{
-  await page.locator('.fc9-nav [data-screen=homework]').click();
+  await openView(page,'homework');
   const opener=page.locator('#homework [data-hw="math"] .fc9-danger');await opener.focus();await opener.click();
   const dialog=page.getByRole('dialog',{name:'Schulaufgabe bearbeiten'});await dialog.waitFor();
   assert.equal(await page.locator('.app').evaluate(e=>e.inert),true);
@@ -73,7 +74,7 @@ for(const [name,engine,width,height] of [['iPhone WebKit',webkit,390,844],['Desk
   assert.equal(await page.locator('.app').evaluate(e=>e.inert),false);assert.equal(await opener.evaluate(e=>e===document.activeElement),true);
  });
  await check(name+' grouped destinations, nested dialogs and local open-source icons',async()=>{
-  await page.locator('.fc9-nav [data-screen=more]').click();
+  await openView(page,'more');
   assert.equal(await page.locator('.fc-more-group').count(),3);
   assert.deepEqual(await page.locator('[data-more-group=daily] .fc9-tile b').allTextContents(),['Einkaufen & Listen','Mahlzeiten','Rezepte & Favoriten']);
   for(const [group,key] of [['daily','data-fc-shopping'],['daily','data-fc-meals'],['daily','data-fc-recipes'],['family','data-feature=docs'],['family','data-feature=people'],['manage','data-fc-budget']])assert.equal(await page.locator(`[data-more-group=${group}] [${key}] svg.fc-icon`).count(),1,group+'/'+key);
@@ -85,13 +86,13 @@ for(const [name,engine,width,height] of [['iPhone WebKit',webkit,390,844],['Desk
   assert.equal(await page.locator('.fc-recipes-new').evaluate(e=>e===document.activeElement),true);
   await page.keyboard.press('Escape');await page.locator('#fcRecipesModal').waitFor({state:'detached'});
   assert.equal(await page.locator('.app').evaluate(e=>e.inert),false);
-  assert.equal(await page.locator('.fc9-nav svg.fc-icon').count(),5);
+  assert.equal(await page.locator('.fc9-nav svg.fc-icon').count(),3);
  });
  await check(name+' responsive screens stay inside narrow and tablet viewports',async()=>{
   for(const w of (width<720?[320,375,430,768]:[1024,1280])){
    await page.setViewportSize({width:w,height});
    for(const screen of ['today','tomorrow','events','homework','more']){
-    await page.locator(`.fc9-nav [data-screen=${screen}]`).click();
+    await openView(page,screen);
     assert.equal(await page.evaluate(()=>document.documentElement.scrollWidth>innerWidth+1),false,screen+' at '+w);
    }
   }

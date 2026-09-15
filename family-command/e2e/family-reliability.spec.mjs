@@ -1,3 +1,4 @@
+import {openView} from './navigation.mjs';
 import assert from 'node:assert/strict';
 import {createServer} from 'node:http';
 import {readFile, mkdir} from 'node:fs/promises';
@@ -49,28 +50,31 @@ try{
  });
  const dash=page.locator('#today > .fc38-dashboard');
  const before=await page.evaluate(()=>JSON.stringify(data));
+ assert.equal(await dash.locator('.fc38-focus .fc-person-badge').count(),3,'shared departure shows every involved child');
  assert.equal(await dash.locator('.fc38-task').first().getAttribute('data-fc38-homework'),'hw1','due school work precedes ordinary admin work');
  assert.match(await dash.locator('.fc38-task').first().innerText(),/Kind A/,'task owner is rendered in Today');
- assert.match(await dash.locator('.fc38-tomorrow').innerText(),/Lesebuch einpacken/,'homework due tomorrow belongs to the preparation preview');
+ assert.equal(await dash.locator('.fc38-tomorrow').count(),0);await openView(page,'tomorrow');assert.match(await page.locator('#tomorrow').innerText(),/Lesebuch einpacken/);await openView(page,'today');
  const focus=await dash.locator('.fc38-focus').boundingBox(),task=await dash.locator('.fc38-task').first().boundingBox();assert.ok(focus.y<task.y,'next departure is before tasks');
- const kids=await dash.locator('.fc38-children').boundingBox(),debt=await dash.locator('.fc978-digest').boundingBox();assert.ok(debt.y>=kids.y+kids.height,'administration follows children');
+ assert.equal(await dash.locator('.fc978-digest').count(),0,'administration belongs to Familie');
  for(const width of [390,393,402,430,768,1024,1440]){
   await page.setViewportSize({width,height:844});
   await page.waitForFunction(()=>document.querySelector('#today [data-focus-child="child-c"]')?.getClientRects().length);
   assert.equal(await page.evaluate(()=>document.documentElement.scrollWidth>innerWidth),false,`${width}px page overflow`);
   await page.waitForFunction(()=>{const buttons=[...document.querySelectorAll('#today > .fc38-dashboard .fc38-check,#today > .fc38-dashboard .fc38-go')];return buttons.length>=2&&buttons.every(e=>{const r=e.getBoundingClientRect();return r.width>=43.9&&r.height>=43.9})});
+  if(width===390&&process.env.FC_QA_DIR)console.log('FC_VISUAL_density:'+(await page.screenshot({type:'jpeg',quality:65})).toString('base64'));
   if(width<=430)await page.waitForFunction(()=>{const child=document.querySelector('#today [data-focus-child="child-c"]')?.getBoundingClientRect(),nav=document.querySelector('.fc9-nav')?.getBoundingClientRect();return child&&nav&&child.bottom<=nav.top});
   if(process.env.FC_QA_DIR){await mkdir(process.env.FC_QA_DIR,{recursive:true});await page.screenshot({path:resolve(process.env.FC_QA_DIR,`family-${engine}-${width}.png`)});}
  }
  assert.equal(await page.evaluate(()=>JSON.stringify(data)),before,'presentation does not mutate family state');
  await page.setViewportSize({width:390,height:844});
- await page.locator('.fc9-nav [data-screen="homework"]').click();
+ await openView(page,'homework');
  assert.match(await page.locator('#homework [data-hw="hw1"]').innerText(),/Kind A/);
  assert.equal(await page.locator('#homework [data-hw="hw1"] .fc-person-badge').count(),1);
  assert.match(await page.locator('#homework [data-todo="admin"]').innerText(),/Heute/);
- await page.locator('.fc9-nav [data-screen="tomorrow"]').click();
- assert.match(await page.locator('#tomorrow [data-person="child-b"]').innerText(),/Wochenheft.*Badezeug|Badezeug.*Wochenheft/s);
- await page.locator('.fc9-nav [data-screen="events"]').click();
+ await openView(page,'tomorrow');
+ assert.match(await page.locator('#tomorrow [data-person="child-b"]').innerText(),/Wochenheft/);
+ assert.match(await page.locator('#tomorrow [data-event="swim"]').innerText(),/Badezeug/,'event preparation is shown once on its event');
+ await openView(page,'events');
  assert.equal(await page.locator('.fc-calendar-disclosure').evaluate(e=>e.open),false);
  const event=await page.locator('#events [data-event="bike"]').boundingBox(),nav=await page.locator('.fc9-nav').boundingBox();assert.ok(event.y<nav.y,'agenda visible before expanding month');
  for(const width of [390,393,402,430,768,1024,1440]){

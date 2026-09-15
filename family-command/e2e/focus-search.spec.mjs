@@ -1,3 +1,4 @@
+import {openView} from './navigation.mjs';
 import { webkit } from 'playwright';
 import { createServer } from 'node:http';
 import { readFile, readFileSync } from 'node:fs';
@@ -61,7 +62,7 @@ try{
     await p.evaluate(()=>{data.reminders[0].items=['Neue Trinkflasche'];renderToday();});
     assert.match(await p.locator('[data-focus-child="child-a"]').innerText(),/Neue Trinkflasche/);
     await p.evaluate(()=>{todayISO=()=> '2026-09-12';renderToday();});
-    assert.doesNotMatch(await p.locator('.fc38-children').innerText(),/Trinkflasche|Turnzeug|Badehose/);
+    assert.doesNotMatch(await p.locator('#today > .fc38-dashboard').innerText(),/Trinkflasche|Turnzeug|Badehose/);
     await p.evaluate(()=>{todayISO=()=> '2026-09-07';data.events=data.events.filter(x=>x.id!=='holiday');renderToday();});
   });
   await check('search groups existing sources, people links, metadata, umlauts and typos without mutating state',async()=>{
@@ -100,11 +101,11 @@ try{
     assert.ok(documentRequests>=2);
   });
   await check('navigation, touch targets, responsive search, unique IDs and no JavaScript errors',async()=>{
-    for(const screen of ['today','tomorrow','homework','today','events','more','today']){await p.locator(`.fc9-nav [data-screen="${screen}"]`).tap();assert.equal(await p.locator('.fc9-screen.active').getAttribute('id'),screen);}
+    for(const screen of ['today','tomorrow','homework','today','events','more','today']){await openView(p,screen);assert.equal(await p.locator('.fc9-screen.active').getAttribute('id'),screen);}
     for(const width of [375,390,430,1024]){await p.setViewportSize({width,height:844});await p.locator('.fc9-search-icon').click();await p.getByRole('searchbox',{name:'Suchbegriff',exact:true}).fill('Zahnarzt');const metrics=await p.locator('#fcSearchDialog').evaluate(m=>({overflow:m.scrollWidth>m.clientWidth,small:[...m.querySelectorAll('button')].filter(b=>b.getBoundingClientRect().height<44).length}));assert.equal(metrics.overflow,false);assert.equal(metrics.small,0);await p.keyboard.press('Escape');}
     assert.deepEqual(await p.evaluate(()=>__fcV9.health().dup),[]);assert.deepEqual(errors,[]);
     assert.equal(smartDocumentLoads,1,'managed boot must not also load the obsolete standalone document script');
-    await p.setViewportSize({width:390,height:844});await p.locator('.fc9-nav [data-screen="today"]').tap();
+    await p.setViewportSize({width:390,height:844});await openView(p,'today');
     if(process.env.FC_QA_SCREENSHOT)await p.screenshot({path:process.env.FC_QA_SCREENSHOT,fullPage:false});
   });
 }finally{await browser.close();await new Promise(r=>server.close(r));}

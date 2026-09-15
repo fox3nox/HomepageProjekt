@@ -33,7 +33,7 @@ assert.match(docsCss,/fc-doc-proposal[\s\S]*padding:9px 10px!important/,'documen
 assert.doesNotMatch(docsCss,/\.fc-doc-proposal[^\n]*max-height\s*:/,'document proposals must never be height-clipped');
 assert.match(loader,/compact-cockpit-v977\.css/);
 assert.match(loader,/compact-cockpit-v977\.js/);
-assert.match(sw,/family-command-v124/);
+assert.match(sw,/family-command-v125/);
 assert.match(sw,/compact-cockpit-v977\.css/);
 assert.match(sw,/compact-cockpit-v977\.js/);
 console.log('V9.82 one-glance information architecture regression: ok');

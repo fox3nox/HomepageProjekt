@@ -1,3 +1,4 @@
+import {openView} from './navigation.mjs';
 import assert from 'node:assert/strict';
 import { createServer } from 'node:http';
 import { readFileSync } from 'node:fs';
@@ -70,33 +71,28 @@ try {
   });
   const dashboard = page.locator('#today > .fc38-dashboard');
   await page.waitForTimeout(150);
-  await check('independent open debts are never suppressed by similar task titles or old dates', async () => {
-    assert.equal(await dashboard.locator('.fc978-digest').evaluate(x=>x.open),false);
-    await dashboard.locator('.fc978-digest > summary').click();
-    assert.match(await dashboard.innerText(), /Anna schuldet CHF 10/);
-    assert.doesNotMatch(await dashboard.innerText(), /Bereits bezahlt|Vergangener Termin/);
-    assert.equal(await dashboard.locator('.fc978-pendency').count(), 3);
-    if(!await dashboard.locator('.fc978-digest').evaluate(x=>x.open))await dashboard.locator('.fc978-digest > summary').click();
-    await dashboard.locator('.fc978-pendency').first().click();
-    await page.waitForFunction(() => document.activeElement?.getAttribute('data-pend') === 'debt');
-    assert.equal(await page.locator('[data-pend="fourth-pend"]').count(), 1);
-    await page.locator('.fc9-nav [data-screen="today"]').click();
+  await check('independent debts live in Familie with every record and original amount', async () => {
+    assert.equal(await dashboard.locator('.fc978-digest').count(),0);
+    await openView(page,'more');
+    assert.match(await page.locator('#more').innerText(),/Anna schuldet CHF 10/);
+    assert.equal(await page.locator('#more [data-pend]').count(),4);
+    assert.equal(await page.locator('#more [data-pend="done"]').count(),0);
+    await openView(page,'today');
   });
-  await check('school ending cannot hide a later child appointment; packing and overflow stay reachable', async () => {
-    const child = dashboard.locator('[data-focus-child="child-a"]');
-    assert.match(await child.innerText(), /Kontrolle beim Kinderarzt/);
-    assert.match(await child.innerText(), /Velohelm/);
-    assert.equal((await child.innerText()).match(/Fahrradtraining/g)?.length, 1, 'one preparation label per child event');
-    assert.equal(await child.locator('[data-events]').count(), 1, 'additional child events have an explicit route');
-    assert.match(await dashboard.locator('.fc38-tomorrow').innerText(), /Badehose/);
+  await check('finished school collapses while later appointments and packing remain reachable once', async () => {
+    assert.equal(await dashboard.locator('[data-focus-child="child-a"]').count(),0);
+    assert.match(await dashboard.innerText(),/Kontrolle beim Kinderarzt/);
+    assert.match(await dashboard.innerText(),/Velohelm/);
+    assert.equal((await dashboard.innerText()).match(/Fahrradtraining/g)?.length,1);
+    await openView(page,'tomorrow');assert.match(await page.locator('#tomorrow').innerText(),/Badehose/);
+    await openView(page,'today');
   });
-  await check('each today event has one detail row; extra events remain accessible', async () => {
-    assert.equal(await dashboard.locator('[data-focus-event="doctor"]').count(), 1);
-    assert.equal(await dashboard.locator('[data-event="doctor"]').count(), 1, 'one additional child context, no duplicate day summary');
-    assert.equal(await dashboard.locator('.fc978-today-detail').count(), 1);
+  await check('next event appears once; extra events remain accessible in Plan', async () => {
+    assert.equal(await dashboard.locator('[data-next-event="doctor"]').count(),1);
+    assert.equal(await dashboard.locator('[data-focus-event="doctor"],[data-event="doctor"]').count(),0);
     await dashboard.locator('.fc978-today-detail .fc38-show-more').click();
-    assert.match(await page.locator('#events').innerText(), /Elternabend|Schulprojekt/);
-    await page.locator('.fc9-nav [data-screen="today"]').click();
+    assert.match(await page.locator('#events').innerText(),/Elternabend|Schulprojekt/);
+    await openView(page,'today');
   });
   await check('minute refresh, resume, explicit rebuild and cloud changes retain the complete dashboard', async () => {
     const before = await page.evaluate(() => JSON.stringify(data));
@@ -105,13 +101,13 @@ try {
       if (update === 'force') await page.evaluate(() => __fcReferenceDashboard39.rebuild(true));
       if (update === 'minute') await page.clock.fastForward(61000);
       if (update === 'resume') await page.evaluate(() => dispatchEvent(new Event('pageshow')));
-      assert.equal(await dashboard.locator('.fc978-digest').count(), 1, update);
-      assert.equal(await dashboard.locator('.fc978-pendency').count(), 3, update);
+      assert.equal(await dashboard.locator('.fc978-digest').count(), 0, update);
+      assert.equal(await dashboard.locator('[data-next-event="doctor"]').count(), 1, update);
       assert.equal(await page.locator('.fc38-school').evaluate(el => el.open), true);
     }
     assert.equal(await page.evaluate(() => JSON.stringify(data)), before, 'rendering never changes canonical state');
     await page.evaluate(() => { data.pendencies[0].title = 'Rückzahlung von Anna'; dispatchEvent(new Event('fc:cloud-status')); });
-    assert.match(await dashboard.innerText(), /Rückzahlung von Anna/);
+    await openView(page,'more');assert.match(await page.locator('#more').innerText(),/Rückzahlung von Anna/);await openView(page,'today');
     await page.evaluate(() => { data.pendencies[0].done = true; dispatchEvent(new Event('fc:cloud-status')); });
     assert.doesNotMatch(await dashboard.innerText(), /Rückzahlung von Anna/);
     await page.locator('.fc38-school').evaluate(el => { el.open = false; });
@@ -121,7 +117,7 @@ try {
       await page.setViewportSize({ width, height: 900 });
       const m = await dashboard.evaluate(root => {
         const rect = el => el.getBoundingClientRect();
-        const buttons = [...root.querySelectorAll('.fc978-pendency,.fc978-child-events button,.fc978-digest-head button')];
+        const buttons = [...root.querySelectorAll('.fc988-view-tabs button,.fc38-check,.fc38-go')];
         const nav = document.querySelector('.fc9-nav');
         return { overflow: document.documentElement.scrollWidth > innerWidth, digest: root.querySelectorAll('.fc978-digest').length,
           small: buttons.filter(b => rect(b).height < 44 || rect(b).width < 44).map(b => b.textContent),
@@ -129,14 +125,12 @@ try {
           nav: rect(nav).left >= 0 && rect(nav).right <= innerWidth + 1 && rect(nav).bottom <= innerHeight + 1 };
       });
       assert.equal(m.overflow, false, `${width}px horizontal overflow`);
-      assert.equal(m.digest, 1); assert.deepEqual(m.small, [], `${width}px touch targets`);
+      assert.equal(m.digest, 0); assert.deepEqual(m.small, [], `${width}px touch targets`);
       assert.deepEqual(m.clipped, [], `${width}px clipped text`); assert.equal(m.nav, true);
       if(width>=1024){
         const empty=await dashboard.locator('.fc38-priority').evaluate(el=>el.getBoundingClientRect().bottom-el.lastElementChild.getBoundingClientRect().bottom);
         assert.ok(empty<24,`${width}px priority card must not stretch into an empty second grid row`);
-        const events=await dashboard.locator('.fc978-today-detail').boundingBox(),tomorrow=await dashboard.locator('.fc38-tomorrow').boundingBox();
-        assert.ok(Math.abs(events.y-tomorrow.y)<2,'today and tomorrow share the next desktop row');
-        assert.ok(events.x+events.width<=tomorrow.x,'today and tomorrow must occupy separate columns without overlap');
+        assert.equal(await dashboard.locator('.fc38-tomorrow').count(),0,'no duplicate tomorrow column');
       }
       if (process.env.FC_QA_DIR) {
         await mkdir(process.env.FC_QA_DIR, { recursive: true });
@@ -151,11 +145,10 @@ try {
   await check('pendencies remain accessible without changing the daily urgency status', async () => {
     await page.evaluate(() => { data.todos = []; data.events = []; renderToday(); });
     assert.doesNotMatch(await dashboard.locator('.fc38-priority').innerText(), /Alles erledigt|nichts Dringendes/);
-    if(!await dashboard.locator('.fc978-digest').evaluate(x=>x.open))await dashboard.locator('.fc978-digest > summary').click();
-    await dashboard.locator('.fc978-pendency').first().click();
+    await openView(page,'more');
     await page.locator('[data-pend="other"]').click();
     assert.equal(await page.evaluate(() => data.pendencies.find(x => x.id === 'other').done), true);
-    await page.locator('.fc9-nav [data-screen="today"]').click();
+    await openView(page,'today');
     assert.doesNotMatch(await dashboard.innerText(), /Rückzahlung bestätigen/);
     await page.evaluate(() => { data.pendencies.forEach(x => { x.done = true; }); renderToday(); });
     assert.match(await dashboard.locator('.fc38-priority').innerText(), /Keine offenen Tagesaufgaben/);

@@ -1,3 +1,4 @@
+import {openView} from './navigation.mjs';
 import assert from 'node:assert/strict';
 import {createServer} from 'node:http';
 import {readFile,mkdir} from 'node:fs/promises';
@@ -32,7 +33,20 @@ try{
     data.events=[{id:'shared',title:'Gemeinsamer Termin',date:'2026-09-15',time:'09:00',end:'10:00',personIds:['oli','child-b']},{id:'single',title:'Nur Kind A',date:'2026-09-15',time:'10:00',personIds:['child-a']},{id:'no-time',title:'Ohne Uhrzeit',date:'2026-09-14',personIds:[]},{id:'next',title:'Nächster Termin',date:'2026-09-14',time:'08:15',end:'09:00',personIds:['oli']}];
     __fcV9.invalidate();__fcV9.open('today');
   });
+  // Two simultaneous appointments have one detail row each; the focus groups time and owners.
+  await page.evaluate(()=>{data.events.push({id:'also-next',title:'Zweiter gleichzeitiger Termin',date:'2026-09-14',time:'08:15',personIds:['child-a']});__fcReferenceDashboard39.rebuild(true)});
+  assert.match(await page.locator('#today .fc38-focus').innerText(),/Gleichzeitig geplant/);
+  assert.equal(await page.locator('#today .fc38-focus .fc-person-badge').count(),2);
+  assert.equal((await page.locator('#today > .fc38-dashboard').innerText()).match(/Zweiter gleichzeitiger Termin/g)?.length,1);
+  await page.evaluate(()=>{data.events=data.events.filter(e=>e.id!=='also-next');__fcReferenceDashboard39.rebuild(true)});
   const before=await page.evaluate(()=>JSON.stringify(data));
+  assert.deepEqual(await page.locator('.fc9-nav button > span:first-of-type').allTextContents(),['Übersicht','Plan','Familie']);
+  assert.equal(await page.locator('.fc34-nav-badge').count(),0,'old hidden-view counters cannot imply urgency');
+  assert.equal(await page.locator('#today > .fc38-dashboard [data-next-event="next"]').count(),1);
+  assert.equal(await page.locator('#today > .fc38-dashboard [data-focus-event="next"]').count(),0,'focus event is not repeated in the day list');
+  assert.equal((await page.locator('#today > .fc38-dashboard').innerText()).match(/Heute lesen/g)?.length,1,'task appears once with its owner');
+  assert.equal(await page.locator('#today .fc38-upcoming,#today .fc38-tomorrow,#today .fc978-digest').count(),0,'overview has no repeated future or money lists');
+
   await page.locator('#today [data-next-event="next"]').click();
   await page.locator('#fcEventDetails').waitFor();
   assert.match(await page.locator('#fcEventDetails').innerText(),/Nächster Termin/);
@@ -40,7 +54,7 @@ try{
   await page.locator('#today .fc986-day-notes summary').click();
   await page.evaluate(()=>__fcReferenceDashboard39.rebuild(true));
   assert.equal(await page.locator('#today .fc986-day-notes').evaluate(e=>e.open),true,'minute/data rebuild preserves expanded details');
-  await page.locator('.fc9-nav [data-screen="tomorrow"]').click();
+  await openView(page,'tomorrow');
   await page.locator('[data-tomorrow-person="child-b"]').click();
   assert.equal(await page.locator('#tomorrow .fc9-person').count(),1);
   assert.equal(await page.locator('#tomorrow [data-event="shared"]').count(),1);
@@ -56,7 +70,7 @@ try{
   assert.equal(await page.locator('#homework [data-todo="no-owner"]').count(),1);
   await page.locator('#homework [data-task-filter="open"]').click();
   assert.equal(await page.locator('#homework [data-deadline="Ohne Frist"] [data-todo="no-date"]').count(),1);
-  await page.locator('.fc9-nav [data-screen="tomorrow"]').click();
+  await openView(page,'tomorrow');
   await page.locator('#tomorrow [data-cal-tom]').click();
   assert.equal(await page.evaluate(()=>__fcV9.state.weekDate),'2026-09-15');
   assert.equal(await page.evaluate(()=>__fcV9.state.calendarMode),'week');
@@ -71,7 +85,8 @@ try{
   await page.locator('#events [data-filter="all"]').click();
   assert.equal(await page.locator('#events .fc9-person').count(),3);
   for(const screen of ['today','tomorrow','events','homework','more']){
-    await page.locator('.fc9-nav [data-screen="'+screen+'"]').click();
+    await openView(page,screen);
+    assert.equal(await page.locator('.fc9-nav button[aria-current="page"]').getAttribute('data-screen'),({tomorrow:'today',homework:'events'}[screen]||screen));
     for(const width of [375,390,430,1280]){
       await page.setViewportSize({width,height:844});
       assert.equal(await page.evaluate(()=>document.documentElement.scrollWidth>innerWidth),false,screen+' overflows '+width);
@@ -87,5 +102,5 @@ try{
   assert.equal(await page.locator('#events .fc9-past-list [data-event="next"]').count(),1,'elapsed event moves to history during an open session');
   assert.equal(await page.evaluate(()=>JSON.stringify(data)),before,'every navigation, filter and expansion is read-only');
   assert.deepEqual(errors,[]);
-  console.log(`PASS ${engine}: focus destination, filter ownership, day navigation, deadline groups, expanded details, all five main screens at four widths; zero data changes`);
+  console.log(`PASS ${engine}: focus destination, filter ownership, day navigation, deadline groups, expanded details, three destinations and their five views at four widths; zero data changes`);
 }finally{await browser.close();await new Promise(r=>server.close(r));}

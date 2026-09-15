@@ -1,3 +1,4 @@
+import {openView} from './navigation.mjs';
 import assert from 'node:assert/strict';
 import {createServer} from 'node:http';
 import {readFile,mkdir} from 'node:fs/promises';
@@ -35,29 +36,27 @@ try{
  assert.match(await dash.locator('.fc38-priority').innerText(),/Rechnung CHF 40 heute bezahlen/,'real payment deadlines remain actionable');
  assert.match(await dash.locator('.fc38-focus').innerText(),/07:55/);
  assert.match(await dash.locator('.fc38-children').innerText(),/08:20.*11:50/s);
- assert.match(await dash.locator('[data-focus-child="child-a"]').innerText(),/Turnzeug.*Matheblatt/s);
- assert.equal(await dash.locator('.fc978-digest').evaluate(x=>x.open),false,'administration is collapsed by default');
+ assert.match(await dash.locator('[data-focus-child="child-a"]').innerText(),/Turnzeug/);
+ assert.equal(await dash.locator('.fc978-digest').count(),0,'administration belongs to Familie');
  assert.doesNotMatch(await dash.innerText(),/schuldet/);
  assert.match(await dash.locator('.fc978-today-detail').innerText(),/Persönlicher Termin/);
- await dash.locator('.fc978-digest > summary').click();
- assert.match(await dash.locator('.fc978-digest').innerText(),/Kind A schuldet mir CHF 10/);
- await dash.locator('.fc978-pendency').first().click();
+ await openView(page,'more');assert.match(await page.locator('#more').innerText(),/Kind A schuldet mir CHF 10/);
  assert.equal(await page.locator('#more [data-pend="child-money"]').count(),1,'debts remain accessible with their actual amounts');
- await page.locator('.fc9-nav [data-screen="today"]').click();
+ await openView(page,'today');
  await page.clock.setFixedTime(new Date('2026-09-10T22:00:00+02:00'));
  await page.evaluate(()=>__fcReferenceDashboard39.rebuild(true));
  const kids=dash.locator('.fc38-children');
  assert.match(await kids.locator('header').innerText(),/morgen/i,'evening shows the next day explicitly');
  assert.equal(await kids.locator('[data-focus-child]').count(),3);
  assert.match(await kids.innerText(),/07:35 los/);assert.match(await kids.innerText(),/08:00–11:40.*13:30–15:15/s,'morning and afternoon are distinct, not one uninterrupted school span');
- assert.match(await kids.locator('[data-focus-child="child-b"]').innerText(),/Lesebuch/);
- assert.match(await kids.locator('[data-focus-child="child-a"]').innerText(),/heute f\u00e4llig/,'today homework cannot silently become due tomorrow');
- assert.match(await kids.locator('[data-focus-child="child-c"]').innerText(),/Leuchtweste/);
+ await openView(page,'tomorrow');assert.match(await page.locator('#tomorrow').innerText(),/Lesebuch/);await openView(page,'today');
+ assert.match(await dash.locator('.fc38-priority').innerText(),/Matheblatt/,'today homework cannot silently become due tomorrow');
+ assert.match(await dash.locator('.fc978-today-detail').innerText(),/Leuchtweste/);
  assert.match(await dash.locator('.fc38-focus').innerText(),/morgen.*07:35|07:35.*morgen/is);
  for(const width of [390,393,402,430,768,1024,1440]){
   await page.setViewportSize({width,height:844});
   assert.equal(await page.evaluate(()=>document.documentElement.scrollWidth>innerWidth),false,`${width}px overflow`);
-  const child=await kids.boundingBox(),money=await dash.locator('.fc978-digest').boundingBox();assert.ok(child.y+child.height<=money.y,`${width}px school before administration`);
+  assert.equal(await dash.locator('.fc978-digest').count(),0,`${width}px school without repeated administration`);
   if(process.env.FC_QA_DIR)await page.screenshot({path:resolve(process.env.FC_QA_DIR,`school-evening-${engine}-${width}.png`)});
  }
  assert.equal(await page.evaluate(()=>JSON.stringify(data)),unchanged,'priority changes never alter debts, completion or dates');

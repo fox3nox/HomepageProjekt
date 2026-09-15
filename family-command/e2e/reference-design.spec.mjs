@@ -38,7 +38,7 @@ try{
   assert.ok(r.daybar>=48&&r.daybar<=82);
   assert.equal(r.tasks,2,'the command center intentionally shows only the two highest-priority tasks before scrolling');
   for(const h of r.heights)assert.ok(h>=60&&h<=180);
-  assert.ok(r.priority&&r.tomorrow,'command center must expose priority and tomorrow sections');
+  assert.ok(r.priority&&!r.tomorrow,'overview exposes priority without duplicating tomorrow');
   assert.ok(r.panels>=2);
   assert.ok(r.schoolCells>=24,'future school grid must remain in the DOM for desktop/compatibility');
   assert.equal(r.schoolDisplay,'none','mobile hides the desktop school matrix on iPhone');
@@ -51,7 +51,7 @@ try{
   assert.equal(r.reminders,0,'generic hardcoded packing must not be rendered');
   assert.ok(r.avatars>=3&&r.avatarText,'visible person avatars must be identified');
   for(const a of r.avatarStyles){assert.ok(a.w>=29&&a.h>=29,'avatar must be large enough');assert.ok(a.font>=11,'avatar initial must be readable');assert.equal(a.display,'flex');assert.equal(a.align,'center');assert.equal(a.justify,'center');assert.match(a.color,/rgb\(255, 255, 255\)|rgba\(255, 255, 255/,'avatar initial must be white')}
-  for(const x of['offene Punkte','Heute noch','Morgen vorbereiten','Schulplan & feste Wochenzeiten','Turnzeug einpacken'])assert.ok(r.text.includes(x),x);
+  for(const x of['offene Punkte','Termine & Mitnehmen','Schulplan & feste Wochenzeiten','Turnzeug einpacken'])assert.ok(r.text.includes(x),x);
   assert.ok(r.nav>48);
   if(new Date(`${r.today}T12:00:00`).getDay()>=1&&new Date(`${r.today}T12:00:00`).getDay()<=5)assert.equal(r.mobileToday,1,'mobile day selector must mark today');
   const normalOnly=await page.evaluate(()=>{for(const t of data.todos)t.priority=false;window.__fcReferenceDashboard39.rebuild(true);window.__fcMobileSchoolDayV947?.render();const d=document.querySelector('#today>.fc38-dashboard');return{heading:d.querySelector('.fc38-priority h2')?.textContent||'',oldSubheads:d.querySelectorAll('.fc38-subhead').length}});

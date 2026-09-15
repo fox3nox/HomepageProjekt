@@ -1,3 +1,4 @@
+import {openView} from './navigation.mjs';
 import assert from 'node:assert/strict';
 import {createServer} from 'node:http';
 import {readFile,mkdir} from 'node:fs/promises';
@@ -20,11 +21,11 @@ try{
   const dash=page.locator('#today > .fc38-dashboard');
   assert.doesNotMatch(await dash.locator('.fc38-priority').innerText(),/Pendenz|Alles erledigt/,'money alone is not urgent and no blanket all-done promise');
   assert.doesNotMatch(await dash.locator('.fc38-daybar').innerText(),/Pendenz/,'money stays out of the daily attention summary');
-  assert.equal(await dash.locator('.fc978-digest').evaluate(x=>x.open),false);
-  await dash.locator('.fc978-digest > summary').click();
-  assert.match(await dash.locator('.fc978-digest').innerText(),/Rückzahlung/,'money remains findable until explicitly completed');
+  assert.equal(await dash.locator('.fc978-digest').count(),0);
+  await openView(page,'more');assert.match(await page.locator('#more').innerText(),/Rückzahlung/,'money remains in Familie until explicitly completed');await openView(page,'today');
   await page.evaluate(()=>{data.homework=[{id:'future-test',title:'Mathetest üben',personId:'child-b',dueDate:'2026-08-31',done:false},{id:'done-work',title:'Schon erledigt',personId:'child-a',dueDate:'2026-08-30',done:true},{id:'old-work',title:'Frist bleibt offen',personId:'child-a',dueDate:'2026-08-27',done:false}];__fcV9.invalidate();renderToday()});
-  assert.match(await dash.locator('.fc38-upcoming').innerText(),/Mathetest üben/,'school work appears before the day it is due, even without calendar events');
+  assert.equal(await dash.locator('.fc38-upcoming').count(),0);
+  await openView(page,'homework');assert.match(await page.locator('#homework').innerText(),/Mathetest üben/,'future work remains in Plan before it is due');await openView(page,'today');
   assert.doesNotMatch(await dash.innerText(),/Schon erledigt/);assert.match(await dash.locator('.fc38-priority').innerText(),/Frist bleibt offen/);
  }
  await page.locator('#fc9AI').click();await page.getByRole('button',{name:'Text',exact:true}).click();

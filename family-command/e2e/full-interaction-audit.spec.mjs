@@ -1,3 +1,4 @@
+import {openView} from './navigation.mjs';
 import { webkit } from 'playwright';
 import { spawn } from 'node:child_process';
 import { readFileSync } from 'node:fs';
@@ -49,7 +50,7 @@ try{
     window.confirm=()=>true;
   });
 
-  async function openScreen(id){await page.click(`.fc9-nav button[data-screen="${id}"]`);await page.waitForFunction(x=>document.querySelector(`#${x}`)?.classList.contains('active'),id)}
+  async function openScreen(id){await openView(page,id);await page.waitForFunction(x=>document.querySelector(`#${x}`)?.classList.contains('active'),id)}
   async function closeModal(){const close=page.locator('#fc9Modal .fc9-close');if(await close.count())await close.click();await page.waitForFunction(()=>!document.querySelector('#fc9Modal'))}
   async function expectModal(title){await page.waitForSelector('#fc9Modal');assert.match((await page.locator('#fc9Modal h2').innerText()).trim(),title)}
   async function expectCall(name){try{await page.waitForFunction(n=>(window.__auditCalls||[]).some(x=>x[0]===n),name,{timeout:5000})}catch(e){const calls=await page.evaluate(()=>window.__auditCalls||[]);throw new Error(`feature ${name} did not reach expected handler; calls=${JSON.stringify(calls)}`,{cause:e})}}

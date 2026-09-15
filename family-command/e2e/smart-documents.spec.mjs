@@ -1,3 +1,4 @@
+import {openView} from './navigation.mjs';
 import { webkit, chromium } from 'playwright';
 import { spawn } from 'node:child_process';
 import assert from 'node:assert/strict';
@@ -54,7 +55,7 @@ try{
   },state);
 
   await isolate();
-  await page.click('[data-screen="more"]');
+  await openView(page,'more');
   await page.click('[data-feature="docs"]');
   await page.waitForSelector('text=Dokumentenzentrale',{timeout:20000});
 
