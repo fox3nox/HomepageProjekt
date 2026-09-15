@@ -50,6 +50,7 @@ try{
  });
  const dash=page.locator('#today > .fc38-dashboard');
  const before=await page.evaluate(()=>JSON.stringify(data));
+ assert.equal(await dash.locator('.fc38-focus .fc-person-badge').count(),3,'shared departure shows every involved child');
  assert.equal(await dash.locator('.fc38-task').first().getAttribute('data-fc38-homework'),'hw1','due school work precedes ordinary admin work');
  assert.match(await dash.locator('.fc38-task').first().innerText(),/Kind A/,'task owner is rendered in Today');
  assert.equal(await dash.locator('.fc38-tomorrow').count(),0);await openView(page,'tomorrow');assert.match(await page.locator('#tomorrow').innerText(),/Lesebuch einpacken/);await openView(page,'today');
