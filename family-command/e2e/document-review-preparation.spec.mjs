@@ -111,14 +111,14 @@ try{
   await page.evaluate(()=>{__testDate='2027-05-07';data.schedules={'child-c':{5:[{start:'08:20',end:'11:50',label:'Kindergarten',note:'Leuchtweste mitnehmen'}]}};data.reminders=[{id:'school-pack',personId:'child-c',days:[5],items:['Trinkflasche']}];__fcV9.invalidate();renderToday();});
   for(const width of [390,1440]){
     await page.setViewportSize({width,height:width>1000?1000:844});await page.evaluate(()=>__fcReferenceDashboard39.rebuild(true));
-    const child=page.locator('.fc38-child[data-focus-child="child-c"]'),packing=child.locator('[data-preparation-event]');await packing.waitFor();
-    assert.equal(await packing.count(),1);assert.match(await packing.innerText(),/Ausflug · 08:20–13:30/);
-    const geometry=await child.evaluate(el=>{const prep=el.querySelector('[data-preparation-event]').getBoundingClientRect();return{overflow:document.documentElement.scrollWidth>innerWidth+1,font:parseFloat(getComputedStyle(el.querySelector('[data-preparation-event]')).fontSize),overlap:[...el.querySelectorAll('b,strong,small')].filter(x=>x!==el.querySelector('[data-preparation-event]')).some(x=>{const r=x.getBoundingClientRect();return r.width>0&&r.height>0&&Math.min(r.right,prep.right)>Math.max(r.left,prep.left)+1&&Math.min(r.bottom,prep.bottom)>Math.max(r.top,prep.top)+1;})}});
-    assert.equal(geometry.overflow,false);assert.equal(geometry.overlap,false);assert.ok(geometry.font>=12);
+    const card=page.locator(`[data-focus-event="${eventId}"],[data-next-event="${eventId}"]`),packing=card.locator('strong,.fc988-focus-note');await packing.waitFor();
+    assert.equal(await card.count(),1,'appointment preparation has one home');assert.match(await card.innerText(),/Ausflug/);assert.match(await packing.innerText(),/Mittagessen \(Picknick\)/);
+    const geometry=await packing.evaluate(el=>{const r=el.getBoundingClientRect(),parent=el.closest('button').getBoundingClientRect();return{overflow:document.documentElement.scrollWidth>innerWidth+1,font:parseFloat(getComputedStyle(el).fontSize),contained:r.right<=parent.right+1&&r.bottom<=parent.bottom+1}});
+    assert.equal(geometry.overflow,false);assert.equal(geometry.contained,true);assert.ok(geometry.font>=12);
     await screenshot('today-'+width);
   }
   await page.evaluate(()=>{__testDate='2027-05-08';__fcV9.invalidate();renderToday();});
-  assert.equal(await page.locator('.fc38-dashboard .fc38-event-preparation').count(),0,'no stale packing hint on the next day');
+  assert.equal(await page.locator(`[data-focus-event="${eventId}"],[data-next-event="${eventId}"]`).count(),0,'no stale packing hint on the next day');
   console.log('PASS correct day and responsive non-overlapping packing hints');
   await page.setViewportSize({width:390,height:844});
   await page.evaluate(p=>{__testDate='2027-05-06';data.events[0].time='08:10';data.events[0].note='Manuell geprüfte Angaben';__documentTest.items=[p];},proposal);

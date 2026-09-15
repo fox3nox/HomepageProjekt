@@ -143,3 +143,8 @@ html body #fcApp #today .fc988-focus-note{display:block!important;margin-top:5px
 html body #fcApp #today .fc38-child{min-height:0!important}
 html body #fcApp .fc9-nav-in{grid-template-columns:repeat(3,minmax(0,1fr))!important}
 @media(min-width:1100px){html body #fcApp .fc9-nav-in{grid-template-columns:1fr!important}html body #fcApp #today .fc38-dashboard{max-width:980px!important}html body #fcApp #today .fc38-daybar h1{font-size:38px!important}}
+
+html body #fcApp #today .fc38-daybar{display:flex!important;justify-content:space-between!important;align-items:center!important;gap:10px!important}
+html body #fcApp #today .fc38-daybar>div{min-width:0!important}
+html body #fcApp #today .fc38-daybar .fc988-view-tabs{width:158px!important;flex:0 0 158px!important;margin:0!important;padding:3px!important;gap:2px!important}
+html body #fcApp #today .fc38-daybar .fc988-view-tabs button{font-size:13px!important;padding:4px!important}

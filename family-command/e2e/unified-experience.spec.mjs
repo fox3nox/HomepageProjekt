@@ -33,10 +33,10 @@ for(const [name,engine,width,height] of [['iPhone WebKit',webkit,390,844],['Desk
   __fcV9.invalidate();renderToday();
  });
  await check(name+' shares the daily focus without changing data',async()=>{
-  const result=await page.evaluate(()=>{const before=JSON.stringify(data);__fcReferenceDashboard39.rebuild(true);const dashboard=document.querySelector('.fc38-dashboard'),focus=dashboard.querySelector('.fc38-focus').getBoundingClientRect(),child=dashboard.querySelector('.fc38-child').getBoundingClientRect(),main=document.querySelector('.fc9-main').getBoundingClientRect();return{same:before===JSON.stringify(data),basisInert:document.querySelector('#today>.fc9-page').inert,focusBottom:focus.bottom,childBottom:child.bottom,mainBottom:main.bottom,columns:getComputedStyle(dashboard).gridTemplateColumns.split(' ').length};});
+  const result=await page.evaluate(()=>{const before=JSON.stringify(data);__fcReferenceDashboard39.rebuild(true);const dashboard=document.querySelector('.fc38-dashboard'),focus=dashboard.querySelector('.fc38-focus').getBoundingClientRect(),child=dashboard.querySelector('.fc38-child').getBoundingClientRect(),main=document.querySelector('.fc9-main').getBoundingClientRect();return{same:before===JSON.stringify(data),basisInert:document.querySelector('#today>.fc9-page').inert,focusBottom:focus.bottom,childBottom:child.bottom,mainBottom:main.bottom,layout:getComputedStyle(dashboard).display};});
   assert.equal(result.same,true);assert.equal(result.basisInert,true);
   assert.ok(result.focusBottom<result.mainBottom&&result.childBottom<result.mainBottom,'next action and first child are visible before scrolling');
-  assert.equal(result.columns,width<1000?1:2);
+  assert.equal(result.layout,'flex','one reading order for the simplified overview on every device');
   assert.match(await page.locator('.fc38-focus').innerText(),/07:05.*Kind A/s);
   assert.equal(await page.locator('.fc38-taskicon').count(),0,'category emoji must not look like a second checkbox');
   for(const sel of ['.fc38-check','.fc38-go'])for(const box of await page.locator(sel).evaluateAll(els=>els.map(e=>({w:e.getBoundingClientRect().width,h:e.getBoundingClientRect().height}))))assert.ok(box.w>=40&&box.h>=40,sel+JSON.stringify(box));

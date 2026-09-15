@@ -62,7 +62,7 @@ try{
     await p.evaluate(()=>{data.reminders[0].items=['Neue Trinkflasche'];renderToday();});
     assert.match(await p.locator('[data-focus-child="child-a"]').innerText(),/Neue Trinkflasche/);
     await p.evaluate(()=>{todayISO=()=> '2026-09-12';renderToday();});
-    assert.doesNotMatch(await p.locator('.fc38-children').innerText(),/Trinkflasche|Turnzeug|Badehose/);
+    assert.doesNotMatch(await p.locator('#today > .fc38-dashboard').innerText(),/Trinkflasche|Turnzeug|Badehose/);
     await p.evaluate(()=>{todayISO=()=> '2026-09-07';data.events=data.events.filter(x=>x.id!=='holiday');renderToday();});
   });
   await check('search groups existing sources, people links, metadata, umlauts and typos without mutating state',async()=>{

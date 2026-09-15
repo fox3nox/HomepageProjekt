@@ -34,7 +34,7 @@ try{
     __fcV9.invalidate();__fcV9.open('today');
   });
   const before=await page.evaluate(()=>JSON.stringify(data));
-  assert.deepEqual(await page.locator('.fc9-nav button span').allTextContents(),['Übersicht','Plan','Familie']);
+  assert.deepEqual(await page.locator('.fc9-nav button > span:first-of-type').allTextContents(),['Übersicht','Plan','Familie']);
   assert.equal(await page.locator('#today > .fc38-dashboard [data-next-event="next"]').count(),1);
   assert.equal(await page.locator('#today > .fc38-dashboard [data-focus-event="next"]').count(),0,'focus event is not repeated in the day list');
   assert.equal((await page.locator('#today > .fc38-dashboard').innerText()).match(/Heute lesen/g)?.length,1,'task appears once with its owner');

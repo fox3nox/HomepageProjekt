@@ -60,6 +60,7 @@ try{
   await page.waitForFunction(()=>document.querySelector('#today [data-focus-child="child-c"]')?.getClientRects().length);
   assert.equal(await page.evaluate(()=>document.documentElement.scrollWidth>innerWidth),false,`${width}px page overflow`);
   await page.waitForFunction(()=>{const buttons=[...document.querySelectorAll('#today > .fc38-dashboard .fc38-check,#today > .fc38-dashboard .fc38-go')];return buttons.length>=2&&buttons.every(e=>{const r=e.getBoundingClientRect();return r.width>=43.9&&r.height>=43.9})});
+  if(width===390&&process.env.FC_QA_DIR)console.log('FC_VISUAL_density:'+(await page.screenshot({type:'jpeg',quality:65})).toString('base64'));
   if(width<=430)await page.waitForFunction(()=>{const child=document.querySelector('#today [data-focus-child="child-c"]')?.getBoundingClientRect(),nav=document.querySelector('.fc9-nav')?.getBoundingClientRect();return child&&nav&&child.bottom<=nav.top});
   if(process.env.FC_QA_DIR){await mkdir(process.env.FC_QA_DIR,{recursive:true});await page.screenshot({path:resolve(process.env.FC_QA_DIR,`family-${engine}-${width}.png`)});}
  }
