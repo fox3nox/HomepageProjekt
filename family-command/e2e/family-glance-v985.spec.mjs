@@ -1,3 +1,4 @@
+import {openView} from './navigation.mjs';
 import assert from 'node:assert/strict';
 import {createServer} from 'node:http';
 import {readFile,mkdir} from 'node:fs/promises';
@@ -50,7 +51,7 @@ try{
   assert.match(await priority.locator('header').innerText(),/1 offener Punkt/);
   if(process.env.FC_QA_DIR)await page.screenshot({path:resolve(process.env.FC_QA_DIR,`today-mobile-${engine}.png`)});
 
-  await page.locator('.fc9-nav [data-screen="events"]').click();
+  await openView(page,'events');
   await page.waitForFunction(()=>document.querySelector('#events .fc-calendar-disclosure'));
   const month=await page.locator('#events .fc9-month').boundingBox(),picker=await page.locator('#events .fc-calendar-disclosure summary').boundingBox();
   assert.ok(Math.abs(month.y-picker.y)<=4,'month picker must share the compact month row');
@@ -77,13 +78,12 @@ try{
   assert.match(await dash.locator('.fc38-focus').innerText(),/Morgen.*07:55/s);
   assert.equal(await dash.locator('.fc38-child').count(),3);
   assert.equal(await dash.locator('.fc38-tomorrow .fc38-pack').count(),0,'school preparation is not duplicated in the evening');
-  assert.doesNotMatch(await dash.locator('.fc38-tomorrow').innerText(),/Wochenheft|Rucksack/);
+  assert.equal(await dash.locator('.fc38-tomorrow').count(),0);assert.equal((await dash.innerText()).match(/Wochenheft unterschreiben/g)?.length,1);
   assert.equal(await dash.locator('.fc978-today-detail').count(),0,'expired starts and untimed notes cannot claim to be upcoming');
   assert.equal(await dash.locator('.fc986-day-notes').evaluate(e=>e.open),false);
   await dash.locator('.fc986-day-notes summary').click();
   assert.match(await dash.locator('.fc986-day-notes').innerText(),/Zähneputzen.*Beginn vorbei · Ende offen/s);
-  assert.match(await dash.locator('.fc38-upcoming').innerText(),/In 3 Tagen/);
-  assert.equal(await dash.locator('[data-focus-event="future"] .fc-person-badge').count(),2);
+  assert.equal(await dash.locator('.fc38-upcoming').count(),0);
   await dash.locator('.fc986-day-notes summary').click();
   for(const width of [375,390,430,1280]){
     await page.setViewportSize({width,height:844});
@@ -93,7 +93,7 @@ try{
     if(process.env.FC_QA_DIR)await page.screenshot({path:resolve(process.env.FC_QA_DIR,`glance-evening-${engine}-${width}.png`)});
   }
   await page.setViewportSize({width:390,height:844});
-  await page.locator('.fc9-nav [data-screen="events"]').click();
+  await openView(page,'events');
   assert.match(await page.locator('#events').innerText(),/In 3 Tagen/);
   // Labels survive daylight-saving calendar-day boundaries, not just 24h intervals.
   assert.equal(await page.evaluate(()=>{const original=todayISO;todayISO=()=> '2026-10-24';try{return __fcGlanceTime.day('2026-10-26')}finally{todayISO=original}}),'Übermorgen');

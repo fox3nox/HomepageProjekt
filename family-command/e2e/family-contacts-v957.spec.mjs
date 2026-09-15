@@ -1,3 +1,4 @@
+import {openView} from './navigation.mjs';
 import { webkit } from 'playwright';
 import { spawn } from 'node:child_process';
 import { readFileSync } from 'node:fs';
@@ -14,7 +15,7 @@ try{
   await ready();
   const browser=await webkit.launch({headless:true});
   const {ctx,page}=await boot(browser,{width:390,height:844},true);
-  await page.locator('.fc9-nav button[data-screen="more"]').click();
+  await openView(page,'more');
   await page.waitForSelector('#more [data-feature="people"]');
   await page.locator('#more [data-feature="people"]').click();
   await page.waitForSelector('.fc-contacts-shell');
@@ -75,7 +76,7 @@ try{
   await ctx.close();
 
   const desktop=await boot(browser,{width:1440,height:1000});
-  await desktop.page.locator('.fc9-nav button[data-screen="more"]').click();
+  await openView(desktop.page,'more');
   await desktop.page.locator('#more [data-feature="people"]').click();
   await desktop.page.waitForSelector('.fc-contacts-shell');
   const d=await desktop.page.evaluate(()=>{const r=document.querySelector('.fc-contacts-shell').getBoundingClientRect();return{w:r.width,left:r.left,right:r.right,overflow:document.documentElement.scrollWidth>document.documentElement.clientWidth+1,cols:getComputedStyle(document.querySelector('.fc-contacts-tools')).gridTemplateColumns}});

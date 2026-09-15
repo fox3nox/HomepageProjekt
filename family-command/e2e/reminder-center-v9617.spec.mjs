@@ -1,3 +1,4 @@
+import {openView} from './navigation.mjs';
 import { webkit } from 'playwright';
 import { spawn } from 'node:child_process';
 import { readFileSync } from 'node:fs';
@@ -21,7 +22,7 @@ try{
   const page=await ctx.newPage();
   await page.goto(BASE+'/?access=test',{waitUntil:'domcontentloaded'});
   await page.waitForFunction(()=>document.documentElement.dataset.fcReady==='1'&&window.__fcReminderCenter?.version==='9.61.7',{timeout:20000});
-  await page.locator('.fc9-nav button[data-screen="more"]').click();
+  await openView(page,'more');
   const tile=page.locator('#more [data-feature="push"]');
   await tile.waitFor();
   await page.waitForFunction(()=>document.querySelector('#more [data-feature="push"]')?.textContent.includes('2 Merklisten'));

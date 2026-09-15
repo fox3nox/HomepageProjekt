@@ -8,7 +8,7 @@ const iso=d=>`${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${Str
 const today=()=>{try{return typeof todayISO==='function'?todayISO():iso(new Date())}catch(_){return iso(new Date())}};
 const addDays=(value,n)=>{const d=new Date(`${value}T12:00:00`);d.setDate(d.getDate()+n);return iso(d)};
 function packFor(p,date){
-  if(typeof schoolDayFor==='function'){const x=schoolDayFor(p.id,date);const prep=typeof eventPreparationFor==='function'?eventPreparationFor(p.id,date):[];return{items:[...new Set([...x.items,...prep.map(v=>v.text)])],special:x.special,note:x.notes.join(' · ')}}
+  if(typeof schoolDayFor==='function'){const x=schoolDayFor(p.id,date);return{items:[...new Set(x.items)],special:x.special,note:x.notes.join(' · ')}}
   return{items:[],special:[],note:''};
 }
 function compactPackText(info){

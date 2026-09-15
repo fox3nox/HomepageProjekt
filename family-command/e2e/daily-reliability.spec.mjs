@@ -1,3 +1,4 @@
+import {openView} from './navigation.mjs';
 import { webkit } from 'playwright';
 import { createServer } from 'node:http';
 import { readFile, readFileSync } from 'node:fs';
@@ -35,14 +36,14 @@ try {
     await p.waitForTimeout(900);
     assert.equal(await p.locator('#today [data-fc38-todo="overdue"]').count(),1);
     assert.equal(await p.locator('#today [data-fc38-homework="overdue-hw"]').count(),1,'overdue homework must be actionable in the visible mobile Today view');
-    await p.locator('.fc9-nav [data-screen="homework"]').tap();await p.waitForTimeout(900);
+    await openView(p,'homework');await p.waitForTimeout(900);
     assert.equal(await p.locator('#homework [data-todo="overdue"]').count(),1);
     assert.equal(await p.locator('#homework [data-hw="overdue-hw"]').count(),1);
     await p.locator('[data-task-filter="done"]').tap();await p.waitForTimeout(900);
     assert.equal(await p.locator('#homework [data-todo="done-old"]').count(),1);
   });
   await check('ongoing multi-day event remains visible without an old date heading',async()=>{
-    await p.locator('.fc9-nav [data-screen="events"]').tap();await p.waitForTimeout(900);
+    await openView(p,'events');await p.waitForTimeout(900);
     assert.equal(await p.locator('#events [data-event="ongoing"]').count(),1);
     assert.doesNotMatch(await p.locator('#events .fc9-day-label').allTextContents().then(a=>a.join(' ')),/5\. September/);
   });
@@ -50,20 +51,20 @@ try {
     await p.locator('.fc-calendar-disclosure summary').tap();await p.locator('[data-fc673-date="2026-09-12"]').tap();await p.waitForTimeout(100);
     assert.equal(await p.evaluate(()=>__fcV9.state.weekDate),'2026-09-12');
     for(const date of ['2026-09-13','2026-09-07','2026-09-12']){await p.locator(`[data-week-date="${date}"]`).tap();assert.equal(await p.evaluate(()=>__fcV9.state.weekDate),date);}
-    for(const screen of ['tomorrow','homework','today','events'])await p.locator(`.fc9-nav [data-screen="${screen}"]`).tap();
+    for(const screen of ['tomorrow','homework','today','events'])await openView(p,screen);
     await p.evaluate(()=>__fcV9.render('events',true));
     assert.equal(await p.locator('#events [data-week-date].active').getAttribute('data-week-date'),'2026-09-12');
   });
   await check('Today stays focused while date browsing remains in Calendar',async()=>{
-    await p.locator('.fc9-nav [data-screen="today"]').tap();
+    await openView(p,'today');
     await p.evaluate(()=>{todayISO=()=> '2026-09-11';renderToday();window.__fcReferenceDashboard39?.rebuild(true)});await p.waitForTimeout(200);
     assert.equal(await p.locator('#today [data-fc9668-mode]').count(),0,'Today must not recreate the redundant day/week browser');
-    await p.locator('.fc9-nav [data-screen="events"]').tap();await p.waitForTimeout(300);
+    await openView(p,'events');await p.waitForTimeout(300);
     assert.ok(await p.locator('#events [data-week-date]').count()>=7,'Calendar remains the dedicated date-browsing surface');
   });
   await check('tomorrow packing is idempotent and suppressed during school holidays',async()=>{
     await p.evaluate(()=>{todayISO=()=> '2026-09-07';__fcV9.invalidate();});
-    await p.locator('.fc9-nav [data-screen="tomorrow"]').tap();await p.waitForTimeout(100);
+    await openView(p,'tomorrow');await p.waitForTimeout(100);
     for(let i=0;i<5;i++){await p.evaluate(()=>__fcTomorrowCalendarV9674.render());await p.waitForTimeout(50);}
     assert.equal(await p.locator('#tomorrow .fc674-inline-note').count(),1);
     await p.evaluate(()=>{data.events.push({id:'holiday',title:'Herbstferien',date:'2026-09-07',endDate:'2026-09-12',personIds:['child-a']});renderTomorrow();});
@@ -74,7 +75,7 @@ try {
   });
   await check('navigation, mobile overflow, duplicate IDs and JavaScript errors',async()=>{
     for(const screen of ['today','tomorrow','homework','today','events','more','today']){
-      await p.locator(`.fc9-nav [data-screen="${screen}"]`).tap();
+      await openView(p,screen);
       assert.equal(await p.locator('.fc9-screen.active').getAttribute('id'),screen);
     }
     const health=await p.evaluate(()=>__fcV9.health());assert.equal(health.overflow,false);assert.deepEqual(health.dup,[]);assert.deepEqual(errors,[]);

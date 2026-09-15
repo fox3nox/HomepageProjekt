@@ -1,3 +1,4 @@
+import {openView} from './navigation.mjs';
 import { chromium } from 'playwright';
 import { spawn } from 'node:child_process';
 import { readFileSync } from 'node:fs';
@@ -18,13 +19,13 @@ try {
   await page.goto(base+'/?access=test');
   await page.waitForFunction(()=>document.documentElement.dataset.fcReady==='1'&&!!navigator.serviceWorker.controller);
   await page.evaluate(()=>window.__fcLoadExtrasNow());
-  assert.ok((await page.evaluate(()=>caches.keys())).includes('family-command-v124'));
+  assert.ok((await page.evaluate(()=>caches.keys())).includes('family-command-v125'));
   assert.ok(!(await page.evaluate(()=>caches.keys())).includes('family-command-v116'),'activating the new worker removes the previous release cache');
   await context.setOffline(true);
   await page.reload({waitUntil:'domcontentloaded'});
   await page.waitForFunction(()=>document.documentElement.dataset.fcReady==='1'&&window.__fcTomorrowCalendarV9674&&window.__fcZeroMissV978);
   for(const screen of ['tomorrow','events','homework','more','today']){
-    await page.locator(`.fc9-nav [data-screen="${screen}"]`).tap();
+    await openView(page,screen);
     assert.equal(await page.locator('.fc9-screen.active').getAttribute('id'),screen);
   }
   await page.locator('.fc9-search-icon').tap();

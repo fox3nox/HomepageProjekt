@@ -1,3 +1,4 @@
+import {openView} from './navigation.mjs';
 import { webkit, chromium } from 'playwright';
 import { createServer } from 'node:http';
 import { readFile, readFileSync, mkdirSync } from 'node:fs';
@@ -84,9 +85,8 @@ try{
   assert.equal(await page.locator('[data-doc="review-doc-1"]').count(),1);
   console.log('PASS explicit review, original preservation, assignment, validation and retry');
   await closeDocs();
-  await page.locator('.fc9-nav [data-screen="today"]').click();
-  await page.waitForSelector('.fc38-tomorrow');assert.match(await page.locator('.fc38-tomorrow').innerText(),/Mittagessen \(Picknick\)/);
-  await page.locator('.fc38-tomorrow .fc38-section-head').click();
+  await openView(page,'today');
+  await openView(page,'tomorrow');assert.match(await page.locator('#tomorrow').innerText(),/Mittagessen \(Picknick\)/);
   const tomorrow=page.locator(`#tomorrow [data-preparation-event="${eventId}"]`);
   await tomorrow.waitFor();assert.equal(await tomorrow.count(),1);assert.match(await tomorrow.innerText(),/Mittagessen \(Picknick\)/);
   for(let i=0;i<3;i++)await page.evaluate(()=>renderTomorrow());
@@ -104,7 +104,7 @@ try{
   await page.waitForFunction(()=>__fcSearch.search('Ausflug').some(x=>x.group==='Dokumente'));
   const groups=await page.evaluate(()=>__fcSearch.search('Ausflug').map(x=>x.group));assert.ok(groups.includes('Termine'));assert.ok(groups.includes('Dokumente'));
   await page.getByRole('button',{name:'Suche schliessen'}).click();
-  await page.locator('.fc9-nav [data-screen="today"]').click();
+  await openView(page,'today');
   assert.equal(await page.locator('#today .fc38-switch').count(),0,'Today stays focused; detailed date browsing belongs in Calendar');
   console.log('PASS tomorrow without school slots, coming days, calendar, search and original link');
   await page.clock.setFixedTime(new Date('2027-05-07T07:00:00+02:00'));

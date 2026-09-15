@@ -1,3 +1,4 @@
+import {openView} from './navigation.mjs';
 import { webkit } from 'playwright';
 import { spawn } from 'node:child_process';
 import { readFileSync } from 'node:fs';
@@ -23,7 +24,7 @@ try{
   const browser=await webkit.launch({headless:true});
   const {ctx,page}=await boot(browser,{width:390,height:844},true);
 
-  await page.locator('.fc9-nav button[data-screen="more"]').click();
+  await openView(page,'more');
   await page.waitForSelector('#more [data-fc-shopping]');
   assert.match(await page.locator('#more [data-fc-shopping]').innerText(),/Einkaufen & Listen/);
   await page.locator('#more [data-fc-shopping]').click();
@@ -86,7 +87,7 @@ try{
   await ctx.close();
 
   const desktop=await boot(browser,{width:1440,height:1000},false);
-  await desktop.page.locator('.fc9-nav button[data-screen="more"]').click();
+  await openView(desktop.page,'more');
   await desktop.page.waitForSelector('#more [data-fc-shopping]');
   await desktop.page.locator('#more [data-fc-shopping]').click();
   await desktop.page.waitForSelector('#fcShoppingModal .fc-shopping-shell');

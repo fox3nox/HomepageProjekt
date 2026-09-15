@@ -33,7 +33,8 @@ function priorityDigest(root){
 }
 function enhance(){
   const root=document.querySelector('#today > .fc38-dashboard');if(!root)return false;
-  priorityDigest(root);
+  // Money and pendencies have one home in Familie; never repeat the records on Today.
+  root.querySelector('.fc978-digest')?.remove();
   root.querySelector('.fc38-upcoming')?.classList.add('fc978-upcoming-detail');
   document.documentElement.dataset.fcZeroMiss='v982';return true;
 }
