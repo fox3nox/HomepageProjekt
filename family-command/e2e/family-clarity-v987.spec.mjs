@@ -33,6 +33,12 @@ try{
     data.events=[{id:'shared',title:'Gemeinsamer Termin',date:'2026-09-15',time:'09:00',end:'10:00',personIds:['oli','child-b']},{id:'single',title:'Nur Kind A',date:'2026-09-15',time:'10:00',personIds:['child-a']},{id:'no-time',title:'Ohne Uhrzeit',date:'2026-09-14',personIds:[]},{id:'next',title:'Nächster Termin',date:'2026-09-14',time:'08:15',end:'09:00',personIds:['oli']}];
     __fcV9.invalidate();__fcV9.open('today');
   });
+  // Two simultaneous appointments have one detail row each; the focus groups time and owners.
+  await page.evaluate(()=>{data.events.push({id:'also-next',title:'Zweiter gleichzeitiger Termin',date:'2026-09-14',time:'08:15',personIds:['child-a']});__fcReferenceDashboard39.rebuild(true)});
+  assert.match(await page.locator('#today .fc38-focus').innerText(),/Gleichzeitig geplant/);
+  assert.equal(await page.locator('#today .fc38-focus .fc-person-badge').count(),2);
+  assert.equal((await page.locator('#today > .fc38-dashboard').innerText()).match(/Zweiter gleichzeitiger Termin/g)?.length,1);
+  await page.evaluate(()=>{data.events=data.events.filter(e=>e.id!=='also-next');__fcReferenceDashboard39.rebuild(true)});
   const before=await page.evaluate(()=>JSON.stringify(data));
   assert.deepEqual(await page.locator('.fc9-nav button > span:first-of-type').allTextContents(),['Übersicht','Plan','Familie']);
   assert.equal(await page.locator('.fc34-nav-badge').count(),0,'old hidden-view counters cannot imply urgency');
