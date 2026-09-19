@@ -16,7 +16,7 @@ assert.match(css,/\.fc-search-entry\{display:none!important\}/,'mobile search mu
 assert.match(app,/fc9-search-icon[\s\S]*data-open-search/,'search must remain available in the compact header');
 assert.match(app,/fc982-calendar-controls/,'calendar mode and person filters must share one compact control row');
 assert.doesNotMatch(app,/fc9-badge over/,'overdue homework must not repeat the same state in a second badge');
-assert.match(dashboard,/function todayPanel\(\)\{const events=remainingEvents\(\)\.filter\(e=>e\.time\);if\(!events\.length\)return''/,'empty today event panels must be omitted');
+assert.match(dashboard,/function todayPanel\(\)\{[\s\S]*if\(!events\.length\)return''/,'empty today event panels must be omitted');
 assert.match(dashboard,/return rows\.length\?[\s\S]*:''\}/,'empty child status panels must be omitted');
 assert.match(daily,/function groupPackItems/,'daily check preparation must be grouped per person');
 assert.match(css,/#tomorrow[\s\S]*fc674-tomorrow-children/,'tomorrow child preparation must be compacted');
@@ -33,7 +33,7 @@ assert.match(docsCss,/fc-doc-proposal[\s\S]*padding:9px 10px!important/,'documen
 assert.doesNotMatch(docsCss,/\.fc-doc-proposal[^\n]*max-height\s*:/,'document proposals must never be height-clipped');
 assert.match(loader,/compact-cockpit-v977\.css/);
 assert.match(loader,/compact-cockpit-v977\.js/);
-assert.match(sw,/family-command-v125/);
+assert.match(sw,/family-command-v126/);
 assert.match(sw,/compact-cockpit-v977\.css/);
 assert.match(sw,/compact-cockpit-v977\.js/);
 console.log('V9.82 one-glance information architecture regression: ok');

@@ -48,7 +48,7 @@ function childrenAction(){
   rows.push(`<article class="fc38-child" style="--person:${esc(color(p.id))}" data-focus-child="${esc(p.id)}">${avatar(p.id)}<div class="fc986-child-main"><div class="fc986-child-head"><b>${esc(p.name)}</b>${nextTime?`<span class="fc986-depart">${esc(nextTime)} ${esc(nextLabel)}</span>`:''}</div>${info.schoolBreak||!slots.length?`<span>${esc(label)}</span>`:`<span class="fc986-child-state">${esc(live?(status?.kind==='active'?'Unterricht läuft · '+window.__fcGlanceTime.time(date,nextTime).replace(/^In /,'noch '):status?window.__fcGlanceTime.time(date,nextTime):'Unterricht beendet'):'Schule / Kindergarten')}</span>${timesHtml}`}${schoolPack.length?`<strong class="fc986-pack-label">Mitnehmen: ${esc([...new Set(schoolPack)].join(' · '))}</strong>`:''}${!finished&&info.notes?.length?`<span class="fc986-child-note">${esc(info.notes.join(' · '))}</span>`:''}</div></article>`);
 
  }
- return rows.length?`<section class="fc38-panel fc38-children" data-school-date="${esc(date)}"><header><div><h2>${live?'Kinder im Blick':'Kinder morgen'}</h2>${live?'':`<small>${esc(fmtDate(date))}</small>`}</div><button type="button" data-open="tomorrow">Morgen</button></header>${rows.join('')}</section>`:'';
+ return rows.length?`<section class="fc38-panel fc38-children" data-school-date="${esc(date)}"><header><div><h2>${live?'Kinder heute':'Kinder morgen'}</h2>${live?'':`<small>${esc(fmtDate(date))}</small>`}</div><button type="button" data-open="${live?'events':'tomorrow'}">${live?'Details':'Morgen'}</button></header>${rows.join('')}</section>`:'';
 }
 function todayPanel(){
  const focus=nextFamilyAction(),focusId=focus?.items?.length===1?focus.eventId:null;
