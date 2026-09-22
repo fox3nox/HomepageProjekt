@@ -26,8 +26,11 @@ jobs:
           set -euo pipefail
           absent(){ ! grep -q "$1" "$2"; }
           check(){ label="$1"; shift; if "$@"; then echo "ok: $label"; else echo "FAILED: $label"; exit 1; fi; }
-          check "boot version" grep -q "const VERSION='20260919-v1000'" family-command/index.html
-          check "current build marker" grep -q "V10.0" family-command/build.txt
+          check "boot version" grep -q "const VERSION='20260922-v1100-preview'" family-command/index.html
+          check "current build marker" grep -q "V10.1-preview" family-command/build.txt
+          check "V11 app wired" grep -q "v11-app.js" family-command/index.html
+          check "V11 CSS wired" grep -q "v11.css" family-command/index.html
+          check "Family Brain wired" grep -q "family-brain.js" family-command/index.html
           check "private rules version" grep -q "PRIVATE_RULES_VERSION='2026-08-31-v2'" family-command/index.html
           check "smart documents wired" grep -q "smart-documents.js" family-command/index.html
           check "smart document title helper wired" grep -q "smart-documents-title-v973.js" family-command/index.html
@@ -51,7 +54,10 @@ jobs:
           check "page polish wired" grep -q "v9-page-polish-v959.css" family-command/index.html
           check "form dialog polish imported" grep -q "v9-form-dialog-polish-v960.css" family-command/v9-page-polish-v959.css
           check "interaction accessibility polish imported" grep -q "v9-interaction-accessibility-v961.css" family-command/v9-page-polish-v959.css
-          check "supported PWA cache" grep -q "const CACHE='family-command-v126-asi-command-center'" family-command/sw.js
+          check "supported PWA cache" grep -q "const CACHE='family-command-v127-v11-product-shell'" family-command/sw.js
+          check "V11 app cached" grep -q "v11-app.js" family-command/sw.js
+          check "V11 CSS cached" grep -q "v11.css" family-command/sw.js
+          check "Family Brain cached" grep -q "family-brain.js" family-command/sw.js
           check "ASI command center cached" grep -q "asi-command-center-v100.css" family-command/sw.js
           check "zero-miss JS cached" grep -q "zero-miss-v978.js" family-command/sw.js
           check "zero-miss CSS cached" grep -q "zero-miss-v978.css" family-command/sw.js
@@ -129,6 +135,6 @@ jobs:
       - name: Production feature wiring
         run: |
           set -euo pipefail
-          for f in core-runtime.js cloud-state.js document-viewer.js smart-documents-title-v973.js smart-documents.js event-details.js chat-command-sync.js app-data-rules.js v9-data.js event-delete-fix.js multi-link-ui.js v9-app.js daily-check.js shopping-lists.js meal-planner.js recipe-meal-bridge.js recipes-favorites.js family-budget.js family-contacts.js reminder-center.js v9-professional.js reference-mobile-v35.js homework-originals.js; do grep -q "$f" family-command/index.html || { echo "critical module not wired: $f"; exit 1; }; done
-          for f in push-v2.js runtime-health.js family-ai-v2.js ai-budget-guard.js print-planner-v2.js backup-manager.js app-selftest-v9.js; do grep -q "$f" family-command/index.html || { echo "deferred module not wired: $f"; exit 1; }; done
+          for f in core-runtime.js cloud-state.js document-viewer.js smart-documents-title-v973.js smart-documents.js event-details.js chat-command-sync.js app-data-rules.js v9-data.js event-delete-fix.js multi-link-ui.js v9-app.js daily-check.js shopping-lists.js meal-planner.js recipe-meal-bridge.js recipes-favorites.js family-budget.js family-contacts.js reminder-center.js v9-professional.js reference-mobile-v35.js homework-originals.js v11-app.js; do grep -q "$f" family-command/index.html || { echo "critical module not wired: $f"; exit 1; }; done
+          for f in push-v2.js runtime-health.js family-ai-v2.js family-brain.js ai-budget-guard.js print-planner-v2.js backup-manager.js app-selftest-v9.js; do grep -q "$f" family-command/index.html || { echo "deferred module not wired: $f"; exit 1; }; done
           ! grep -q "family-command-private-app" family-command/index.html
