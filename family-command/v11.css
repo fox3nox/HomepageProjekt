@@ -27,7 +27,7 @@ html[data-fc11="1"] #fcApp{visibility:visible!important;background:var(--fc11-bg
 .fc11-icon-btn,.fc11-add-btn{border:1px solid var(--fc11-line);background:var(--fc11-paper);color:#28415f;box-shadow:none}
 .fc11-icon-btn{width:42px;height:42px;border-radius:13px;display:grid;place-items:center}.fc11-add-btn{height:42px;padding:0 12px;border-radius:13px;display:flex;align-items:center;gap:5px;background:var(--fc11-blue);border-color:var(--fc11-blue);color:#fff;font-weight:800}
 .fc11-icon-btn svg,.fc11-add-btn svg{width:20px;height:20px;fill:none;stroke:currentColor;stroke-width:1.8;stroke-linecap:round;stroke-linejoin:round}.fc11-add-btn span{display:none}
-.fc11-main{width:100%;max-width:1160px;margin:0 auto;padding:12px 12px calc(88px + env(safe-area-inset-bottom));outline:none}
+.fc11-main{width:100%;max-width:1160px;margin:0 auto;padding:12px 12px calc(112px + env(safe-area-inset-bottom));outline:none}
 .fc11-page{display:grid;gap:16px}
 .fc11-bottom-nav{position:fixed;z-index:90;left:8px;right:8px;bottom:max(8px,env(safe-area-inset-bottom));display:grid;grid-template-columns:repeat(5,1fr);padding:4px;border:1px solid rgba(216,224,234,.94);border-radius:20px;background:rgba(255,255,255,.95);backdrop-filter:blur(20px);box-shadow:0 12px 36px rgba(22,39,65,.15)}
 .fc11-bottom-nav button{min-width:0;min-height:54px;border:0;border-radius:15px;background:transparent;color:#718095;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:2px;font:inherit;font-size:9px;font-weight:750}.fc11-bottom-nav button svg{width:21px;height:21px;fill:none;stroke:currentColor;stroke-width:1.75;stroke-linecap:round;stroke-linejoin:round}.fc11-bottom-nav button.active{background:var(--fc11-blue-soft);color:var(--fc11-blue)}
