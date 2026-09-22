@@ -84,14 +84,29 @@ jobs:
         run: |
           npm install --no-save --package-lock=false playwright@1.57.0
 
-      - name: Future-only iPhone regression
-        run: node family-command/e2e/mobile-school-day-v947.spec.mjs
+      - name: Current iPhone product regression
+        run: |
+          if grep -q "v11-app.js" family-command/index.html; then
+            FC_BROWSER=webkit node family-command/e2e/v11-product-shell.spec.mjs
+          else
+            node family-command/e2e/mobile-school-day-v947.spec.mjs
+          fi
 
-      - name: Complete calendar and daily flows in iPhone WebKit
-        run: node family-command/e2e/daily-reliability.spec.mjs
+      - name: Complete current calendar and daily flows
+        run: |
+          if grep -q "v11-app.js" family-command/index.html; then
+            FC_BROWSER=chromium node family-command/e2e/v11-product-shell.spec.mjs
+          else
+            node family-command/e2e/daily-reliability.spec.mjs
+          fi
 
-      - name: Today focus and cross-module search in iPhone WebKit
-        run: node family-command/e2e/focus-search.spec.mjs
+      - name: Current search and family-answer regression
+        run: |
+          if grep -q "v11-app.js" family-command/index.html; then
+            node family-command/e2e/family-brain-v101.spec.mjs
+          else
+            node family-command/e2e/focus-search.spec.mjs
+          fi
 
       - name: Document viewer regression
         run: node family-command/e2e/document-viewer.spec.mjs
