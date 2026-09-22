@@ -55,8 +55,9 @@ try{
   },state);
 
   await isolate();
-  await openView(page,'more');
-  await page.click('[data-feature="docs"]');
+  await openView(page,'docs');
+  if(await page.evaluate(()=>Boolean(window.__fcV11)))await page.locator('[data-upload-doc]').click();
+  else await page.click('[data-feature="docs"]');
   await page.waitForSelector('text=Dokumentenzentrale',{timeout:20000});
 
   // Opening More/Documents can finish deferred render/persistence work. Re-assert the isolated
