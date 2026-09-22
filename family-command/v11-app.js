@@ -163,7 +163,7 @@ function navButtons(){
 function bindChrome(){
   document.querySelectorAll('[data-fc11-screen]').forEach(b=>b.onclick=()=>open(b.dataset.fc11Screen));
   document.querySelectorAll('[data-search]').forEach(b=>b.onclick=e=>window.fcOpenSearch?.(e.currentTarget));
-  document.querySelectorAll('[data-brain]').forEach(b=>b.onclick=()=>window.fcOpenFamilyBrain?.());
+  document.querySelectorAll('[data-brain]').forEach(b=>b.onclick=openBrain);
   document.querySelectorAll('[data-add]').forEach(b=>b.onclick=openAdd);
 }
 function header(title,eyebrow='',subtitle=''){
@@ -437,7 +437,13 @@ function personCard(p){
   return `<button type="button" class="fc11-person-card" style="--p:${esc(color(p.id))}" data-person-card="${esc(p.id)}"><span class="fc11-avatar large">${esc(initials(p.name))}</span><span><b>${esc(p.name)}</b><small>${esc([p.role,p.school].filter(Boolean).join(' · ')||'Familie')}</small><em>${week?week+' Wochenzeiten hinterlegt':''}</em></span>${icon('chevron')}</button>`;
 }
 function tool(key,ico,title,sub){return `<button type="button" class="fc11-tool" data-tool="${key}"><span>${icon(ico)}</span><div><b>${title}</b><small>${sub}</small></div>${icon('chevron')}</button>`}
-async function openTool(key){
+async async function openBrain(){
+  try{await window.__fcLoadExtrasNow?.()}catch(e){console.warn('fc11_brain_load',e)}
+  if(typeof window.fcOpenFamilyBrain==='function')return window.fcOpenFamilyBrain();
+  if(typeof window.fcOpenFamilyAI==='function')return window.fcOpenFamilyAI('text');
+}
+
+function openTool(key){
   try{await window.__fcLoadExtrasNow?.()}catch{}
   const map={
     shopping:()=>window.fcOpenShoppingLists?.(),
