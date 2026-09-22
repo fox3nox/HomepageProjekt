@@ -27,7 +27,7 @@ jobs:
           absent(){ ! grep -q "$1" "$2"; }
           check(){ label="$1"; shift; if "$@"; then echo "ok: $label"; else echo "FAILED: $label"; exit 1; fi; }
           check "boot version" grep -q "const VERSION='20260922-v1100-preview'" family-command/index.html
-          check "current build marker" grep -q "V10.1-preview" family-command/build.txt
+          check "current build marker" grep -q "V11.0-preview" family-command/build.txt
           check "V11 app wired" grep -q "v11-app.js" family-command/index.html
           check "V11 CSS wired" grep -q "v11.css" family-command/index.html
           check "Family Brain wired" grep -q "family-brain.js" family-command/index.html
