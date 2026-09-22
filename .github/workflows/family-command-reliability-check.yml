@@ -28,28 +28,21 @@ jobs:
       - run: node family-command/e2e/document-identity.spec.mjs
       - run: node family-command/e2e/pwa-release.spec.mjs
       - run: node family-command/e2e/cloud-state-lifecycle.spec.mjs
-      - run: node family-command/e2e/daily-school-first.spec.mjs
-        env:
-          FC_BROWSER: ${{ matrix.browser }}
-          FC_QA_DIR: /tmp/family-reliability
-      - run: node family-command/e2e/family-trust.spec.mjs
-        env:
-          FC_BROWSER: ${{ matrix.browser }}
-          FC_QA_DIR: /tmp/family-reliability
-      - run: node family-command/e2e/family-reliability.spec.mjs
-        env:
-          FC_BROWSER: ${{ matrix.browser }}
-          FC_QA_DIR: /tmp/family-reliability
-      - run: node family-command/e2e/family-glance-v985.spec.mjs
-        env:
-          FC_BROWSER: ${{ matrix.browser }}
-          FC_QA_DIR: /tmp/family-reliability
       - run: node family-command/e2e/clarity-model-v987.spec.mjs
-      - run: node family-command/e2e/family-clarity-v987.spec.mjs
+      - name: Current family experience reliability
         env:
-          FC_QA_EMBED_PREVIEW: "1"
           FC_BROWSER: ${{ matrix.browser }}
           FC_QA_DIR: /tmp/family-reliability
+        run: |
+          if grep -q "v11-app.js" family-command/index.html; then
+            node family-command/e2e/v11-product-shell.spec.mjs
+          else
+            node family-command/e2e/daily-school-first.spec.mjs
+            node family-command/e2e/family-trust.spec.mjs
+            node family-command/e2e/family-reliability.spec.mjs
+            node family-command/e2e/family-glance-v985.spec.mjs
+            FC_QA_EMBED_PREVIEW=1 node family-command/e2e/family-clarity-v987.spec.mjs
+          fi
       - uses: actions/upload-artifact@v4
         if: always()
         with:
