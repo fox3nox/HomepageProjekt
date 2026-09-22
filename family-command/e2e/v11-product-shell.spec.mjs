@@ -64,6 +64,10 @@ try{
   await isolate(page);
   await page.waitForFunction(()=>document.querySelector('[data-title]')?.textContent==='Heute',{timeout:5000});
 
+  await page.locator('[data-brain]').first().click();
+  await page.waitForSelector('#fcFamilyBrain',{state:'visible',timeout:12000});
+  await page.click('#fcFamilyBrain [data-close]');
+
   assert.equal(await page.locator('.fc11-bottom-nav [data-fc11-screen]').count(),5,'mobile navigation has five clear destinations');
   assert.equal(await page.locator('.fc11-kid').count(),3,'today shows all three child rows');
   assert.equal(await page.evaluate(()=>document.documentElement.scrollWidth<=document.documentElement.clientWidth+1),true,'mobile must not overflow horizontally');
