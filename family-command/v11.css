@@ -98,6 +98,7 @@ html[data-fc11="1"] .fc9-shell{display:none!important}
 .fc11-home .fc11-kid-copy small{font-size:11px}
 .fc11-home .fc11-row{min-height:70px;padding-inline:4px}
 .fc11-home .fc11-row.event:before{left:0}
+.fc11-row.work{grid-template-columns:64px minmax(0,1fr)}.fc11-row.work:before{content:"";position:absolute;left:0;top:11px;bottom:11px;width:3px;border-radius:0 4px 4px 0;background:var(--p,#8da0b6)}
 .fc11-home .fc11-brain-entry{min-height:60px;border:0;border-top:1px solid var(--fc11-line);border-radius:0;padding:10px 2px;box-shadow:none}
 .fc11-home .fc11-brain-icon{width:36px;height:36px}
 @media(min-width:680px){.fc11-home{gap:30px}.fc11-shared-holiday{padding:24px 28px}.fc11-shared-holiday h2{font-size:31px}}
