@@ -11,7 +11,6 @@
   <key>WorkingDirectory</key><string>__PROJECT__</string>
   <key>EnvironmentVariables</key>
   <dict>
-    <key>FC_ACCESS_KEY</key><string>__PRIVATE_ACCESS_KEY__</string>
     <key>FC_EXTERNAL_BACKUP_DIR</key><string>/Volumes/FamilyBackup/Familienzentrale</string>
     <key>FC_EXTERNAL_BACKUP_KEEP</key><string>14</string>
   </dict>
