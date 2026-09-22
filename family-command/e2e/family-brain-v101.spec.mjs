@@ -50,7 +50,7 @@ try{
   await page.evaluate(()=>window.__fcLoadExtrasNow());
   await page.waitForFunction(()=>Boolean(window.__fcFamilyBrain),{timeout:20000});
 
-  const next=await page.evaluate(()=>window.__fcFamilyBrain.answer('Welche Termine und Aufgaben hat Fynn nächste Woche?'));
+  const next=await page.evaluate(async()=>{const r=await window.__fcFamilyBrain.answer('Welche Termine und Aufgaben hat Fynn nächste Woche?');return{answer:r.answer,context:{range:r.context.range,personIds:r.context.personIds},sources:(r.sources||[]).map(({kind,id,label})=>({kind,id,label}))}});
   assert.match(next.answer,/Zahnarzt/);
   assert.match(next.answer,/Turnzeug einpacken/);
   assert.doesNotMatch(next.answer,/Späterer Termin/);
@@ -59,11 +59,11 @@ try{
   assert.equal(next.context.personIds.length,1);
   assert.equal(next.context.personIds[0],'fynn');
 
-  const docs=await page.evaluate(()=>window.__fcFamilyBrain.answer('Wo steht etwas zum Herbstbummel?'));
+  const docs=await page.evaluate(async()=>{const r=await window.__fcFamilyBrain.answer('Wo steht etwas zum Herbstbummel?');return{answer:r.answer,sources:(r.sources||[]).map(({kind,id,label})=>({kind,id,label}))}});
   assert.match(docs.answer,/Quartalsbrief Herbst/);
   assert.equal(docs.sources.some(x=>x.kind==='document'&&x.id==='doc-autumn'),true);
 
-  const unknown=await page.evaluate(()=>window.__fcFamilyBrain.answer('Wann fliegen wir nach Tokio?'));
+  const unknown=await page.evaluate(async()=>{const r=await window.__fcFamilyBrain.answer('Wann fliegen wir nach Tokio?');return{answer:r.answer}});
   assert.match(unknown.answer,/nichts Eindeutiges|rate nicht/i);
   assert.equal(await page.evaluate(()=>window.__fcFamilyBrain.health().readOnly),true);
 
