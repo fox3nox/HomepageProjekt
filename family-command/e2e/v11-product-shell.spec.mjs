@@ -64,7 +64,7 @@ try{
   await isolate(page);
   await page.waitForFunction(()=>document.querySelector('[data-title]')?.textContent==='Heute',{timeout:5000});
 
-  await page.locator('[data-brain]').first().click();
+  await page.locator('.fc11-main [data-brain]').click();
   await page.waitForSelector('#fcFamilyBrain',{state:'visible',timeout:12000});
   await page.click('#fcFamilyBrain [data-close]');
 
