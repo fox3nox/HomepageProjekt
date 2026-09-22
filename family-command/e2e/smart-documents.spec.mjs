@@ -8,7 +8,7 @@ const server=spawn('python3',['-m','http.server',String(PORT),'--directory','fam
 const sleep=ms=>new Promise(r=>setTimeout(r,ms));
 async function ready(){for(let i=0;i<50;i++){try{if((await fetch(BASE+'/index.html')).ok)return}catch{}await sleep(100)}throw new Error('local server not ready')}
 const state={version:'smart-doc-e2e',people:[{id:'oli',name:'Oli',role:'Papa',color:'#263a67',teachers:[],notes:[]},{id:'jayden',name:'Jayden',role:'Kind',color:'#3478f6',teachers:[],notes:[]},{id:'fynn',name:'Fynn',role:'Kind',color:'#d97914',teachers:[],notes:[]},{id:'eliyah',name:'Eliyah',role:'Kind',color:'#16a477',teachers:[],notes:[]}],schedules:{},reminders:[],events:[{id:'existing-phone',personIds:['fynn'],title:'Telefongespräch',date:'2026-09-08',time:'10:00',end:'',note:''}],todos:[],homework:[],pendencies:[],common:{school:{},care:[]}};
-const aiPayload={ok:true,parsed:{summary:'Wochenblatt Schule',items:[{type:'event',personId:'fynn',title:'Telefongespräch',date:'2026-09-08',time:'10:00',endDate:'',end:'',note:'',reminderLead:30,confidence:.99},{type:'homework',personId:'fynn',title:'2er- und 4er-Reihe aufsagen',subject:'Math',date:'2026-09-04',time:'',endDate:'',end:'',note:'Freiwillig',reminderLead:-1,confidence:.98},{type:'event',personId:'jayden',title:'Manuell korrigierter Termin',date:'2026-09-12',time:'09:00',endDate:'',end:'',note:'',reminderLead:30,confidence:.99},{type:'event',personId:'jayden',title:'Unsicherer Termin',date:'2026-09-11',time:'',endDate:'',end:'',note:'',reminderLead:30,confidence:.5}]}};
+const aiPayload={ok:true,parsed:{summary:'Wochenblatt Schule',items:[{type:'event',personId:'fynn',title:'Telefongespräch',date:'2026-09-08',time:'10:00',endDate:'',end:'',note:'',reminderLead:30,confidence:.99,source_quote:'Telefongespräch am 8. September um 10:00 Uhr.'},{type:'homework',personId:'fynn',title:'2er- und 4er-Reihe aufsagen',subject:'Math',date:'2026-09-04',time:'',endDate:'',end:'',note:'Freiwillig',reminderLead:-1,confidence:.98},{type:'event',personId:'jayden',title:'Manuell korrigierter Termin',date:'2026-09-12',time:'09:00',endDate:'',end:'',note:'',reminderLead:30,confidence:.99},{type:'event',personId:'jayden',title:'Unsicherer Termin',date:'2026-09-11',time:'',endDate:'',end:'',note:'',reminderLead:30,confidence:.5}]}};
 let uploaded=false;
 try{
   await ready();
@@ -74,6 +74,7 @@ try{
   await page.click('[data-doc-upload]');
   await page.waitForSelector('[data-doc-review]');
   assert.equal(uploaded,false,'review must not upload before confirmation');
+  assert.match(await page.locator('.fc-doc-evidence').first().innerText(),/Beleg aus dem Original.*Telefongespräch/i,'review must show source evidence when provided');
   assert.equal(await page.locator('[data-doc-proposal]:checked').count(),0,'nothing is preselected');
   assert.equal(await page.evaluate(()=>window.data.events.length),state.events.length,'review must not create events');
   for(const index of [0,1,2])await page.check(`[data-doc-proposal="${index}"]`);
