@@ -80,6 +80,20 @@ Die vorhandene `factory-worker-api` unterstützt bereits:
 
 Deshalb wurde kein zweites konkurrierendes Datensystem erfunden.
 
+
+
+### 5. Externe SSD-Sicherung vorbereitet
+
+`local-worker/backup_to_external.py` exportiert den neuesten Family-Command-State plus alle privaten Originaldokumente in einen datierten Ordner auf einer externen SSD.
+
+Schutzregeln:
+- kein Supabase-Service-Key auf dem Mac,
+- privater Familienzugang kann aus dem macOS-Schlüsselbund gelesen werden,
+- fehlt das externe Laufwerk, wird **nicht** still auf die interne SSD ausgewichen,
+- unvollständige Sicherungen bleiben als `.partial` getrennt,
+- erst nach vollständigem Export wird der Backup-Ordner finalisiert,
+- Retention ist konfigurierbar.
+
 ## Bewusst NICHT verändert
 
 - kein Merge nach `main`
