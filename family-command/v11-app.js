@@ -102,6 +102,16 @@ function currentState(p,date=today(),live=date===today()){
   try{return window.__fcV9?.currentChildState?.(p,date,live)||null}catch{return null}
 }
 function nextAction(){try{return window.__fcV9?.nextAction?.()||null}catch{return null}}
+function nextDisplay(value){
+  if(!value)return null;
+  const items=Array.isArray(value.items)?value.items:[];
+  const allSchoolFinish=items.length>1&&items.every(x=>x?.kind==='school'&&/ fertig$/i.test(String(x.title||'')));
+  if(allSchoolFinish){
+    const who=items.map(x=>peopleNames(x)[0]||String(x.title||'').replace(/ fertig$/i,'')).filter(Boolean);
+    return{...value,title:'Schulschluss',sub:who.join(' · ')};
+  }
+  return value;
+}
 function initials(name){return String(name||'?').split(/\s+/).slice(0,2).map(x=>x[0]).join('').toUpperCase()}
 function badgeFor(id){
   const p=person(id);if(!p)return'';
@@ -183,7 +193,7 @@ function render(){
 }
 
 function renderToday(root){
-  const date=today(),next=nextAction(),kids=dependents(),events=eventsOn(date).filter(e=>!window.__fcV9?.eventIsPast?.(e)),todos=todoRows('today'),hw=homeworkRows('today');
+  const date=today(),next=nextDisplay(nextAction()),kids=dependents(),events=eventsOn(date).filter(e=>!window.__fcV9?.eventIsPast?.(e)),todos=todoRows('today'),hw=homeworkRows('today');
   const tomorrow=addDays(date,1),tomEvents=eventsOn(tomorrow),tomTodos=todoRows('open').filter(x=>taskDate(x)===tomorrow),tomHw=homeworkRows('open').filter(x=>taskDate(x)===tomorrow);
   header('Heute',fmt(date,{weekday:true,long:true}),summaryText(events,todos,hw));
   root.innerHTML=`<div class="fc11-page fc11-home">
