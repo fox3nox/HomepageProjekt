@@ -444,7 +444,7 @@ async function openBrain(){
   try{window.toast?.('Familienassistent konnte noch nicht geladen werden.')}catch{}
 }
 
-function openTool(key){
+async function openTool(key){
   try{await window.__fcLoadExtrasNow?.()}catch{}
   const map={
     shopping:()=>window.fcOpenShoppingLists?.(),
