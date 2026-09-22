@@ -1,0 +1,48 @@
+name: Family Command V11 product shell
+on:
+  pull_request:
+    branches: [main]
+    paths:
+      - 'family-command/**'
+      - '.github/workflows/family-command-v11-check.yml'
+  push:
+    branches: [family-command-v101-family-brain]
+    paths:
+      - 'family-command/**'
+      - '.github/workflows/family-command-v11-check.yml'
+
+permissions:
+  contents: read
+
+jobs:
+  v11:
+    runs-on: ubuntu-latest
+    container: mcr.microsoft.com/playwright:v1.57.0-noble
+    timeout-minutes: 12
+    strategy:
+      fail-fast: false
+      matrix:
+        browser: [chromium, webkit]
+    env:
+      FC_BROWSER: ${{ matrix.browser }}
+    steps:
+      - uses: actions/checkout@v4
+      - name: Syntax checks
+        run: |
+          node --check family-command/v11-app.js
+          node --check family-command/smart-documents.js
+          node --check family-command/family-brain.js
+          python3 -m py_compile family-command/local-worker/family_worker.py family-command/local-worker/backup_to_external.py
+          python3 -m unittest discover -s family-command/local-worker -p 'test_*.py'
+      - name: Install browser driver package
+        run: npm install --no-save --package-lock=false playwright@1.57.0
+      - name: V11 mobile and desktop regression
+        run: node family-command/e2e/v11-product-shell.spec.mjs
+      - name: Upload visual QA
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: v11-${{ matrix.browser }}-screenshots
+          path: qa-v11/
+          if-no-files-found: warn
+          retention-days: 7

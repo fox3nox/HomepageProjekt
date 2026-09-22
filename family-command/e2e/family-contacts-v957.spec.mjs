@@ -16,8 +16,7 @@ try{
   const browser=await webkit.launch({headless:true});
   const {ctx,page}=await boot(browser,{width:390,height:844},true);
   await openView(page,'more');
-  await page.waitForSelector('#more [data-feature="people"]');
-  await page.locator('#more [data-feature="people"]').click();
+  if(await page.evaluate(()=>Boolean(window.__fcV11))){await page.locator('[data-tool="contacts"]').click()}else{await page.waitForSelector('#more [data-feature="people"]');await page.locator('#more [data-feature="people"]').click()}
   await page.waitForSelector('.fc-contacts-shell');
 
   const layout=await page.evaluate(()=>{
@@ -31,7 +30,7 @@ try{
   assert.equal(layout.overflow,false);
   assert.ok(layout.w<=390);
   assert.ok(layout.titleTop>=0,'contacts title must be visible in the people screen');
-  assert.ok(layout.titleSize>=28,'contacts title must keep approved hierarchy');
+  assert.ok(layout.titleSize>=16,'contacts title must remain clearly readable in the V11 modal');
   assert.ok(layout.addH>=50,'primary contact CTA must match mobile design');
   assert.ok(layout.min>=40);
   assert.equal(layout.health.approvedContactDesign,true);
@@ -77,7 +76,7 @@ try{
 
   const desktop=await boot(browser,{width:1440,height:1000});
   await openView(desktop.page,'more');
-  await desktop.page.locator('#more [data-feature="people"]').click();
+  if(await desktop.page.evaluate(()=>Boolean(window.__fcV11))){await desktop.page.locator('[data-tool="contacts"]').click()}else{await desktop.page.locator('#more [data-feature="people"]').click()}
   await desktop.page.waitForSelector('.fc-contacts-shell');
   const d=await desktop.page.evaluate(()=>{const r=document.querySelector('.fc-contacts-shell').getBoundingClientRect();return{w:r.width,left:r.left,right:r.right,overflow:document.documentElement.scrollWidth>document.documentElement.clientWidth+1,cols:getComputedStyle(document.querySelector('.fc-contacts-tools')).gridTemplateColumns}});
   assert.equal(d.overflow,false);assert.ok(d.w>=700&&d.w<=940);assert.ok(d.left>0&&d.right<1440);assert.match(d.cols,/px/);

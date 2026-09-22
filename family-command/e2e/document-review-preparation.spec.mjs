@@ -85,6 +85,41 @@ try{
   assert.equal(await page.locator('[data-doc="review-doc-1"]').count(),1);
   console.log('PASS explicit review, original preservation, assignment, validation and retry');
   await closeDocs();
+  const v11=await page.evaluate(()=>Boolean(window.__fcV11));
+  if(v11){
+    await page.evaluate(()=>{window.__fcV11.state.planDate='2027-05-07';window.__fcV11.state.planPerson='all';window.__fcV11.open('plan')});
+    const planEvent=page.locator(`#fc11Main [data-event="${eventId}"]`);
+    await planEvent.waitFor({state:'visible'});
+    assert.match(await planEvent.innerText(),/Ausflug/);
+    assert.match(await planEvent.innerText(),/08:20/);
+    assert.match(await planEvent.innerText(),/kleines Znüni|Mittagessen \(Picknick\)/);
+    await planEvent.click();await page.waitForSelector('#fcEventDetails');
+    assert.match(await page.locator('.fc-detail-note').innerText(),/Besammlung: 08:20/);
+    await page.locator('#fcEventDetails [data-doc="review-doc-1"]').waitFor();
+    assert.equal(await page.locator('#fcEventDetails [data-doc="review-doc-1"]').count(),1);
+    await page.locator('.fc-detail-close').click();
+
+    await page.locator('[data-search]').first().click();
+    await page.getByRole('searchbox',{name:'Suchbegriff',exact:true}).fill('Ausflug');
+    await page.waitForFunction(()=>__fcSearch.search('Ausflug').some(x=>x.group==='Dokumente'));
+    const groups=await page.evaluate(()=>__fcSearch.search('Ausflug').map(x=>x.group));
+    assert.ok(groups.includes('Termine'));assert.ok(groups.includes('Dokumente'));
+    await page.getByRole('button',{name:'Suche schliessen'}).click();
+
+    await page.clock.setFixedTime(new Date('2027-05-07T07:00:00+02:00'));
+    await page.evaluate(()=>{__testDate='2027-05-07';data.schedules={'child-c':{5:[{start:'08:20',end:'11:50',label:'Kindergarten',note:'Leuchtweste mitnehmen'}]}};data.reminders=[{id:'school-pack',personId:'child-c',days:[5],items:['Trinkflasche']}];window.__fcV11.open('today')});
+    for(const width of [390,1440]){
+      await page.setViewportSize({width,height:width>1000?1000:844});await page.evaluate(()=>window.__fcV11.render());
+      const main=page.locator('#fc11Main');
+      assert.match(await main.innerText(),/Ausflug/);
+      assert.match(await main.innerText(),/Mittagessen \(Picknick\)/);
+      assert.equal(await page.evaluate(()=>document.documentElement.scrollWidth>innerWidth+1),false);
+      await screenshot('v11-today-'+width);
+    }
+    await page.evaluate(()=>{__testDate='2027-05-08';window.__fcV11.open('today')});
+    assert.doesNotMatch(await page.locator('#fc11Main').innerText(),/Ausflug/,'no stale preparation on the next day');
+    console.log('PASS V11 plan, search, source link and responsive preparation');
+  }else{
   await openView(page,'today');
   await openView(page,'tomorrow');assert.match(await page.locator('#tomorrow').innerText(),/Mittagessen \(Picknick\)/);
   const tomorrow=page.locator(`#tomorrow [data-preparation-event="${eventId}"]`);
@@ -120,6 +155,8 @@ try{
   await page.evaluate(()=>{__testDate='2027-05-08';__fcV9.invalidate();renderToday();});
   assert.equal(await page.locator(`[data-focus-event="${eventId}"],[data-next-event="${eventId}"]`).count(),0,'no stale packing hint on the next day');
   console.log('PASS correct day and responsive non-overlapping packing hints');
+
+  }
   await page.setViewportSize({width:390,height:844});
   await page.evaluate(p=>{__testDate='2027-05-06';data.events[0].time='08:10';data.events[0].note='Manuell geprüfte Angaben';__documentTest.items=[p];},proposal);
   await openDocs();await analyzeFile();assert.match(await page.locator('[data-doc-review]').innerText(),/Vorhandenen Termin verknüpfen.*08:10/s);

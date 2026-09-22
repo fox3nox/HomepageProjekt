@@ -1,3 +1,5 @@
+V11.0-preview · 2026-09-22 · Neue professionelle Produktshell: Heute, Plan, Aufgaben, Dokumente, Mehr; Family Brain, Quellenbelege, lokaler Ollama-Worker und externe SSD-Sicherung. Keine Produktionsdatenmigration.
+V10.1-preview · 2026-09-22 · Read-only Familien-Gehirn mit Quellen, Original-Belegen in Dokumentreviews, lokalem Ollama-Worker und externer SSD-Sicherung. Keine Produktionsdaten- oder Schemaänderung.
 V10.0 · 2026-09-19 · Ruhiger Ein-Blick-Leitstand, drei klare Hauptbereiche, kompakte Kinderzeilen und eine dominante nächste Aktion.
 V9.86 · 2026-09-14 · Personen-Karten, relative Zeiten, ruhigere Tageshinweise und wiederhergestellter oberer iPhone-Abstand.
 V9.85 · 2026-09-14 · Verständlicher privater Zugang, «Als Nächstes» zuerst und kompakter Monatswähler im Kalender.

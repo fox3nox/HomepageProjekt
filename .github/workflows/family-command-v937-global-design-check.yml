@@ -1,31 +1,30 @@
-name: Family Command V9.44 global design regression
+name: Family Command legacy V9.37 design archive
 on:
-  push:
-    branches: [main]
-    paths:
-      - 'family-command/**'
-      - '.github/workflows/family-command-v937-global-design-check.yml'
   pull_request:
     branches: [main]
     paths:
-      - 'family-command/**'
+      - 'family-command/global-design-v37.css'
+      - 'family-command/e2e/reference-design.spec.mjs'
       - '.github/workflows/family-command-v937-global-design-check.yml'
+  push:
+    branches: [main]
+    paths:
+      - 'family-command/global-design-v37.css'
+      - 'family-command/e2e/reference-design.spec.mjs'
+      - '.github/workflows/family-command-v937-global-design-check.yml'
+
+permissions:
+  contents: read
+
 jobs:
-  webkit:
+  archived-design-contract:
     runs-on: ubuntu-latest
-    container: mcr.microsoft.com/playwright:v1.57.0-noble
-    timeout-minutes: 8
     steps:
       - uses: actions/checkout@v4
-      - uses: actions/setup-node@v4
-        with:
-          node-version: 22
-      - run: npm install --no-save --package-lock=false playwright@1.57.0
-      - run: node family-command/e2e/global-design-v37.spec.mjs
-      - name: Upload V9.44 mobile screenshots
-        if: always()
-        uses: actions/upload-artifact@v4
-        with:
-          name: family-command-v944-mobile-screens
-          path: family-command/e2e-artifacts/v944-*.png
-          if-no-files-found: warn
+      - name: Legacy contract is retained only for archived V9 assets
+        run: |
+          set -euo pipefail
+          test -f family-command/v11-app.js
+          test -f family-command/v11.css
+          grep -q "v11-app.js" family-command/index.html
+          echo "V9 visual contract archived; V11 visual QA runs in family-command-v11-check.yml."

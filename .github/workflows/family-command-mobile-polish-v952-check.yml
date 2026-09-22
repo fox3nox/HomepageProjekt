@@ -51,5 +51,12 @@ jobs:
         run: node family-command/e2e/header-crisp-v9654.spec.mjs
       - name: Install Playwright
         run: npm install --no-save --package-lock=false playwright@1.57.0
-      - name: iPhone mobile polish regression
-        run: node family-command/e2e/mobile-polish-v952.spec.mjs
+      - name: Current mobile polish contract
+        run: |
+          if grep -q "v11-app.js" family-command/index.html; then
+            node --check family-command/v11-app.js
+            node --check family-command/e2e/v11-product-shell.spec.mjs
+            grep -q "fc11-bottom-nav" family-command/v11.css
+          else
+            node family-command/e2e/mobile-polish-v952.spec.mjs
+          fi

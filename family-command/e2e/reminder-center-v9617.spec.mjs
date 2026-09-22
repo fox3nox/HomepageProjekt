@@ -23,10 +23,11 @@ try{
   await page.goto(BASE+'/?access=test',{waitUntil:'domcontentloaded'});
   await page.waitForFunction(()=>document.documentElement.dataset.fcReady==='1'&&window.__fcReminderCenter?.version==='9.61.7',{timeout:20000});
   await openView(page,'more');
-  const tile=page.locator('#more [data-feature="push"]');
+  const v11=await page.evaluate(()=>Boolean(window.__fcV11));
+  const tile=v11?page.locator('[data-tool="push"]'):page.locator('#more [data-feature="push"]');
   await tile.waitFor();
-  await page.waitForFunction(()=>document.querySelector('#more [data-feature="push"]')?.textContent.includes('2 Merklisten'));
-  assert.match(await tile.innerText(),/2 Merklisten/);
+  if(v11)assert.match(await tile.innerText(),/Erinnerungen/);
+  else{await page.waitForFunction(()=>document.querySelector('#more [data-feature="push"]')?.textContent.includes('2 Merklisten'));assert.match(await tile.innerText(),/2 Merklisten/);}
   await tile.click();
   await page.waitForSelector('#fcReminderCenter');
   const health=await page.evaluate(()=>window.__fcReminderCenter.health());

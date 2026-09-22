@@ -1,0 +1,22 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+<dict>
+  <key>Label</key><string>ch.familycommand.externalbackup</string>
+  <key>ProgramArguments</key>
+  <array>
+    <string>__PYTHON__</string>
+    <string>__PROJECT__/backup_to_external.py</string>
+  </array>
+  <key>WorkingDirectory</key><string>__PROJECT__</string>
+  <key>EnvironmentVariables</key>
+  <dict>
+    <key>FC_EXTERNAL_BACKUP_DIR</key><string>/Volumes/FamilyBackup/Familienzentrale</string>
+    <key>FC_EXTERNAL_BACKUP_KEEP</key><string>14</string>
+  </dict>
+  <key>StartCalendarInterval</key>
+  <dict><key>Hour</key><integer>3</integer><key>Minute</key><integer>15</integer></dict>
+  <key>StandardOutPath</key><string>__HOME__/Library/Logs/family-command-backup.log</string>
+  <key>StandardErrorPath</key><string>__HOME__/Library/Logs/family-command-backup-error.log</string>
+</dict>
+</plist>

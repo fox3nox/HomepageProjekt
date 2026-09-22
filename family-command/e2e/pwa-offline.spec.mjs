@@ -19,21 +19,22 @@ try {
   await page.goto(base+'/?access=test');
   await page.waitForFunction(()=>document.documentElement.dataset.fcReady==='1'&&!!navigator.serviceWorker.controller);
   await page.evaluate(()=>window.__fcLoadExtrasNow());
-  assert.ok((await page.evaluate(()=>caches.keys())).includes('family-command-v126-asi-command-center'));
+  assert.ok((await page.evaluate(()=>caches.keys())).includes('family-command-v127-v11-product-shell'));
   assert.ok(!(await page.evaluate(()=>caches.keys())).includes('family-command-v116'),'activating the new worker removes the previous release cache');
   await context.setOffline(true);
   await page.reload({waitUntil:'domcontentloaded'});
-  await page.waitForFunction(()=>document.documentElement.dataset.fcReady==='1'&&window.__fcTomorrowCalendarV9674&&window.__fcZeroMissV978);
-  for(const screen of ['tomorrow','events','homework','more','today']){
-    await openView(page,screen);
-    assert.equal(await page.locator('.fc9-screen.active').getAttribute('id'),screen);
+  await page.waitForFunction(()=>document.documentElement.dataset.fcReady==='1'&&window.__fcV11&&window.__fcZeroMissV978);
+  const screens=['plan','tasks','more','docs','today'];
+  for(const target of screens){
+    await page.evaluate(target=>window.__fcV11.open(target),target);
+    await page.waitForFunction(target=>document.documentElement.dataset.fc11Screen===target,target);
   }
-  await page.locator('.fc9-search-icon').tap();
+  await page.locator('.fc11-header [data-search]').tap();
   await page.getByRole('searchbox',{name:'Suchbegriff',exact:true}).fill('Kind A');
   assert.match(await page.locator('.fc-search-results').innerText(),/Kind A/,'search scripts and styles must survive offline reload');
   await page.getByRole('button',{name:'Suche schliessen'}).tap();
   assert.deepEqual(errors,[],'offline reload must not produce unhandled boot errors');
-  await context.setOffline(false);await page.reload();await page.waitForFunction(()=>document.documentElement.dataset.fcReady==='1'&&window.__fcV9);
+  await context.setOffline(false);await page.reload();await page.waitForFunction(()=>document.documentElement.dataset.fcReady==='1'&&window.__fcV11);
   assert.equal(await page.title(),'Familienzentrale');
-  console.log('PASS real service-worker warm install, offline reload, V9.78 zero-miss dashboard, navigation and reconnect');
+  console.log('PASS real service-worker warm install, offline V11 navigation/search and reconnect');
 } finally {await browser?.close();server.kill();}

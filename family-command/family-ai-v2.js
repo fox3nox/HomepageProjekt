@@ -86,7 +86,7 @@
     clearError();setBusy(true,'Bestätigte Einträge werden gespeichert …');
     try{
       const links=review.applyItems(items,'input-'+crypto.randomUUID());
-      try{if(typeof renderToday==='function')renderToday();if(typeof renderWeek==='function')renderWeek();if(typeof renderEvents==='function')await Promise.resolve(renderEvents(typeof fcEventFilter==='string'?fcEventFilter:'all'));if(typeof renderHomeworkScreen==='function')renderHomeworkScreen();if(typeof syncPush==='function')await syncPush()}catch(e){console.warn('fc_ai_refresh',e)}
+      try{if(typeof renderToday==='function')renderToday();if(typeof renderWeek==='function')renderWeek();if(typeof renderEvents==='function')await Promise.resolve(renderEvents(typeof fcEventFilter==='string'?fcEventFilter:'all'));if(typeof renderHomeworkScreen==='function')renderHomeworkScreen();window.__fcV11?.render?.();if(typeof syncPush==='function')await syncPush()}catch(e){console.warn('fc_ai_refresh',e)}
       toast2(links.length+' bestätigte Einträge übernommen. Den Cloud-Status zeigt die Sync-Anzeige.');close();
     }catch(e){error('Speichern fehlgeschlagen. '+e.message)}finally{setBusy(false)}
   }

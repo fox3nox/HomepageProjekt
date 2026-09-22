@@ -45,10 +45,16 @@ jobs:
       - run: node --check family-command/zero-miss-v978.js
       - run: node family-command/e2e/zero-miss-v978.spec.mjs
       - run: npm install --no-save playwright@1.57.0
-      - run: node family-command/e2e/zero-miss-lifecycle.spec.mjs
+      - name: Current zero-miss product lifecycle
         env:
           FC_BROWSER: ${{ matrix.browser }}
           FC_QA_DIR: /tmp/zero-miss
+        run: |
+          if grep -q "v11-app.js" family-command/index.html; then
+            node family-command/e2e/v11-product-shell.spec.mjs
+          else
+            node family-command/e2e/zero-miss-lifecycle.spec.mjs
+          fi
       - uses: actions/upload-artifact@v4
         if: always()
         with:

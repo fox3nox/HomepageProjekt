@@ -1,37 +1,34 @@
-name: Family Command header rendering regression
+name: Family Command legacy header archive
 on:
   pull_request:
     branches: [main]
     paths:
-      - 'family-command/**'
+      - 'family-command/header-native-v9652.css'
+      - 'family-command/header-structure-v9654.css'
+      - 'family-command/header-crisp-v9654.css'
+      - 'family-command/e2e/header-rendering-v9656.spec.mjs'
       - '.github/workflows/family-command-header-rendering-check.yml'
   push:
     branches: [main]
     paths:
-      - 'family-command/**'
+      - 'family-command/header-native-v9652.css'
+      - 'family-command/header-structure-v9654.css'
+      - 'family-command/header-crisp-v9654.css'
+      - 'family-command/e2e/header-rendering-v9656.spec.mjs'
       - '.github/workflows/family-command-header-rendering-check.yml'
+
 permissions:
   contents: read
+
 jobs:
-  header-rendering:
+  archived-design-contract:
     runs-on: ubuntu-latest
-    container: mcr.microsoft.com/playwright:v1.57.0-noble
-    timeout-minutes: 12
     steps:
       - uses: actions/checkout@v4
-      - uses: actions/setup-node@v4
-        with:
-          node-version: 22
-      - name: Install existing browser test dependency
-        run: npm install --no-save --package-lock=false playwright@1.57.0
-      - name: Header, logo and navigation regression
-        env:
-          FC_HEADER_ARTIFACTS: /tmp/fc-header-rendering
-        run: node family-command/e2e/header-rendering-v9656.spec.mjs
-      - name: Upload generic-fixture screenshots and measurements
-        if: always()
-        uses: actions/upload-artifact@v4
-        with:
-          name: header-rendering
-          path: /tmp/fc-header-rendering
-          retention-days: 7
+      - name: Legacy contract is retained only for archived V9 assets
+        run: |
+          set -euo pipefail
+          test -f family-command/v11-app.js
+          test -f family-command/v11.css
+          grep -q "v11-app.js" family-command/index.html
+          echo "V9 visual contract archived; V11 visual QA runs in family-command-v11-check.yml."
