@@ -65,10 +65,8 @@ try{
 
   const unknown=await page.evaluate(()=>window.__fcFamilyBrain.answer('Wann fliegen wir nach Tokio?'));
   assert.match(unknown.answer,/nichts Eindeutiges|rate nicht/i);
-  assert.equal(windowUndefined(await page.evaluate(()=>window.__fcFamilyBrain.health().readOnly)),false);
+  assert.equal(await page.evaluate(()=>window.__fcFamilyBrain.health().readOnly),true);
 
   await browser.close();
   console.log('family brain v10.1 regression: ok');
 } finally {server.kill('SIGTERM')}
-
-function windowUndefined(value){return typeof value==='undefined'}
