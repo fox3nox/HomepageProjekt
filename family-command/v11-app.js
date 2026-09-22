@@ -283,9 +283,9 @@ function homeworkRow(h){
 }
 function bindRows(root){
   root.querySelectorAll('[data-event]').forEach(b=>b.onclick=()=>openEvent(b.dataset.event));
-  root.querySelectorAll('[data-todo]').forEach(row=>row.querySelector('input').onchange=e=>toggleTodo(row.dataset.todo,e.target.checked));
+  root.querySelectorAll('[data-todo]').forEach(row=>{const input=row.querySelector('input');if(input)input.onclick=e=>{e.stopPropagation();toggleTodo(row.dataset.todo,input.checked)}});
   root.querySelectorAll('[data-edit-todo]').forEach(b=>b.onclick=()=>editTodo(b.dataset.editTodo));
-  root.querySelectorAll('[data-homework]').forEach(row=>row.querySelector('input').onchange=e=>toggleHomework(row.dataset.homework,e.target.checked));
+  root.querySelectorAll('[data-homework]').forEach(row=>{const input=row.querySelector('input');if(input)input.onclick=e=>{e.stopPropagation();toggleHomework(row.dataset.homework,input.checked)}});
   root.querySelectorAll('[data-edit-homework]').forEach(b=>b.onclick=()=>editHomework(b.dataset.editHomework));
 }
 
