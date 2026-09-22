@@ -24,7 +24,8 @@ const state={
   reminders:[{id:'school-pack',personId:'fynn',days:[1,2,3,4,5],items:['Rucksack']}],
   events:[
     {id:'event-today',personIds:['fynn'],title:'Zahnarzt',date:'2026-09-22',time:'15:30',end:'16:00',note:'Versicherungskarte mitnehmen'},
-    {id:'event-tomorrow',personIds:['jayden'],title:'Elternabend',date:'2026-09-23',time:'19:00',end:'20:00',note:''}
+    {id:'event-tomorrow',personIds:['jayden'],title:'Elternabend',date:'2026-09-23',time:'19:00',end:'20:00',note:''},
+    {id:'holiday-elia',personIds:['eliyah'],title:'Herbstferien',date:'2026-09-21',endDate:'2026-09-25',note:''}
   ],
   todos:[
     {id:'todo-1',personId:'eliyah',title:'Kindergarten abmelden',date:'2026-09-22',section:'morning',priority:true,done:false,archived:false,createdAt:'2026-09-21T10:00:00Z'}
@@ -70,6 +71,11 @@ try{
 
   assert.equal(await page.locator('.fc11-bottom-nav [data-fc11-screen]').count(),5,'mobile navigation has five clear destinations');
   assert.equal(await page.locator('.fc11-kid').count(),3,'today shows all three child rows');
+  assert.equal(await page.locator('.fc11-kid[data-holiday="1"]').count(),1,'a holiday remains scoped to the affected child');
+  for(const id of ['jayden','fynn'])assert.doesNotMatch(await page.locator(`.fc11-kid[data-kid="${id}"]`).innerText(),/Heute frei/,'a completed school day must not look like a free day');
+  assert.match(await page.locator('.fc11-kid[data-holiday="1"]').innerText(),/Elia[\s\S]*Herbstferien[\s\S]*Nur Elia · schulfrei/i);
+  assert.equal(await page.locator('.fc11-kid').last().getAttribute('data-kid'),'eliyah','holiday-only child must not outrank children with a normal school day');
+  assert.equal((await page.locator('.fc11-kids').innerText()).match(/Herbstferien/g)?.length,1,'holiday wording appears only on the affected child');
   assert.equal(await page.evaluate(()=>document.documentElement.scrollWidth<=document.documentElement.clientWidth+1),true,'mobile must not overflow horizontally');
 
   const navBox=await page.locator('.fc11-bottom-nav').boundingBox();
@@ -108,10 +114,23 @@ try{
   await page.click('#fc11AddSheet [data-close]');
 
   await page.click('.fc11-bottom-nav [data-fc11-screen="more"]');
+  const scrollContract=await page.evaluate(()=>({html:getComputedStyle(document.documentElement).overflowY,body:getComputedStyle(document.body).overflowY,scrollHeight:document.documentElement.scrollHeight,viewport:innerHeight,top:scrollY}));
+  assert.notEqual(scrollContract.html,'hidden','V11 must never lock html vertical scrolling');
+  assert.notEqual(scrollContract.body,'hidden','V11 must never lock body vertical scrolling');
+  assert.ok(scrollContract.scrollHeight>scrollContract.viewport,'More must have a scrollable page when content is taller than the viewport');
+  await page.evaluate(()=>window.scrollTo(0,document.documentElement.scrollHeight));
+  await page.waitForTimeout(80);
+  assert.ok(await page.evaluate(()=>scrollY>40),'More must scroll down on iPhone');
+  await page.evaluate(()=>window.scrollTo(0,0));
+  await page.waitForTimeout(40);
   await page.click('[data-person-card="fynn"]');
   await page.waitForSelector('#fc11PersonSheet');
   assert.match(await page.locator('#fc11PersonSheet').innerText(),/Fynn/);
   await page.click('#fc11PersonSheet [data-close]');
+  await page.evaluate(()=>window.scrollTo(0,document.documentElement.scrollHeight));
+  await page.waitForTimeout(80);
+  assert.ok(await page.evaluate(()=>scrollY>40),'closing a V11 modal must not leave page scrolling locked');
+  await page.evaluate(()=>window.scrollTo(0,0));
 
   await page.click('[data-tool="contacts"]');
   await page.waitForSelector('#fcContactsModal .fc-contacts-shell',{state:'visible'});
@@ -134,6 +153,14 @@ try{
   await page.click('#fcReminderCenter [data-close]');
 
   await page.screenshot({path:'qa-v11/mobile-390x844.png',fullPage:true});
+  for(const [width,height] of [[375,812],[430,932]]){
+    await page.setViewportSize({width,height});
+    for(const screen of ['today','more']){
+      await page.evaluate(target=>window.__fcV11.open(target),screen);
+      assert.equal(await page.evaluate(()=>document.documentElement.scrollWidth<=document.documentElement.clientWidth+1),true,`${screen} must fit ${width}×${height}`);
+      await page.screenshot({path:`qa-v11/mobile-${screen}-${width}x${height}.png`,fullPage:true});
+    }
+  }
   assert.deepEqual(pageErrors,[],'no uncaught browser errors on mobile');
   await mobile.close();
 
@@ -149,6 +176,9 @@ try{
   assert.equal(await desktopPage.locator('.fc11-bottom-nav').evaluate(el=>getComputedStyle(el).display),'none','desktop hides mobile tab bar');
   assert.equal(await desktopPage.evaluate(()=>document.documentElement.scrollWidth<=document.documentElement.clientWidth+1),true,'desktop must not overflow horizontally');
   await desktopPage.screenshot({path:'qa-v11/desktop-1280x900.png',fullPage:true});
+  await desktopPage.setViewportSize({width:1440,height:1000});
+  assert.equal(await desktopPage.evaluate(()=>document.documentElement.scrollWidth<=document.documentElement.clientWidth+1),true,'desktop must fit 1440×1000');
+  await desktopPage.screenshot({path:'qa-v11/desktop-1440x1000.png',fullPage:true});
   assert.deepEqual(desktopErrors,[],'no uncaught browser errors on desktop');
 
   await desktop.close();

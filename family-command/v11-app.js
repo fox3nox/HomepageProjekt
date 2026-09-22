@@ -101,6 +101,24 @@ function weekDates(s){const m=monday(s);return Array.from({length:7},(_,i)=>{con
 function currentState(p,date=today(),live=date===today()){
   try{return window.__fcV9?.currentChildState?.(p,date,live)||null}catch{return null}
 }
+function childHoliday(p,date=today()){
+  try{return typeof window.schoolBreakFor==='function'?window.schoolBreakFor(p.id,date):null}catch{return null}
+}
+function completedSchoolDay(p,date){
+  const slots=schedule(p.id,dateObj(date).getDay()).filter(x=>x.start||x.end);
+  if(!slots.length)return null;
+  const first=slots[0],last=slots[slots.length-1];
+  const place=first.label||p.school||'Schule / Kindergarten';
+  return {kind:'completed',label:/kindergarten/i.test(place)?'Kindergarten beendet':'Schultag beendet',sub:[first.start&&last.end?`${first.start}–${last.end}`:'',place].filter(Boolean).join(' · '),time:''};
+}
+function childTodayRows(date){
+  const priority={active:0,future:1,free:3};
+  return dependents().map((p,index)=>{const holiday=childHoliday(p,date),state=currentState(p,date,true);return {p,state:holiday?state:(state||completedSchoolDay(p,date)),holiday,index}})
+    .sort((a,b)=>{
+      const ar=a.holiday?4:(priority[a.state?.kind]??2),br=b.holiday?4:(priority[b.state?.kind]??2);
+      return ar-br||a.index-b.index;
+    });
+}
 function nextAction(){try{return window.__fcV9?.nextAction?.()||null}catch{return null}}
 function nextDisplay(value){
   if(!value)return null;
@@ -179,6 +197,7 @@ function open(id){
   state.screen=id;
   render();
   try{document.getElementById('fc11Main')?.scrollTo({top:0,behavior:'instant'})}catch{}
+  try{window.scrollTo({top:0,left:0,behavior:'instant'})}catch{}
 }
 function render(){
   if(!APP)return;
@@ -193,7 +212,7 @@ function render(){
 }
 
 function renderToday(root){
-  const date=today(),next=nextDisplay(nextAction()),kids=dependents(),events=eventsOn(date).filter(e=>!window.__fcV9?.eventIsPast?.(e)),todos=todoRows('today'),hw=homeworkRows('today');
+  const date=today(),next=nextDisplay(nextAction()),kids=childTodayRows(date),events=eventsOn(date).filter(e=>!window.__fcV9?.eventIsPast?.(e)),todos=todoRows('today'),hw=homeworkRows('today');
   const tomorrow=addDays(date,1),tomEvents=eventsOn(tomorrow),tomTodos=todoRows('open').filter(x=>taskDate(x)===tomorrow),tomHw=homeworkRows('open').filter(x=>taskDate(x)===tomorrow);
   header('Heute',fmt(date,{weekday:true,long:true}),summaryText(events,todos,hw));
   root.innerHTML=`<div class="fc11-page fc11-home">
@@ -204,7 +223,7 @@ function renderToday(root){
 
     <section class="fc11-section">
       <div class="fc11-section-head"><div><small>FAMILIE</small><h2>Kinder heute</h2></div><button type="button" data-go-plan>Wochenplan</button></div>
-      <div class="fc11-kids">${kids.map(p=>kidRow(p,currentState(p,date,true))).join('')||'<div class="fc11-empty">Keine Kinderprofile vorhanden.</div>'}</div>
+      <div class="fc11-kids">${kids.map(x=>kidRow(x.p,x.state,x.holiday)).join('')||'<div class="fc11-empty">Keine Kinderprofile vorhanden.</div>'}</div>
     </section>
 
     <div class="fc11-home-grid">
@@ -235,9 +254,11 @@ function summaryText(events,todos,hw){
   if(!n)return'Keine offenen Punkte für heute';
   return `${events.length} Termin${events.length===1?'':'e'} · ${todos.length+hw.length} Aufgabe${todos.length+hw.length===1?'':'n'}`;
 }
-function kidRow(p,s){
-  const clr=color(p.id),status=s?.label||'Heute frei',sub=s?.sub&& !/Aktuell läuft alles|Von zuhause los|Als Nächstes|Schule \/ Kindergarten/.test(s.sub)?s.sub:'';
-  return `<button type="button" class="fc11-kid" data-kid="${esc(p.id)}" style="--p:${esc(clr)}">
+function kidRow(p,s,holiday=null){
+  const clr=color(p.id),status=holiday?(holiday.title||'Ferien'):(s?.label||'Heute frei');
+  const rawSub=s?.sub&& !/Aktuell läuft alles|Von zuhause los|Als Nächstes|Schule \/ Kindergarten/.test(s.sub)?s.sub:'';
+  const sub=holiday?`Nur ${p.name} · schulfrei`:rawSub;
+  return `<button type="button" class="fc11-kid" data-kid="${esc(p.id)}" data-holiday="${holiday?'1':'0'}" style="--p:${esc(clr)}">
     <span class="fc11-avatar">${esc(initials(p.name))}</span>
     <span class="fc11-kid-copy"><b>${esc(p.name)}</b><span>${esc(status)}</span>${sub?`<small>${esc(sub)}</small>`:''}</span>
     <span class="fc11-kid-time">${esc(s?.time||'')}${s?.kind==='future'?`<small>${s.action==='depart'?'los':'Start'}</small>`:s?.kind==='active'?'<small>Ende</small>':''}</span>
@@ -496,7 +517,7 @@ function installSaveRefresh(){
 }
 function installCss(){
   const existing=[...document.querySelectorAll('link[rel="stylesheet"]')].find(x=>/\bv11\.css(?:\?|$)/.test(x.getAttribute('href')||''));if(existing){existing.dataset.fc11='1';return}
-  const l=document.createElement('link');l.rel='stylesheet';l.href='./v11.css?v=20260922-v1100';l.dataset.fc11='1';document.head.appendChild(l);
+  const l=document.createElement('link');l.rel='stylesheet';l.href='./v11.css?v=20260922-v1102-hotfix';l.dataset.fc11='1';document.head.appendChild(l);
 }
 function install(){
   installCss();

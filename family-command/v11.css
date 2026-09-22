@@ -15,19 +15,20 @@
   --fc11-shadow:0 10px 32px rgba(25,45,72,.06);
 }
 html[data-fc11="1"],html[data-fc11="1"] body{background:var(--fc11-bg)!important;color:var(--fc11-ink)!important}
-html[data-fc11="1"] body{overflow-x:hidden}
-html[data-fc11="1"] #fcApp{visibility:visible!important;background:var(--fc11-bg)!important;min-height:100dvh!important}
+html[data-fc11="1"]{height:auto!important;min-height:100%!important;overflow-x:hidden!important;overflow-y:auto!important}
+html[data-fc11="1"] body{height:auto!important;min-height:100%!important;overflow-x:hidden!important;overflow-y:auto!important;-webkit-overflow-scrolling:touch!important;overscroll-behavior-y:auto!important}
+html[data-fc11="1"] #fcApp{visibility:visible!important;background:var(--fc11-bg)!important;min-height:100dvh!important;height:auto!important;max-height:none!important;overflow:visible!important}
 .fc11-shell,.fc11-shell *{box-sizing:border-box}
-.fc11-shell{min-height:100dvh;background:var(--fc11-bg);font-family:-apple-system,BlinkMacSystemFont,"SF Pro Text","Segoe UI",sans-serif;color:var(--fc11-ink)}
+.fc11-shell{min-height:100dvh;height:auto!important;max-height:none!important;overflow:visible!important;background:var(--fc11-bg);font-family:-apple-system,BlinkMacSystemFont,"SF Pro Text","Segoe UI",sans-serif;color:var(--fc11-ink)}
 .fc11-sidebar{display:none}
-.fc11-workspace{min-height:100dvh;display:flex;flex-direction:column}
+.fc11-workspace{min-height:100dvh;height:auto!important;max-height:none!important;overflow:visible!important;display:flex;flex-direction:column;touch-action:pan-y}
 .fc11-header{position:sticky;top:0;z-index:80;display:flex;align-items:center;justify-content:space-between;gap:12px;min-height:82px;padding:calc(env(safe-area-inset-top,0px) + 11px) 15px 10px;background:rgba(255,255,255,.96);backdrop-filter:blur(18px);border-bottom:1px solid rgba(227,232,239,.82)}
 .fc11-title{min-width:0}.fc11-title>small{display:block;min-height:13px;color:var(--fc11-muted);font-size:11px;font-weight:700;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}.fc11-title h1{margin:1px 0 0;font-size:25px;line-height:1.06;letter-spacing:-.04em}.fc11-title p{display:none;margin:3px 0 0;color:var(--fc11-muted);font-size:11px}
 .fc11-header-actions{display:flex;align-items:center;gap:7px;flex:0 0 auto}
 .fc11-icon-btn,.fc11-add-btn{border:1px solid var(--fc11-line);background:var(--fc11-paper);color:#28415f;box-shadow:none}
 .fc11-icon-btn{width:42px;height:42px;border-radius:13px;display:grid;place-items:center}.fc11-add-btn{height:42px;padding:0 12px;border-radius:13px;display:flex;align-items:center;gap:5px;background:var(--fc11-blue);border-color:var(--fc11-blue);color:#fff;font-weight:800}
 .fc11-icon-btn svg,.fc11-add-btn svg{width:20px;height:20px;fill:none;stroke:currentColor;stroke-width:1.8;stroke-linecap:round;stroke-linejoin:round}.fc11-add-btn span{display:none}
-.fc11-main{width:100%;max-width:1160px;margin:0 auto;padding:12px 12px calc(112px + env(safe-area-inset-bottom));outline:none}
+.fc11-main{width:100%;max-width:1160px;height:auto!important;max-height:none!important;overflow:visible!important;margin:0 auto;padding:12px 12px calc(112px + env(safe-area-inset-bottom));outline:none;touch-action:pan-y}
 .fc11-page{display:grid;gap:16px}
 .fc11-bottom-nav{position:fixed;z-index:90;left:8px;right:8px;bottom:max(8px,env(safe-area-inset-bottom));display:grid;grid-template-columns:repeat(5,1fr);padding:4px;border:1px solid rgba(216,224,234,.94);border-radius:20px;background:rgba(255,255,255,.95);backdrop-filter:blur(20px);box-shadow:0 12px 36px rgba(22,39,65,.15)}
 .fc11-bottom-nav button{min-width:0;min-height:54px;border:0;border-radius:15px;background:transparent;color:#718095;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:2px;font:inherit;font-size:9px;font-weight:750}.fc11-bottom-nav button svg{width:21px;height:21px;fill:none;stroke:currentColor;stroke-width:1.75;stroke-linecap:round;stroke-linejoin:round}.fc11-bottom-nav button.active{background:var(--fc11-blue-soft);color:var(--fc11-blue)}
