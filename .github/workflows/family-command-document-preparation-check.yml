@@ -29,8 +29,15 @@ jobs:
           node --check family-command/tomorrow-calendar-v9673.js
           node family-command/e2e/event-preparation-unit.spec.mjs
           node family-command/e2e/document-review-unit.spec.mjs
+      - name: Family Brain and local worker safeguards
+        run: |
+          node --check family-command/family-brain.js
+          python3 -m py_compile family-command/local-worker/family_worker.py family-command/local-worker/backup_to_external.py
+          python3 -m unittest discover -s family-command/local-worker -p 'test_*.py'
       - name: Install matching browser driver
         run: npm install --no-save --package-lock=false playwright@1.57.0
+      - name: Family Brain regression
+        run: node family-command/e2e/family-brain-v101.spec.mjs
       - name: Existing document import regression
         run: node family-command/e2e/smart-documents.spec.mjs
       - name: Existing document center regression
