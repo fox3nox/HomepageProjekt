@@ -478,7 +478,7 @@ function installSaveRefresh(){
   try{save=window.save}catch{}
 }
 function installCss(){
-  if(document.querySelector('link[data-fc11]'))return;
+  const existing=[...document.querySelectorAll('link[rel="stylesheet"]')].find(x=>/\bv11\.css(?:\?|$)/.test(x.getAttribute('href')||''));if(existing){existing.dataset.fc11='1';return}
   const l=document.createElement('link');l.rel='stylesheet';l.href='./v11.css?v=20260922-v1100';l.dataset.fc11='1';document.head.appendChild(l);
 }
 function install(){
