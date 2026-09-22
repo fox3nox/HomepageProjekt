@@ -484,7 +484,7 @@ function installSaveRefresh(){
   if(window.__fcV11SaveWrapped||typeof window.save!=='function')return;
   window.__fcV11SaveWrapped=true;
   const raw=window.save;
-  window.save=function(...args){const out=raw.apply(this,args);queueRender();return out};
+  window.save=function(...args){const out=raw.apply(this,args);setTimeout(queueRender,120);return out};
   try{save=window.save}catch{}
 }
 function installCss(){
@@ -499,7 +499,7 @@ function install(){
   ensureDocs().then(()=>{if(state.screen==='docs')render()});
   document.addEventListener('visibilitychange',()=>{if(!document.hidden)queueRender()});
   window.addEventListener('focus',queueRender);
-  document.addEventListener('fc:v9:render',queueRender);
+  document.addEventListener('fc:v9:render',()=>setTimeout(queueRender,120));
   setInterval(()=>{if(state.screen==='today'||state.screen==='plan')queueRender()},60000);
   document.documentElement.dataset.fc11='1';
   document.dispatchEvent(new CustomEvent('fc:v11-ready'));
