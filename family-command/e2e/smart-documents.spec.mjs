@@ -75,7 +75,7 @@ try{
   await page.click('[data-doc-upload]');
   await page.waitForSelector('[data-doc-review]');
   assert.equal(uploaded,false,'review must not upload before confirmation');
-  assert.match(await page.locator('.fc-doc-evidence').first().innerText(),/Beleg aus dem Original.*Telefongespräch/i,'review must show source evidence when provided');
+  assert.match(await page.locator('.fc-doc-evidence').first().innerText(),/Beleg aus dem Original[\s\S]*Telefongespräch/i,'review must show source evidence when provided');
   assert.equal(await page.locator('[data-doc-proposal]:checked').count(),0,'nothing is preselected');
   assert.equal(await page.evaluate(()=>window.data.events.length),state.events.length,'review must not create events');
   for(const index of [0,1,2])await page.check(`[data-doc-proposal="${index}"]`);
