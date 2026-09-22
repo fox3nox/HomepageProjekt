@@ -38,7 +38,7 @@ try{
   await page.click('[data-doc-filter="fynn"]');
   assert.equal(await page.locator('[data-doc]').count(),2,'Fynn filter should include multi-person documents');
   await page.click('[data-doc-filter="all"]');
-  await page.fill('[data-doc-search]','Elternbrief');
+  await page.fill('.fc-doc-center [data-doc-search]','Elternbrief');
   assert.equal(await page.locator('[data-doc]').count(),1,'search should narrow documents');
   assert.match(await page.locator('[data-doc]').innerText(),/Jayden · Elternbrief/);
   await page.click('[data-doc-search-clear]');
