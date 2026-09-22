@@ -84,7 +84,7 @@ try{
   assert.equal(await page.locator('[data-title]').innerText(),'Aufgaben');
   assert.equal(await page.locator('[data-todo="todo-1"]').count(),1);
   await page.screenshot({path:'qa-v11/mobile-tasks-390x844.png',fullPage:true});
-  await page.locator('[data-todo="todo-1"] input').check();
+  await page.locator('[data-todo="todo-1"] .fc11-check').click();
   await page.waitForFunction(()=>window.data.todos.find(x=>x.id==='todo-1')?.done===true,{timeout:5000});
 
   await page.click('.fc11-bottom-nav [data-fc11-screen="docs"]');
