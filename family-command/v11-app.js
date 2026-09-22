@@ -448,7 +448,7 @@ async function openTool(key){
     ai:()=>window.fcOpenFamilyAI?.('voice'),
     backup:()=>window.fcOpenBackups?.(),
     jarvis:()=>window.fcOpenJarvisConnect?.(),
-    push:()=>window.enablePush?.(),
+    push:()=>window.fcOpenReminderCenter?.()||window.enablePush?.(),
     export:()=>{if(typeof window.exportData==='function')return window.exportData();const a=document.createElement('a'),blob=new Blob([JSON.stringify(D(),null,2)],{type:'application/json'});a.href=URL.createObjectURL(blob);a.download=`familienzentrale-${today()}.json`;a.click();setTimeout(()=>URL.revokeObjectURL(a.href),0)}
   };
   const fn=map[key];if(fn)return fn();
