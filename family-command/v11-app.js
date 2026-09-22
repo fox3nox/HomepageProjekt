@@ -18,7 +18,7 @@ const shortDay=s=>{try{return new Intl.DateTimeFormat('de-CH',{weekday:'short'})
 const person=id=>rows(D().people).find(p=>String(p.id)===String(id))||null;
 const color=id=>person(id)?.color||'#64748b';
 const personName=id=>person(id)?.name||'';
-const pids=x=>[...(Array.isArray(x?.personIds)?x.personIds:[]),x?.personId].filter(Boolean).map(String);
+const pids=x=>[...new Set([...(Array.isArray(x?.personIds)?x.personIds:[]),x?.personId].filter(Boolean).map(String))];
 const peopleNames=x=>[...new Set(pids(x).map(personName).filter(Boolean))];
 const eventDate=x=>String(x?.date||'').slice(0,10);
 const taskDate=x=>String(x?.date||x?.dueDate||'').slice(0,10);
@@ -103,7 +103,7 @@ function childHoliday(p,date=today()){
   try{return typeof window.schoolBreakFor==='function'?window.schoolBreakFor(p.id,date):null}catch{return null}
 }
 function completedSchoolDay(p,date){
-  const slots=schedule(p.id,dateObj(date).getDay()).filter(x=>x.start||x.end);
+  const slots=schedule(p.id,dateObj(date).getDay()).filter(x=>x.start||x.end).sort((a,b)=>timeVal(a.start).localeCompare(timeVal(b.start)));
   if(!slots.length)return null;
   const first=slots[0],last=slots[slots.length-1];
   const place=first.label||p.school||'Schule / Kindergarten';
@@ -120,8 +120,10 @@ function childTodayRows(date){
 function sharedChildHoliday(kids){
   if(kids.length<2||!kids.every(x=>x.holiday))return null;
   const first=kids[0].holiday;
-  return kids.every(x=>String(x.holiday.id||'')===String(first.id||'')&&x.holiday.title===first.title&&x.holiday.date===first.date&&x.holiday.endDate===first.endDate)?first:null;
+  return kids.every(x=>holidayKey(x.holiday)===holidayKey(first))?first:null;
 }
+function holidayKey(h){return h?`${norm(h.title)}|${eventDate(h)}|${String(h.endDate||eventDate(h)).slice(0,10)}`:''}
+function holidayNames(kids,holiday){const key=holidayKey(holiday);return kids.filter(x=>holidayKey(x.holiday)===key).map(x=>x.p.name)}
 function nextAction(){try{return window.__fcV9?.nextAction?.()||null}catch{return null}}
 function nextDisplay(value){
   if(!value)return null;
@@ -139,7 +141,7 @@ function badgeFor(id){
   return `<span class="fc11-person-chip" style="--p:${esc(color(id))}"><i></i>${esc(p.name)}</span>`;
 }
 function personFilters(selected,attr='person'){
-  return `<div class="fc11-filter-row" role="group" aria-label="Person filtern"><button type="button" data-${attr}="all" class="${selected==='all'?'active':''}">Alle</button>${rows(D().people).filter(active).map(p=>`<button type="button" data-${attr}="${esc(p.id)}" class="${String(selected)===String(p.id)?'active':''}" style="--p:${esc(color(p.id))}"><i></i>${esc(p.name)}</button>`).join('')}</div>`;
+  return `<div class="fc11-filter-row" role="group" aria-label="Person filtern"><button type="button" data-${attr}="all" aria-pressed="${selected==='all'}" class="${selected==='all'?'active':''}">Alle</button>${rows(D().people).filter(active).map(p=>`<button type="button" data-${attr}="${esc(p.id)}" aria-pressed="${String(selected)===String(p.id)}" class="${String(selected)===String(p.id)?'active':''}" style="--p:${esc(color(p.id))}"><i></i>${esc(p.name)}</button>`).join('')}</div>`;
 }
 function sourcePersonBadges(x){return pids(x).map(badgeFor).join('')}
 function openEvent(id){window.fcOpenEventDetails?.(id)}
@@ -216,30 +218,28 @@ function render(){
 
 function renderToday(root){
   const date=today(),kids=childTodayRows(date),sharedHoliday=sharedChildHoliday(kids),nextCandidate=nextDisplay(nextAction()),next=sharedHoliday?.id===nextCandidate?.eventId?null:nextCandidate,events=eventsOn(date).filter(e=>!window.__fcV9?.eventIsPast?.(e)&&!kids.some(k=>k.holiday?.id===e.id)),todos=todoRows('today'),hw=homeworkRows('today');
-  const tomorrow=addDays(date,1),tomWork=workFor(tomorrow),tomEvents=eventsOn(tomorrow).filter(e=>!kids.some(k=>k.holiday?.id===e.id)),tomTodos=todoRows('open').filter(x=>taskDate(x)===tomorrow),tomHw=homeworkRows('open').filter(x=>taskDate(x)===tomorrow);
+  const tomorrow=addDays(date,1),tomKids=childTodayRows(tomorrow),tomWork=workFor(tomorrow),tomEvents=eventsOn(tomorrow).filter(e=>!tomKids.some(k=>k.holiday?.id===e.id)),tomTodos=todoRows('open').filter(x=>taskDate(x)===tomorrow),tomHw=homeworkRows('open').filter(x=>taskDate(x)===tomorrow),tomCount=tomWork.length+tomEvents.length+tomTodos.length+tomHw.length;
   header('Heute',fmt(date,{weekday:true,long:true}),summaryText(events,todos,hw));
+  const childrenSection=`<section class="fc11-section fc11-children-section">
+    <div class="fc11-section-head"><div><small>FAMILIE</small><h2>Kinder heute</h2></div><button type="button" data-go-plan>Wochenplan</button></div>
+    <div class="fc11-kids">${kids.map(x=>kidRow(x.p,x.state,x.holiday,false,holidayNames(kids,x.holiday))).join('')||'<div class="fc11-empty">Keine Kinderprofile vorhanden.</div>'}</div>
+  </section>`;
+  const tomorrowSection=`<section class="fc11-section fc11-tomorrow-section ${tomCount===1?'single':''}">
+    <div class="fc11-section-head"><div><small>AUSBLICK</small><h2>Morgen</h2></div><button type="button" data-tomorrow-plan>${fmt(tomorrow)}</button></div>
+    <div class="fc11-list">${tomorrowRows(tomWork,tomEvents,tomTodos,tomHw)||'<div class="fc11-empty compact">Morgen ist nichts weiter geplant.</div>'}</div>
+  </section>`;
+  const todaySection=(events.length+todos.length+hw.length)?`<section class="fc11-section fc11-open-section">
+    <div class="fc11-section-head"><div><small>HEUTE</small><h2>Noch offen</h2></div><button type="button" data-go-plan>Plan</button></div>
+    <div class="fc11-list">${todayRows(events,todos,hw)}</div>
+  </section>`:'';
   root.innerHTML=`<div class="fc11-page fc11-home">
-    ${sharedHoliday?`<section class="fc11-shared-holiday" aria-label="Ferien für alle Kinder"><span>FERIEN FÜR ALLE KINDER</span><h2>${esc(sharedHoliday.title||'Ferien')}</h2><p>${esc(kids.map(x=>x.p.name).join(' · '))}${sharedHoliday.endDate?` · bis ${esc(fmt(sharedHoliday.endDate))}`:''}</p></section>`:''}
-    ${next||!sharedHoliday?`<section class="fc11-next ${next?'':'calm'}">
-      <div class="fc11-section-kicker">${next?'Als Nächstes':'Heute'}</div>
-      ${next?`<button type="button" class="fc11-next-content" data-next-action><div><b>${esc(next.title||'Nächster Punkt')}</b><span>${esc(next.sub||'')}</span></div><div class="fc11-next-time"><strong>${esc(next.time||'')}</strong><small>${esc(next.left||'')}</small></div>${icon('chevron')}</button>`:`<div class="fc11-next-empty"><b>Kein Zeitdruck mehr</b><span>Offene Aufgaben und der morgige Tag bleiben unten sichtbar.</span></div>`}
+    ${sharedHoliday?`<section class="fc11-shared-holiday" aria-label="Ferien für alle Kinder"><div><span>ALLE KINDER</span><h2>${esc(sharedHoliday.title||'Ferien')}</h2><p>Schulfrei${sharedHoliday.endDate?` · bis ${esc(fmt(sharedHoliday.endDate))}`:''}</p></div><div class="fc11-holiday-people" aria-label="${esc(kids.map(x=>x.p.name).join(', '))}">${kids.map(x=>`<span style="--p:${esc(color(x.p.id))}" title="${esc(x.p.name)}">${esc(initials(x.p.name))}</span>`).join('')}</div></section>`:''}
+    ${next?`<section class="fc11-next">
+      <div class="fc11-section-kicker">Als Nächstes</div>
+      <button type="button" class="fc11-next-content" data-next-action><div><b>${esc(next.title||'Nächster Punkt')}</b><span>${esc(next.sub||'')}</span></div><div class="fc11-next-time"><strong>${esc(next.time||'')}</strong><small>${esc(next.left||'')}</small></div>${icon('chevron')}</button>
     </section>`:''}
 
-    <section class="fc11-section">
-      <div class="fc11-section-head"><div><small>FAMILIE</small><h2>Kinder heute</h2></div><button type="button" data-go-plan>Wochenplan</button></div>
-      <div class="fc11-kids">${kids.map(x=>kidRow(x.p,x.state,x.holiday,!!sharedHoliday)).join('')||'<div class="fc11-empty">Keine Kinderprofile vorhanden.</div>'}</div>
-    </section>
-
-    <div class="fc11-home-grid">
-      <section class="fc11-section">
-        <div class="fc11-section-head"><div><small>HEUTE</small><h2>Was noch ansteht</h2></div><button type="button" data-go-plan>Plan</button></div>
-        <div class="fc11-list">${todayRows(events,todos,hw)||'<div class="fc11-empty compact">Für heute ist nichts mehr offen.</div>'}</div>
-      </section>
-      <section class="fc11-section">
-        <div class="fc11-section-head"><div><small>MORGEN</small><h2>Früh wissen, was kommt</h2></div><button type="button" data-tomorrow-plan>${fmt(tomorrow)}</button></div>
-        <div class="fc11-list">${tomorrowRows(tomWork,tomEvents,tomTodos,tomHw)||'<div class="fc11-empty compact">Für morgen ist nichts geplant.</div>'}</div>
-      </section>
-    </div>
+    ${sharedHoliday?tomorrowSection+todaySection:childrenSection+todaySection+tomorrowSection}
 
     <button type="button" class="fc11-brain-entry" data-brain>
       <span class="fc11-brain-icon">${icon('brain')}</span>
@@ -258,10 +258,10 @@ function summaryText(events,todos,hw){
   if(!n)return'Keine offenen Punkte für heute';
   return `${events.length} Termin${events.length===1?'':'e'} · ${todos.length+hw.length} Aufgabe${todos.length+hw.length===1?'':'n'}`;
 }
-function kidRow(p,s,holiday=null,shared=false){
+function kidRow(p,s,holiday=null,shared=false,names=[]){
   const clr=color(p.id),status=holiday?(shared?'Schulfrei':holiday.title||'Ferien'):(s?.label||'Heute frei');
   const rawSub=s?.sub&& !/Aktuell läuft alles|Von zuhause los|Als Nächstes|Schule \/ Kindergarten/.test(s.sub)?s.sub:'';
-  const sub=holiday?(shared?'':`Nur ${p.name} · schulfrei`):rawSub;
+  const sub=holiday?(shared?'':`${names.length===1?'Nur '+p.name:names.join(' & ')} · schulfrei`):rawSub;
   return `<button type="button" class="fc11-kid" data-kid="${esc(p.id)}" data-holiday="${holiday?'1':'0'}" style="--p:${esc(clr)}">
     <span class="fc11-avatar">${esc(initials(p.name))}</span>
     <span class="fc11-kid-copy"><b>${esc(p.name)}</b><span>${esc(status)}</span>${sub?`<small>${esc(sub)}</small>`:''}</span>
@@ -279,7 +279,7 @@ function todayRows(events,todos,hw){
 function workFor(date){
   const childIds=new Set(dependents().map(p=>String(p.id)));
   return rows(D().people).filter(active).filter(p=>!childIds.has(String(p.id))).flatMap(p=>{
-    const slots=schedule(p.id,dateObj(date).getDay()).filter(x=>x.start&&x.end&&/arbeit/i.test(String(x.label||''))).sort((a,b)=>timeVal(a.start).localeCompare(timeVal(b.start)));
+    const slots=schedule(p.id,dateObj(date).getDay()).filter(x=>x.start&&x.end&&/arbeit|dienst|schicht|landi/i.test(String(x.label||''))).sort((a,b)=>timeVal(a.start).localeCompare(timeVal(b.start)));
     const groups=new Map();
     for(const slot of slots){
       const label=String(slot.label||'Arbeit').trim();
@@ -339,7 +339,7 @@ function bindRows(root){
 
 function renderPlan(root){
   if(!/^\d{4}-\d{2}-\d{2}$/.test(state.planDate))state.planDate=today();
-  const dates=weekDates(state.planDate),ev=eventsOn(state.planDate).filter(e=>matchesPerson(e,state.planPerson)),kids=dependents().filter(p=>state.planPerson==='all'||String(p.id)===String(state.planPerson));
+  const dates=weekDates(state.planDate),ev=eventsOn(state.planDate).filter(e=>matchesPerson(e,state.planPerson)),allPeople=rows(D().people).filter(active),kids=childTodayRows(state.planDate),sharedHoliday=sharedChildHoliday(kids),childIds=new Set(kids.map(x=>String(x.p.id))),people=allPeople.filter(p=>state.planPerson==='all'||String(p.id)===String(state.planPerson)),shown=state.planPerson==='all'&&sharedHoliday?people.filter(p=>!childIds.has(String(p.id))):people;
   header('Plan',fmt(state.planDate,{weekday:true,long:true}),weekRangeLabel(dates));
   root.innerHTML=`<div class="fc11-page">
     <div class="fc11-plan-tools">
@@ -351,7 +351,7 @@ function renderPlan(root){
     <div class="fc11-plan-grid">
       <section class="fc11-section">
         <div class="fc11-section-head"><div><small>TAGESABLAUF</small><h2>${esc(fmt(state.planDate,{weekday:true,long:true}))}</h2></div></div>
-        <div class="fc11-kids plan">${kids.map(p=>planKid(p,state.planDate)).join('')||'<div class="fc11-empty compact">Keine Personen für diesen Filter.</div>'}</div>
+        <div class="fc11-kids plan">${state.planPerson==='all'&&sharedHoliday?planSharedHoliday(kids,sharedHoliday):''}${shown.map(p=>planKid(p,state.planDate)).join('')||(!sharedHoliday?'<div class="fc11-empty compact">Keine Zeiten für diese Auswahl.</div>':'')}</div>
       </section>
       <section class="fc11-section">
         <div class="fc11-section-head"><div><small>TERMINE</small><h2>${ev.length?ev.length+' geplant':'Keine Termine'}</h2></div></div>
@@ -365,6 +365,7 @@ function renderPlan(root){
   root.querySelector('[data-new-event]')?.addEventListener('click',()=>editEvent());
   bindRows(root);
 }
+function planSharedHoliday(kids,holiday){return `<div class="fc11-plan-shared"><div><small>ALLE KINDER</small><b>${esc(holiday.title||'Schulfrei')}</b></div><span>${esc(kids.map(x=>x.p.name).join(' · '))}</span></div>`}
 function weekRangeLabel(dates){
   const a=dateObj(dates[0]),b=dateObj(dates[6]);
   const same=a.getMonth()===b.getMonth();
@@ -388,7 +389,7 @@ function renderTasks(root){
   const grouped=groupTasks(all,state.taskFilter);
   root.innerHTML=`<div class="fc11-page">
     <div class="fc11-task-head">
-      <div class="fc11-segment">${[['open','Offen'],['today','Heute'],['tomorrow','Morgen'],['done','Erledigt']].map(([k,l])=>`<button type="button" data-task-filter="${k}" class="${state.taskFilter===k?'active':''}">${l}</button>`).join('')}</div>
+      <div class="fc11-segment">${[['open','Offen'],['today','Heute'],['tomorrow','Morgen'],['done','Erledigt']].map(([k,l])=>`<button type="button" data-task-filter="${k}" aria-pressed="${state.taskFilter===k}" class="${state.taskFilter===k?'active':''}">${l}</button>`).join('')}</div>
       <div class="fc11-task-add"><button type="button" data-new-todo>${icon('plus')} To-do</button><button type="button" data-new-hw>Schule</button></div>
     </div>
     ${personFilters(state.taskPerson,'task-person')}
@@ -423,7 +424,6 @@ async function ensureDocs(refresh=false){
 function renderDocs(root){
   header('Dokumente','Briefe, Originale & Informationen',state.docsLoading?'Wird aktualisiert …':`${state.docs.length} gespeichert`);
   root.innerHTML=`<div class="fc11-page">
-    <button type="button" class="fc11-brain-entry docs" data-brain><span class="fc11-brain-icon">${icon('brain')}</span><span><b>In meinen Unterlagen fragen</b><small>Termine, Schulbriefe und Informationen wiederfinden</small></span>${icon('chevron')}</button>
     <div class="fc11-doc-actions">
       <button type="button" class="primary" data-upload-doc>${icon('upload')}<span><b>Dokument hinzufügen</b><small>Foto oder PDF prüfen & zuordnen</small></span></button>
       <button type="button" data-doc-search>${icon('search')}<span><b>Dokumente durchsuchen</b><small>Auch verknüpfte Termine finden</small></span></button>
@@ -433,6 +433,7 @@ function renderDocs(root){
       <div class="fc11-section-head"><div><small>ABLAGE</small><h2>Zuletzt gespeichert</h2></div><button type="button" data-refresh-docs>Aktualisieren</button></div>
       <div class="fc11-doc-list">${docRows()}</div>
     </section>
+    <button type="button" class="fc11-brain-entry docs" data-brain><span class="fc11-brain-icon">${icon('brain')}</span><span><b>In meinen Unterlagen fragen</b><small>Termine, Schulbriefe und Informationen wiederfinden</small></span>${icon('chevron')}</button>
   </div>`;
   root.querySelector('[data-upload-doc]')?.addEventListener('click',()=>window.fcOpenSmartDocuments?.());
   root.querySelector('[data-doc-search]')?.addEventListener('click',e=>window.fcOpenSearch?.(e.currentTarget));
@@ -445,7 +446,7 @@ function docRows(){
   if(state.docsLoading)return'<div class="fc11-empty compact">Dokumente werden geladen …</div>';
   const list=state.docs.filter(d=>state.docPerson==='all'||(d.personIds||[]).map(String).includes(String(state.docPerson)));
   if(!list.length)return'<div class="fc11-empty compact">Für diese Auswahl sind noch keine Dokumente gespeichert.</div>';
-  return list.slice(0,80).map(d=>`<button type="button" class="fc11-doc-row" data-document="${esc(d.id)}"><span class="fc11-doc-type">${String(d.mime_type||'').includes('pdf')?'PDF':'DOC'}</span><span><b>${esc(d.title||'Dokument')}</b><small>${(d.personIds||[]).map(personName).filter(Boolean).map(esc).join(' · ')||'Allgemein'} · ${esc(String(d.created_at||'').slice(0,10))}</small></span>${icon('chevron')}</button>`).join('');
+  return list.slice(0,80).map(d=>{const date=String(d.created_at||'').slice(0,10);return `<button type="button" class="fc11-doc-row" data-document="${esc(d.id)}"><span class="fc11-doc-type">${String(d.mime_type||'').includes('pdf')?'PDF':'DOC'}</span><span><b>${esc(d.title||'Dokument')}</b><small>${(d.personIds||[]).map(personName).filter(Boolean).map(esc).join(' · ')||'Allgemein'}${date?` · ${esc(fmt(date))}`:''}</small></span>${icon('chevron')}</button>`}).join('');
 }
 
 function renderMore(root){
@@ -466,8 +467,8 @@ function renderMore(root){
         ${tool('contacts','contacts','Kontakte','Schule, Ärzte & mehr')}
       </div>
     </section>
-    <section class="fc11-section">
-      <div class="fc11-section-head"><div><small>SYSTEM</small><h2>Organisation & Sicherheit</h2></div></div>
+    <details class="fc11-system">
+      <summary>System & Sicherheit</summary>
       <div class="fc11-tools-grid">
         ${tool('ai','brain','Family AI','Sprechen & erfassen')}
         ${tool('push','bell','Erinnerungen','Push & Morgenbericht')}
@@ -475,14 +476,14 @@ function renderMore(root){
         ${tool('export','download','Datenexport','JSON-Sicherung')}
         ${tool('jarvis','link','Jarvis','Gerät verbinden')}
       </div>
-    </section>
+    </details>
   </div>`;
   root.querySelectorAll('[data-tool]').forEach(b=>b.onclick=()=>openTool(b.dataset.tool));
   root.querySelectorAll('[data-person-card]').forEach(b=>b.onclick=()=>openPerson(b.dataset.personCard));
 }
 function personCard(p){
   const week=Object.values(D().schedules?.[p.id]||{}).flat().filter(Boolean).length;
-  return `<button type="button" class="fc11-person-card" style="--p:${esc(color(p.id))}" data-person-card="${esc(p.id)}"><span class="fc11-avatar large">${esc(initials(p.name))}</span><span><b>${esc(p.name)}</b><small>${esc([p.role,p.school].filter(Boolean).join(' · ')||'Familie')}</small><em>${week?week+' Wochenzeiten hinterlegt':''}</em></span>${icon('chevron')}</button>`;
+  return `<button type="button" class="fc11-person-card" style="--p:${esc(color(p.id))}" data-person-card="${esc(p.id)}"><span class="fc11-avatar large">${esc(initials(p.name))}</span><span><b>${esc(p.name)}</b><small>${esc([p.role,p.school].filter(Boolean).join(' · ')||'Familie')}</small><em>${week?week+' '+(week===1?'Zeitblock':'Zeitblöcke'):''}</em></span>${icon('chevron')}</button>`;
 }
 function tool(key,ico,title,sub){return `<button type="button" class="fc11-tool" data-tool="${key}"><span>${icon(ico)}</span><div><b>${title}</b><small>${sub}</small></div>${icon('chevron')}</button>`}
 async function openBrain(){
@@ -544,7 +545,7 @@ function installSaveRefresh(){
 }
 function installCss(){
   const existing=[...document.querySelectorAll('link[rel="stylesheet"]')].find(x=>/\bv11\.css(?:\?|$)/.test(x.getAttribute('href')||''));if(existing){existing.dataset.fc11='1';return}
-  const l=document.createElement('link');l.rel='stylesheet';l.href='./v11.css?v=20260922-v1104-tomorrow-work';l.dataset.fc11='1';document.head.appendChild(l);
+  const l=document.createElement('link');l.rel='stylesheet';l.href='./v11.css?v=20260922-v1105-mobile-briefing';l.dataset.fc11='1';document.head.appendChild(l);
 }
 function install(){
   installCss();

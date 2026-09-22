@@ -101,16 +101,22 @@ try{
   assert.equal(await page.locator('.fc11-kid').count(),3,'class and kindergarten role descriptions still identify all children');
   assert.equal(await page.locator('.fc11-kid[data-holiday="1"]').count(),1,'a single-child break remains scoped after child detection');
   await page.evaluate(()=>{window.data.events.find(e=>e.id==='holiday-elia').personIds=['jayden','fynn','eliyah'];window.__fcV11.render()});
-  assert.equal(await page.locator('.fc11-kid[data-holiday="1"]').count(),3,'shared holiday applies to each linked child');
-  assert.match(await page.locator('.fc11-shared-holiday').innerText(),/Herbstferien[\s\S]*Jayden[\s\S]*Fynn[\s\S]*Elia/);
+  assert.equal(await page.locator('.fc11-kid').count(),0,'shared holiday replaces three redundant child rows');
+  assert.match(await page.locator('.fc11-shared-holiday').innerText(),/Herbstferien[\s\S]*Schulfrei/i);
+  assert.equal(await page.locator('.fc11-holiday-people span').count(),3,'all children remain visible as compact avatars');
+  assert.match(await page.locator('.fc11-holiday-people').getAttribute('aria-label'),/Jayden, Fynn, Elia/);
   assert.doesNotMatch(await page.locator('.fc11-home').innerText(),/Nur Elia/,'shared holiday must not look child-specific');
   assert.equal((await page.locator('.fc11-home').innerText()).match(/Herbstferien/g)?.length,1,'shared holiday appears once in the daily briefing');
+  const tomorrowBox=await page.locator('.fc11-tomorrow-section').boundingBox(),sharedNav=await page.locator('.fc11-bottom-nav').boundingBox();
+  assert.ok(tomorrowBox&&sharedNav&&tomorrowBox.y<sharedNav.y,'tomorrow briefing starts in the first mobile viewport during shared holidays');
   await page.screenshot({path:'qa-v11/mobile-shared-holiday-390x844.png',fullPage:true});
   await isolate(page);
 
-  await page.click('.fc11-bottom-nav [data-fc11-screen="plan"]');
+  await page.click('[data-tomorrow-plan]');
   assert.equal(await page.locator('[data-title]').innerText(),'Plan');
   assert.equal(await page.locator('.fc11-week-strip button').count(),7);
+  await page.click('[data-plan-person="oli"]');
+  assert.match(await page.locator('.fc11-plan-person').innerText(),/Oli[\s\S]*07:30–12:00[\s\S]*07:00 los[\s\S]*Arbeit LANDI/,'adult work remains visible in Plan');
   await page.click('[data-plan-person="fynn"]');
   assert.equal(await page.locator('.fc11-plan-person').count(),1,'person filter narrows daily schedule');
 
@@ -133,6 +139,9 @@ try{
   await page.click('#fc11AddSheet [data-close]');
 
   await page.click('.fc11-bottom-nav [data-fc11-screen="more"]');
+  assert.equal(await page.locator('.fc11-system').getAttribute('open'),null,'secondary system tools stay collapsed by default');
+  await page.locator('.fc11-system summary').click();
+  await page.evaluate(()=>{const probe=document.createElement('div');probe.dataset.scrollProbe='1';probe.style.height='420px';document.querySelector('#fc11Main')?.append(probe)});
   const scrollContract=await page.evaluate(()=>({html:getComputedStyle(document.documentElement).overflowY,body:getComputedStyle(document.body).overflowY,scrollHeight:document.documentElement.scrollHeight,viewport:innerHeight,top:scrollY}));
   assert.notEqual(scrollContract.html,'hidden','V11 must never lock html vertical scrolling');
   assert.notEqual(scrollContract.body,'hidden','V11 must never lock body vertical scrolling');
@@ -146,6 +155,7 @@ try{
   await page.waitForSelector('#fc11PersonSheet');
   assert.match(await page.locator('#fc11PersonSheet').innerText(),/Fynn/);
   await page.click('#fc11PersonSheet [data-close]');
+  await page.evaluate(()=>{if(document.documentElement.scrollHeight<=innerHeight){const probe=document.createElement('div');probe.style.height='420px';document.querySelector('#fc11Main')?.append(probe)}});
   await page.evaluate(()=>window.scrollTo(0,document.documentElement.scrollHeight));
   await page.waitForTimeout(80);
   assert.ok(await page.evaluate(()=>scrollY>40),'closing a V11 modal must not leave page scrolling locked');
@@ -165,6 +175,7 @@ try{
   await page.click('#fcBudgetModal .fc-budget-close');
 
   await page.evaluate(()=>{window.__v11PushCalls=0;window.enablePush=()=>{window.__v11PushCalls++}});
+  await page.locator('.fc11-system').evaluate(el=>{el.open=true});
   await page.click('[data-tool="push"]');
   await page.waitForSelector('#fcReminderCenter',{state:'visible'});
   assert.match(await page.locator('#fcReminderCenter').innerText(),/Rucksack/);
