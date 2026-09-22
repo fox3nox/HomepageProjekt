@@ -21,7 +21,7 @@ const state={
     fynn:{2:[{start:'08:20',end:'11:55',depart:'08:00',label:'Schule'}]},
     eliyah:{2:[{start:'13:30',end:'15:30',depart:'13:10',label:'Kindergarten'}]}
   },
-  reminders:[],
+  reminders:[{id:'school-pack',personId:'fynn',days:[1,2,3,4,5],items:['Rucksack']}],
   events:[
     {id:'event-today',personIds:['fynn'],title:'Zahnarzt',date:'2026-09-22',time:'15:30',end:'16:00',note:'Versicherungskarte mitnehmen'},
     {id:'event-tomorrow',personIds:['jayden'],title:'Elternabend',date:'2026-09-23',time:'19:00',end:'20:00',note:''}
@@ -126,8 +126,11 @@ try{
   await page.waitForSelector('#fcBudgetModal .fc-budget-shell',{state:'visible'});
   await page.click('#fcBudgetModal .fc-budget-close');
 
+  await page.evaluate(()=>{window.__v11PushCalls=0;window.enablePush=()=>{window.__v11PushCalls++}});
   await page.click('[data-tool="push"]');
   await page.waitForSelector('#fcReminderCenter',{state:'visible'});
+  assert.match(await page.locator('#fcReminderCenter').innerText(),/Rucksack/);
+  assert.equal(await page.evaluate(()=>window.__v11PushCalls),0,'opening reminders must not request push permission automatically');
   await page.click('#fcReminderCenter [data-close]');
 
   await page.screenshot({path:'qa-v11/mobile-390x844.png',fullPage:true});
