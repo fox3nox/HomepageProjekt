@@ -54,7 +54,7 @@ jobs:
           check "page polish wired" grep -q "v9-page-polish-v959.css" family-command/index.html
           check "form dialog polish imported" grep -q "v9-form-dialog-polish-v960.css" family-command/v9-page-polish-v959.css
           check "interaction accessibility polish imported" grep -q "v9-interaction-accessibility-v961.css" family-command/v9-page-polish-v959.css
-          check "supported PWA cache" grep -q "const CACHE='family-command-v127-v11-product-shell'" family-command/sw.js
+          check "supported PWA cache" grep -q "const CACHE='family-command-v128-v11-hotfix'" family-command/sw.js
           check "V11 app cached" grep -q "v11-app.js" family-command/sw.js
           check "V11 CSS cached" grep -q "v11.css" family-command/sw.js
           check "Family Brain cached" grep -q "family-brain.js" family-command/sw.js
