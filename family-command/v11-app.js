@@ -190,6 +190,7 @@ function open(id){
   state.screen=id;
   render();
   try{document.getElementById('fc11Main')?.scrollTo({top:0,behavior:'instant'})}catch{}
+  try{window.scrollTo({top:0,left:0,behavior:'instant'})}catch{}
 }
 function render(){
   if(!APP)return;
@@ -246,9 +247,11 @@ function summaryText(events,todos,hw){
   if(!n)return'Keine offenen Punkte für heute';
   return `${events.length} Termin${events.length===1?'':'e'} · ${todos.length+hw.length} Aufgabe${todos.length+hw.length===1?'':'n'}`;
 }
-function kidRow(p,s){
-  const clr=color(p.id),status=s?.label||'Heute frei',sub=s?.sub&& !/Aktuell läuft alles|Von zuhause los|Als Nächstes|Schule \/ Kindergarten/.test(s.sub)?s.sub:'';
-  return `<button type="button" class="fc11-kid" data-kid="${esc(p.id)}" style="--p:${esc(clr)}">
+function kidRow(p,s,holiday=null){
+  const clr=color(p.id),status=holiday?(holiday.title||'Ferien'):(s?.label||'Heute frei');
+  const rawSub=s?.sub&& !/Aktuell läuft alles|Von zuhause los|Als Nächstes|Schule \/ Kindergarten/.test(s.sub)?s.sub:'';
+  const sub=holiday?`Nur ${p.name} · schulfrei`:rawSub;
+  return `<button type="button" class="fc11-kid" data-kid="${esc(p.id)}" data-holiday="${holiday?'1':'0'}" style="--p:${esc(clr)}">
     <span class="fc11-avatar">${esc(initials(p.name))}</span>
     <span class="fc11-kid-copy"><b>${esc(p.name)}</b><span>${esc(status)}</span>${sub?`<small>${esc(sub)}</small>`:''}</span>
     <span class="fc11-kid-time">${esc(s?.time||'')}${s?.kind==='future'?`<small>${s.action==='depart'?'los':'Start'}</small>`:s?.kind==='active'?'<small>Ende</small>':''}</span>
@@ -507,7 +510,7 @@ function installSaveRefresh(){
 }
 function installCss(){
   const existing=[...document.querySelectorAll('link[rel="stylesheet"]')].find(x=>/\bv11\.css(?:\?|$)/.test(x.getAttribute('href')||''));if(existing){existing.dataset.fc11='1';return}
-  const l=document.createElement('link');l.rel='stylesheet';l.href='./v11.css?v=20260922-v1100';l.dataset.fc11='1';document.head.appendChild(l);
+  const l=document.createElement('link');l.rel='stylesheet';l.href='./v11.css?v=20260922-v1101-hotfix';l.dataset.fc11='1';document.head.appendChild(l);
 }
 function install(){
   installCss();
