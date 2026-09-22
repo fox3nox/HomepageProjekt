@@ -24,6 +24,7 @@ try{
   await page.waitForFunction(()=>document.documentElement.dataset.fcReady==='1'&&window.__fcReminderCenter?.version==='9.61.7',{timeout:20000});
   await openView(page,'more');
   const v11=await page.evaluate(()=>Boolean(window.__fcV11));
+  if(v11)await page.locator('.fc11-system').evaluate(el=>{el.open=true});
   const tile=v11?page.locator('[data-tool="push"]'):page.locator('#more [data-feature="push"]');
   await tile.waitFor();
   if(v11)assert.match(await tile.innerText(),/Erinnerungen/);
