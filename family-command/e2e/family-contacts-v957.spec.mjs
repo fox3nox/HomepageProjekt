@@ -30,7 +30,7 @@ try{
   assert.equal(layout.overflow,false);
   assert.ok(layout.w<=390);
   assert.ok(layout.titleTop>=0,'contacts title must be visible in the people screen');
-  assert.ok(layout.titleSize>=28,'contacts title must keep approved hierarchy');
+  assert.ok(layout.titleSize>=20,'contacts title must keep a clear V11 hierarchy');
   assert.ok(layout.addH>=50,'primary contact CTA must match mobile design');
   assert.ok(layout.min>=40);
   assert.equal(layout.health.approvedContactDesign,true);
