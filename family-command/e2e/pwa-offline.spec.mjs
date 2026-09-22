@@ -19,15 +19,18 @@ try {
   await page.goto(base+'/?access=test');
   await page.waitForFunction(()=>document.documentElement.dataset.fcReady==='1'&&!!navigator.serviceWorker.controller);
   await page.evaluate(()=>window.__fcLoadExtrasNow());
-  assert.ok((await page.evaluate(()=>caches.keys())).includes('family-command-v127-v11-product-shell'));
+  assert.ok((await page.evaluate(()=>caches.keys())).includes('family-command-v128-v11-hotfix'));
+  const offlineAssets=await page.evaluate(async()=>{const cache=await caches.open('family-command-v128-v11-hotfix');return Promise.all(['v11-app.js','v11.css'].map(async name=>({name,cached:!!await cache.match('/'+name)})))});
+  assert.ok(offlineAssets.every(x=>x.cached),`V11 hotfix assets must be precached: ${JSON.stringify(offlineAssets)}`);
   assert.ok(!(await page.evaluate(()=>caches.keys())).includes('family-command-v116'),'activating the new worker removes the previous release cache');
   await context.setOffline(true);
   await page.reload({waitUntil:'domcontentloaded'});
   await page.waitForFunction(()=>document.documentElement.dataset.fcReady==='1'&&window.__fcV11&&window.__fcZeroMissV978);
   const screens=['plan','tasks','more','docs','today'];
   for(const target of screens){
-    await page.evaluate(target=>window.__fcV11.open(target),target);
-    await page.waitForFunction(target=>document.documentElement.dataset.fc11Screen===target,target);
+    const rendered=await page.evaluate(target=>{window.__fcV11.open(target);return{screen:document.documentElement.dataset.fc11Screen,content:document.querySelector('#fc11Main')?.textContent?.trim()||''}},target);
+    assert.equal(rendered.screen,target,`${target} must open offline`);
+    assert.ok(rendered.content.length>10,`${target} must render content offline`);
   }
   await page.locator('.fc11-header [data-search]').tap();
   await page.getByRole('searchbox',{name:'Suchbegriff',exact:true}).fill('Kind A');

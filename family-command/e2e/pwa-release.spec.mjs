@@ -28,3 +28,14 @@ test('complete release caches all required files before activation removes previ
  assert.deepEqual(r.calls,['skipWaiting']);assert.ok(r.stores.has('family-command-previous'));
  await r.dispatch('activate');assert.deepEqual([...r.stores.keys()],[r.cache]);assert.deepEqual(r.calls,['skipWaiting','claim']);
 });
+test('versioned V11 assets use the complete release cache when offline fetch returns an error response',async()=>{
+ const cache=new Map([['/v11-app.js',new Response('cached app')],['/v11.css',new Response('cached css')]]);
+ const caches={async open(){return {match:async key=>cache.get(key),put:async(key,value)=>cache.set(key,value)}}};
+ const self={location:{href:'https://example.test/sw.js',origin:'https://example.test'},addEventListener(){},clients:{}};
+ const ctx=vm.createContext({self,caches,URL,Response,fetch:async()=>new Response('',{status:504})});
+ vm.runInContext(source,ctx);
+ for(const name of ['v11-app.js','v11.css']){
+  const response=await vm.runInContext(`asset({url:'https://example.test/${name}?v=20260922-v1102-hotfix'}, {waitUntil(){}})`,ctx);
+  assert.equal(await response.text(),name==='v11-app.js'?'cached app':'cached css');
+ }
+});
