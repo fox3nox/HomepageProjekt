@@ -216,7 +216,7 @@ function render(){
 
 function renderToday(root){
   const date=today(),kids=childTodayRows(date),sharedHoliday=sharedChildHoliday(kids),nextCandidate=nextDisplay(nextAction()),next=sharedHoliday?.id===nextCandidate?.eventId?null:nextCandidate,events=eventsOn(date).filter(e=>!window.__fcV9?.eventIsPast?.(e)&&!kids.some(k=>k.holiday?.id===e.id)),todos=todoRows('today'),hw=homeworkRows('today');
-  const tomorrow=addDays(date,1),tomEvents=eventsOn(tomorrow).filter(e=>!kids.some(k=>k.holiday?.id===e.id)),tomTodos=todoRows('open').filter(x=>taskDate(x)===tomorrow),tomHw=homeworkRows('open').filter(x=>taskDate(x)===tomorrow);
+  const tomorrow=addDays(date,1),tomWork=workFor(tomorrow),tomEvents=eventsOn(tomorrow).filter(e=>!kids.some(k=>k.holiday?.id===e.id)),tomTodos=todoRows('open').filter(x=>taskDate(x)===tomorrow),tomHw=homeworkRows('open').filter(x=>taskDate(x)===tomorrow);
   header('Heute',fmt(date,{weekday:true,long:true}),summaryText(events,todos,hw));
   root.innerHTML=`<div class="fc11-page fc11-home">
     ${sharedHoliday?`<section class="fc11-shared-holiday" aria-label="Ferien für alle Kinder"><span>FERIEN FÜR ALLE KINDER</span><h2>${esc(sharedHoliday.title||'Ferien')}</h2><p>${esc(kids.map(x=>x.p.name).join(' · '))}${sharedHoliday.endDate?` · bis ${esc(fmt(sharedHoliday.endDate))}`:''}</p></section>`:''}
@@ -237,7 +237,7 @@ function renderToday(root){
       </section>
       <section class="fc11-section">
         <div class="fc11-section-head"><div><small>MORGEN</small><h2>Früh wissen, was kommt</h2></div><button type="button" data-tomorrow-plan>${fmt(tomorrow)}</button></div>
-        <div class="fc11-list">${tomorrowRows(tomEvents,tomTodos,tomHw)||'<div class="fc11-empty compact">Für morgen gibt es keine zusätzlichen Punkte.</div>'}</div>
+        <div class="fc11-list">${tomorrowRows(tomWork,tomEvents,tomTodos,tomHw)||'<div class="fc11-empty compact">Für morgen ist nichts geplant.</div>'}</div>
       </section>
     </div>
 
@@ -276,8 +276,31 @@ function todayRows(events,todos,hw){
   hw.forEach(h=>items.push({sort:`2|${taskDate(h)}`,html:homeworkRow(h)}));
   return items.sort((a,b)=>a.sort.localeCompare(b.sort)).map(x=>x.html).join('');
 }
-function tomorrowRows(events,todos,hw){
+function workFor(date){
+  const childIds=new Set(dependents().map(p=>String(p.id)));
+  return rows(D().people).filter(active).filter(p=>!childIds.has(String(p.id))).flatMap(p=>{
+    const slots=schedule(p.id,dateObj(date).getDay()).filter(x=>x.start&&x.end&&/arbeit/i.test(String(x.label||''))).sort((a,b)=>timeVal(a.start).localeCompare(timeVal(b.start)));
+    const groups=new Map();
+    for(const slot of slots){
+      const label=String(slot.label||'Arbeit').trim();
+      if(!groups.has(label))groups.set(label,[]);
+      groups.get(label).push(slot);
+    }
+    return [...groups].map(([label,items])=>({personId:p.id,label,slots:items,depart:items.find(x=>x.depart)?.depart||''}));
+  }).sort((a,b)=>timeVal(a.depart||a.slots[0].start).localeCompare(timeVal(b.depart||b.slots[0].start)));
+}
+function workRow(work){
+  const first=work.slots[0],last=work.slots[work.slots.length-1];
+  const span=`${first.start}–${last.end}`;
+  const pause=work.slots.length>1?` · Pause ${work.slots.slice(0,-1).map((slot,i)=>`${slot.end}–${work.slots[i+1].start}`).join(', ')}`:'';
+  return `<div class="fc11-row work" style="--p:${esc(color(work.personId))}">
+    <span class="fc11-row-time"><b>${esc(work.depart||first.start)}</b><small>${work.depart?'los':'Beginn'}</small></span>
+    <span class="fc11-row-copy">${badgeFor(work.personId)}<b>${esc(work.label)}</b><small>${esc(span+pause)}</small></span>
+  </div>`;
+}
+function tomorrowRows(work,events,todos,hw){
   const list=[
+    ...work.map(workRow),
     ...events.slice(0,3).map(eventRow),
     ...todos.slice(0,3).map(todoRow),
     ...hw.slice(0,2).map(homeworkRow)
@@ -521,7 +544,7 @@ function installSaveRefresh(){
 }
 function installCss(){
   const existing=[...document.querySelectorAll('link[rel="stylesheet"]')].find(x=>/\bv11\.css(?:\?|$)/.test(x.getAttribute('href')||''));if(existing){existing.dataset.fc11='1';return}
-  const l=document.createElement('link');l.rel='stylesheet';l.href='./v11.css?v=20260922-v1103-family-holiday';l.dataset.fc11='1';document.head.appendChild(l);
+  const l=document.createElement('link');l.rel='stylesheet';l.href='./v11.css?v=20260922-v1104-tomorrow-work';l.dataset.fc11='1';document.head.appendChild(l);
 }
 function install(){
   installCss();

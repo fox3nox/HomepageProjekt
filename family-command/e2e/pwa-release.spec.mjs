@@ -35,7 +35,7 @@ test('versioned V11 assets use the complete release cache when offline fetch ret
  const ctx=vm.createContext({self,caches,URL,Response,fetch:async()=>new Response('',{status:504})});
  vm.runInContext(source,ctx);
  for(const name of ['v11-app.js','v11.css']){
-  const response=await vm.runInContext(`asset({url:'https://example.test/${name}?v=20260922-v1103-family-holiday'}, {waitUntil(){}})`,ctx);
+  const response=await vm.runInContext(`asset({url:'https://example.test/${name}?v=20260922-v1104-tomorrow-work'}, {waitUntil(){}})`,ctx);
   assert.equal(await response.text(),name==='v11-app.js'?'cached app':'cached css');
  }
 });
