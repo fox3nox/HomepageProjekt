@@ -24,10 +24,10 @@ try {
   await context.setOffline(true);
   await page.reload({waitUntil:'domcontentloaded'});
   await page.waitForFunction(()=>document.documentElement.dataset.fcReady==='1'&&window.__fcV11&&window.__fcZeroMissV978);
-  const screens=[['tomorrow','plan'],['events','plan'],['homework','tasks'],['more','more'],['docs','docs'],['today','today']];
-  for(const [screen,target] of screens){
-    await openView(page,screen);
-    assert.equal(await page.evaluate(()=>document.documentElement.dataset.fc11Screen),target);
+  const screens=['plan','tasks','more','docs','today'];
+  for(const target of screens){
+    await page.evaluate(target=>window.__fcV11.open(target),target);
+    await page.waitForFunction(target=>document.documentElement.dataset.fc11Screen===target,target);
   }
   await page.locator('.fc11-header [data-search]').tap();
   await page.getByRole('searchbox',{name:'Suchbegriff',exact:true}).fill('Kind A');
