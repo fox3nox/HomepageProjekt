@@ -69,8 +69,6 @@ function allTodos(){
 }
 function dependents(){
   const all=rows(D().people).filter(active);
-  const explicit=all.filter(p=>/kind|child|sohn|tochter/i.test(String(p.role||'')));
-  if(explicit.length)return explicit;
   return all.filter(p=>String(p.id)!=='oli'&&!/papa|mama|adult|erwachs/i.test(String(p.role||'')));
 }
 function eventsOn(date){
@@ -118,6 +116,11 @@ function childTodayRows(date){
       const ar=a.holiday?4:(priority[a.state?.kind]??2),br=b.holiday?4:(priority[b.state?.kind]??2);
       return ar-br||a.index-b.index;
     });
+}
+function sharedChildHoliday(kids){
+  if(kids.length<2||!kids.every(x=>x.holiday))return null;
+  const first=kids[0].holiday;
+  return kids.every(x=>String(x.holiday.id||'')===String(first.id||'')&&x.holiday.title===first.title&&x.holiday.date===first.date&&x.holiday.endDate===first.endDate)?first:null;
 }
 function nextAction(){try{return window.__fcV9?.nextAction?.()||null}catch{return null}}
 function nextDisplay(value){
@@ -212,18 +215,19 @@ function render(){
 }
 
 function renderToday(root){
-  const date=today(),next=nextDisplay(nextAction()),kids=childTodayRows(date),events=eventsOn(date).filter(e=>!window.__fcV9?.eventIsPast?.(e)),todos=todoRows('today'),hw=homeworkRows('today');
-  const tomorrow=addDays(date,1),tomEvents=eventsOn(tomorrow),tomTodos=todoRows('open').filter(x=>taskDate(x)===tomorrow),tomHw=homeworkRows('open').filter(x=>taskDate(x)===tomorrow);
+  const date=today(),kids=childTodayRows(date),sharedHoliday=sharedChildHoliday(kids),nextCandidate=nextDisplay(nextAction()),next=sharedHoliday?.id===nextCandidate?.eventId?null:nextCandidate,events=eventsOn(date).filter(e=>!window.__fcV9?.eventIsPast?.(e)&&!kids.some(k=>k.holiday?.id===e.id)),todos=todoRows('today'),hw=homeworkRows('today');
+  const tomorrow=addDays(date,1),tomEvents=eventsOn(tomorrow).filter(e=>!kids.some(k=>k.holiday?.id===e.id)),tomTodos=todoRows('open').filter(x=>taskDate(x)===tomorrow),tomHw=homeworkRows('open').filter(x=>taskDate(x)===tomorrow);
   header('Heute',fmt(date,{weekday:true,long:true}),summaryText(events,todos,hw));
   root.innerHTML=`<div class="fc11-page fc11-home">
-    <section class="fc11-next ${next?'':'calm'}">
+    ${sharedHoliday?`<section class="fc11-shared-holiday" aria-label="Ferien für alle Kinder"><span>FERIEN FÜR ALLE KINDER</span><h2>${esc(sharedHoliday.title||'Ferien')}</h2><p>${esc(kids.map(x=>x.p.name).join(' · '))}${sharedHoliday.endDate?` · bis ${esc(fmt(sharedHoliday.endDate))}`:''}</p></section>`:''}
+    ${next||!sharedHoliday?`<section class="fc11-next ${next?'':'calm'}">
       <div class="fc11-section-kicker">${next?'Als Nächstes':'Heute'}</div>
       ${next?`<button type="button" class="fc11-next-content" data-next-action><div><b>${esc(next.title||'Nächster Punkt')}</b><span>${esc(next.sub||'')}</span></div><div class="fc11-next-time"><strong>${esc(next.time||'')}</strong><small>${esc(next.left||'')}</small></div>${icon('chevron')}</button>`:`<div class="fc11-next-empty"><b>Kein Zeitdruck mehr</b><span>Offene Aufgaben und der morgige Tag bleiben unten sichtbar.</span></div>`}
-    </section>
+    </section>`:''}
 
     <section class="fc11-section">
       <div class="fc11-section-head"><div><small>FAMILIE</small><h2>Kinder heute</h2></div><button type="button" data-go-plan>Wochenplan</button></div>
-      <div class="fc11-kids">${kids.map(x=>kidRow(x.p,x.state,x.holiday)).join('')||'<div class="fc11-empty">Keine Kinderprofile vorhanden.</div>'}</div>
+      <div class="fc11-kids">${kids.map(x=>kidRow(x.p,x.state,x.holiday,!!sharedHoliday)).join('')||'<div class="fc11-empty">Keine Kinderprofile vorhanden.</div>'}</div>
     </section>
 
     <div class="fc11-home-grid">
@@ -254,10 +258,10 @@ function summaryText(events,todos,hw){
   if(!n)return'Keine offenen Punkte für heute';
   return `${events.length} Termin${events.length===1?'':'e'} · ${todos.length+hw.length} Aufgabe${todos.length+hw.length===1?'':'n'}`;
 }
-function kidRow(p,s,holiday=null){
-  const clr=color(p.id),status=holiday?(holiday.title||'Ferien'):(s?.label||'Heute frei');
+function kidRow(p,s,holiday=null,shared=false){
+  const clr=color(p.id),status=holiday?(shared?'Schulfrei':holiday.title||'Ferien'):(s?.label||'Heute frei');
   const rawSub=s?.sub&& !/Aktuell läuft alles|Von zuhause los|Als Nächstes|Schule \/ Kindergarten/.test(s.sub)?s.sub:'';
-  const sub=holiday?`Nur ${p.name} · schulfrei`:rawSub;
+  const sub=holiday?(shared?'':`Nur ${p.name} · schulfrei`):rawSub;
   return `<button type="button" class="fc11-kid" data-kid="${esc(p.id)}" data-holiday="${holiday?'1':'0'}" style="--p:${esc(clr)}">
     <span class="fc11-avatar">${esc(initials(p.name))}</span>
     <span class="fc11-kid-copy"><b>${esc(p.name)}</b><span>${esc(status)}</span>${sub?`<small>${esc(sub)}</small>`:''}</span>
@@ -517,7 +521,7 @@ function installSaveRefresh(){
 }
 function installCss(){
   const existing=[...document.querySelectorAll('link[rel="stylesheet"]')].find(x=>/\bv11\.css(?:\?|$)/.test(x.getAttribute('href')||''));if(existing){existing.dataset.fc11='1';return}
-  const l=document.createElement('link');l.rel='stylesheet';l.href='./v11.css?v=20260922-v1102-hotfix';l.dataset.fc11='1';document.head.appendChild(l);
+  const l=document.createElement('link');l.rel='stylesheet';l.href='./v11.css?v=20260922-v1103-family-holiday';l.dataset.fc11='1';document.head.appendChild(l);
 }
 function install(){
   installCss();

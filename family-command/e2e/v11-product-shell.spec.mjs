@@ -88,6 +88,20 @@ try{
   const lastBox=await lastToday.boundingBox(),navClearance=await page.locator('.fc11-bottom-nav').boundingBox();
   assert.ok(lastBox&&navClearance&&lastBox.y+lastBox.height<=navClearance.y-4,'last today row must be fully visible above the fixed tab bar after scrolling');
   await page.screenshot({path:'qa-v11/mobile-home-390x844.png',fullPage:true});
+  await page.evaluate(()=>{
+    const roles={jayden:'5. Klasse · Schuljahr 2026/27',fynn:'3. Klasse · Klasse 34e',eliyah:'Kindergarten Rosenweg 1'};
+    window.data.people.forEach(p=>{if(roles[p.id])p.role=roles[p.id]});
+    window.__fcV11.render();
+  });
+  assert.equal(await page.locator('.fc11-kid').count(),3,'class and kindergarten role descriptions still identify all children');
+  assert.equal(await page.locator('.fc11-kid[data-holiday="1"]').count(),1,'a single-child break remains scoped after child detection');
+  await page.evaluate(()=>{window.data.events.find(e=>e.id==='holiday-elia').personIds=['jayden','fynn','eliyah'];window.__fcV11.render()});
+  assert.equal(await page.locator('.fc11-kid[data-holiday="1"]').count(),3,'shared holiday applies to each linked child');
+  assert.match(await page.locator('.fc11-shared-holiday').innerText(),/Herbstferien[\s\S]*Jayden[\s\S]*Fynn[\s\S]*Elia/);
+  assert.doesNotMatch(await page.locator('.fc11-home').innerText(),/Nur Elia/,'shared holiday must not look child-specific');
+  assert.equal((await page.locator('.fc11-home').innerText()).match(/Herbstferien/g)?.length,1,'shared holiday appears once in the daily briefing');
+  await page.screenshot({path:'qa-v11/mobile-shared-holiday-390x844.png',fullPage:true});
+  await isolate(page);
 
   await page.click('.fc11-bottom-nav [data-fc11-screen="plan"]');
   assert.equal(await page.locator('[data-title]').innerText(),'Plan');
