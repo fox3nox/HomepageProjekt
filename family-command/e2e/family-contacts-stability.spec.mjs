@@ -21,31 +21,39 @@ try{
   await page.goto(`${BASE}/?access=test`,{waitUntil:'domcontentloaded',timeout:15000});
   await page.waitForFunction(()=>document.documentElement.dataset.fcReady==='1'&&window.__fcFamilyContacts?.health?.().stableTile===true,{timeout:12000});
 
-  // Immediate tap in the same task as the first More render. This reproduces the former race before
-  // the MutationObserver had time to replace the base V9 tile handler.
-  await page.evaluate(()=>{
-    window.openScreen('more');
-    document.querySelector('#more [data-feature="people"]')?.click();
-  });
-  await page.waitForSelector('#people.active #fcContactsModal',{timeout:5000});
-  assert.equal(await page.locator('#fcContactsModal h2').innerText(),'Personen & Kontakte');
-  await page.click('#fcContactsModal [data-back]');
-  await page.waitForFunction(()=>document.querySelector('#more')?.classList.contains('active'));
+  const v11=await page.evaluate(()=>Boolean(window.__fcV11));
+  if(v11){
+    await page.evaluate(()=>window.__fcV11.open('more'));
+    await page.locator('[data-tool="contacts"]').click();
+    await page.waitForSelector('#fcContactsModal .fc-contacts-shell',{state:'visible',timeout:5000});
+    assert.equal(await page.locator('#fcContactsModal h2').innerText(),'Personen & Kontakte');
+    await page.click('#fcContactsModal [data-back]');
+    assert.equal(await page.locator('[data-tool="contacts"]').count(),1,'V11 keeps one stable contacts entry point');
+  }else{
+    // Legacy V9 race coverage.
+    await page.evaluate(()=>{
+      window.openScreen('more');
+      document.querySelector('#more [data-feature="people"]')?.click();
+    });
+    await page.waitForSelector('#people.active #fcContactsModal',{timeout:5000});
+    assert.equal(await page.locator('#fcContactsModal h2').innerText(),'Personen & Kontakte');
+    await page.click('#fcContactsModal [data-back]');
+    await page.waitForFunction(()=>document.querySelector('#more')?.classList.contains('active'));
 
-  // A stable subtitle must not rewrite itself every 20 ms and retrigger its own observer.
-  const mutationCount=await page.evaluate(async()=>{
-    window.openScreen('more');
-    const span=document.querySelector('#more [data-feature="people"] span');
-    if(!span)throw new Error('people tile subtitle missing');
-    await new Promise(resolve=>setTimeout(resolve,80));
-    let count=0;
-    const observer=new MutationObserver(records=>{count+=records.length});
-    observer.observe(span,{childList:true,subtree:true,characterData:true});
-    await new Promise(resolve=>setTimeout(resolve,220));
-    observer.disconnect();
-    return count;
-  });
-  assert.equal(mutationCount,0,'contact tile subtitle must settle instead of creating a self-triggering mutation loop');
+    const mutationCount=await page.evaluate(async()=>{
+      window.openScreen('more');
+      const span=document.querySelector('#more [data-feature="people"] span');
+      if(!span)throw new Error('people tile subtitle missing');
+      await new Promise(resolve=>setTimeout(resolve,80));
+      let count=0;
+      const observer=new MutationObserver(records=>{count+=records.length});
+      observer.observe(span,{childList:true,subtree:true,characterData:true});
+      await new Promise(resolve=>setTimeout(resolve,220));
+      observer.disconnect();
+      return count;
+    });
+    assert.equal(mutationCount,0,'contact tile subtitle must settle instead of creating a self-triggering mutation loop');
+  }
 
   const health=await page.evaluate(()=>window.__fcFamilyContacts.health());
   assert.equal(health.stableTile,true);
