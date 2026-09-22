@@ -72,6 +72,7 @@ try{
   assert.ok(navBox && navBox.x>=0 && navBox.x+navBox.width<=390.5,'bottom navigation fits viewport');
   const addBox=await page.locator('[data-add]').first().boundingBox();
   assert.ok(addBox && addBox.x+addBox.width<=390.5,'header actions fit viewport');
+  await page.screenshot({path:'qa-v11/mobile-home-390x844.png',fullPage:true});
 
   await page.click('.fc11-bottom-nav [data-fc11-screen="plan"]');
   assert.equal(await page.locator('[data-title]').innerText(),'Plan');
@@ -82,6 +83,7 @@ try{
   await page.click('.fc11-bottom-nav [data-fc11-screen="tasks"]');
   assert.equal(await page.locator('[data-title]').innerText(),'Aufgaben');
   assert.equal(await page.locator('[data-todo="todo-1"]').count(),1);
+  await page.screenshot({path:'qa-v11/mobile-tasks-390x844.png',fullPage:true});
   await page.locator('[data-todo="todo-1"] input').check();
   await page.waitForFunction(()=>window.data.todos.find(x=>x.id==='todo-1')?.done===true,{timeout:5000});
 
