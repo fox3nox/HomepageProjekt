@@ -109,6 +109,23 @@ try{
   assert.match(await page.locator('#fc11PersonSheet').innerText(),/Fynn/);
   await page.click('#fc11PersonSheet [data-close]');
 
+  await page.click('[data-tool="contacts"]');
+  await page.waitForSelector('#fcContactsModal .fc-contacts-shell',{state:'visible'});
+  assert.match(await page.locator('#fcContactsModal h2').innerText(),/Personen & Kontakte/);
+  await page.click('#fcContactsModal [data-back]');
+
+  await page.click('[data-tool="recipes"]');
+  await page.waitForSelector('#fcRecipesModal .fc-recipes-shell',{state:'visible'});
+  await page.click('#fcRecipesModal .fc-recipes-close');
+
+  await page.click('[data-tool="budget"]');
+  await page.waitForSelector('#fcBudgetModal .fc-budget-shell',{state:'visible'});
+  await page.click('#fcBudgetModal .fc-budget-close');
+
+  await page.click('[data-tool="push"]');
+  await page.waitForSelector('#fcReminderCenter',{state:'visible'});
+  await page.click('#fcReminderCenter [data-close]');
+
   await page.screenshot({path:'qa-v11/mobile-390x844.png',fullPage:true});
   assert.deepEqual(pageErrors,[],'no uncaught browser errors on mobile');
   await mobile.close();
