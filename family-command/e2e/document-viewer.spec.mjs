@@ -39,10 +39,18 @@ async function runViewport(browser,name,width,height){
   const health=await page.evaluate(()=>window.__fcDocumentViewerHealth);
   assert.deepEqual(health,{version:'1.1.0',v9Native:true,readable:true,original:true,originalPath:true,zoom:true,legacyWrapper:false});
 
-  await page.evaluate(()=>window.__fcV9.open('more'));
-  await page.locator('#more [data-feature="docs"]').click();
-  await page.waitForSelector('#fc9Modal .fc9-doc-list');
-  const doc=page.locator('#fc9Modal [data-doc="doc-fixture"]');
+  const v11=await page.evaluate(()=>Boolean(window.__fcV11));
+  let doc;
+  if(v11){
+    await page.evaluate(()=>window.__fcV11.open('docs'));
+    await page.waitForSelector('[data-document="doc-fixture"]',{timeout:10000});
+    doc=page.locator('[data-document="doc-fixture"]');
+  }else{
+    await page.evaluate(()=>window.__fcV9.open('more'));
+    await page.locator('#more [data-feature="docs"]').click();
+    await page.waitForSelector('#fc9Modal .fc9-doc-list');
+    doc=page.locator('#fc9Modal [data-doc="doc-fixture"]');
+  }
   await doc.waitFor({state:'visible'});
   assert.ok(await doc.isVisible(),'document fixture must be listed');
   await doc.click();
