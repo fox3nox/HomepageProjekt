@@ -101,6 +101,17 @@ function weekDates(s){const m=monday(s);return Array.from({length:7},(_,i)=>{con
 function currentState(p,date=today(),live=date===today()){
   try{return window.__fcV9?.currentChildState?.(p,date,live)||null}catch{return null}
 }
+function childHoliday(p,date=today()){
+  try{return typeof window.schoolBreakFor==='function'?window.schoolBreakFor(p.id,date):null}catch{return null}
+}
+function childTodayRows(date){
+  const priority={active:0,future:1,free:3};
+  return dependents().map((p,index)=>({p,state:currentState(p,date,true),holiday:childHoliday(p,date),index}))
+    .sort((a,b)=>{
+      const ar=a.holiday?4:(priority[a.state?.kind]??2),br=b.holiday?4:(priority[b.state?.kind]??2);
+      return ar-br||a.index-b.index;
+    });
+}
 function nextAction(){try{return window.__fcV9?.nextAction?.()||null}catch{return null}}
 function nextDisplay(value){
   if(!value)return null;
@@ -193,7 +204,7 @@ function render(){
 }
 
 function renderToday(root){
-  const date=today(),next=nextDisplay(nextAction()),kids=dependents(),events=eventsOn(date).filter(e=>!window.__fcV9?.eventIsPast?.(e)),todos=todoRows('today'),hw=homeworkRows('today');
+  const date=today(),next=nextDisplay(nextAction()),kids=childTodayRows(date),events=eventsOn(date).filter(e=>!window.__fcV9?.eventIsPast?.(e)),todos=todoRows('today'),hw=homeworkRows('today');
   const tomorrow=addDays(date,1),tomEvents=eventsOn(tomorrow),tomTodos=todoRows('open').filter(x=>taskDate(x)===tomorrow),tomHw=homeworkRows('open').filter(x=>taskDate(x)===tomorrow);
   header('Heute',fmt(date,{weekday:true,long:true}),summaryText(events,todos,hw));
   root.innerHTML=`<div class="fc11-page fc11-home">
@@ -204,7 +215,7 @@ function renderToday(root){
 
     <section class="fc11-section">
       <div class="fc11-section-head"><div><small>FAMILIE</small><h2>Kinder heute</h2></div><button type="button" data-go-plan>Wochenplan</button></div>
-      <div class="fc11-kids">${kids.map(p=>kidRow(p,currentState(p,date,true))).join('')||'<div class="fc11-empty">Keine Kinderprofile vorhanden.</div>'}</div>
+      <div class="fc11-kids">${kids.map(x=>kidRow(x.p,x.state,x.holiday)).join('')||'<div class="fc11-empty">Keine Kinderprofile vorhanden.</div>'}</div>
     </section>
 
     <div class="fc11-home-grid">
