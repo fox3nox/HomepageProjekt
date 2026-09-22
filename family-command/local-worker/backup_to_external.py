@@ -11,6 +11,7 @@ import json
 import os
 import re
 import shutil
+import subprocess
 import sys
 import tempfile
 import urllib.parse
@@ -24,8 +25,25 @@ ROOT = Path(os.getenv("FC_EXTERNAL_BACKUP_DIR", "/Volumes/FamilyBackup/Familienz
 KEEP = max(2, int(os.getenv("FC_EXTERNAL_BACKUP_KEEP", "14")))
 
 
+def access_key() -> str:
+    if ACCESS_KEY:
+        return ACCESS_KEY
+    if sys.platform == "darwin":
+        try:
+            result = subprocess.run(
+                ["security", "find-generic-password", "-s", "FamilyCommandAccess", "-w"],
+                check=True, capture_output=True, text=True,
+            )
+            key = result.stdout.strip()
+            if key:
+                return key
+        except (subprocess.CalledProcessError, FileNotFoundError):
+            pass
+    raise RuntimeError("FC_ACCESS_KEY fehlt und im macOS-Schlüsselbund wurde FamilyCommandAccess nicht gefunden.")
+
+
 def request_json(url: str) -> dict:
-    req = urllib.request.Request(url, headers={"x-fc-access": ACCESS_KEY, "accept": "application/json"})
+    req = urllib.request.Request(url, headers={"x-fc-access": access_key(), "accept": "application/json"})
     with urllib.request.urlopen(req, timeout=120) as response:
         return json.loads(response.read().decode("utf-8"))
 
@@ -62,8 +80,7 @@ def ensure_external_target() -> None:
 
 
 def export() -> Path:
-    if not ACCESS_KEY:
-        raise RuntimeError("FC_ACCESS_KEY fehlt.")
+    access_key()  # fail before creating a partial backup
     ensure_external_target()
 
     stamp = dt.datetime.now().astimezone().strftime("%Y-%m-%d_%H-%M-%S")
