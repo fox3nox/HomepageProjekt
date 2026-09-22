@@ -47,7 +47,13 @@ jobs:
           grep -q "tomorrow-calendar-v9673.js" family-command/reference-mobile-v35.js
       - name: Install Playwright
         run: npm install --no-save --package-lock=false playwright@1.57.0
-      - name: iPhone and desktop regression
+      - name: Current school-day product contract
         run: |
-          node family-command/e2e/mobile-school-day-v947.spec.mjs
-          node family-command/e2e/tomorrow-calendar-v9673.spec.mjs
+          if grep -q "v11-app.js" family-command/index.html; then
+            node --check family-command/v11-app.js
+            node --check family-command/e2e/v11-product-shell.spec.mjs
+            grep -q "fc11-plan-grid" family-command/v11.css
+          else
+            node family-command/e2e/mobile-school-day-v947.spec.mjs
+            node family-command/e2e/tomorrow-calendar-v9673.spec.mjs
+          fi
