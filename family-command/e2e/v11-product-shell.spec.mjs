@@ -72,6 +72,11 @@ try{
   assert.ok(navBox && navBox.x>=0 && navBox.x+navBox.width<=390.5,'bottom navigation fits viewport');
   const addBox=await page.locator('[data-add]').first().boundingBox();
   assert.ok(addBox && addBox.x+addBox.width<=390.5,'header actions fit viewport');
+
+  const lastToday=page.locator('.fc11-home .fc11-row').last();
+  await lastToday.evaluate(el=>el.scrollIntoView({block:'center'}));
+  const lastBox=await lastToday.boundingBox(),navClearance=await page.locator('.fc11-bottom-nav').boundingBox();
+  assert.ok(lastBox&&navClearance&&lastBox.y+lastBox.height<=navClearance.y-4,'last today row must be fully visible above the fixed tab bar after scrolling');
   await page.screenshot({path:'qa-v11/mobile-home-390x844.png',fullPage:true});
 
   await page.click('.fc11-bottom-nav [data-fc11-screen="plan"]');
