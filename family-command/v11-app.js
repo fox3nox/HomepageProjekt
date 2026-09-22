@@ -115,8 +115,8 @@ function openEvent(id){window.fcOpenEventDetails?.(id)}
 function editEvent(id=''){window.__fcV9?.editEvent?.(id)}
 function editTodo(id='',date=today()){window.__fcV9?.editTodo?.(id,date)}
 function editHomework(id='',date=today()){window.__fcV9?.editHomework?.(id,date)}
-function toggleTodo(id,on){window.__fcV9?.toggleTodo?.(id,on);queueRender()}
-function toggleHomework(id,on){window.__fcV9?.toggleHomework?.(id,on);queueRender()}
+function toggleTodo(id,on){window.__fcV9?.toggleTodo?.(id,on);setTimeout(queueRender,80)}
+function toggleHomework(id,on){window.__fcV9?.toggleHomework?.(id,on);setTimeout(queueRender,80)}
 
 function shell(){
   if(!APP)return;
