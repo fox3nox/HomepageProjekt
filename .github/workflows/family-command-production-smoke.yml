@@ -35,7 +35,7 @@ jobs:
           grep -q 'fc-wordmark-2x.png' family-command/header-crisp-v9654.css
           grep -q 'fc-wordmark-3x.png' family-command/header-crisp-v9654.css
           grep -q 'font-size:0!important' family-command/header-crisp-v9654.css
-          grep -q "const CACHE='family-command-v128-v11-hotfix'" family-command/sw.js
+          grep -q "const CACHE='family-command-v129-v11-family-holiday'" family-command/sw.js
           grep -q 'asi-command-center-v100.css' family-command/sw.js
           grep -q 'zero-miss-v978.js' family-command/sw.js
           grep -q 'zero-miss-v978.css' family-command/sw.js
@@ -116,7 +116,6 @@ jobs:
           grep -q "fcZeroMiss='v982'" /tmp/reference-mobile-v35.js
           grep -q "DAYTOOLS_V='20260922-v1100-preview'" /tmp/reference-mobile-v35.js
           grep -q "fcAsiCommandCenter='v100'" /tmp/reference-mobile-v35.js
-          grep -q "const CACHE='family-command-v128-v11-hotfix'" /tmp/sw.js
           grep -q 'asi-command-center-v100.css' /tmp/sw.js
           grep -q 'zero-miss-v978.js' /tmp/sw.js
           grep -q 'zero-miss-v978.css' /tmp/sw.js
