@@ -136,6 +136,7 @@ function shell(){
       </header>
       <main class="fc11-main" id="fc11Main" tabindex="-1"></main>
       <nav class="fc11-bottom-nav" aria-label="Hauptnavigation">${navButtons()}</nav>
+      <div class="fc11-legacy-host" aria-hidden="true">${['today','tomorrow','events','homework','more','people'].map(id=>`<section id="${id}" class="fc9-screen"></section>`).join('')}</div>
     </div>
   </div>`;
   bindChrome();
@@ -214,6 +215,7 @@ function renderToday(root){
     </button>
   </div>`;
   root.querySelectorAll('[data-go-plan]').forEach(b=>b.onclick=()=>open('plan'));
+  root.querySelectorAll('[data-kid]').forEach(b=>b.onclick=()=>{state.planPerson=b.dataset.kid;state.planDate=date;open('plan')});
   root.querySelector('[data-tomorrow-plan]')?.addEventListener('click',()=>{state.planDate=tomorrow;open('plan')});
   root.querySelector('[data-next-action]')?.addEventListener('click',()=>{if(next?.eventId)openEvent(next.eventId);else open('plan')});
   bindRows(root);
@@ -418,6 +420,7 @@ function renderMore(root){
     </section>
   </div>`;
   root.querySelectorAll('[data-tool]').forEach(b=>b.onclick=()=>openTool(b.dataset.tool));
+  root.querySelectorAll('[data-person-card]').forEach(b=>b.onclick=()=>openPerson(b.dataset.personCard));
 }
 function personCard(p){
   const week=Object.values(D().schedules?.[p.id]||{}).flat().filter(Boolean).length;
@@ -438,9 +441,25 @@ async function openTool(key){
     push:()=>window.enablePush?.(),
     export:()=>{if(typeof window.exportData==='function')return window.exportData();const a=document.createElement('a'),blob=new Blob([JSON.stringify(D(),null,2)],{type:'application/json'});a.href=URL.createObjectURL(blob);a.download=`familienzentrale-${today()}.json`;a.click();setTimeout(()=>URL.revokeObjectURL(a.href),0)}
   };
-  const fn=map[key];if(fn){const res=fn();if(res!==undefined)return res}
+  const fn=map[key];if(fn)return fn();
   try{window.openScreen?.('more')}catch{}
 }
+function openPerson(id){
+  const p=person(id);if(!p)return;
+  document.getElementById('fc11PersonSheet')?.remove();
+  const days=['So','Mo','Di','Mi','Do','Fr','Sa'];
+  const scheduleLines=Object.entries(D().schedules?.[p.id]||{}).filter(([,slots])=>rows(slots).length).map(([day,slots])=>`<div class="fc11-person-day"><b>${days[Number(day)]||day}</b><span>${rows(slots).map(s=>[s.start,s.end].filter(Boolean).join('–')).filter(Boolean).join(' · ')}</span></div>`).join('');
+  const teachers=rows(p.teachers).map(t=>`<div class="fc11-person-contact"><b>${esc(t.name||'Kontakt')}</b><span>${esc([t.role,t.phone,t.email].filter(Boolean).join(' · '))}</span></div>`).join('');
+  const linkedDocs=state.docs.filter(d=>(d.personIds||[]).map(String).includes(String(p.id))).slice(0,5);
+  const m=document.createElement('div');m.id='fc11PersonSheet';m.className='fc11-modal';
+  m.innerHTML=`<section class="fc11-sheet fc11-person-sheet" role="dialog" aria-modal="true" aria-labelledby="fc11PersonTitle"><div class="fc11-sheet-head"><div class="fc11-person-title" style="--p:${esc(color(p.id))}"><span class="fc11-avatar large">${esc(initials(p.name))}</span><div><small>PERSON</small><h2 id="fc11PersonTitle">${esc(p.name)}</h2><p>${esc([p.role,p.school,p.schoolClass||p.class].filter(Boolean).join(' · '))}</p></div></div><button type="button" data-close aria-label="Schliessen">×</button></div><div class="fc11-person-detail">${scheduleLines?`<section><h3>Wochenzeiten</h3><div>${scheduleLines}</div></section>`:''}${teachers?`<section><h3>Kontakte</h3><div>${teachers}</div></section>`:''}${linkedDocs.length?`<section><h3>Dokumente</h3><div class="fc11-person-docs">${linkedDocs.map(d=>`<button type="button" data-person-doc="${esc(d.id)}">${esc(d.title||'Dokument')}${icon('chevron')}</button>`).join('')}</div></section>`:''}<div class="fc11-person-actions"><button type="button" data-person-plan>Im Plan anzeigen</button><button type="button" data-person-doc-center>Dokumente</button></div></div></section>`;
+  const close=()=>m.remove();m.querySelector('[data-close]').onclick=close;m.onclick=e=>{if(e.target===m)close()};
+  m.querySelector('[data-person-plan]').onclick=()=>{state.planPerson=String(p.id);state.planDate=today();close();open('plan')};
+  m.querySelector('[data-person-doc-center]').onclick=()=>{state.docPerson=String(p.id);close();open('docs')};
+  m.querySelectorAll('[data-person-doc]').forEach(b=>b.onclick=()=>window.fcOpenOriginal?.(b.dataset.personDoc));
+  document.body.appendChild(m);
+}
+
 function openAdd(){
   document.getElementById('fc11AddSheet')?.remove();
   const m=document.createElement('div');m.id='fc11AddSheet';m.className='fc11-modal';
