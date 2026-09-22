@@ -72,6 +72,7 @@ try{
   assert.equal(await page.locator('.fc11-bottom-nav [data-fc11-screen]').count(),5,'mobile navigation has five clear destinations');
   assert.equal(await page.locator('.fc11-kid').count(),3,'today shows all three child rows');
   assert.equal(await page.locator('.fc11-kid[data-holiday="1"]').count(),1,'a holiday remains scoped to the affected child');
+  for(const id of ['jayden','fynn'])assert.doesNotMatch(await page.locator(`.fc11-kid[data-kid="${id}"]`).innerText(),/Heute frei/,'a completed school day must not look like a free day');
   assert.match(await page.locator('.fc11-kid[data-holiday="1"]').innerText(),/Elia[\s\S]*Herbstferien[\s\S]*Nur Elia · schulfrei/i);
   assert.equal(await page.locator('.fc11-kid').last().getAttribute('data-kid'),'eliyah','holiday-only child must not outrank children with a normal school day');
   assert.equal((await page.locator('.fc11-kids').innerText()).match(/Herbstferien/g)?.length,1,'holiday wording appears only on the affected child');
@@ -152,6 +153,14 @@ try{
   await page.click('#fcReminderCenter [data-close]');
 
   await page.screenshot({path:'qa-v11/mobile-390x844.png',fullPage:true});
+  for(const [width,height] of [[375,812],[430,932]]){
+    await page.setViewportSize({width,height});
+    for(const screen of ['today','more']){
+      await page.evaluate(target=>window.__fcV11.open(target),screen);
+      assert.equal(await page.evaluate(()=>document.documentElement.scrollWidth<=document.documentElement.clientWidth+1),true,`${screen} must fit ${width}×${height}`);
+      await page.screenshot({path:`qa-v11/mobile-${screen}-${width}x${height}.png`,fullPage:true});
+    }
+  }
   assert.deepEqual(pageErrors,[],'no uncaught browser errors on mobile');
   await mobile.close();
 
@@ -167,6 +176,9 @@ try{
   assert.equal(await desktopPage.locator('.fc11-bottom-nav').evaluate(el=>getComputedStyle(el).display),'none','desktop hides mobile tab bar');
   assert.equal(await desktopPage.evaluate(()=>document.documentElement.scrollWidth<=document.documentElement.clientWidth+1),true,'desktop must not overflow horizontally');
   await desktopPage.screenshot({path:'qa-v11/desktop-1280x900.png',fullPage:true});
+  await desktopPage.setViewportSize({width:1440,height:1000});
+  assert.equal(await desktopPage.evaluate(()=>document.documentElement.scrollWidth<=document.documentElement.clientWidth+1),true,'desktop must fit 1440×1000');
+  await desktopPage.screenshot({path:'qa-v11/desktop-1440x1000.png',fullPage:true});
   assert.deepEqual(desktopErrors,[],'no uncaught browser errors on desktop');
 
   await desktop.close();

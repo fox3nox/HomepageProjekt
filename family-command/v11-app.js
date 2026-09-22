@@ -104,9 +104,16 @@ function currentState(p,date=today(),live=date===today()){
 function childHoliday(p,date=today()){
   try{return typeof window.schoolBreakFor==='function'?window.schoolBreakFor(p.id,date):null}catch{return null}
 }
+function completedSchoolDay(p,date){
+  const slots=schedule(p.id,dateObj(date).getDay()).filter(x=>x.start||x.end);
+  if(!slots.length)return null;
+  const first=slots[0],last=slots[slots.length-1];
+  const place=first.label||p.school||'Schule / Kindergarten';
+  return {kind:'completed',label:/kindergarten/i.test(place)?'Kindergarten beendet':'Schultag beendet',sub:[first.start&&last.end?`${first.start}–${last.end}`:'',place].filter(Boolean).join(' · '),time:''};
+}
 function childTodayRows(date){
   const priority={active:0,future:1,free:3};
-  return dependents().map((p,index)=>({p,state:currentState(p,date,true),holiday:childHoliday(p,date),index}))
+  return dependents().map((p,index)=>{const holiday=childHoliday(p,date),state=currentState(p,date,true);return {p,state:holiday?state:(state||completedSchoolDay(p,date)),holiday,index}})
     .sort((a,b)=>{
       const ar=a.holiday?4:(priority[a.state?.kind]??2),br=b.holiday?4:(priority[b.state?.kind]??2);
       return ar-br||a.index-b.index;
@@ -510,7 +517,7 @@ function installSaveRefresh(){
 }
 function installCss(){
   const existing=[...document.querySelectorAll('link[rel="stylesheet"]')].find(x=>/\bv11\.css(?:\?|$)/.test(x.getAttribute('href')||''));if(existing){existing.dataset.fc11='1';return}
-  const l=document.createElement('link');l.rel='stylesheet';l.href='./v11.css?v=20260922-v1101-hotfix';l.dataset.fc11='1';document.head.appendChild(l);
+  const l=document.createElement('link');l.rel='stylesheet';l.href='./v11.css?v=20260922-v1102-hotfix';l.dataset.fc11='1';document.head.appendChild(l);
 }
 function install(){
   installCss();
