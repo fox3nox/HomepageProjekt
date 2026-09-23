@@ -17,7 +17,10 @@ const state={
     {id:'eliyah',name:'Elia',role:'Kind',school:'Kindergarten',color:'#4087dd',teachers:[],notes:[]}
   ],
   schedules:{
-    oli:{3:[{start:'07:30',end:'12:00',depart:'07:00',label:'Arbeit LANDI'},{start:'13:00',end:'17:00',depart:'',label:'Arbeit LANDI'}]},
+    oli:{
+      2:[{start:'07:30',end:'12:00',depart:'07:00',label:'Arbeit LANDI'},{start:'13:00',end:'17:00',depart:'',label:'Arbeit LANDI'}],
+      3:[{start:'07:30',end:'12:00',depart:'07:00',label:'Arbeit LANDI'},{start:'13:00',end:'17:00',depart:'',label:'Arbeit LANDI'}]
+    },
     jayden:{2:[{start:'08:20',end:'11:55',depart:'07:55',label:'Schule'}]},
     fynn:{2:[{start:'08:20',end:'11:55',depart:'08:00',label:'Schule'}]},
     eliyah:{2:[{start:'13:30',end:'15:30',depart:'13:10',label:'Kindergarten'}]}
@@ -78,10 +81,17 @@ try{
   assert.equal(await page.locator('.fc11-kid').last().getAttribute('data-kid'),'eliyah','holiday-only child must not outrank children with a normal school day');
   assert.equal((await page.locator('.fc11-kids').innerText()).match(/Herbstferien/g)?.length,1,'holiday wording appears only on the affected child');
   assert.equal(await page.evaluate(()=>document.documentElement.scrollWidth<=document.documentElement.clientWidth+1),true,'mobile must not overflow horizontally');
-  const tomorrowWork=page.locator('.fc11-home .fc11-row.work');
+  const todayWork=page.locator('.fc11-today-section .fc11-row.work');
+  assert.equal(await todayWork.count(),1,'today briefing shows the adult work schedule');
+  assert.match(await todayWork.innerText(),/07:00[\s\S]*los[\s\S]*Oli[\s\S]*Arbeit LANDI[\s\S]*07:30–17:00[\s\S]*Pause 12:00–13:00/);
+  assert.equal(await page.locator('.fc11-today-section .fc11-row').first().getAttribute('class'),'fc11-row work','today work is the first planned item');
+  const todayBox=await page.locator('.fc11-today-section').boundingBox(),tomorrowBriefingBox=await page.locator('.fc11-tomorrow-section').boundingBox();
+  assert.ok(todayBox&&tomorrowBriefingBox&&todayBox.y<tomorrowBriefingBox.y,'today work must appear before the tomorrow preview');
+
+  const tomorrowWork=page.locator('.fc11-tomorrow-section .fc11-row.work');
   assert.equal(await tomorrowWork.count(),1,'split work shift appears once in tomorrow briefing');
   assert.match(await tomorrowWork.innerText(),/07:00[\s\S]*los[\s\S]*Oli[\s\S]*Arbeit LANDI[\s\S]*07:30–17:00[\s\S]*Pause 12:00–13:00/);
-  assert.equal(await page.locator('.fc11-home .fc11-list').last().locator('.fc11-row').first().getAttribute('class'),'fc11-row work','departure is the first tomorrow item');
+  assert.equal(await page.locator('.fc11-tomorrow-section .fc11-row').first().getAttribute('class'),'fc11-row work','departure is the first tomorrow item');
 
   const navBox=await page.locator('.fc11-bottom-nav').boundingBox();
   assert.ok(navBox && navBox.x>=0 && navBox.x+navBox.width<=390.5,'bottom navigation fits viewport');
