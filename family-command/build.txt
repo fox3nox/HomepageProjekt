@@ -28,3 +28,4 @@ Familienzentrale personal build
 2026-09-04 v9.61.7-reminder-surface
 private family workspace
 2026-09-06 v9.68.0-offline-and-calendar-reliability
+2026-09-23 v11.0.1-today-work
