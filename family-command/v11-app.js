@@ -2,7 +2,7 @@
 (()=>{'use strict';
 if(window.__fcV11)return;
 
-const VERSION='11.0.0-preview';
+const VERSION='11.0.1-today-work';
 const APP=document.getElementById('fcApp');
 const D=()=>window.data&&typeof window.data==='object'?window.data:{};
 const esc=s=>String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
