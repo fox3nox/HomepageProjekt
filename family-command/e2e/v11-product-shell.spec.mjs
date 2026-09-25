@@ -161,6 +161,7 @@ try{
   await page.locator('[data-system-security]').click();
   await page.waitForSelector('#fc11SystemSheet',{state:'visible'});
   assert.equal(await page.locator('#fc11SystemSheet [data-tool="connections"]').count(),1,'System & Sicherheit exposes connections directly');
+  assert.equal(await page.locator('#fc11SystemSheet [data-tool="integrity"]').count(),1,'System & Sicherheit exposes data integrity directly');
   assert.equal(await page.locator('#fc11SystemSheet [data-system-sync]').count(),1,'System & Sicherheit exposes one-tap connector sync');
   assert.equal(await page.locator('#fc11SystemSheet .fc11-sync-panel').count(),1,'System & Sicherheit shows connector history panel');
   assert.equal(await page.locator('#fc11SystemSheet [data-tool="conflicts"]').count(),1,'System & Sicherheit exposes conflict assistant directly');
@@ -179,6 +180,12 @@ try{
   const restoredAudit=await page.evaluate(()=>window.__fcConflictAssistant.audit());
   assert.match(restoredAudit.conflicts.map(x=>x.detail).join('\n'),/Arzttermin/,'ignored conflict can be restored');
   await page.click('#fc11ConflictSheet [data-close]');
+  await page.locator('[data-system-security]').click();
+  await page.waitForSelector('#fc11SystemSheet',{state:'visible'});
+  await page.click('#fc11SystemSheet [data-tool="integrity"]');
+  await page.waitForSelector('#fc11IntegritySheet',{state:'visible'});
+  assert.match(await page.locator('#fc11IntegritySheet').innerText(),/Datenprüfung/);
+  await page.click('#fc11IntegritySheet [data-close]');
   await page.locator('[data-system-security]').click();
   await page.waitForSelector('#fc11SystemSheet',{state:'visible'});
   await page.click('#fc11SystemSheet [data-close]');
