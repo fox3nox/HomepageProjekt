@@ -232,9 +232,9 @@ function render(){
 function renderToday(root){
   const date=today(),kids=childTodayRows(date),sharedHoliday=sharedChildHoliday(kids),nextCandidate=nextDisplay(nextAction()),work=workFor(date),events=eventsOn(date).filter(e=>!window.__fcV9?.eventIsPast?.(e)&&!kids.some(k=>k.holiday?.id===e.id)&&!duplicatesScheduledWork(e,date)),todos=todoRows('today'),hw=homeworkRows('today');
   const focus=focusForToday(date,sharedHoliday?.id===nextCandidate?.eventId?null:nextCandidate,todos,hw);
-  const mailPulse=bluewinPulse();
+  const mailPulse=bluewinPulse(),careAudit=saturdayCareAudit();
   const tomorrow=addDays(date,1),tomKids=childTodayRows(tomorrow),tomWork=workFor(tomorrow),tomEvents=eventsOn(tomorrow).filter(e=>!tomKids.some(k=>k.holiday?.id===e.id)&&!duplicatesScheduledWork(e,tomorrow)),tomTodos=todoRows('open').filter(x=>taskDate(x)===tomorrow),tomHw=homeworkRows('open').filter(x=>taskDate(x)===tomorrow),tomCount=tomWork.length+tomEvents.length+tomTodos.length+tomHw.length;
-  header('Heute',fmt(date,{weekday:true,long:true}),smartSummary(work,events,todos,hw,mailPulse.count));
+  header('Heute',fmt(date,{weekday:true,long:true}),smartSummary(work,events,todos,hw,mailPulse.count,careAudit.warnings.length));
   const childrenSection=`<section class="fc11-section fc11-children-section">
     <div class="fc11-section-head"><div><small>FAMILIE</small><h2>Kinder heute</h2></div><button type="button" data-go-plan>Wochenplan</button></div>
     <div class="fc11-kids">${kids.map(x=>kidRow(x.p,x.state,x.holiday,false,holidayNames(kids,x.holiday))).join('')||'<div class="fc11-empty">Keine Kinderprofile vorhanden.</div>'}</div>
@@ -254,6 +254,7 @@ function renderToday(root){
       <button type="button" class="fc11-next-content" data-focus-action><div><b>${esc(focus.title||'Nächster Punkt')}</b><span>${esc(focus.sub||'')}</span></div><div class="fc11-next-time"><strong>${esc(focus.time||'')}</strong><small>${esc(focus.left||'')}</small></div>${icon('chevron')}</button>
     </section>`:`<section class="fc11-next calm"><div class="fc11-section-kicker">JETZT</div><div class="fc11-next-empty"><b>Aktuell nichts Dringendes</b><span>Der Tagesablauf und morgen wichtige Punkte bleiben darunter sichtbar.</span></div></section>`}
     ${mailPulse.html}
+    ${saturdayCareWarningHtml(careAudit)}
     ${sharedHoliday?todaySection+tomorrowSection:childrenSection+todaySection+tomorrowSection}
     <button type="button" class="fc11-brain-entry" data-brain>
       <span class="fc11-brain-icon">${icon('brain')}</span>
@@ -266,6 +267,7 @@ function renderToday(root){
   root.querySelector('[data-tomorrow-plan]')?.addEventListener('click',()=>{state.planDate=tomorrow;open('plan')});
   root.querySelector('[data-focus-action]')?.addEventListener('click',()=>{if(focus?.eventId)openEvent(focus.eventId);else if(focus?.kind==='task'||focus?.kind==='homework')open('tasks');else open('plan')});
   root.querySelector('[data-open-bluewin]')?.addEventListener('click',()=>window.fcOpenConnections?.());
+  root.querySelectorAll('[data-care-date]').forEach(b=>b.onclick=()=>{state.planDate=b.dataset.careDate;state.planPerson='oli';open('plan')});
   bindRows(root);
 }
 function focusForToday(date,next,todos,hw){
@@ -280,11 +282,32 @@ function focusForToday(date,next,todos,hw){
 function bluewinPulse(){
   let list=[];try{list=(window.__fcConnections?.insights?.()||[]).filter(x=>x.actionable).slice(0,3)}catch{}
   if(!list.length)return{count:0,html:''};
-  const labels=list.map(x=>`<span><b>${esc(x.type==='event'?'Termin':'Aufgabe')}</b> ${esc(String(x.title||'').slice(0,72))}</span>`).join('');
+  const kind=x=>x.type==='workplan'?'Arbeitsplan':x.type==='bill'?'Rechnung':x.type==='event'?'Termin':'Aufgabe';
+  const extra=x=>x.type==='bill'&&x.invoice?.dueDate?` · fällig ${x.invoice.dueDate.split('-').reverse().join('.')}`:'';
+  const labels=list.map(x=>`<span><b>${esc(kind(x))}</b> ${esc(String(x.title||'').slice(0,68))}${esc(extra(x))}</span>`).join('');
   return{count:list.length,html:`<button type="button" class="fc11-mail-pulse" data-open-bluewin><span class="fc11-mail-pulse-icon">✉️</span><span class="fc11-mail-pulse-copy"><small>BLUEWIN · ${list.length} RELEVANT</small><b>Neue Mail${list.length===1?'':'s'} brauchen deine Aufmerksamkeit</b><span>${labels}</span></span>${icon('chevron')}</button>`};
 }
-function smartSummary(work,events,todos,hw,mailCount=0){
-  const parts=[];if(events.length)parts.push(`${events.length} Termin${events.length===1?'':'e'}`);if(todos.length+hw.length)parts.push(`${todos.length+hw.length} Aufgabe${todos.length+hw.length===1?'':'n'}`);if(mailCount)parts.push(`${mailCount} relevante Mail${mailCount===1?'':'s'}`);if(work.length)parts.push('Arbeit geplant');return parts.length?parts.join(' · '):'Keine offenen Punkte für heute';
+function saturdayCareAudit(){
+  const start=today(),limit=addDays(start,70),events=rows(D().events).filter(active);
+  const work=events.filter(e=>String(e.date||'')>=start&&String(e.date||'')<=limit&&dateObj(e.date).getDay()===6&&/arbeit\s*landi|landi.*arbeit/i.test(String(e.title||''))&&pids(e).includes('oli'));
+  const warnings=[],checked=[];
+  for(const w of work){
+    const time=String(w.time||'').slice(0,5),expected=time==='07:30'?'06:50':time==='07:55'?'07:20':'';
+    const srks=events.filter(e=>String(e.date||'')===String(w.date||'')&&/\bsrk\b/i.test(String(e.title||''))&&pids(e).includes('oli'));
+    if(!expected){warnings.push({date:w.date,title:'Samstagsschicht prüfen',detail:`Arbeitsbeginn ${time||'ohne Zeit'} · SRK-Zeit nicht automatisch ableitbar`});continue}
+    const matching=srks.find(e=>String(e.time||'').slice(0,5)===expected);
+    if(!srks.length)warnings.push({date:w.date,title:'SRK Betreuung fehlt',detail:`Arbeit ${time} · erwartet SRK ${expected}`});
+    else if(!matching)warnings.push({date:w.date,title:'SRK-Zeit stimmt nicht',detail:`Arbeit ${time} · erwartet ${expected} · eingetragen ${srks.map(x=>String(x.time||'ohne Zeit').slice(0,5)).join(', ')}`});
+    else checked.push({date:w.date,work:time,srk:expected});
+  }
+  return{warnings,checked,total:work.length};
+}
+function saturdayCareWarningHtml(audit){
+  if(!audit?.warnings?.length)return'';
+  return `<section class="fc11-care-warning"><div class="fc11-care-warning-head"><span>⚠️</span><div><small>BETREUUNGSCHECK</small><b>${audit.warnings.length} Punkt${audit.warnings.length===1?'':'e'} prüfen</b></div></div><div>${audit.warnings.slice(0,3).map(x=>`<button type="button" data-care-date="${esc(x.date)}"><b>${esc(fmt(x.date,{weekday:true}))} · ${esc(x.title)}</b><span>${esc(x.detail)}</span></button>`).join('')}</div></section>`;
+}
+function smartSummary(work,events,todos,hw,mailCount=0,careWarnings=0){
+  const parts=[];if(careWarnings)parts.push(`${careWarnings} Betreuungswarnung${careWarnings===1?'':'en'}`);if(events.length)parts.push(`${events.length} Termin${events.length===1?'':'e'}`);if(todos.length+hw.length)parts.push(`${todos.length+hw.length} Aufgabe${todos.length+hw.length===1?'':'n'}`);if(mailCount)parts.push(`${mailCount} relevante Mail${mailCount===1?'':'s'}`);if(work.length)parts.push('Arbeit geplant');return parts.length?parts.join(' · '):'Keine offenen Punkte für heute';
 }
 function summaryText(work,events,todos,hw){
   const n=work.length+events.length+todos.length+hw.length;
@@ -556,7 +579,8 @@ function systemHealth(){
     return `<div class="fc11-health-row ${ok?'ok':'warn'}"><i></i><span><b>${esc(label)}</b><small>${esc(sub)}</small></span></div>`;
   };
   return '<div class="fc11-health"><div class="fc11-health-head"><span><small>SYSTEMSTATUS</small><b>'+(conns.length?'Cloud-Dienste':'Wird geprüft')+'</b></span><em>'+(bg?.active?'Auto-Sync · 30 Min':'Auto-Sync prüfen')+'</em></div>'+
-    row('Familienzentrale Cloud',null,'cloud')+row('Apple Kalender',by('icloud'))+row('Bluewin E-Mail',by('bluewin'))+row('Hintergrund-Sync',bg,'background')+'</div>';
+    row('Familienzentrale Cloud',null,'cloud')+row('Apple Kalender',by('icloud'))+row('Bluewin E-Mail',by('bluewin'))+row('Hintergrund-Sync',bg,'background')+
+    (()=>{const a=saturdayCareAudit(),ok=!a.warnings.length;return `<div class="fc11-health-row ${ok?'ok':'warn'}"><i></i><span><b>Samstagsbetreuung</b><small>${esc(ok?(a.total?a.checked.length+' kommende Schichten geprüft':'Keine kommenden Samstagsschichten'):a.warnings.length+' Problem'+(a.warnings.length===1?'':'e')+' gefunden')}</small></span></div>`})()+'</div>';
 }
 function dateTimeShort(v){if(!v)return'noch nie';try{return new Intl.DateTimeFormat('de-CH',{day:'2-digit',month:'2-digit',hour:'2-digit',minute:'2-digit'}).format(new Date(v))}catch{return''}}
 function systemSummaryText(){
