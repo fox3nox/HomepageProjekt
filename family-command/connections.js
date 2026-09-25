@@ -124,7 +124,9 @@ function calendarPicker(c){
   const list=Array.isArray(c?.settings?.available_calendars)?c.settings.available_calendars.filter(x=>x?.href&&x?.writable!==false):[];
   if(!list.length)return'';
   const selected=String(c?.settings?.calendar_href||'');
-  return '<label class="fcc-calendar-picker"><span><b>Zielkalender</b><small>Hierhin schreibt die Familienzentrale.</small></span><select data-fcc-calendar>'+list.map(x=>'<option value="'+esc(x.href)+'" '+(String(x.href)===selected?'selected':'')+'>'+esc(x.name||'Kalender')+'</option>').join('')+'</select></label>';
+  const read=Array.isArray(c?.settings?.read_calendar_hrefs)&&c.settings.read_calendar_hrefs.length?c.settings.read_calendar_hrefs.map(String):[selected];
+  return '<div class="fcc-calendar-config"><label class="fcc-calendar-picker"><span><b>Zielkalender</b><small>Hierhin schreibt die Familienzentrale.</small></span><select data-fcc-calendar>'+list.map(x=>'<option value="'+esc(x.href)+'" '+(String(x.href)===selected?'selected':'')+'>'+esc(x.name||'Kalender')+'</option>').join('')+'</select></label>'+
+    '<div class="fcc-calendar-read"><div><b>Aus iCloud lesen</b><small>Diese Kalender erscheinen zusätzlich in der Familienzentrale.</small></div><div class="fcc-calendar-read-list">'+list.map(x=>'<label><input type="checkbox" data-fcc-read-calendar value="'+esc(x.href)+'" '+(read.includes(String(x.href))?'checked':'')+'><span>'+esc(x.name||'Kalender')+'</span></label>').join('')+'</div></div></div>';
 }
 function card(provider,title,sub,icon){
   const c=conn(provider),[label,tone]=stateLabel(c);
@@ -235,6 +237,14 @@ function bind(root){
     notice('Zielkalender gespeichert. Synchronisation läuft …','info');
     const j=await api({action:'sync',provider:'icloud'});setSnapshot(j);render();notice('iCloud-Zielkalender aktualisiert.','ok');
   }catch(e){notice(e.message||String(e),'error')}};
+  root.querySelectorAll('[data-fcc-read-calendar]').forEach(box=>box.onchange=async()=>{try{
+    const boxes=[...root.querySelectorAll('[data-fcc-read-calendar]')],selected=boxes.filter(x=>x.checked).map(x=>x.value);
+    if(!selected.length){box.checked=true;notice('Mindestens ein iCloud-Kalender muss gelesen werden.','error');return}
+    boxes.forEach(x=>x.disabled=true);
+    await api({action:'settings',provider:'icloud',settings:{read_calendar_hrefs:selected}});
+    notice('Kalenderauswahl gespeichert. Synchronisation läuft …','info');
+    const j=await api({action:'sync',provider:'icloud'});setSnapshot(j);render();notice('iCloud-Kalender wurden aktualisiert.','ok');
+  }catch(e){notice(e.message||String(e),'error');render()}});
   root.querySelectorAll('[data-mail-action]').forEach(b=>b.onclick=()=>takeMailAction(b.dataset.mailUid,b.dataset.mailAction));
   root.querySelectorAll('[data-mail-delete]').forEach(b=>b.onclick=()=>deleteMails([b.dataset.mailDelete]));
   root.querySelectorAll('[data-mail-rule]').forEach(b=>b.onclick=()=>setMailRule(b.dataset.mailRuleUid,b.dataset.mailRule));
