@@ -30,7 +30,7 @@ const state={
     {id:'event-today',personIds:['fynn'],title:'Zahnarzt',date:'2026-09-22',time:'15:30',end:'16:00',note:'Versicherungskarte mitnehmen'},
     {id:'oli-work-conflict',personIds:['oli'],title:'Arzttermin',date:'2026-09-22',time:'09:00',end:'09:30',note:'Testkonflikt während LANDI-Arbeit'},
     {id:'oli-srk-coverage',personIds:['oli'],title:'SRK Betreuung',date:'2026-09-22',time:'07:00',end:'08:00',note:'Betreuung während der Arbeit',eventRole:'care-coverage',requiresPresence:false},
-    {id:'event-tomorrow',personIds:['jayden'],title:'Elternabend',date:'2026-09-23',time:'19:00',end:'20:00',note:''},
+    {id:'event-tomorrow',personIds:['jayden'],title:'Elternabend',date:'2026-09-23',time:'19:00',end:'20:00',note:'',source:'bluewin'},
     {id:'holiday-elia',personIds:['eliyah'],title:'Herbstferien',date:'2026-09-21',endDate:'2026-09-25',note:''}
   ],
   todos:[
@@ -99,6 +99,7 @@ try{
   const tomorrowWork=page.locator('.fc11-tomorrow-section .fc11-row.work');
   assert.equal(await tomorrowWork.count(),1,'split work shift appears once in tomorrow briefing');
   assert.match(await tomorrowWork.innerText(),/07:00[\s\S]*los[\s\S]*Oli[\s\S]*Arbeit LANDI[\s\S]*07:30–17:00[\s\S]*Pause 12:00–13:00/);
+  assert.match(await page.locator('.fc11-tomorrow-section [data-event="event-tomorrow"]').innerText(),/Bluewin[\s\S]*Elternabend/,'automated event shows provenance');
   assert.equal(await page.locator('.fc11-tomorrow-section .fc11-row').first().getAttribute('class'),'fc11-row work','departure is the first tomorrow item');
 
   const navBox=await page.locator('.fc11-bottom-nav').boundingBox();
