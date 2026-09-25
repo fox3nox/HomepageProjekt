@@ -266,10 +266,12 @@ function renderToday(root){
   root.querySelectorAll('[data-kid]').forEach(b=>b.onclick=()=>{state.planPerson=b.dataset.kid;state.planDate=date;open('plan')});
   root.querySelector('[data-tomorrow-plan]')?.addEventListener('click',()=>{state.planDate=tomorrow;open('plan')});
   root.querySelector('[data-prep-plan]')?.addEventListener('click',()=>{state.planDate=tomorrow;open('plan')});
-  root.querySelectorAll('[data-prep-check]').forEach(input=>input.onchange=()=>{
-    setPrepCheck(input.dataset.prepCheck,input.checked);
-    const row=input.closest('.fc11-prep-item');row?.classList.toggle('done',input.checked);
-    const section=input.closest('.fc11-prep-section'),count=section?.querySelectorAll('[data-prep-check]:checked').length||0,total=section?.querySelectorAll('[data-prep-check]').length||0;
+  root.querySelectorAll('[data-prep-toggle]').forEach(button=>button.onclick=()=>{
+    const on=button.getAttribute('aria-pressed')!=='true';
+    button.setAttribute('aria-pressed',String(on));
+    setPrepCheck(button.dataset.prepToggle,on);
+    button.classList.toggle('done',on);
+    const section=button.closest('.fc11-prep-section'),count=section?.querySelectorAll('[data-prep-toggle][aria-pressed="true"]').length||0,total=section?.querySelectorAll('[data-prep-toggle]').length||0;
     const h=section?.querySelector('.fc11-section-head h2');if(h)h.textContent=count+'/'+total+' bereit';
   });
   root.querySelector('[data-focus-action]')?.addEventListener('click',()=>{if(focus?.eventId)openEvent(focus.eventId);else if(focus?.kind==='task'||focus?.kind==='homework')open('tasks');else open('plan')});
@@ -713,7 +715,7 @@ function tomorrowPrepHtml(date){
   const done=items.filter(x=>checks[x.key]).length;
   return '<section class="fc11-section fc11-prep-section"><div class="fc11-section-head"><div><small>MORGEN VORBEREITEN</small><h2>'+done+'/'+items.length+' bereit</h2></div><button type="button" data-prep-plan>Plan morgen</button></div>'+
     '<div class="fc11-prep-groups">'+[...groups].map(([pid,list])=>'<div class="fc11-prep-group"><div class="fc11-prep-person">'+(pid==='all'?'<span class="fc11-avatar">•</span><b>Allgemein</b>':badgeFor(pid))+'</div><div>'+
-      list.map(x=>'<label class="fc11-prep-item '+(checks[x.key]?'done':'')+'"><input type="checkbox" data-prep-check="'+esc(x.key)+'" '+(checks[x.key]?'checked':'')+'><span class="fc11-prep-box">'+icon('check')+'</span><span class="fc11-prep-copy"><b>'+esc(x.text)+'</b>'+(x.sub?'<small>'+esc(x.sub)+'</small>':'')+'</span></label>').join('')+
+      list.map(x=>'<button type="button" class="fc11-prep-item '+(checks[x.key]?'done':'')+'" data-prep-toggle="'+esc(x.key)+'" aria-pressed="'+(checks[x.key]?'true':'false')+'"><span class="fc11-prep-box">'+icon('check')+'</span><span class="fc11-prep-copy"><b>'+esc(x.text)+'</b>'+(x.sub?'<small>'+esc(x.sub)+'</small>':'')+'</span></button>').join('')+
     '</div></div>').join('')+'</div></section>';
 }
 
