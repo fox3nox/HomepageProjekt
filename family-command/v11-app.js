@@ -74,6 +74,19 @@ function dependents(){
 function eventsOn(date){
   try{return typeof window.eventsOn==='function'?rows(window.eventsOn(date)):rows(D().events).filter(e=>eventDate(e)===date||(e.endDate&&eventDate(e)<=date&&String(e.endDate)>=date))}catch{return[]}
 }
+function duplicatesScheduledWork(e,date){
+  if(!e||!/arbeit|landi|dienst|schicht/i.test(String(e.title||'')))return false;
+  const start=String(e.time||''),end=String(e.end||'');
+  if(!start)return false;
+  return pids(e).some(pid=>{
+    const slots=schedule(pid,dateObj(date).getDay())
+      .filter(x=>x.start&&x.end&&/arbeit|landi|dienst|schicht/i.test(String(x.label||'')))
+      .sort((a,b)=>timeVal(a.start).localeCompare(timeVal(b.start)));
+    if(!slots.length)return false;
+    const first=slots[0],last=slots[slots.length-1];
+    return start===String(first.start||'')&&(!end||end===String(last.end||''));
+  });
+}
 function schedule(pid,day){
   try{return typeof window.scheduleFor==='function'?rows(window.scheduleFor(pid,day)):rows(D().schedules?.[pid]?.[day])}catch{return[]}
 }
@@ -217,10 +230,10 @@ function render(){
 }
 
 function renderToday(root){
-  const date=today(),kids=childTodayRows(date),sharedHoliday=sharedChildHoliday(kids),nextCandidate=nextDisplay(nextAction()),work=workFor(date),events=eventsOn(date).filter(e=>!window.__fcV9?.eventIsPast?.(e)&&!kids.some(k=>k.holiday?.id===e.id)),todos=todoRows('today'),hw=homeworkRows('today');
+  const date=today(),kids=childTodayRows(date),sharedHoliday=sharedChildHoliday(kids),nextCandidate=nextDisplay(nextAction()),work=workFor(date),events=eventsOn(date).filter(e=>!window.__fcV9?.eventIsPast?.(e)&&!kids.some(k=>k.holiday?.id===e.id)&&!duplicatesScheduledWork(e,date)),todos=todoRows('today'),hw=homeworkRows('today');
   const focus=focusForToday(date,sharedHoliday?.id===nextCandidate?.eventId?null:nextCandidate,todos,hw);
   const mailPulse=bluewinPulse();
-  const tomorrow=addDays(date,1),tomKids=childTodayRows(tomorrow),tomWork=workFor(tomorrow),tomEvents=eventsOn(tomorrow).filter(e=>!tomKids.some(k=>k.holiday?.id===e.id)),tomTodos=todoRows('open').filter(x=>taskDate(x)===tomorrow),tomHw=homeworkRows('open').filter(x=>taskDate(x)===tomorrow),tomCount=tomWork.length+tomEvents.length+tomTodos.length+tomHw.length;
+  const tomorrow=addDays(date,1),tomKids=childTodayRows(tomorrow),tomWork=workFor(tomorrow),tomEvents=eventsOn(tomorrow).filter(e=>!tomKids.some(k=>k.holiday?.id===e.id)&&!duplicatesScheduledWork(e,tomorrow)),tomTodos=todoRows('open').filter(x=>taskDate(x)===tomorrow),tomHw=homeworkRows('open').filter(x=>taskDate(x)===tomorrow),tomCount=tomWork.length+tomEvents.length+tomTodos.length+tomHw.length;
   header('Heute',fmt(date,{weekday:true,long:true}),smartSummary(work,events,todos,hw,mailPulse.count));
   const childrenSection=`<section class="fc11-section fc11-children-section">
     <div class="fc11-section-head"><div><small>FAMILIE</small><h2>Kinder heute</h2></div><button type="button" data-go-plan>Wochenplan</button></div>
@@ -364,7 +377,7 @@ function bindRows(root){
 
 function renderPlan(root){
   if(!/^\d{4}-\d{2}-\d{2}$/.test(state.planDate))state.planDate=today();
-  const dates=weekDates(state.planDate),ev=eventsOn(state.planDate).filter(e=>matchesPerson(e,state.planPerson)),allPeople=rows(D().people).filter(active),kids=childTodayRows(state.planDate),sharedHoliday=sharedChildHoliday(kids),childIds=new Set(kids.map(x=>String(x.p.id))),people=allPeople.filter(p=>state.planPerson==='all'||String(p.id)===String(state.planPerson)),shown=state.planPerson==='all'&&sharedHoliday?people.filter(p=>!childIds.has(String(p.id))):people;
+  const dates=weekDates(state.planDate),ev=eventsOn(state.planDate).filter(e=>matchesPerson(e,state.planPerson)&&!duplicatesScheduledWork(e,state.planDate)),allPeople=rows(D().people).filter(active),kids=childTodayRows(state.planDate),sharedHoliday=sharedChildHoliday(kids),childIds=new Set(kids.map(x=>String(x.p.id))),people=allPeople.filter(p=>state.planPerson==='all'||String(p.id)===String(state.planPerson)),shown=state.planPerson==='all'&&sharedHoliday?people.filter(p=>!childIds.has(String(p.id))):people;
   header('Plan',fmt(state.planDate,{weekday:true,long:true}),weekRangeLabel(dates));
   root.innerHTML=`<div class="fc11-page">
     <div class="fc11-plan-tools">
