@@ -819,6 +819,7 @@ function openSystemTools(){
     </div>
     ${systemHealth()}
     ${systemSyncPanel()}
+    ${systemActivityPanel()}
     <div class="fc11-system-tools fc11-tools-grid">
       ${tool('connections','link','Verbindungen','Apple Kalender & Bluewin')}
       ${tool('integrity','check','Datenprüfung',(()=>{const h=window.__fcConnections?.status?.()?.dataHealth;return h?.issue_count?h.issue_count+' Hinweise':'Daten sauber'})())}
@@ -835,6 +836,7 @@ function openSystemTools(){
   m.onclick=e=>{if(e.target===m)close()};
   m.querySelectorAll('[data-tool]').forEach(b=>b.onclick=()=>{const key=b.dataset.tool;close();setTimeout(()=>openTool(key),0)});
   m.querySelector('[data-system-connections]')?.addEventListener('click',()=>{close();setTimeout(()=>openTool('connections'),0)});
+  m.querySelector('[data-system-activity]')?.addEventListener('click',()=>{close();setTimeout(openActivityJournal,0)});
   m.querySelector('[data-system-sync]')?.addEventListener('click',async e=>{
     const b=e.currentTarget,old=b.textContent;b.disabled=true;b.textContent='Synchronisiert …';
     try{
@@ -913,6 +915,66 @@ function systemSyncPanel(){
   return '<section class="fc11-sync-panel"><div class="fc11-sync-panel-head"><div><small>AUTO-SYNC</small><b>Letzte Änderungen</b></div><button type="button" data-system-sync>Jetzt synchronisieren</button></div>'+
     (items?'<div class="fc11-sync-history">'+items+'</div>':'<div class="fc11-sync-empty">Der Verlauf erscheint nach dem nächsten Sync-Lauf.</div>')+
     '<button type="button" class="fc11-sync-settings" data-system-connections>Kalender & E-Mail verwalten</button></section>';
+}
+
+
+function activitySourceLabel(v){
+  const s=String(v||'');
+  if(s.startsWith('connector-icloud'))return'iCloud';
+  if(s.startsWith('connector-bluewin'))return'Bluewin';
+  if(s.startsWith('fredy-workplan'))return'LANDI Arbeitsplan';
+  if(s.startsWith('srk-care'))return'SRK-Regel';
+  if(s.startsWith('assistant'))return'Assistent';
+  if(s.startsWith('diagnostic'))return'System';
+  return s?'Familienzentrale':'Familienzentrale';
+}
+function activitySummary(entry){
+  const s=entry?.summary||{},parts=[];
+  const count=(section,kind)=>rows(s?.[section]?.[kind]).length;
+  const push=(n,label)=>{if(n)parts.push(n+' '+label)};
+  push(count('events','added'),'Termin'+(count('events','added')===1?'':'e')+' hinzugefügt');
+  push(count('events','changed'),'Termin'+(count('events','changed')===1?'':'e')+' geändert');
+  push(count('events','removed'),'Termin'+(count('events','removed')===1?'':'e')+' entfernt');
+  push(count('todos','added'),'To-do'+(count('todos','added')===1?'':'s')+' hinzugefügt');
+  push(count('todos','changed'),'To-do'+(count('todos','changed')===1?'':'s')+' geändert');
+  push(count('todos','removed'),'To-do'+(count('todos','removed')===1?'':'s')+' entfernt');
+  push(count('homework','added'),'Schulaufgabe'+(count('homework','added')===1?'':'n')+' hinzugefügt');
+  push(count('homework','changed'),'Schulaufgabe'+(count('homework','changed')===1?'':'n')+' geändert');
+  push(count('homework','removed'),'Schulaufgabe'+(count('homework','removed')===1?'':'n')+' entfernt');
+  if(s.people_changed)parts.push('Personendaten geändert');
+  if(s.schedules_changed)parts.push('Stundenplan geändert');
+  if(s.reminders_changed)parts.push('Erinnerungen geändert');
+  if(s.assistant_preferences_changed)parts.push('Assistent gelernt');
+  return parts.join(' · ')||'Familien-State aktualisiert';
+}
+function activityLead(entry){
+  const s=entry?.summary||{};
+  for(const section of ['events','todos','homework'])for(const kind of ['added','changed','removed']){
+    const x=rows(s?.[section]?.[kind])[0];if(x?.title)return String(x.title);
+  }
+  return'';
+}
+function activityRow(entry){
+  const lead=activityLead(entry),summary=activitySummary(entry);
+  return '<div class="fc11-activity-row"><i></i><span><b>'+esc(activitySourceLabel(entry?.updated_by))+'</b><small>'+esc(dateTimeShort(entry?.changed_at))+' · '+esc(summary)+'</small>'+(lead?'<em>'+esc(lead)+'</em>':'')+'</span><strong>r'+esc(entry?.revision||'')+'</strong></div>';
+}
+function systemActivityPanel(){
+  const list=rows(window.__fcConnections?.status?.()?.activityHistory).filter(x=>!String(x?.updated_by||'').startsWith('diagnostic')).slice(0,3);
+  return '<section class="fc11-activity-panel"><div class="fc11-activity-head"><div><small>ÄNDERUNGSJOURNAL</small><b>Was automatisch passiert ist</b></div><button type="button" data-system-activity>Alle anzeigen</button></div>'+
+    (list.length?'<div class="fc11-activity-list">'+list.map(activityRow).join('')+'</div>':'<div class="fc11-sync-empty">Das Journal startet mit der nächsten echten Datenänderung.</div>')+
+    '</section>';
+}
+function openActivityJournal(){
+  document.getElementById('fc11ActivitySheet')?.remove();
+  const list=rows(window.__fcConnections?.status?.()?.activityHistory).filter(x=>!String(x?.updated_by||'').startsWith('diagnostic')),m=document.createElement('div');
+  m.id='fc11ActivitySheet';m.className='fc11-modal';
+  m.innerHTML='<section class="fc11-sheet fc11-activity-sheet" role="dialog" aria-modal="true" aria-labelledby="fc11ActivityTitle">'+
+    '<div class="fc11-sheet-head"><div><small>NACHVOLLZIEHBAR</small><h2 id="fc11ActivityTitle">Änderungsjournal</h2><p>Automatische und manuelle Änderungen am Familien-State.</p></div><button type="button" data-close aria-label="Schliessen">×</button></div>'+
+    '<div class="fc11-activity-list full">'+(list.length?list.map(activityRow).join(''):'<div class="fc11-sync-empty">Noch keine neuen Änderungen protokolliert.</div>')+'</div>'+
+    '<div class="fc11-conflict-foot"><span>Vor automatischen State-Änderungen wird zusätzlich ein Snapshot erstellt.</span><button type="button" data-open-backups>Backups</button></div></section>';
+  const close=()=>m.remove();m.querySelector('[data-close]').onclick=close;m.onclick=e=>{if(e.target===m)close()};
+  m.querySelector('[data-open-backups]')?.addEventListener('click',()=>{close();setTimeout(()=>openTool('backup'),0)});
+  document.body.appendChild(m);
 }
 
 function systemSummaryText(){
