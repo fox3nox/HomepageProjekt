@@ -54,15 +54,53 @@ function mailImportance(mail,text){
   if(/\b(unsubscribe|abbestellen|newsletter abmelden)\b/i.test(all)&&!/rechnung|termin|sicherheit/i.test(all))return{importance:'unimportant',reason:'Newsletter'};
   return{importance:'normal',reason:''};
 }
+
+function familyData(){try{return typeof data!=='undefined'&&data?data:{}}catch{return{}}}
+function dueDateFromText(text){
+  const s=String(text||'');
+  let m=s.match(/(?:fällig|faellig|zahlbar|due)(?:\s+(?:bis|am|on))?\s*[:\-]?\s*(\d{1,2})[.\/-](\d{1,2})[.\/-](20\d{2}|\d{2})/i);
+  if(!m)return'';
+  let y=Number(m[3]);if(y<100)y+=2000;return isoDate(y,m[2],m[1]);
+}
+function amountFromText(text){
+  const s=String(text||''),m=s.match(/\bCHF\s*([0-9][0-9'’ .]*(?:[.,][0-9]{2})?)/i);if(!m)return'';
+  const raw=m[1].trim().replace(/[’' ]/g,'').replace(',','.');
+  const n=Number(raw);return Number.isFinite(n)?n.toFixed(2):'';
+}
+function daysFromToday(iso){
+  if(!iso)return null;const a=new Date(),b=new Date(iso+'T12:00:00');a.setHours(12,0,0,0);return Math.round((b-a)/86400000);
+}
+function normalizeTokens(v){return [...new Set(String(v||'').toLowerCase().replace(/[^a-z0-9äöüéèàâêîôûß]+/g,' ').split(/\s+/).filter(x=>x.length>=4&&!/^(termin|einladung|mail|info|hallo|freundliche|grüsse|grusse|beste|rechnung)$/.test(x)))]}
+function existingEventFor(insight){
+  if(!insight?.date)return null;const events=Array.isArray(familyData().events)?familyData().events:[];
+  const same=events.filter(e=>String(e?.date||'')===insight.date);
+  if(insight.time){const exact=same.find(e=>String(e?.time||'').slice(0,5)===insight.time);if(exact)return exact}
+  const mt=normalizeTokens([insight.title,insight.preview].join(' '));
+  let best=null,score=0;
+  for(const e of same){
+    const et=normalizeTokens([e?.title,e?.note].join(' '));const hit=mt.filter(x=>et.includes(x)).length;
+    if(hit>score){best=e;score=hit}
+  }
+  return score>=2?best:null;
+}
+function invoiceInsight(text){
+  const invoice=/\b(rechnung|invoice|qr.?code|zahlbar|fällig|faellig)\b/i.test(String(text||''));
+  if(!invoice)return null;
+  const dueDate=dueDateFromText(text),amount=amountFromText(text),days=daysFromToday(dueDate);
+  return{dueDate,amount,days};
+}
 function mailInsight(mail){
   const text=[mail.subject,mail.preview].filter(Boolean).join(' ');
   const lower=text.toLowerCase(),date=mailDate(text,mail.received_at),time=mailTime(text);
   const event=/\b(termin|appointment|reservation|reservierung|einladung|elternabend|sprechstunde|arzt|zahnarzt|kontrolle|meeting|gespräch|besprechung|veranstaltung|abholung|liefertermin|buchung|führung|kurs|training)\b/i.test(lower);
   const todo=/\b(rechnung|zahlung|bezahlen|fällig|faellig|mahnung|frist|deadline|formular|anmeldung|anmelden|einreichen|rückmeldung|rueckmeldung|antworten|bestätigen|bestaetigen|unterschrift|unterlagen|erledigen)\b/i.test(lower);
-  const type=isWorkPlanMail(mail)?'workplan':event?'event':todo?'todo':'info';
-  const confidence=type==='workplan'?'high':type==='event'?(date?(time?'high':'medium'):'low'):type==='todo'?'medium':'low';
+  const invoice=invoiceInsight(text);
+  const type=isWorkPlanMail(mail)?'workplan':invoice?'bill':event?'event':todo?'todo':'info';
+  const confidence=type==='workplan'?'high':type==='bill'?(invoice?.dueDate?'high':'medium'):type==='event'?(date?(time?'high':'medium'):'low'):type==='todo'?'medium':'low';
   const imp=mailImportance(mail,text);
-  return{...mail,...imp,type,date,time,confidence,title:String(mail.subject||'Bluewin-Mail').trim(),actionable:type!=='info'&&imp.importance!=='unimportant'};
+  const base={...mail,...imp,type,date,time,invoice,confidence,title:String(mail.subject||'Bluewin-Mail').trim()};
+  const existingEvent=(type==='event'&&date)?existingEventFor(base):null;
+  return{...base,existingEvent,alreadyHandled:!!existingEvent,actionable:type!=='info'&&type!=='workplan'&&imp.importance!=='unimportant'&&!existingEvent};
 }
 function mailInsightsAll(){return(snapshot.mail||[]).map(mailInsight)}
 function mailInsights(){return mailInsightsAll().filter(x=>(x.triage_status||'pending')==='pending'&&x.importance!=='unimportant')}
@@ -95,13 +133,15 @@ function card(provider,title,sub,icon){
 function renderMailAssistant(){
   const all=(snapshot.mail||[]).map(mailInsight);
   const active=all.filter(x=>(x.triage_status||'pending')==='pending');
-  const relevant=active.filter(x=>x.importance!=='unimportant').slice(0,12);
+  const already=active.filter(x=>x.alreadyHandled).slice(0,8);
+  const relevant=active.filter(x=>x.importance!=='unimportant'&&!x.alreadyHandled).sort((a,b)=>mailPriority(b)-mailPriority(a)||(new Date(b.received_at||0)-new Date(a.received_at||0))).slice(0,12);
   const unimportant=active.filter(x=>x.importance==='unimportant');
   const done=all.filter(x=>(x.triage_status||'pending')!=='pending').slice(0,4);
   if(!all.length)return'<div class="fcc-empty">Noch keine E-Mails synchronisiert.</div>';
   return '<div class="fcc-mail-groups">'+
     '<section class="fcc-mail-group"><div class="fcc-mail-group-head"><div><small>RELEVANT</small><b>'+relevant.length+' Mail'+(relevant.length===1?'':'s')+'</b></div></div>'+
       (relevant.length?'<div class="fcc-mail-list">'+relevant.map(mailCard).join('')+'</div>':'<div class="fcc-empty compact">Aktuell nichts Relevantes.</div>')+'</section>'+
+    (already.length?'<details class="fcc-processed fcc-already"><summary>Bereits im Kalender · '+already.length+'</summary><div class="fcc-mail-list">'+already.map(mailCard).join('')+'</div></details>':'')+
     (unimportant.length?'<details class="fcc-unimportant"><summary><span><small>AUTOMATISCH ERKANNT</small><b>Unwichtig · '+unimportant.length+'</b></span><em>anzeigen</em></summary><div class="fcc-unimportant-tools"><span>Werbung, Newsletter und technische Benachrichtigungen</span><button type="button" data-delete-unimportant>Alle in Papierkorb</button></div><div class="fcc-mail-list">'+unimportant.map(mailCard).join('')+'</div></details>':'')+
     (done.length?'<details class="fcc-processed"><summary>Zuletzt verarbeitet · '+done.length+'</summary><div class="fcc-mail-list">'+done.map(mailCard).join('')+'</div></details>':'')+
   '</div>';
@@ -116,6 +156,14 @@ function render(){
     '<div class="fcc-note"><b>Apple:</b> Verwende ein app-spezifisches Passwort, nicht dein normales Apple-Account-Passwort. <b>Bluewin:</b> Verwende dein E-Mail-Passwort, nicht das Swisscom-Login-Passwort.</div>';
   bind(body);
 }
+function mailPriority(i){
+  if(i.type==='workplan')return 100;
+  if(i.type==='bill'){const d=i.invoice?.days;return d!==null&&d<0?95:d!==null&&d<=7?90:80}
+  if(i.importance==='important')return 70;
+  if(i.type==='event')return 60;
+  if(i.type==='todo')return 50;
+  return 10;
+}
 function cleanPreview(v){
   const s=String(v||'').trim();if(!s)return'';
   const noisy=/^(this is a multi-part|mime-version|content-type|content-transfer-encoding|--[-_a-z0-9]+)/i.test(s)||/\{margin:|@media|font-family:|background-color:/i.test(s)||/^[A-Za-z0-9+/=\s]{140,}$/.test(s.slice(0,500));
@@ -123,15 +171,17 @@ function cleanPreview(v){
 }
 function mailCard(mail){
   const i=mailInsight(mail),done=(mail.triage_status||'pending')!=='pending';
-  const badge=i.importance==='unimportant'?'Unwichtig':i.type==='workplan'?'Arbeitsplan':i.type==='event'?'Termin':i.type==='todo'?'Aufgabe':i.importance==='important'?'Wichtig':'Info';
-  const badgeClass=i.importance==='unimportant'?'unimportant':i.type==='workplan'?'workplan':i.importance==='important'?'important':i.type;
-  const meta=[i.date?i.date.split('-').reverse().join('.'):null,i.time||null].filter(Boolean).join(' · ');
+  const badge=i.alreadyHandled?'Schon im Plan':i.importance==='unimportant'?'Unwichtig':i.type==='workplan'?'Arbeitsplan':i.type==='bill'?'Rechnung':i.type==='event'?'Termin':i.type==='todo'?'Aufgabe':i.importance==='important'?'Wichtig':'Info';
+  const badgeClass=i.alreadyHandled?'handled':i.importance==='unimportant'?'unimportant':i.type==='workplan'?'workplan':i.type==='bill'?'bill':i.importance==='important'?'important':i.type;
+  const due=i.invoice?.dueDate?i.invoice.dueDate.split('-').reverse().join('.'):null,amount=i.invoice?.amount?('CHF '+i.invoice.amount):null;
+  const dueLabel=i.invoice?.days===null?'':i.invoice?.days<0?('überfällig seit '+Math.abs(i.invoice.days)+' T.') : i.invoice?.days===0?'heute fällig':('fällig in '+i.invoice.days+' T.');
+  const meta=i.type==='bill'?[amount,due,dueLabel].filter(Boolean).join(' · '):[i.date?i.date.split('-').reverse().join('.'):null,i.time||null].filter(Boolean).join(' · ');
   return '<article class="fcc-mail-card '+(done?'done ':'')+(i.importance==='unimportant'?'is-unimportant':'')+'" data-mail="'+esc(mail.message_uid)+'"><div class="fcc-mail-main"><div class="fcc-mail-top"><span class="fcc-mail-kind '+badgeClass+'">'+badge+'</span><time>'+esc(mail.received_at?dateTime(mail.received_at):'')+'</time></div><b>'+esc(mail.subject||'(Ohne Betreff)')+'</b><span>'+esc(mail.sender||'Unbekannter Absender')+'</span>'+(cleanPreview(mail.preview)?'<p>'+esc(cleanPreview(mail.preview))+'</p>':'')+(i.reason?'<em>'+esc(i.reason)+'</em>':meta?'<em>Erkannt: '+esc(meta)+'</em>':'')+'</div>'+
     (done?'<div class="fcc-mail-done-row"><div class="fcc-mail-done">'+(mail.triage_status==='ignored'?'Ignoriert':'Übernommen')+'</div><button type="button" class="fcc-mail-delete-done" data-mail-delete="'+esc(mail.message_uid)+'">Löschen</button></div>':'<div class="fcc-mail-actions">'+
-      (i.type==='event'&&i.date&&i.importance!=='unimportant'?'<button type="button" class="primary" data-mail-action="event" data-mail-uid="'+esc(mail.message_uid)+'">Termin übernehmen</button>':'')+
-      (i.type!=='info'&&i.type!=='workplan'&&i.importance!=='unimportant'?'<button type="button" data-mail-action="todo" data-mail-uid="'+esc(mail.message_uid)+'">Als Aufgabe</button>':'')+
+      (!i.alreadyHandled&&i.type==='event'&&i.date&&i.importance!=='unimportant'?'<button type="button" class="primary" data-mail-action="event" data-mail-uid="'+esc(mail.message_uid)+'">Termin übernehmen</button>':'')+
+      (!i.alreadyHandled&&i.type!=='info'&&i.type!=='workplan'&&i.importance!=='unimportant'?'<button type="button" data-mail-action="todo" data-mail-uid="'+esc(mail.message_uid)+'">'+(i.type==='bill'?'Zahlung als Aufgabe':'Als Aufgabe')+'</button>':'')+
       (i.type==='workplan'?'<span class="fcc-workplan-auto">Kalenderprüfung automatisch</span>':'')+
-      (i.importance!=='unimportant'?'<button type="button" data-mail-action="ignore" data-mail-uid="'+esc(mail.message_uid)+'">Ignorieren</button>':'')+
+      (i.alreadyHandled?'<span class="fcc-workplan-auto">Bereits: '+esc(i.existingEvent?.title||'Kalendertermin')+'</span>':i.importance!=='unimportant'?'<button type="button" data-mail-action="ignore" data-mail-uid="'+esc(mail.message_uid)+'">Ignorieren</button>':'')+
       (!i.protected&&senderKey(mail)?'<button type="button" data-mail-rule="'+(i.importance==='unimportant'?'important':'unimportant')+'" data-mail-rule-uid="'+esc(mail.message_uid)+'">'+(i.importance==='unimportant'?'Doch wichtig':'Absender unwichtig')+'</button>':'')+
       '<button type="button" class="danger" data-mail-delete="'+esc(mail.message_uid)+'">Löschen</button></div>')+
     '</article>';
@@ -143,7 +193,7 @@ async function takeMailAction(uid,type){
   const what=type==='event'?'Termin':type==='todo'?'Aufgabe':'Mail';
   if(type!=='ignore'&&!confirm(what+' aus „'+i.title+'“ in die Familienzentrale übernehmen?'))return;
   try{
-    const j=await api({action:'mail_action',uid,type,payload:{title:i.title,date:i.date,time:i.time}});
+    const j=await api({action:'mail_action',uid,type,payload:{title:i.type==='bill'?('Rechnung bezahlen · '+i.title):i.title,date:i.type==='bill'?(i.invoice?.dueDate||i.date):i.date,time:i.time}});
     setSnapshot(j);render();notice(type==='ignore'?'Mail ignoriert.':what+' wurde übernommen.','ok');
     try{window.__fcCloudState?.bootstrap?.()}catch{}
   }catch(e){notice(e.message||String(e),'error')}
