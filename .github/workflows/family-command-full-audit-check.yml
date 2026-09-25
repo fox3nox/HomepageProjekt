@@ -59,6 +59,8 @@ jobs:
           check "supported PWA cache" grep -q "const CACHE='family-command-v143-v12-asi-design'" family-command/sw.js
           check "V11 app cached" grep -q "v11-app.js" family-command/sw.js
           check "V11 CSS cached" grep -q "v11.css" family-command/sw.js
+          check "V12 CSS wired" grep -q "v12.css" family-command/index.html
+          check "V12 CSS cached" grep -q "v12.css" family-command/sw.js
           check "connections JS cached" grep -q "connections.js" family-command/sw.js
           check "connections CSS cached" grep -q "connections.css" family-command/sw.js
           check "Family Brain cached" grep -q "family-brain.js" family-command/sw.js
