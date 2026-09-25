@@ -688,10 +688,19 @@ function tomorrowPrep(date){
     const ids=pids(e).length?pids(e):['all'];
     for(const pid of ids)add(pid,prep,e.title||'Termin','event','30');
   }
-  for(const w of workFor(date)){
+  const recurringWork=workFor(date),recurringPeople=new Set(recurringWork.map(w=>String(w.personId||'')));
+  for(const w of recurringWork){
     const first=w.slots?.[0],depart=String(w.depart||'').trim();
     if(depart)add(w.personId,'Um '+depart+' Uhr los',w.label||'Arbeit','time','10');
     else if(first?.start)add(w.personId,'Arbeitsbeginn '+first.start+' Uhr',w.label||'Arbeit','time','10');
+  }
+  for(const e of events.filter(e=>/arbeit|landi|dienst|schicht/i.test(String(e.title||'')))){
+    const ids=pids(e).length?pids(e):['oli'];
+    for(const pid of ids){
+      if(recurringPeople.has(String(pid)))continue;
+      if(e.time)add(pid,'Arbeitsbeginn '+e.time+' Uhr',e.title||'Arbeit','time','10');
+      else add(pid,e.title||'Arbeit','Morgen','time','10');
+    }
   }
   const srk=events.filter(e=>isCareCoverageEvent(e)&&/\bsrk\b/i.test(String(e.title||'')));
   for(const e of srk)add('oli','SRK Betreuung '+(e.time?e.time+' Uhr':''),'Kinderbetreuung während der Arbeit','care','15');
