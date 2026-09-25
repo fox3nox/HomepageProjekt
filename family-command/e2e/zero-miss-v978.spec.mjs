@@ -34,7 +34,7 @@ assert.match(css,/fc978-pendency/);
 assert.match(loader,/zero-miss-v978\.css/);
 assert.match(loader,/zero-miss-v978\.js/);
 assert.doesNotMatch(loader,/today-glance-v976/,'duplicate V9.76 glance renderer must no longer load');
-assert.match(sw,/family-command-v134-action-center/);
+assert.match(sw,/family-command-v135-sync-history/);
 assert.match(sw,/zero-miss-v978\.css/);
 assert.match(sw,/zero-miss-v978\.js/);
 assert.doesNotMatch(sw,/today-glance-v976/,'retired duplicate glance must not be precached');
