@@ -300,7 +300,7 @@ function workplanHealth(){
 }
 
 function connectorIssueState(){
-  const snap=window.__fcConnections?.status?.()||{},list=rows(snap.connections),issues=[],backup=snap.backupStatus||null,dataHealth=snap.dataHealth||null,workplan=workplanHealth();
+  const snap=window.__fcConnections?.status?.()||{},list=rows(snap.connections),issues=[],backup=snap.backupStatus||null,dataHealth=snap.dataHealth||null,workplan=workplanHealth(),guard=snap.automationGuard===true;
   const age=v=>{const t=Date.parse(v||'');return Number.isFinite(t)?Math.max(0,Math.round((Date.now()-t)/60000)):null};
   for(const x of list){
     if(!x?.enabled)continue;
@@ -317,6 +317,7 @@ function connectorIssueState(){
   const dataIssues=Number(dataHealth?.issue_count||0),dataHigh=Number(dataHealth?.high_count||0);
   if(dataHealth&&dataIssues)issues.push({kind:'integrity',label:'Datenprüfung',urgent:dataHigh>0,detail:dataHigh?dataHigh+' kritische · '+dataIssues+' insgesamt':dataIssues+' Hinweis'+(dataIssues===1?'':'e')});
   if(!workplan.ok)issues.push({kind:'workplan',label:'LANDI Arbeitsplan',urgent:workplan.level==='high',detail:workplan.lastDate?'Plan reicht nur bis '+fmt(workplan.lastDate):'Kein kommender Fredy-Plan gefunden'});
+  if(list.length&&!guard)issues.push({kind:'guard',label:'Automatik-Schutz',urgent:true,detail:'Backend-Schutzstatus nicht bestätigt'});
   return{issues,count:issues.length,urgent:issues.some(x=>x.urgent)};
 }
 
@@ -944,7 +945,7 @@ function personCard(p){
   return `<button type="button" class="fc11-person-card" style="--p:${esc(color(p.id))}" data-person-card="${esc(p.id)}"><span class="fc11-avatar large">${esc(initials(p.name))}</span><span><b>${esc(p.name)}</b><small>${esc([p.role,p.school].filter(Boolean).join(' · ')||'Familie')}</small><em>${week?week+' '+(week===1?'Zeitblock':'Zeitblöcke'):''}</em></span>${icon('chevron')}</button>`;
 }
 function systemHealth(){
-  const snap=window.__fcConnections?.status?.()||{},conns=Array.isArray(snap.connections)?snap.connections:[],cloud=window.__fcCloudState?.health?.()||{},bg=snap.backgroundSync||null,backup=snap.backupStatus||null,dataHealth=snap.dataHealth||null,workplan=workplanHealth();
+  const snap=window.__fcConnections?.status?.()||{},conns=Array.isArray(snap.connections)?snap.connections:[],cloud=window.__fcCloudState?.health?.()||{},bg=snap.backgroundSync||null,backup=snap.backupStatus||null,dataHealth=snap.dataHealth||null,workplan=workplanHealth(),guard=snap.automationGuard===true;
   const by=p=>conns.find(x=>x.provider===p)||null,ageMinutes=v=>{const t=Date.parse(v||'');return Number.isFinite(t)?Math.max(0,Math.round((Date.now()-t)/60000)):null};
   const row=(label,obj,kind='conn')=>{
     let ok=false,sub='Noch nicht geprüft';
@@ -968,6 +969,9 @@ function systemHealth(){
       ok=!!obj?.ok;
       sub=!obj?.lastDate?'Kein kommender Plan':obj.daysLeft<=7?'Nur noch '+obj.daysLeft+' Tage · bis '+fmt(obj.lastDate):obj.count+' Arbeitstage · bis '+fmt(obj.lastDate);
     }
+    else if(kind==='guard'){
+      ok=obj===true;sub=ok?'Automatische Datenfehler werden blockiert':'Schutzstatus nicht bestätigt';
+    }
     else if(obj){
       const age=ageMinutes(obj.last_sync_at),stale=age!==null&&age>75;
       ok=obj.last_status==='connected'&&!obj.last_error&&!stale;
@@ -976,7 +980,7 @@ function systemHealth(){
     return `<div class="fc11-health-row ${ok?'ok':'warn'}"><i></i><span><b>${esc(label)}</b><small>${esc(sub)}</small></span></div>`;
   };
   return '<div class="fc11-health"><div class="fc11-health-head"><span><small>SYSTEMSTATUS</small><b>'+(conns.length?'Cloud-Dienste':'Wird geprüft')+'</b></span><em>'+(bg?.active?'Auto-Sync · 30 Min':'Auto-Sync prüfen')+'</em></div>'+
-    row('Familienzentrale Cloud',null,'cloud')+row('Apple Kalender',by('icloud'))+row('Bluewin E-Mail',by('bluewin'))+row('Hintergrund-Sync',bg,'background')+row('Letztes Backup',backup,'backup')+row('Datenintegrität',dataHealth,'integrity')+row('LANDI Arbeitsplan',workplan,'workplan')+
+    row('Familienzentrale Cloud',null,'cloud')+row('Apple Kalender',by('icloud'))+row('Bluewin E-Mail',by('bluewin'))+row('Hintergrund-Sync',bg,'background')+row('Automatik-Schutz',guard,'guard')+row('Letztes Backup',backup,'backup')+row('Datenintegrität',dataHealth,'integrity')+row('LANDI Arbeitsplan',workplan,'workplan')+
     (()=>{const a=conflictAudit(),ok=!a.conflicts.length;return `<div class="fc11-health-row ${ok?'ok':'warn'}"><i></i><span><b>Konflikt-Assistent</b><small>${esc(ok?'Keine Konflikte in 90 Tagen':a.conflicts.length+' Punkt'+(a.conflicts.length===1?'':'e')+' prüfen')}</small></span></div>`})()+
     (()=>{const a=saturdayCareAudit(),ok=!a.warnings.length;return `<div class="fc11-health-row ${ok?'ok':'warn'}"><i></i><span><b>Samstagsbetreuung</b><small>${esc(ok?(a.total?a.checked.length+' kommende Schichten geprüft':'Keine kommenden Samstagsschichten'):a.warnings.length+' Problem'+(a.warnings.length===1?'':'e')+' gefunden')}</small></span></div>`})()+'</div>';
 }
