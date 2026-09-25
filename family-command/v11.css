@@ -222,3 +222,6 @@ html[data-fc11="1"] .fc9-shell{display:none!important}
 .fc11-activity-row strong{color:#a0aab5;font-size:8px;font-weight:800}
 .fc11-activity-sheet{max-height:min(86vh,760px);overflow:hidden;display:flex;flex-direction:column}
 @media(max-width:540px){.fc11-activity-head{align-items:stretch;flex-direction:column}.fc11-activity-head button{width:100%}}
+
+.fc11-source-chip.workplan{background:#f3efe3;color:#7b6630}
+.fc11-source-chip.bluewin{background:#edf5ff;color:#3e6f9f}
