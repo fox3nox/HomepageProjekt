@@ -32,8 +32,13 @@ function mailTime(text){
   const s=String(text||'');let m=s.match(/\b(?:um\s*)?(\d{1,2})[:.](\d{2})(?:\s*Uhr)?\b/i);if(m&&Number(m[1])<24&&Number(m[2])<60)return pad2(m[1])+':'+pad2(m[2]);
   m=s.match(/\bum\s+(\d{1,2})\s*Uhr\b/i);if(m&&Number(m[1])<24)return pad2(m[1])+':00';return'';
 }
+function isWorkPlanMail(mail){
+  const subject=String(mail.subject||''),sender=String(mail.sender||'');
+  return /fredy\.straehl@landibuchsi\.ch|strähl\s+fredy|straehl\s+fredy/i.test(sender)&&/plan|pläne|plaene|arbeitsplan|schicht|kw\s*\d+/i.test(subject);
+}
 function mailImportance(mail,text){
   const subject=String(mail.subject||''),sender=String(mail.sender||''),all=(text||'').toLowerCase();
+  if(isWorkPlanMail(mail))return{importance:'important',reason:'LANDI-Arbeitsplan von Fredy erkannt'};
   const critical=/\b(sicherheit|security|kritisch|login|anmeldung|passwort|kennwort|account|konto|rechnung|invoice|zahlung|mahnung|frist|termin|arzt|zahnarzt|schule|kindergarten|eltern|versicherung|behörde|behoerde|steuer|sozial|spital|ambulanz|reservation|reservierung|bestätigung|bestaetigung)\b/i.test(all);
   if(critical)return{importance:'important',reason:'Wichtige Konto-, Termin- oder Verwaltungsinformation'};
   if(/notifications@github\.com/i.test(sender)&&!/security|dependabot|vulnerability|secret scanning/i.test(subject))return{importance:'unimportant',reason:'GitHub-Workflow-/Entwicklungsbenachrichtigung'};
@@ -47,8 +52,8 @@ function mailInsight(mail){
   const lower=text.toLowerCase(),date=mailDate(text,mail.received_at),time=mailTime(text);
   const event=/\b(termin|appointment|reservation|reservierung|einladung|elternabend|sprechstunde|arzt|zahnarzt|kontrolle|meeting|gespräch|besprechung|veranstaltung|abholung|liefertermin|buchung|führung|kurs|training)\b/i.test(lower);
   const todo=/\b(rechnung|zahlung|bezahlen|fällig|faellig|mahnung|frist|deadline|formular|anmeldung|anmelden|einreichen|rückmeldung|rueckmeldung|antworten|bestätigen|bestaetigen|unterschrift|unterlagen|erledigen)\b/i.test(lower);
-  const type=event?'event':todo?'todo':'info';
-  const confidence=type==='event'?(date?(time?'high':'medium'):'low'):type==='todo'?'medium':'low';
+  const type=isWorkPlanMail(mail)?'workplan':event?'event':todo?'todo':'info';
+  const confidence=type==='workplan'?'high':type==='event'?(date?(time?'high':'medium'):'low'):type==='todo'?'medium':'low';
   const imp=mailImportance(mail,text);
   return{...mail,...imp,type,date,time,confidence,title:String(mail.subject||'Bluewin-Mail').trim(),actionable:type!=='info'&&imp.importance!=='unimportant'};
 }
@@ -105,13 +110,14 @@ function cleanPreview(v){
 }
 function mailCard(mail){
   const i=mailInsight(mail),done=(mail.triage_status||'pending')!=='pending';
-  const badge=i.importance==='unimportant'?'Unwichtig':i.type==='event'?'Termin':i.type==='todo'?'Aufgabe':i.importance==='important'?'Wichtig':'Info';
-  const badgeClass=i.importance==='unimportant'?'unimportant':i.importance==='important'?'important':i.type;
+  const badge=i.importance==='unimportant'?'Unwichtig':i.type==='workplan'?'Arbeitsplan':i.type==='event'?'Termin':i.type==='todo'?'Aufgabe':i.importance==='important'?'Wichtig':'Info';
+  const badgeClass=i.importance==='unimportant'?'unimportant':i.type==='workplan'?'workplan':i.importance==='important'?'important':i.type;
   const meta=[i.date?i.date.split('-').reverse().join('.'):null,i.time||null].filter(Boolean).join(' · ');
   return '<article class="fcc-mail-card '+(done?'done ':'')+(i.importance==='unimportant'?'is-unimportant':'')+'" data-mail="'+esc(mail.message_uid)+'"><div class="fcc-mail-main"><div class="fcc-mail-top"><span class="fcc-mail-kind '+badgeClass+'">'+badge+'</span><time>'+esc(mail.received_at?dateTime(mail.received_at):'')+'</time></div><b>'+esc(mail.subject||'(Ohne Betreff)')+'</b><span>'+esc(mail.sender||'Unbekannter Absender')+'</span>'+(cleanPreview(mail.preview)?'<p>'+esc(cleanPreview(mail.preview))+'</p>':'')+(i.reason?'<em>'+esc(i.reason)+'</em>':meta?'<em>Erkannt: '+esc(meta)+'</em>':'')+'</div>'+
     (done?'<div class="fcc-mail-done-row"><div class="fcc-mail-done">'+(mail.triage_status==='ignored'?'Ignoriert':'Übernommen')+'</div><button type="button" class="fcc-mail-delete-done" data-mail-delete="'+esc(mail.message_uid)+'">Löschen</button></div>':'<div class="fcc-mail-actions">'+
       (i.type==='event'&&i.date&&i.importance!=='unimportant'?'<button type="button" class="primary" data-mail-action="event" data-mail-uid="'+esc(mail.message_uid)+'">Termin übernehmen</button>':'')+
-      (i.type!=='info'&&i.importance!=='unimportant'?'<button type="button" data-mail-action="todo" data-mail-uid="'+esc(mail.message_uid)+'">Als Aufgabe</button>':'')+
+      (i.type!=='info'&&i.type!=='workplan'&&i.importance!=='unimportant'?'<button type="button" data-mail-action="todo" data-mail-uid="'+esc(mail.message_uid)+'">Als Aufgabe</button>':'')+
+      (i.type==='workplan'?'<span class="fcc-workplan-auto">Kalenderprüfung automatisch</span>':'')+
       (i.importance!=='unimportant'?'<button type="button" data-mail-action="ignore" data-mail-uid="'+esc(mail.message_uid)+'">Ignorieren</button>':'')+
       '<button type="button" class="danger" data-mail-delete="'+esc(mail.message_uid)+'">Löschen</button></div>')+
     '</article>';
