@@ -93,9 +93,9 @@ try{
   assert.doesNotMatch(prepText,/Leuchtweste/,'holiday child preparation is suppressed');
   const prepRucksack=page.locator('.fc11-prep-item').filter({hasText:'Rucksack'});
   await prepRucksack.click();
-  assert.equal(await prepRucksack.locator('input').isChecked(),true,'tomorrow prep can be checked off');
+  assert.equal(await prepRucksack.getAttribute('aria-pressed'),'true','tomorrow prep can be checked off');
   await page.evaluate(()=>window.__fcV11.render());
-  assert.equal(await page.locator('.fc11-prep-item').filter({hasText:'Rucksack'}).locator('input').isChecked(),true,'prep check survives rerender');
+  assert.equal(await page.locator('.fc11-prep-item').filter({hasText:'Rucksack'}).getAttribute('aria-pressed'),'true','prep check survives rerender');
   assert.equal(await page.locator('[data-action-center="conflicts"]').count(),1,'Today action center surfaces a detected scheduling conflict');
   const conflictHealth=await page.evaluate(()=>window.__fcConflictAssistant?.audit?.());
   assert.ok(conflictHealth?.high>=1,'conflict assistant detects work overlap');
