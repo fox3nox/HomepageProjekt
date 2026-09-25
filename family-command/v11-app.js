@@ -232,7 +232,7 @@ function render(){
 function renderToday(root){
   const date=today(),kids=childTodayRows(date),sharedHoliday=sharedChildHoliday(kids),nextCandidate=nextDisplay(nextAction()),work=workFor(date),events=eventsOn(date).filter(e=>!window.__fcV9?.eventIsPast?.(e)&&!kids.some(k=>k.holiday?.id===e.id)&&!duplicatesScheduledWork(e,date)),todos=todoRows('today'),hw=homeworkRows('today');
   const focus=focusForToday(date,sharedHoliday?.id===nextCandidate?.eventId?null:nextCandidate,todos,hw);
-  const mailPulse=bluewinPulse(),careAudit=saturdayCareAudit(),conflictState=conflictAudit(),conflictPulse=conflictPulseHtml(conflictState);
+  const mailPulse=bluewinPulse(),conflictState=conflictAudit(),conflictPulse=conflictPulseHtml(conflictState);
   const tomorrow=addDays(date,1),tomKids=childTodayRows(tomorrow),tomWork=workFor(tomorrow),tomEvents=eventsOn(tomorrow).filter(e=>!tomKids.some(k=>k.holiday?.id===e.id)&&!duplicatesScheduledWork(e,tomorrow)),tomTodos=todoRows('open').filter(x=>taskDate(x)===tomorrow),tomHw=homeworkRows('open').filter(x=>taskDate(x)===tomorrow),tomCount=tomWork.length+tomEvents.length+tomTodos.length+tomHw.length;
   header('Heute',fmt(date,{weekday:true,long:true}),smartSummary(work,events,todos,hw,mailPulse.count,conflictState.conflicts.filter(x=>!x.date||x.date<=addDays(date,14)).length));
   const childrenSection=`<section class="fc11-section fc11-children-section">
@@ -315,7 +315,7 @@ function conflictTopicScore(a,b){
 }
 function conflictAudit(){
   const start=today(),limit=addDays(start,90),events=rows(D().events).filter(active).filter(e=>{
-    const d=String(e&&e.date||'');return d>=start&&d<=limit;
+    const d=String(e&&e.date||''),end=String(e&&e.endDate||d);return !!d&&d<=limit&&end>=start;
   }),conflicts=[],seen=new Set();
   const add=x=>{
     const key=[x.kind,x.date||'',x.title||'',...(x.eventIds||[]),x.mailUid||''].join('|');
@@ -395,10 +395,10 @@ function conflictAudit(){
 function conflictPulseHtml(audit){
   const near=rows(audit&&audit.conflicts).filter(x=>x.kind==='mail'||!x.date||x.date<=addDays(today(),14));
   if(!near.length)return'';
-  const top=near.slice(0,3);
-  return '<button type="button" class="fc11-conflict-pulse '+(audit.high?'urgent':'')+'" data-open-conflicts>'+
+  const top=near.slice(0,3),nearHigh=near.some(x=>x.severity==='high');
+  return '<button type="button" class="fc11-conflict-pulse '+(nearHigh?'urgent':'')+'" data-open-conflicts>'+
     '<span class="fc11-conflict-icon">⚠️</span>'+
-    '<span class="fc11-conflict-copy"><small>KONFLIKT-ASSISTENT · '+near.length+' PRÜFEN</small><b>'+(audit.high?'Terminüberschneidung erkannt':'Mögliche Konflikte erkannt')+'</b>'+
+    '<span class="fc11-conflict-copy"><small>KONFLIKT-ASSISTENT · '+near.length+' PRÜFEN</small><b>'+(nearHigh?'Terminüberschneidung erkannt':'Mögliche Konflikte erkannt')+'</b>'+
     '<span>'+top.map(x=>'<em><strong>'+(x.date?esc(fmt(x.date,{weekday:true})):'Mail')+'</strong> '+esc(x.title)+'</em>').join('')+'</span></span>'+icon('chevron')+'</button>';
 }
 function openConflictAssistant(){
@@ -442,8 +442,8 @@ function saturdayCareWarningHtml(audit){
   if(!audit?.warnings?.length)return'';
   return `<section class="fc11-care-warning"><div class="fc11-care-warning-head"><span>⚠️</span><div><small>BETREUUNGSCHECK</small><b>${audit.warnings.length} Punkt${audit.warnings.length===1?'':'e'} prüfen</b></div></div><div>${audit.warnings.slice(0,3).map(x=>`<button type="button" data-care-date="${esc(x.date)}"><b>${esc(fmt(x.date,{weekday:true}))} · ${esc(x.title)}</b><span>${esc(x.detail)}</span></button>`).join('')}</div></section>`;
 }
-function smartSummary(work,events,todos,hw,mailCount=0,careWarnings=0){
-  const parts=[];if(careWarnings)parts.push(`${careWarnings} Betreuungswarnung${careWarnings===1?'':'en'}`);if(events.length)parts.push(`${events.length} Termin${events.length===1?'':'e'}`);if(todos.length+hw.length)parts.push(`${todos.length+hw.length} Aufgabe${todos.length+hw.length===1?'':'n'}`);if(mailCount)parts.push(`${mailCount} relevante Mail${mailCount===1?'':'s'}`);if(work.length)parts.push('Arbeit geplant');return parts.length?parts.join(' · '):'Keine offenen Punkte für heute';
+function smartSummary(work,events,todos,hw,mailCount=0,conflictCount=0){
+  const parts=[];if(conflictCount)parts.push(`${conflictCount} Konflikt${conflictCount===1?'':'e'} prüfen`);if(events.length)parts.push(`${events.length} Termin${events.length===1?'':'e'}`);if(todos.length+hw.length)parts.push(`${todos.length+hw.length} Aufgabe${todos.length+hw.length===1?'':'n'}`);if(mailCount)parts.push(`${mailCount} relevante Mail${mailCount===1?'':'s'}`);if(work.length)parts.push('Arbeit geplant');return parts.length?parts.join(' · '):'Keine offenen Punkte für heute';
 }
 function summaryText(work,events,todos,hw){
   const n=work.length+events.length+todos.length+hw.length;
