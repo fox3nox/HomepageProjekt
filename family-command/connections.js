@@ -32,6 +32,16 @@ function mailTime(text){
   const s=String(text||'');let m=s.match(/\b(?:um\s*)?(\d{1,2})[:.](\d{2})(?:\s*Uhr)?\b/i);if(m&&Number(m[1])<24&&Number(m[2])<60)return pad2(m[1])+':'+pad2(m[2]);
   m=s.match(/\bum\s+(\d{1,2})\s*Uhr\b/i);if(m&&Number(m[1])<24)return pad2(m[1])+':00';return'';
 }
+function mailImportance(mail,text){
+  const subject=String(mail.subject||''),sender=String(mail.sender||''),all=(text||'').toLowerCase();
+  const critical=/\b(sicherheit|security|kritisch|login|anmeldung|passwort|kennwort|account|konto|rechnung|invoice|zahlung|mahnung|frist|termin|arzt|zahnarzt|schule|kindergarten|eltern|versicherung|behörde|behoerde|steuer|sozial|spital|ambulanz|reservation|reservierung|bestätigung|bestaetigung)\b/i.test(all);
+  if(critical)return{importance:'important',reason:'Wichtige Konto-, Termin- oder Verwaltungsinformation'};
+  if(/notifications@github\.com/i.test(sender)&&!/security|dependabot|vulnerability|secret scanning/i.test(subject))return{importance:'unimportant',reason:'GitHub-Workflow-/Entwicklungsbenachrichtigung'};
+  if(/\b(wog\.ch|world of games|just eat|newsletter|promo|marketing)\b/i.test(sender+' '+subject))return{importance:'unimportant',reason:'Newsletter oder Werbung'};
+  if(/\b(rabatt|sale|angebot|angebote|deal|gutschein|entdecke|beliebtesten|jetzt sichern|nur heute|shopping|neuheiten|news(letter)?|aktion)\b/i.test(subject))return{importance:'unimportant',reason:'Werbung oder Angebot'};
+  if(/\b(unsubscribe|abbestellen|newsletter abmelden)\b/i.test(all)&&!/rechnung|termin|sicherheit/i.test(all))return{importance:'unimportant',reason:'Newsletter'};
+  return{importance:'normal',reason:''};
+}
 function mailInsight(mail){
   const text=[mail.subject,mail.preview].filter(Boolean).join(' ');
   const lower=text.toLowerCase(),date=mailDate(text,mail.received_at),time=mailTime(text);
@@ -39,9 +49,11 @@ function mailInsight(mail){
   const todo=/\b(rechnung|zahlung|bezahlen|fällig|faellig|mahnung|frist|deadline|formular|anmeldung|anmelden|einreichen|rückmeldung|rueckmeldung|antworten|bestätigen|bestaetigen|unterschrift|unterlagen|erledigen)\b/i.test(lower);
   const type=event?'event':todo?'todo':'info';
   const confidence=type==='event'?(date?(time?'high':'medium'):'low'):type==='todo'?'medium':'low';
-  return{...mail,type,date,time,confidence,title:String(mail.subject||'Bluewin-Mail').trim(),actionable:type!=='info'};
+  const imp=mailImportance(mail,text);
+  return{...mail,...imp,type,date,time,confidence,title:String(mail.subject||'Bluewin-Mail').trim(),actionable:type!=='info'&&imp.importance!=='unimportant'};
 }
-function mailInsights(){return(snapshot.mail||[]).filter(x=>(x.triage_status||'pending')==='pending').map(mailInsight)}
+function mailInsightsAll(){return(snapshot.mail||[]).map(mailInsight)}
+function mailInsights(){return mailInsightsAll().filter(x=>(x.triage_status||'pending')==='pending'&&x.importance!=='unimportant')}
 
 function dateTime(v){if(!v)return'Noch nie';try{return new Intl.DateTimeFormat('de-CH',{dateStyle:'short',timeStyle:'short'}).format(new Date(v))}catch{return String(v)}}
 function stateLabel(c){if(!c)return['Nicht verbunden','off'];if(c.last_status==='error')return['Fehler','error'];if(c.last_status==='connected'&&c.last_error)return['Verbunden · Hinweis','saved'];if(c.last_status==='connected')return['Verbunden','ok'];return['Eingerichtet','saved']}
@@ -62,15 +74,27 @@ function card(provider,title,sub,icon){
     (provider==='icloud'&&c?'<label class="fcc-toggle"><input type="checkbox" data-fcc-push '+(c.settings?.push_family_events?'checked':'')+'><span></span><div><b>Familienzentrale → iCloud</b><small>Meine zukünftigen Termine zusätzlich in den iCloud-Kalender schreiben.</small></div></label>':'')+
   '</article>';
 }
+function renderMailAssistant(){
+  const all=(snapshot.mail||[]).map(mailInsight);
+  const active=all.filter(x=>(x.triage_status||'pending')==='pending');
+  const relevant=active.filter(x=>x.importance!=='unimportant').slice(0,12);
+  const unimportant=active.filter(x=>x.importance==='unimportant');
+  const done=all.filter(x=>(x.triage_status||'pending')!=='pending').slice(0,4);
+  if(!all.length)return'<div class="fcc-empty">Noch keine E-Mails synchronisiert.</div>';
+  return '<div class="fcc-mail-groups">'+
+    '<section class="fcc-mail-group"><div class="fcc-mail-group-head"><div><small>RELEVANT</small><b>'+relevant.length+' Mail'+(relevant.length===1?'':'s')+'</b></div></div>'+
+      (relevant.length?'<div class="fcc-mail-list">'+relevant.map(mailCard).join('')+'</div>':'<div class="fcc-empty compact">Aktuell nichts Relevantes.</div>')+'</section>'+
+    (unimportant.length?'<details class="fcc-unimportant"><summary><span><small>AUTOMATISCH ERKANNT</small><b>Unwichtig · '+unimportant.length+'</b></span><em>anzeigen</em></summary><div class="fcc-unimportant-tools"><span>Werbung, Newsletter und technische Benachrichtigungen</span><button type="button" data-delete-unimportant>Alle in Papierkorb</button></div><div class="fcc-mail-list">'+unimportant.map(mailCard).join('')+'</div></details>':'')+
+    (done.length?'<details class="fcc-processed"><summary>Zuletzt verarbeitet · '+done.length+'</summary><div class="fcc-mail-list">'+done.map(mailCard).join('')+'</div></details>':'')+
+  '</div>';
+}
 function render(){
   const m=modal(),body=m.querySelector('#fccBody');
-  const mail=(snapshot.mail||[]).slice(0,8);
   body.innerHTML=
     '<div class="fcc-intro"><b>Direkt verbunden</b><span>Passwörter werden serverseitig verschlüsselt gespeichert und nie im Browser angezeigt.</span></div>'+
     card('icloud','Apple Kalender','iCloud-Kalender mit Terminen der Familienzentrale synchronisieren.','📅')+
     card('bluewin','Bluewin E-Mail','Posteingang lesen und wichtige Mails in der Familienzentrale sichtbar machen.','✉️')+
-    (conn('bluewin')?'<section class="fcc-mail"><div class="fcc-section-head"><div><small>BLUEWIN</small><h3>Mail-Assistent</h3></div><button type="button" data-fcc-sync="bluewin">Aktualisieren</button></div>'+
-      (mail.length?'<div class="fcc-mail-list">'+mail.map(mailCard).join('')+'</div>':'<div class="fcc-empty">Noch keine E-Mails synchronisiert.</div>')+'</section>':'')+
+    (conn('bluewin')?'<section class="fcc-mail"><div class="fcc-section-head"><div><small>BLUEWIN</small><h3>Mail-Assistent</h3></div><button type="button" data-fcc-sync="bluewin">Aktualisieren</button></div>'+renderMailAssistant()+'</section>':'')+
     '<div class="fcc-note"><b>Apple:</b> Verwende ein app-spezifisches Passwort, nicht dein normales Apple-Account-Passwort. <b>Bluewin:</b> Verwende dein E-Mail-Passwort, nicht das Swisscom-Login-Passwort.</div>';
   bind(body);
 }
@@ -81,13 +105,15 @@ function cleanPreview(v){
 }
 function mailCard(mail){
   const i=mailInsight(mail),done=(mail.triage_status||'pending')!=='pending';
-  const badge=i.type==='event'?'Termin':i.type==='todo'?'Aufgabe':'Info';
+  const badge=i.importance==='unimportant'?'Unwichtig':i.type==='event'?'Termin':i.type==='todo'?'Aufgabe':i.importance==='important'?'Wichtig':'Info';
+  const badgeClass=i.importance==='unimportant'?'unimportant':i.importance==='important'?'important':i.type;
   const meta=[i.date?i.date.split('-').reverse().join('.'):null,i.time||null].filter(Boolean).join(' · ');
-  return '<article class="fcc-mail-card '+(done?'done':'')+'" data-mail="'+esc(mail.message_uid)+'"><div class="fcc-mail-main"><div class="fcc-mail-top"><span class="fcc-mail-kind '+i.type+'">'+badge+'</span><time>'+esc(mail.received_at?dateTime(mail.received_at):'')+'</time></div><b>'+esc(mail.subject||'(Ohne Betreff)')+'</b><span>'+esc(mail.sender||'Unbekannter Absender')+'</span>'+(cleanPreview(mail.preview)?'<p>'+esc(cleanPreview(mail.preview))+'</p>':'')+(meta?'<em>Erkannt: '+esc(meta)+'</em>':'')+'</div>'+
+  return '<article class="fcc-mail-card '+(done?'done ':'')+(i.importance==='unimportant'?'is-unimportant':'')+'" data-mail="'+esc(mail.message_uid)+'"><div class="fcc-mail-main"><div class="fcc-mail-top"><span class="fcc-mail-kind '+badgeClass+'">'+badge+'</span><time>'+esc(mail.received_at?dateTime(mail.received_at):'')+'</time></div><b>'+esc(mail.subject||'(Ohne Betreff)')+'</b><span>'+esc(mail.sender||'Unbekannter Absender')+'</span>'+(cleanPreview(mail.preview)?'<p>'+esc(cleanPreview(mail.preview))+'</p>':'')+(i.reason?'<em>'+esc(i.reason)+'</em>':meta?'<em>Erkannt: '+esc(meta)+'</em>':'')+'</div>'+
     (done?'<div class="fcc-mail-done">'+(mail.triage_status==='ignored'?'Ignoriert':'Übernommen')+'</div>':'<div class="fcc-mail-actions">'+
-      (i.type==='event'&&i.date?'<button type="button" class="primary" data-mail-action="event" data-mail-uid="'+esc(mail.message_uid)+'">Termin übernehmen</button>':'')+
-      (i.type!=='info'?'<button type="button" data-mail-action="todo" data-mail-uid="'+esc(mail.message_uid)+'">Als Aufgabe</button>':'')+
-      '<button type="button" data-mail-action="ignore" data-mail-uid="'+esc(mail.message_uid)+'">Ignorieren</button></div>')+
+      (i.type==='event'&&i.date&&i.importance!=='unimportant'?'<button type="button" class="primary" data-mail-action="event" data-mail-uid="'+esc(mail.message_uid)+'">Termin übernehmen</button>':'')+
+      (i.type!=='info'&&i.importance!=='unimportant'?'<button type="button" data-mail-action="todo" data-mail-uid="'+esc(mail.message_uid)+'">Als Aufgabe</button>':'')+
+      (i.importance!=='unimportant'?'<button type="button" data-mail-action="ignore" data-mail-uid="'+esc(mail.message_uid)+'">Ignorieren</button>':'')+
+      '<button type="button" class="danger" data-mail-delete="'+esc(mail.message_uid)+'">Löschen</button></div>')+
     '</article>';
 }
 async function takeMailAction(uid,type){
@@ -102,12 +128,26 @@ async function takeMailAction(uid,type){
     try{window.__fcCloudState?.bootstrap?.()}catch{}
   }catch(e){notice(e.message||String(e),'error')}
 }
+async function deleteMails(uids){
+  const clean=[...new Set((uids||[]).map(String).filter(Boolean))];if(!clean.length)return;
+  const label=clean.length===1?'Diese E-Mail':'Diese '+clean.length+' E-Mails';
+  if(!confirm(label+' wirklich in den Bluewin-Papierkorb verschieben?'))return;
+  try{
+    const j=await api({action:'mail_delete',uids:clean});
+    setSnapshot(j);render();notice(j.result?.count+' E-Mail'+(j.result?.count===1?'':'s')+' in den Papierkorb verschoben.','ok');
+  }catch(e){notice(e.message||String(e),'error')}
+}
 function bind(root){
   root.querySelectorAll('[data-fcc-setup]').forEach(b=>b.onclick=()=>setup(b.dataset.fccSetup));
   root.querySelectorAll('[data-fcc-sync]').forEach(b=>b.onclick=()=>sync(b.dataset.fccSync,b));
   root.querySelectorAll('[data-fcc-disconnect]').forEach(b=>b.onclick=()=>disconnect(b.dataset.fccDisconnect));
   const push=root.querySelector('[data-fcc-push]');if(push)push.onchange=async()=>{try{await api({action:'settings',provider:'icloud',settings:{push_family_events:push.checked}});await refresh(false)}catch(e){notice(e.message,'error')}};
   root.querySelectorAll('[data-mail-action]').forEach(b=>b.onclick=()=>takeMailAction(b.dataset.mailUid,b.dataset.mailAction));
+  root.querySelectorAll('[data-mail-delete]').forEach(b=>b.onclick=()=>deleteMails([b.dataset.mailDelete]));
+  root.querySelector('[data-delete-unimportant]')?.addEventListener('click',()=>{
+    const ids=mailInsightsAll().filter(x=>x.importance==='unimportant'&&(x.triage_status||'pending')==='pending').map(x=>x.message_uid);
+    deleteMails(ids);
+  });
 }
 function notice(message,tone='info'){
   const body=document.getElementById('fccBody');if(!body)return;let n=body.querySelector('.fcc-toast');if(!n){n=document.createElement('div');n.className='fcc-toast';body.prepend(n)}n.className='fcc-toast '+tone;n.textContent=message;setTimeout(()=>n?.remove(),4500);
@@ -155,7 +195,7 @@ async function maybeAutoSync(){
   }catch(e){console.warn('fc_connectors_autosync',e)}
 }
 window.fcOpenConnections=()=>{modal();refresh();};
-window.__fcConnections={open:window.fcOpenConnections,refresh,maybeAutoSync,status:()=>snapshot,insights:mailInsights};
+window.__fcConnections={open:window.fcOpenConnections,refresh,maybeAutoSync,status:()=>snapshot,insights:mailInsights,allInsights:mailInsightsAll};
 document.addEventListener('fc:v11-ready',()=>setTimeout(maybeAutoSync,1800));
 document.addEventListener('visibilitychange',()=>{if(!document.hidden)maybeAutoSync()});
 })();
