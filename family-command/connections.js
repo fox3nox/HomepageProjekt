@@ -74,11 +74,16 @@ function render(){
     '<div class="fcc-note"><b>Apple:</b> Verwende ein app-spezifisches Passwort, nicht dein normales Apple-Account-Passwort. <b>Bluewin:</b> Verwende dein E-Mail-Passwort, nicht das Swisscom-Login-Passwort.</div>';
   bind(body);
 }
+function cleanPreview(v){
+  const s=String(v||'').trim();if(!s)return'';
+  const noisy=/^(this is a multi-part|mime-version|content-type|content-transfer-encoding|--[-_a-z0-9]+)/i.test(s)||/\{margin:|@media|font-family:|background-color:/i.test(s)||/^[A-Za-z0-9+/=\s]{140,}$/.test(s.slice(0,500));
+  return noisy?'':s.replace(/\s+/g,' ').slice(0,300);
+}
 function mailCard(mail){
   const i=mailInsight(mail),done=(mail.triage_status||'pending')!=='pending';
   const badge=i.type==='event'?'Termin':i.type==='todo'?'Aufgabe':'Info';
   const meta=[i.date?i.date.split('-').reverse().join('.'):null,i.time||null].filter(Boolean).join(' · ');
-  return '<article class="fcc-mail-card '+(done?'done':'')+'" data-mail="'+esc(mail.message_uid)+'"><div class="fcc-mail-main"><div class="fcc-mail-top"><span class="fcc-mail-kind '+i.type+'">'+badge+'</span><time>'+esc(mail.received_at?dateTime(mail.received_at):'')+'</time></div><b>'+esc(mail.subject||'(Ohne Betreff)')+'</b><span>'+esc(mail.sender||'Unbekannter Absender')+'</span>'+(mail.preview?'<p>'+esc(String(mail.preview).slice(0,300))+'</p>':'')+(meta?'<em>Erkannt: '+esc(meta)+'</em>':'')+'</div>'+
+  return '<article class="fcc-mail-card '+(done?'done':'')+'" data-mail="'+esc(mail.message_uid)+'"><div class="fcc-mail-main"><div class="fcc-mail-top"><span class="fcc-mail-kind '+i.type+'">'+badge+'</span><time>'+esc(mail.received_at?dateTime(mail.received_at):'')+'</time></div><b>'+esc(mail.subject||'(Ohne Betreff)')+'</b><span>'+esc(mail.sender||'Unbekannter Absender')+'</span>'+(cleanPreview(mail.preview)?'<p>'+esc(cleanPreview(mail.preview))+'</p>':'')+(meta?'<em>Erkannt: '+esc(meta)+'</em>':'')+'</div>'+
     (done?'<div class="fcc-mail-done">'+(mail.triage_status==='ignored'?'Ignoriert':'Übernommen')+'</div>':'<div class="fcc-mail-actions">'+
       (i.type==='event'&&i.date?'<button type="button" class="primary" data-mail-action="event" data-mail-uid="'+esc(mail.message_uid)+'">Termin übernehmen</button>':'')+
       (i.type!=='info'?'<button type="button" data-mail-action="todo" data-mail-uid="'+esc(mail.message_uid)+'">Als Aufgabe</button>':'')+
