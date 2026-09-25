@@ -1,8 +1,8 @@
-/* Familienzentrale V11 · one calm product shell over the proven data/runtime layer */
+/* Familienzentrale V12 · ASI presentation shell over the proven data/runtime layer */
 (()=>{'use strict';
 if(window.__fcV11)return;
 
-const VERSION='11.0.1-today-work';
+const VERSION='12.0.0-asi-design';
 const APP=document.getElementById('fcApp');
 const D=()=>window.data&&typeof window.data==='object'?window.data:{};
 const esc=s=>String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
