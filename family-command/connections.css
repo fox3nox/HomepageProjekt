@@ -38,3 +38,9 @@
 
 .fcc-mail-kind.workplan{background:#eee9ff;color:#6750a4}
 .fcc-workplan-auto{display:inline-flex;align-items:center;min-height:34px;padding:7px 9px;border-radius:9px;background:#f2efff;color:#6750a4;font-size:9.5px;font-weight:850}
+
+.fcc-intro em{display:block;margin-top:5px;color:#4778a9;font-style:normal;font-size:9.5px;font-weight:850}
+.fcc-calendar-picker{margin-top:10px;padding:10px 11px;border:1px solid #e2e9f1;border-radius:12px;background:#f8fafc;display:flex;align-items:center;justify-content:space-between;gap:10px}
+.fcc-calendar-picker>span{min-width:0}.fcc-calendar-picker b{display:block;color:#334961;font-size:11px}.fcc-calendar-picker small{display:block;margin-top:2px;color:#8190a1;font-size:9px}
+.fcc-calendar-picker select{max-width:47%;min-height:36px;padding:6px 8px;border:1px solid #d6e0ea;border-radius:9px;background:#fff;color:#34475d;font:inherit;font-size:10px;font-weight:800}
+@media(max-width:540px){.fcc-calendar-picker{align-items:stretch;flex-direction:column}.fcc-calendar-picker select{max-width:none;width:100%}}
