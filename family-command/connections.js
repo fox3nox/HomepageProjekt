@@ -100,7 +100,7 @@ function mailInsight(mail){
   const imp=mailImportance(mail,text);
   const base={...mail,...imp,type,date,time,invoice,confidence,title:String(mail.subject||'Bluewin-Mail').trim()};
   const existingEvent=(type==='event'&&date)?existingEventFor(base):null;
-  return{...base,existingEvent,alreadyHandled:!!existingEvent,actionable:type!=='info'&&type!=='workplan'&&imp.importance!=='unimportant'&&!existingEvent};
+  return{...base,existingEvent,alreadyHandled:!!existingEvent,actionable:(type==='workplan'||type==='bill'||type==='event'||type==='todo')&&imp.importance!=='unimportant'&&!existingEvent};
 }
 function mailInsightsAll(){return(snapshot.mail||[]).map(mailInsight)}
 function mailInsights(){return mailInsightsAll().filter(x=>(x.triage_status||'pending')==='pending'&&x.importance!=='unimportant')}
