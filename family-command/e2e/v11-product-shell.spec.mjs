@@ -67,7 +67,7 @@ try{
     {id:'doc-2',person_id:'jayden',title:'Jayden · Elterninformation',mime_type:'image/jpeg',created_at:'2026-09-21T10:00:00Z',links:[{source_kind:'person',source_id:'jayden'}]}
   ]})}));
   await page.goto(BASE+'/?access=test',{waitUntil:'domcontentloaded',timeout:20000});
-  await page.waitForFunction(()=>document.documentElement.dataset.fc11==='1'&&Boolean(window.__fcV11),{timeout:20000});
+  await page.waitForFunction(()=>document.documentElement.dataset.fc11==='1'&&document.documentElement.dataset.fc12==='1'&&Boolean(window.__fcV11),{timeout:20000});
   await isolate(page);
   await page.waitForFunction(()=>document.querySelector('[data-title]')?.textContent==='Heute',{timeout:5000});
 
@@ -76,6 +76,8 @@ try{
   await page.click('#fcFamilyBrain [data-close]');
 
   assert.equal(await page.locator('.fc11-bottom-nav [data-fc11-screen]').count(),5,'mobile navigation has five clear destinations');
+  assert.equal(await page.evaluate(()=>document.documentElement.dataset.fcDesign),'v12','V12 ASI design mode is active');
+  assert.equal(await page.evaluate(()=>[...document.styleSheets].some(s=>String(s.href||'').includes('v12.css'))),true,'V12 design stylesheet is loaded');
   assert.equal(await page.locator('.fc11-kid').count(),3,'today shows all three child rows');
   assert.equal(await page.locator('[data-action-center="conflicts"]').count(),1,'Today action center surfaces a detected scheduling conflict');
   const conflictHealth=await page.evaluate(()=>window.__fcConflictAssistant?.audit?.());
