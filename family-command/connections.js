@@ -17,10 +17,17 @@ function setSnapshot(j){snapshot={connections:j.connections||[],mail:j.mail||[],
 function pad2(n){return String(n).padStart(2,'0')}
 function isoDate(y,m,d){const dt=new Date(Number(y),Number(m)-1,Number(d),12);if(dt.getFullYear()!==Number(y)||dt.getMonth()!==Number(m)-1||dt.getDate()!==Number(d))return'';return `${y}-${pad2(m)}-${pad2(d)}`}
 function mailDate(text,received){
-  const s=String(text||'');
-  let m=s.match(/\b(20\d{2})[-/.](\d{1,2})[-/.](\d{1,2})\b/);if(m)return isoDate(m[1],m[2],m[3]);
-  m=s.match(/\b(\d{1,2})[.\/-](\d{1,2})[.\/-](20\d{2}|\d{2})\b/);if(m){let y=Number(m[3]);if(y<100)y+=2000;return isoDate(y,m[2],m[1])}
-  m=s.match(/\b(\d{1,2})\.(\d{1,2})\.(?!\d)/);if(m){const base=received?new Date(received):new Date();let y=base.getFullYear(),x=isoDate(y,m[2],m[1]);if(x&&x<String(new Date().getFullYear())+'-01-01')x=isoDate(y+1,m[2],m[1]);return x}
+  const s=String(text||''),weekday='(?:montag|dienstag|mittwoch|donnerstag|freitag|samstag|sonntag)';
+  const fromDmy=m=>{if(!m)return'';let y=Number(m[3]);if(y<100)y+=2000;return isoDate(y,m[2],m[1])};
+  let m=s.match(new RegExp('(?:\\bfür\\s+)?\\bam\\s*:?\\s*(?:'+weekday+'\\s*,?\\s*)?(\\d{1,2})[.\\/-](\\d{1,2})[.\\/-](20\\d{2}|\\d{2})\\b','i'));
+  let x=fromDmy(m);if(x)return x;
+  m=s.match(new RegExp('\\b'+weekday+'\\s*,?\\s*(\\d{1,2})[.\\/-](\\d{1,2})[.\\/-](20\\d{2}|\\d{2})\\b','i'));
+  x=fromDmy(m);if(x)return x;
+  m=s.match(/\b(\d{1,2})[.\/-](\d{1,2})[.\/-](20\d{2}|\d{2})\b(?=[^\n]{0,45}\bum\s+\d{1,2}(?:[:.]\d{2})?)/i);
+  x=fromDmy(m);if(x)return x;
+  m=s.match(/\b(20\d{2})[-/.](\d{1,2})[-/.](\d{1,2})\b/);if(m)return isoDate(m[1],m[2],m[3]);
+  m=s.match(/\b(\d{1,2})[.\/-](\d{1,2})[.\/-](20\d{2}|\d{2})\b/);x=fromDmy(m);if(x)return x;
+  m=s.match(/\b(\d{1,2})\.(\d{1,2})\.(?!\d)/);if(m){const base=received?new Date(received):new Date();let y=base.getFullYear(),d=isoDate(y,m[2],m[1]);if(d&&d<String(new Date().getFullYear())+'-01-01')d=isoDate(y+1,m[2],m[1]);return d}
   const months={januar:1,februar:2,märz:3,maerz:3,april:4,mai:5,juni:6,juli:7,august:8,september:9,oktober:10,november:11,dezember:12};
   m=s.toLowerCase().match(/\b(\d{1,2})\.?\s+(januar|februar|märz|maerz|april|mai|juni|juli|august|september|oktober|november|dezember)(?:\s+(20\d{2}))?/);
   if(m){const y=Number(m[3]||(received?new Date(received).getFullYear():new Date().getFullYear()));return isoDate(y,months[m[2]],m[1])}
