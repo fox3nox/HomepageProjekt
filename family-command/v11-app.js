@@ -637,12 +637,20 @@ function tomorrowRows(work,events,todos,hw){
   ];
   return list.slice(0,6).join('');
 }
+
+function automationSourceChip(x){
+  const source=String(x?.source||'');
+  if(source==='icloud')return '<span class="fc11-source-chip">iCloud'+(x?.externalCalendarName?' · '+esc(x.externalCalendarName):'')+'</span>';
+  if(source==='fredy-workplan')return '<span class="fc11-source-chip workplan">LANDI · Fredy</span>';
+  if(source==='bluewin')return '<span class="fc11-source-chip bluewin">Bluewin</span>';
+  return'';
+}
+
 function eventRow(e){
-  const prep=typeof window.eventPackText==='function'?String(window.eventPackText(e)||'').trim():'';
-  const cloudSource=String(e?.source||'')==='icloud'&&e?.externalCalendarName?`<span class="fc11-source-chip">iCloud · ${esc(e.externalCalendarName)}</span>`:'';
+  const prep=typeof window.eventPackText==='function'?String(window.eventPackText(e)||'').trim():'',sourceChip=automationSourceChip(e);
   return `<button type="button" class="fc11-row event" data-event="${esc(e.id)}" style="--p:${esc(color(pids(e)[0]))}">
     <span class="fc11-row-time"><b>${esc(e.time||'Ganztägig')}</b>${e.end?`<small>bis ${esc(e.end)}</small>`:''}</span>
-    <span class="fc11-row-copy">${cloudSource}${sourcePersonBadges(e)}<b>${esc(e.title||'Termin')}</b>${e.note?`<small>${esc(String(e.note).slice(0,120))}</small>`:''}${prep?`<em>Mitnehmen: ${esc(prep)}</em>`:''}</span>
+    <span class="fc11-row-copy">${sourceChip}${sourcePersonBadges(e)}<b>${esc(e.title||'Termin')}</b>${e.note?`<small>${esc(String(e.note).slice(0,120))}</small>`:''}${prep?`<em>Mitnehmen: ${esc(prep)}</em>`:''}</span>
     ${icon('chevron')}
   </button>`;
 }
@@ -650,7 +658,7 @@ function todoRow(t){
   const key=uid(t),over=taskDate(t)&&taskDate(t)<today()&&!t.done;
   return `<div class="fc11-row task ${t.done?'done':''} ${over?'overdue':''}" data-todo="${esc(key)}">
     <label class="fc11-check"><input type="checkbox" ${t.done?'checked':''} aria-label="${esc(t.title||'Aufgabe')} erledigen"><span>${icon('check')}</span></label>
-    <button type="button" class="fc11-row-copy" data-edit-todo="${esc(key)}">${sourcePersonBadges(t)}<b>${esc(t.title||'Aufgabe')}</b><small>${over?'Überfällig · ':''}${taskDate(t)?esc(fmt(taskDate(t),{weekday:true})):'Ohne Frist'}${t.priority?' · Wichtig':''}</small></button>
+    <button type="button" class="fc11-row-copy" data-edit-todo="${esc(key)}">${automationSourceChip(t)}${sourcePersonBadges(t)}<b>${esc(t.title||'Aufgabe')}</b><small>${over?'Überfällig · ':''}${taskDate(t)?esc(fmt(taskDate(t),{weekday:true})):'Ohne Frist'}${t.priority?' · Wichtig':''}</small></button>
   </div>`;
 }
 function homeworkRow(h){
