@@ -821,7 +821,7 @@ function personCard(p){
   return `<button type="button" class="fc11-person-card" style="--p:${esc(color(p.id))}" data-person-card="${esc(p.id)}"><span class="fc11-avatar large">${esc(initials(p.name))}</span><span><b>${esc(p.name)}</b><small>${esc([p.role,p.school].filter(Boolean).join(' · ')||'Familie')}</small><em>${week?week+' '+(week===1?'Zeitblock':'Zeitblöcke'):''}</em></span>${icon('chevron')}</button>`;
 }
 function systemHealth(){
-  const snap=window.__fcConnections?.status?.()||{},conns=Array.isArray(snap.connections)?snap.connections:[],cloud=window.__fcCloudState?.health?.()||{},bg=snap.backgroundSync||null,backup=snap.backupStatus||null;
+  const snap=window.__fcConnections?.status?.()||{},conns=Array.isArray(snap.connections)?snap.connections:[],cloud=window.__fcCloudState?.health?.()||{},bg=snap.backgroundSync||null,backup=snap.backupStatus||null,dataHealth=snap.dataHealth||null;
   const by=p=>conns.find(x=>x.provider===p)||null,ageMinutes=v=>{const t=Date.parse(v||'');return Number.isFinite(t)?Math.max(0,Math.round((Date.now()-t)/60000)):null};
   const row=(label,obj,kind='conn')=>{
     let ok=false,sub='Noch nicht geprüft';
@@ -836,6 +836,11 @@ function systemHealth(){
       ok=!!obj&&!stale;
       sub=!obj?'Noch kein Snapshot':stale?'Letztes Backup vor '+Math.round(age/60)+' Std · veraltet':'Gesichert · '+dateTimeShort(obj.created_at)+(size?' · '+Math.round(size/1024)+' KB':'');
     }
+    else if(kind==='integrity'){
+      const count=Number(obj?.issue_count||0),high=Number(obj?.high_count||0);
+      ok=!!obj&&obj.ok===true&&count===0;
+      sub=!obj?'Noch nicht geprüft':ok?'Daten sauber · Revision '+String(obj.revision||''):high?high+' kritische · '+count+' insgesamt':count+' Hinweis'+(count===1?'':'e')+' prüfen';
+    }
     else if(obj){
       const age=ageMinutes(obj.last_sync_at),stale=age!==null&&age>75;
       ok=obj.last_status==='connected'&&!obj.last_error&&!stale;
@@ -844,7 +849,7 @@ function systemHealth(){
     return `<div class="fc11-health-row ${ok?'ok':'warn'}"><i></i><span><b>${esc(label)}</b><small>${esc(sub)}</small></span></div>`;
   };
   return '<div class="fc11-health"><div class="fc11-health-head"><span><small>SYSTEMSTATUS</small><b>'+(conns.length?'Cloud-Dienste':'Wird geprüft')+'</b></span><em>'+(bg?.active?'Auto-Sync · 30 Min':'Auto-Sync prüfen')+'</em></div>'+
-    row('Familienzentrale Cloud',null,'cloud')+row('Apple Kalender',by('icloud'))+row('Bluewin E-Mail',by('bluewin'))+row('Hintergrund-Sync',bg,'background')+row('Letztes Backup',backup,'backup')+
+    row('Familienzentrale Cloud',null,'cloud')+row('Apple Kalender',by('icloud'))+row('Bluewin E-Mail',by('bluewin'))+row('Hintergrund-Sync',bg,'background')+row('Letztes Backup',backup,'backup')+row('Datenintegrität',dataHealth,'integrity')+
     (()=>{const a=conflictAudit(),ok=!a.conflicts.length;return `<div class="fc11-health-row ${ok?'ok':'warn'}"><i></i><span><b>Konflikt-Assistent</b><small>${esc(ok?'Keine Konflikte in 90 Tagen':a.conflicts.length+' Punkt'+(a.conflicts.length===1?'':'e')+' prüfen')}</small></span></div>`})()+
     (()=>{const a=saturdayCareAudit(),ok=!a.warnings.length;return `<div class="fc11-health-row ${ok?'ok':'warn'}"><i></i><span><b>Samstagsbetreuung</b><small>${esc(ok?(a.total?a.checked.length+' kommende Schichten geprüft':'Keine kommenden Samstagsschichten'):a.warnings.length+' Problem'+(a.warnings.length===1?'':'e')+' gefunden')}</small></span></div>`})()+'</div>';
 }
