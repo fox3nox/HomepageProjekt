@@ -480,6 +480,7 @@ function renderMore(root){
         ${tool('backup','backup','Sicherung','Cloud-Backups')}
         ${tool('export','download','Datenexport','JSON-Sicherung')}
         ${tool('jarvis','link','Jarvis','Gerät verbinden')}
+        ${tool('connections','link','Verbindungen','Apple Kalender & Bluewin')}
       </div>
     </details>
   </div>`;
@@ -509,6 +510,7 @@ async function openTool(key){
     ai:()=>window.fcOpenFamilyAI?.('voice'),
     backup:()=>window.fcOpenBackups?.(),
     jarvis:()=>window.fcOpenJarvisConnect?.(),
+    connections:()=>window.fcOpenConnections?.(),
     push:()=>typeof window.fcOpenReminderCenter==='function'?window.fcOpenReminderCenter():window.enablePush?.(),
     export:()=>{if(typeof window.exportData==='function')return window.exportData();const a=document.createElement('a'),blob=new Blob([JSON.stringify(D(),null,2)],{type:'application/json'});a.href=URL.createObjectURL(blob);a.download=`familienzentrale-${today()}.json`;a.click();setTimeout(()=>URL.revokeObjectURL(a.href),0)}
   };
