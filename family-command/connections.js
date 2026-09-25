@@ -4,7 +4,7 @@
 if(window.__fcConnectionsInstalled)return;window.__fcConnectionsInstalled=true;
 const BASE='https://lmrvapstojcecljjdgds.supabase.co/functions/v1/family-command-connectors';
 const STORE='fc-private-access-v1',COOKIE='fc_private_access';
-let snapshot={connections:[],mail:[],backgroundSync:null,syncHistory:[],backupStatus:null,dataHealth:null,activityHistory:[]},busy=false,lastAuto=0;
+let snapshot={connections:[],mail:[],backgroundSync:null,syncHistory:[],backupStatus:null,dataHealth:null,activityHistory:[],automationGuard:false},busy=false,lastAuto=0;
 const esc=s=>String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
 function accessKey(){try{const p=document.cookie.split(';').map(x=>x.trim()).find(x=>x.startsWith(COOKIE+'='));if(p)return decodeURIComponent(p.slice(COOKIE.length+1))}catch{}try{return localStorage.getItem(STORE)||''}catch{return''}}
 async function api(body=null){
@@ -13,7 +13,7 @@ async function api(body=null){
   const j=await r.json().catch(()=>({}));if(!r.ok||j.ok===false)throw new Error(j.error||('HTTP '+r.status));return j;
 }
 function conn(p){return(snapshot.connections||[]).find(x=>x.provider===p)||null}
-function setSnapshot(j){snapshot={connections:j.connections||[],mail:j.mail||[],backgroundSync:j.background_sync??snapshot.backgroundSync??null,syncHistory:j.sync_history??snapshot.syncHistory??[],backupStatus:j.backup_status??snapshot.backupStatus??null,dataHealth:j.data_health??snapshot.dataHealth??null,activityHistory:j.activity_history??snapshot.activityHistory??[]};document.dispatchEvent(new CustomEvent('fc:connections-updated',{detail:{mail:snapshot.mail,connections:snapshot.connections,backgroundSync:snapshot.backgroundSync,syncHistory:snapshot.syncHistory,backupStatus:snapshot.backupStatus,dataHealth:snapshot.dataHealth,activityHistory:snapshot.activityHistory}}))}
+function setSnapshot(j){snapshot={connections:j.connections||[],mail:j.mail||[],backgroundSync:j.background_sync??snapshot.backgroundSync??null,syncHistory:j.sync_history??snapshot.syncHistory??[],backupStatus:j.backup_status??snapshot.backupStatus??null,dataHealth:j.data_health??snapshot.dataHealth??null,activityHistory:j.activity_history??snapshot.activityHistory??[],automationGuard:j.automation_guard??snapshot.automationGuard??false};document.dispatchEvent(new CustomEvent('fc:connections-updated',{detail:{mail:snapshot.mail,connections:snapshot.connections,backgroundSync:snapshot.backgroundSync,syncHistory:snapshot.syncHistory,backupStatus:snapshot.backupStatus,dataHealth:snapshot.dataHealth,activityHistory:snapshot.activityHistory,automationGuard:snapshot.automationGuard}}))}
 function pad2(n){return String(n).padStart(2,'0')}
 function isoDate(y,m,d){const dt=new Date(Number(y),Number(m)-1,Number(d),12);if(dt.getFullYear()!==Number(y)||dt.getMonth()!==Number(m)-1||dt.getDate()!==Number(d))return'';return `${y}-${pad2(m)}-${pad2(d)}`}
 function mailDate(text,received){
