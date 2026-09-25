@@ -313,6 +313,10 @@ function conflictTopicScore(a,b){
   const aa=conflictTokens(a),bb=conflictTokens(b);if(!aa.length||!bb.length)return 0;
   return aa.filter(x=>bb.includes(x)).reduce((n,x)=>n+(x.length>=8?2:1),0);
 }
+function isCareCoverageEvent(e){
+  const title=String(e?.title||''),note=String(e?.note||'');
+  return /\bsrk\b/i.test(title)&&/betreuung|kinder|aufsicht/i.test(title+' '+note);
+}
 function conflictAudit(){
   const start=today(),limit=addDays(start,90),events=rows(D().events).filter(active).filter(e=>{
     const d=String(e&&e.date||''),end=String(e&&e.endDate||d);return !!d&&d<=limit&&end>=start;
@@ -339,7 +343,7 @@ function conflictAudit(){
       });
     }
     if(workBlocks.length){
-      const other=dayEvents.filter(e=>!workRx.test(String(e.title||''))&&pids(e).includes('oli')&&conflictIntervalsForEvent(e).length);
+      const other=dayEvents.filter(e=>!workRx.test(String(e.title||''))&&!isCareCoverageEvent(e)&&pids(e).includes('oli')&&conflictIntervalsForEvent(e).length);
       for(const e of other){
         for(const ei of conflictIntervalsForEvent(e)){
           const hit=workBlocks.find(w=>conflictOverlap(ei,w.iv));if(!hit)continue;
@@ -351,7 +355,7 @@ function conflictAudit(){
         }
       }
     }
-    const timed=dayEvents.filter(e=>!workRx.test(String(e.title||''))&&conflictIntervalsForEvent(e).length);
+    const timed=dayEvents.filter(e=>!workRx.test(String(e.title||''))&&!isCareCoverageEvent(e)&&conflictIntervalsForEvent(e).length);
     for(let i=0;i<timed.length;i++)for(let j=i+1;j<timed.length;j++){
       const a=timed[i],b=timed[j],shared=pids(a).filter(pid=>pids(b).includes(pid));
       if(!shared.length)continue;
@@ -377,7 +381,7 @@ function conflictAudit(){
     }
   }
   let mail=[];try{mail=window.__fcConnections&&window.__fcConnections.allInsights?window.__fcConnections.allInsights():[]}catch{}
-  const candidates=events.filter(e=>pids(e).includes('oli')&&!workRx.test(String(e.title||'')));
+  const candidates=events.filter(e=>pids(e).includes('oli')&&!workRx.test(String(e.title||''))&&!isCareCoverageEvent(e));
   for(const m of mail.filter(x=>(x.triage_status||'pending')==='pending'&&x.type==='event'&&x.date&&!x.alreadyHandled)){
     let best=null,bestScore=0;
     for(const e of candidates){
