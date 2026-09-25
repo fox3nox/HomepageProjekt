@@ -164,6 +164,8 @@ try{
   assert.equal(await page.locator('#fc11SystemSheet [data-tool="integrity"]').count(),1,'System & Sicherheit exposes data integrity directly');
   assert.equal(await page.locator('#fc11SystemSheet [data-system-sync]').count(),1,'System & Sicherheit exposes one-tap connector sync');
   assert.equal(await page.locator('#fc11SystemSheet .fc11-sync-panel').count(),1,'System & Sicherheit shows connector history panel');
+  assert.equal(await page.locator('#fc11SystemSheet .fc11-activity-panel').count(),1,'System & Sicherheit shows family change journal');
+  assert.equal(await page.locator('#fc11SystemSheet [data-system-activity]').count(),1,'System & Sicherheit exposes full change journal');
   assert.equal(await page.locator('#fc11SystemSheet [data-tool="conflicts"]').count(),1,'System & Sicherheit exposes conflict assistant directly');
   await page.click('#fc11SystemSheet [data-tool="conflicts"]');
   await page.waitForSelector('#fc11ConflictSheet',{state:'visible'});
@@ -186,6 +188,12 @@ try{
   await page.waitForSelector('#fc11IntegritySheet',{state:'visible'});
   assert.match(await page.locator('#fc11IntegritySheet').innerText(),/Datenprüfung/);
   await page.click('#fc11IntegritySheet [data-close]');
+  await page.locator('[data-system-security]').click();
+  await page.waitForSelector('#fc11SystemSheet',{state:'visible'});
+  await page.click('#fc11SystemSheet [data-system-activity]');
+  await page.waitForSelector('#fc11ActivitySheet',{state:'visible'});
+  assert.match(await page.locator('#fc11ActivitySheet').innerText(),/Änderungsjournal/);
+  await page.click('#fc11ActivitySheet [data-close]');
   await page.locator('[data-system-security]').click();
   await page.waitForSelector('#fc11SystemSheet',{state:'visible'});
   await page.click('#fc11SystemSheet [data-close]');
