@@ -28,6 +28,7 @@ const state={
   reminders:[{id:'school-pack',personId:'fynn',days:[1,2,3,4,5],items:['Rucksack']}],
   events:[
     {id:'event-today',personIds:['fynn'],title:'Zahnarzt',date:'2026-09-22',time:'15:30',end:'16:00',note:'Versicherungskarte mitnehmen'},
+    {id:'oli-work-conflict',personIds:['oli'],title:'Arzttermin',date:'2026-09-22',time:'09:00',end:'09:30',note:'Testkonflikt während LANDI-Arbeit'},
     {id:'event-tomorrow',personIds:['jayden'],title:'Elternabend',date:'2026-09-23',time:'19:00',end:'20:00',note:''},
     {id:'holiday-elia',personIds:['eliyah'],title:'Herbstferien',date:'2026-09-21',endDate:'2026-09-25',note:''}
   ],
@@ -75,6 +76,10 @@ try{
 
   assert.equal(await page.locator('.fc11-bottom-nav [data-fc11-screen]').count(),5,'mobile navigation has five clear destinations');
   assert.equal(await page.locator('.fc11-kid').count(),3,'today shows all three child rows');
+  assert.equal(await page.locator('[data-open-conflicts]').count(),1,'today surfaces a detected scheduling conflict');
+  const conflictHealth=await page.evaluate(()=>window.__fcConflictAssistant?.audit?.());
+  assert.ok(conflictHealth?.high>=1,'conflict assistant detects work overlap');
+  assert.match(conflictHealth.conflicts.map(x=>x.title+' '+x.detail).join('\n'),/Arbeit überschneidet sich mit Termin[\s\S]*Arzttermin/);
   assert.equal(await page.locator('.fc11-kid[data-holiday="1"]').count(),1,'a holiday remains scoped to the affected child');
   for(const id of ['jayden','fynn'])assert.doesNotMatch(await page.locator(`.fc11-kid[data-kid="${id}"]`).innerText(),/Heute frei/,'a completed school day must not look like a free day');
   assert.match(await page.locator('.fc11-kid[data-holiday="1"]').innerText(),/Elia[\s\S]*Herbstferien[\s\S]*Nur Elia · schulfrei/i);
@@ -153,6 +158,13 @@ try{
   await page.locator('[data-system-security]').click();
   await page.waitForSelector('#fc11SystemSheet',{state:'visible'});
   assert.equal(await page.locator('#fc11SystemSheet [data-tool="connections"]').count(),1,'System & Sicherheit exposes connections directly');
+  assert.equal(await page.locator('#fc11SystemSheet [data-tool="conflicts"]').count(),1,'System & Sicherheit exposes conflict assistant directly');
+  await page.click('#fc11SystemSheet [data-tool="conflicts"]');
+  await page.waitForSelector('#fc11ConflictSheet',{state:'visible'});
+  assert.match(await page.locator('#fc11ConflictSheet').innerText(),/Konflikt-Assistent[\s\S]*Arbeit überschneidet sich mit Termin[\s\S]*Arzttermin/);
+  await page.click('#fc11ConflictSheet [data-close]');
+  await page.locator('[data-system-security]').click();
+  await page.waitForSelector('#fc11SystemSheet',{state:'visible'});
   await page.click('#fc11SystemSheet [data-close]');
   await page.evaluate(()=>{const probe=document.createElement('div');probe.dataset.scrollProbe='1';probe.style.height='420px';document.querySelector('#fc11Main')?.append(probe)});
   const scrollContract=await page.evaluate(()=>({html:getComputedStyle(document.documentElement).overflowY,body:getComputedStyle(document.body).overflowY,scrollHeight:document.documentElement.scrollHeight,viewport:innerHeight,top:scrollY}));
