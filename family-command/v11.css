@@ -158,3 +158,16 @@ html[data-fc11="1"] .fc9-shell{display:none!important}
 .fc11-conflict-item span:nth-child(2){min-width:0}.fc11-conflict-item small{display:block;color:#8a98a8;font-size:8.5px;font-weight:850;letter-spacing:.04em}.fc11-conflict-item b{display:block;margin-top:2px;color:#3e4e60;font-size:11px}.fc11-conflict-item em{display:block;margin-top:2px;color:#758393;font-size:9.5px;font-style:normal;line-height:1.35}
 .fc11-conflict-clear{display:flex;align-items:center;gap:10px;padding:16px;border:1px solid #d9ebe4;border-radius:14px;background:#f5fbf8}.fc11-conflict-clear>span{font-size:22px;color:#278564}.fc11-conflict-clear b{display:block;color:#356955;font-size:12px}.fc11-conflict-clear small{display:block;margin-top:2px;color:#7b9489;font-size:9px}
 .fc11-conflict-foot{display:flex;align-items:center;justify-content:space-between;gap:10px;margin-top:11px;padding-top:10px;border-top:1px solid #e7ebf0}.fc11-conflict-foot span{color:#8a96a5;font-size:8.5px;line-height:1.35}.fc11-conflict-foot button{min-height:34px;padding:7px 10px;border:1px solid #dce4ed;border-radius:9px;background:#fff;color:#4b627b;font-size:9.5px;font-weight:850}
+
+.fc11-conflict-item{grid-template-columns:9px minmax(0,1fr);position:relative}
+.fc11-conflict-main{min-width:0;padding:0;border:0;background:transparent;color:inherit;text-align:left}
+.fc11-conflict-main small{display:block;color:#8a98a8;font-size:8.5px;font-weight:850;letter-spacing:.04em}
+.fc11-conflict-main b{display:block;margin-top:2px;color:#3e4e60;font-size:11px}
+.fc11-conflict-main em{display:block;margin-top:2px;color:#758393;font-size:9.5px;font-style:normal;line-height:1.35}
+.fc11-conflict-actions{grid-column:2;display:flex;justify-content:flex-end;margin-top:3px}
+.fc11-conflict-actions button{min-height:30px;padding:5px 8px;border:1px solid #dfe6ee;border-radius:8px;background:#f8fafc;color:#68788a;font:inherit;font-size:8.8px;font-weight:850}
+.fc11-conflict-item.ignored{opacity:.7;background:#f9fbfc}
+.fc11-conflict-ignored{margin-top:10px;border-top:1px solid #e7ebf0;padding-top:9px}
+.fc11-conflict-ignored>summary{cursor:pointer;list-style:none;color:#7d8a99;font-size:9.5px;font-weight:850}
+.fc11-conflict-ignored>summary::-webkit-details-marker{display:none}
+.fc11-conflict-ignored>div{display:grid;gap:7px;margin-top:8px}
