@@ -1082,6 +1082,8 @@ function install(){
   document.addEventListener('fc:connections-updated',()=>{if(state.screen==='today')setTimeout(queueRender,60)});
   setInterval(()=>{if(state.screen==='today'||state.screen==='plan')queueRender()},60000);
   document.documentElement.dataset.fc11='1';
+  document.documentElement.dataset.fc12='1';
+  document.documentElement.dataset.fcDesign='v12';
   document.dispatchEvent(new CustomEvent('fc:v11-ready'));
 }
 window.fcOpenConflictAssistant=openConflictAssistant;
