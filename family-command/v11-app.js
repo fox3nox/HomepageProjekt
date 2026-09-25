@@ -232,9 +232,10 @@ function render(){
 function renderToday(root){
   const date=today(),kids=childTodayRows(date),sharedHoliday=sharedChildHoliday(kids),nextCandidate=nextDisplay(nextAction()),work=workFor(date),events=eventsOn(date).filter(e=>!window.__fcV9?.eventIsPast?.(e)&&!kids.some(k=>k.holiday?.id===e.id)&&!duplicatesScheduledWork(e,date)),todos=todoRows('today'),hw=homeworkRows('today');
   const focus=focusForToday(date,sharedHoliday?.id===nextCandidate?.eventId?null:nextCandidate,todos,hw);
-  const mailPulse=bluewinPulse(),conflictState=conflictAudit(),actionState=actionCenter(),actionHtml=actionCenterHtml(actionState);
+  let mailItems=[];try{mailItems=(window.__fcConnections?.insights?.()||[]).filter(x=>x.actionable)}catch{}
+  const conflictState=conflictAudit(),actionState=actionCenter(conflictState,mailItems,todos,hw),actionHtml=actionCenterHtml(actionState);
   const tomorrow=addDays(date,1),tomKids=childTodayRows(tomorrow),tomWork=workFor(tomorrow),tomEvents=eventsOn(tomorrow).filter(e=>!tomKids.some(k=>k.holiday?.id===e.id)&&!duplicatesScheduledWork(e,tomorrow)),tomTodos=todoRows('open').filter(x=>taskDate(x)===tomorrow),tomHw=homeworkRows('open').filter(x=>taskDate(x)===tomorrow),tomCount=tomWork.length+tomEvents.length+tomTodos.length+tomHw.length;
-  header('Heute',fmt(date,{weekday:true,long:true}),smartSummary(work,events,todos,hw,mailPulse.count,conflictState.conflicts.filter(x=>!x.date||x.date<=addDays(date,14)).length));
+  header('Heute',fmt(date,{weekday:true,long:true}),smartSummary(work,events,todos,hw,actionState.mailCount,actionState.conflictCount));
   const childrenSection=`<section class="fc11-section fc11-children-section">
     <div class="fc11-section-head"><div><small>FAMILIE</small><h2>Kinder heute</h2></div><button type="button" data-go-plan>Wochenplan</button></div>
     <div class="fc11-kids">${kids.map(x=>kidRow(x.p,x.state,x.holiday,false,holidayNames(kids,x.holiday))).join('')||'<div class="fc11-empty">Keine Kinderprofile vorhanden.</div>'}</div>
@@ -281,22 +282,22 @@ function focusForToday(date,next,todos,hw){
   return null;
 }
 
-function actionCenter(){
-  const date=today(),items=[],conflicts=conflictAudit().conflicts.filter(x=>!x.date||x.date<=addDays(date,14));
-  let mail=[];try{mail=(window.__fcConnections?.insights?.()||[]).filter(x=>x.actionable)}catch{}
-  const overdueTodos=todoRows('open').filter(x=>!x.done&&taskDate(x)&&taskDate(x)<date);
-  const overdueHw=homeworkRows('open').filter(x=>!x.done&&taskDate(x)&&taskDate(x)<date);
+function actionCenter(conflictState,mail,todos,hw){
+  const date=today(),items=[],conflicts=rows(conflictState?.conflicts).filter(x=>!x.date||x.date<=addDays(date,14));
+  const mailItems=rows(mail).filter(x=>x.actionable);
+  const overdueTodos=rows(todos).filter(x=>!x.done&&taskDate(x)&&taskDate(x)<date);
+  const overdueHw=rows(hw).filter(x=>!x.done&&taskDate(x)&&taskDate(x)<date);
   if(conflicts.length){
     const high=conflicts.filter(x=>x.severity==='high').length;
     items.push({kind:'conflicts',count:conflicts.length,urgent:high>0,title:conflicts.length+' Konflikt'+(conflicts.length===1?'':'e')+' prüfen',sub:high?high+' davon wichtig':'Plan kurz prüfen'});
   }
-  if(mail.length){
-    const bills=mail.filter(x=>x.type==='bill').length,plans=mail.filter(x=>x.type==='workplan').length;
-    items.push({kind:'mail',count:mail.length,urgent:mail.some(x=>x.type==='bill'&&typeof x.invoice?.days==='number'&&x.invoice.days<=3),title:mail.length+' relevante Mail'+(mail.length===1?'':'s'),sub:plans?plans+' Arbeitsplan'+(plans===1?'':'e')+(bills?' · '+bills+' Rechnung'+(bills===1?'':'en'):''):bills?bills+' Rechnung'+(bills===1?'':'en'):'Bluewin prüfen'});
+  if(mailItems.length){
+    const bills=mailItems.filter(x=>x.type==='bill').length,plans=mailItems.filter(x=>x.type==='workplan').length;
+    items.push({kind:'mail',count:mailItems.length,urgent:mailItems.some(x=>x.type==='bill'&&typeof x.invoice?.days==='number'&&x.invoice.days<=3),title:mailItems.length+' relevante Mail'+(mailItems.length===1?'':'s'),sub:plans?plans+' Arbeitsplan'+(plans===1?'':'e')+(bills?' · '+bills+' Rechnung'+(bills===1?'':'en'):''):bills?bills+' Rechnung'+(bills===1?'':'en'):'Bluewin prüfen'});
   }
   const overdue=overdueTodos.length+overdueHw.length;
   if(overdue)items.push({kind:'tasks',count:overdue,urgent:true,title:overdue+' überfällige Aufgabe'+(overdue===1?'':'n'),sub:overdueHw.length?overdueHw.length+' davon Schule':'Heute erledigen'});
-  return{items,total:items.reduce((n,x)=>n+x.count,0)};
+  return{items,total:items.reduce((n,x)=>n+x.count,0),conflictCount:conflicts.length,mailCount:mailItems.length,overdueCount:overdue};
 }
 function actionCenterHtml(center){
   if(!center?.items?.length)return'';
