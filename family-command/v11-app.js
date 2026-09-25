@@ -546,21 +546,23 @@ function personCard(p){
   return `<button type="button" class="fc11-person-card" style="--p:${esc(color(p.id))}" data-person-card="${esc(p.id)}"><span class="fc11-avatar large">${esc(initials(p.name))}</span><span><b>${esc(p.name)}</b><small>${esc([p.role,p.school].filter(Boolean).join(' · ')||'Familie')}</small><em>${week?week+' '+(week===1?'Zeitblock':'Zeitblöcke'):''}</em></span>${icon('chevron')}</button>`;
 }
 function systemHealth(){
-  const snap=window.__fcConnections?.status?.()||{},conns=Array.isArray(snap.connections)?snap.connections:[],cloud=window.__fcCloudState?.health?.()||{};
+  const snap=window.__fcConnections?.status?.()||{},conns=Array.isArray(snap.connections)?snap.connections:[],cloud=window.__fcCloudState?.health?.()||{},bg=snap.backgroundSync||null;
   const by=p=>conns.find(x=>x.provider===p)||null;
   const row=(label,obj,kind='conn')=>{
     let ok=false,sub='Noch nicht geprüft';
     if(kind==='cloud'){ok=cloud.status==='synced'||cloud.status==='test';sub=ok?'Cloud-State gesichert':cloud.status==='offline-cache'?'Offline · lokaler Cache':cloud.status||'Verbindet …'}
+    else if(kind==='background'){ok=!!obj?.active;sub=ok?(obj.last_status?('Aktiv · letzter Lauf '+String(obj.last_status)): 'Aktiv · wartet auf ersten Lauf'):'Nicht aktiv'}
     else if(obj){ok=obj.last_status==='connected'&&!obj.last_error;sub=ok?'Verbunden · '+dateTimeShort(obj.last_sync_at):obj.last_error||obj.last_status||'Eingerichtet'}
     return `<div class="fc11-health-row ${ok?'ok':'warn'}"><i></i><span><b>${esc(label)}</b><small>${esc(sub)}</small></span></div>`;
   };
-  return '<div class="fc11-health"><div class="fc11-health-head"><span><small>SYSTEMSTATUS</small><b>'+(conns.length?'Cloud-Dienste':'Wird geprüft')+'</b></span><em>Auto-Sync · 30 Min</em></div>'+
-    row('Familienzentrale Cloud',null,'cloud')+row('Apple Kalender',by('icloud'))+row('Bluewin E-Mail',by('bluewin'))+'</div>';
+  return '<div class="fc11-health"><div class="fc11-health-head"><span><small>SYSTEMSTATUS</small><b>'+(conns.length?'Cloud-Dienste':'Wird geprüft')+'</b></span><em>'+(bg?.active?'Auto-Sync · 30 Min':'Auto-Sync prüfen')+'</em></div>'+
+    row('Familienzentrale Cloud',null,'cloud')+row('Apple Kalender',by('icloud'))+row('Bluewin E-Mail',by('bluewin'))+row('Hintergrund-Sync',bg,'background')+'</div>';
 }
 function dateTimeShort(v){if(!v)return'noch nie';try{return new Intl.DateTimeFormat('de-CH',{day:'2-digit',month:'2-digit',hour:'2-digit',minute:'2-digit'}).format(new Date(v))}catch{return''}}
 function systemSummaryText(){
-  const s=window.__fcConnections?.status?.(),list=Array.isArray(s?.connections)?s.connections:[],ok=p=>list.some(x=>x.provider===p&&x.last_status==='connected'&&!x.last_error);
-  if(ok('icloud')&&ok('bluewin'))return'Cloud, iCloud & Bluewin verbunden · Auto-Sync 30 Min';
+  const s=window.__fcConnections?.status?.(),list=Array.isArray(s?.connections)?s.connections:[],ok=p=>list.some(x=>x.provider===p&&x.last_status==='connected'&&!x.last_error),bg=!!s?.backgroundSync?.active;
+  if(ok('icloud')&&ok('bluewin')&&bg)return'Cloud, iCloud & Bluewin verbunden · Auto-Sync aktiv';
+  if(ok('icloud')&&ok('bluewin'))return'iCloud & Bluewin verbunden · Auto-Sync prüfen';
   if(ok('icloud')||ok('bluewin'))return'Verbindungen teilweise aktiv · Status prüfen';
   return'Verbindungen, Erinnerungen, Sicherung & Geräte';
 }
