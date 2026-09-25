@@ -234,7 +234,7 @@ function renderToday(root){
   const focus=focusForToday(date,sharedHoliday?.id===nextCandidate?.eventId?null:nextCandidate,todos,hw);
   let mailItems=[];try{mailItems=(window.__fcConnections?.insights?.()||[]).filter(x=>x.actionable)}catch{}
   const conflictState=conflictAudit(),actionState=actionCenter(conflictState,mailItems,todos,hw),actionHtml=actionCenterHtml(actionState);
-  const tomorrow=addDays(date,1),tomKids=childTodayRows(tomorrow),tomWork=workFor(tomorrow),tomEvents=eventsOn(tomorrow).filter(e=>!tomKids.some(k=>k.holiday?.id===e.id)&&!duplicatesScheduledWork(e,tomorrow)),tomTodos=todoRows('open').filter(x=>taskDate(x)===tomorrow),tomHw=homeworkRows('open').filter(x=>taskDate(x)===tomorrow),tomCount=tomWork.length+tomEvents.length+tomTodos.length+tomHw.length;
+  const tomorrow=addDays(date,1),tomKids=childTodayRows(tomorrow),tomWork=workFor(tomorrow),tomEvents=eventsOn(tomorrow).filter(e=>!tomKids.some(k=>k.holiday?.id===e.id)&&!duplicatesScheduledWork(e,tomorrow)),tomTodos=todoRows('open').filter(x=>taskDate(x)===tomorrow),tomHw=homeworkRows('open').filter(x=>taskDate(x)===tomorrow),tomCount=tomWork.length+tomEvents.length+tomTodos.length+tomHw.length,prepSection=tomorrowPrepHtml(tomorrow);
   header('Heute',fmt(date,{weekday:true,long:true}),smartSummary(work,events,todos,hw,actionState.mailCount,actionState.conflictCount));
   const childrenSection=`<section class="fc11-section fc11-children-section">
     <div class="fc11-section-head"><div><small>FAMILIE</small><h2>Kinder heute</h2></div><button type="button" data-go-plan>Wochenplan</button></div>
@@ -255,7 +255,7 @@ function renderToday(root){
       <button type="button" class="fc11-next-content" data-focus-action><div><b>${esc(focus.title||'Nächster Punkt')}</b><span>${esc(focus.sub||'')}</span></div><div class="fc11-next-time"><strong>${esc(focus.time||'')}</strong><small>${esc(focus.left||'')}</small></div>${icon('chevron')}</button>
     </section>`:`<section class="fc11-next calm"><div class="fc11-section-kicker">JETZT</div><div class="fc11-next-empty"><b>Aktuell nichts Dringendes</b><span>Der Tagesablauf und morgen wichtige Punkte bleiben darunter sichtbar.</span></div></section>`}
     ${actionHtml}
-    ${sharedHoliday?todaySection+tomorrowSection:childrenSection+todaySection+tomorrowSection}
+    ${sharedHoliday?todaySection+prepSection+tomorrowSection:childrenSection+todaySection+prepSection+tomorrowSection}
     <button type="button" class="fc11-brain-entry" data-brain>
       <span class="fc11-brain-icon">${icon('brain')}</span>
       <span><b>Frag die Familienzentrale</b><small>„Was habe ich nächste Woche?“ · „Wo ist der Quartalsbrief?“</small></span>
@@ -265,6 +265,13 @@ function renderToday(root){
   root.querySelectorAll('[data-go-plan]').forEach(b=>b.onclick=()=>open('plan'));
   root.querySelectorAll('[data-kid]').forEach(b=>b.onclick=()=>{state.planPerson=b.dataset.kid;state.planDate=date;open('plan')});
   root.querySelector('[data-tomorrow-plan]')?.addEventListener('click',()=>{state.planDate=tomorrow;open('plan')});
+  root.querySelector('[data-prep-plan]')?.addEventListener('click',()=>{state.planDate=tomorrow;open('plan')});
+  root.querySelectorAll('[data-prep-check]').forEach(input=>input.onchange=()=>{
+    setPrepCheck(input.dataset.prepCheck,input.checked);
+    const row=input.closest('.fc11-prep-item');row?.classList.toggle('done',input.checked);
+    const section=input.closest('.fc11-prep-section'),count=section?.querySelectorAll('[data-prep-check]:checked').length||0,total=section?.querySelectorAll('[data-prep-check]').length||0;
+    const h=section?.querySelector('.fc11-section-head h2');if(h)h.textContent=count+'/'+total+' bereit';
+  });
   root.querySelector('[data-focus-action]')?.addEventListener('click',()=>{if(focus?.eventId)openEvent(focus.eventId);else if(focus?.kind==='task'||focus?.kind==='homework')open('tasks');else open('plan')});
   root.querySelector('[data-open-bluewin]')?.addEventListener('click',()=>window.fcOpenConnections?.());
   root.querySelector('[data-open-conflicts]')?.addEventListener('click',()=>openConflictAssistant());
