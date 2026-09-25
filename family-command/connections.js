@@ -13,6 +13,36 @@ async function api(body=null){
   const j=await r.json().catch(()=>({}));if(!r.ok||j.ok===false)throw new Error(j.error||('HTTP '+r.status));return j;
 }
 function conn(p){return(snapshot.connections||[]).find(x=>x.provider===p)||null}
+function setSnapshot(j){setSnapshot(j);document.dispatchEvent(new CustomEvent('fc:connections-updated',{detail:{mail:snapshot.mail,connections:snapshot.connections}}))}
+function pad2(n){return String(n).padStart(2,'0')}
+function isoDate(y,m,d){const dt=new Date(Number(y),Number(m)-1,Number(d),12);if(dt.getFullYear()!==Number(y)||dt.getMonth()!==Number(m)-1||dt.getDate()!==Number(d))return'';return `${y}-${pad2(m)}-${pad2(d)}`}
+function mailDate(text,received){
+  const s=String(text||'');
+  let m=s.match(/\b(20\d{2})[-/.](\d{1,2})[-/.](\d{1,2})\b/);if(m)return isoDate(m[1],m[2],m[3]);
+  m=s.match(/\b(\d{1,2})[.\/-](\d{1,2})[.\/-](20\d{2}|\d{2})\b/);if(m){let y=Number(m[3]);if(y<100)y+=2000;return isoDate(y,m[2],m[1])}
+  m=s.match(/\b(\d{1,2})\.(\d{1,2})\.(?!\d)/);if(m){const base=received?new Date(received):new Date();let y=base.getFullYear(),x=isoDate(y,m[2],m[1]);if(x&&x<String(new Date().getFullYear())+'-01-01')x=isoDate(y+1,m[2],m[1]);return x}
+  const months={januar:1,februar:2,märz:3,maerz:3,april:4,mai:5,juni:6,juli:7,august:8,september:9,oktober:10,november:11,dezember:12};
+  m=s.toLowerCase().match(/\b(\d{1,2})\.?\s+(januar|februar|märz|maerz|april|mai|juni|juli|august|september|oktober|november|dezember)(?:\s+(20\d{2}))?/);
+  if(m){const y=Number(m[3]||(received?new Date(received).getFullYear():new Date().getFullYear()));return isoDate(y,months[m[2]],m[1])}
+  const base=new Date();if(/\bmorgen\b/i.test(s)){base.setDate(base.getDate()+1);return `${base.getFullYear()}-${pad2(base.getMonth()+1)}-${pad2(base.getDate())}`}
+  if(/\bheute\b/i.test(s))return `${base.getFullYear()}-${pad2(base.getMonth()+1)}-${pad2(base.getDate())}`;
+  return'';
+}
+function mailTime(text){
+  const s=String(text||'');let m=s.match(/\b(?:um\s*)?(\d{1,2})[:.](\d{2})(?:\s*Uhr)?\b/i);if(m&&Number(m[1])<24&&Number(m[2])<60)return pad2(m[1])+':'+pad2(m[2]);
+  m=s.match(/\bum\s+(\d{1,2})\s*Uhr\b/i);if(m&&Number(m[1])<24)return pad2(m[1])+':00';return'';
+}
+function mailInsight(mail){
+  const text=[mail.subject,mail.preview].filter(Boolean).join(' ');
+  const lower=text.toLowerCase(),date=mailDate(text,mail.received_at),time=mailTime(text);
+  const event=/\b(termin|appointment|reservation|reservierung|einladung|elternabend|sprechstunde|arzt|zahnarzt|kontrolle|meeting|gespräch|besprechung|veranstaltung|abholung|liefertermin|buchung|führung|kurs|training)\b/i.test(lower);
+  const todo=/\b(rechnung|zahlung|bezahlen|fällig|faellig|mahnung|frist|deadline|formular|anmeldung|anmelden|einreichen|rückmeldung|rueckmeldung|antworten|bestätigen|bestaetigen|unterschrift|unterlagen|erledigen)\b/i.test(lower);
+  const type=event?'event':todo?'todo':'info';
+  const confidence=type==='event'?(date?(time?'high':'medium'):'low'):type==='todo'?'medium':'low';
+  return{...mail,type,date,time,confidence,title:String(mail.subject||'Bluewin-Mail').trim(),actionable:type!=='info'};
+}
+function mailInsights(){return(snapshot.mail||[]).filter(x=>(x.triage_status||'pending')==='pending').map(mailInsight)}
+
 function dateTime(v){if(!v)return'Noch nie';try{return new Intl.DateTimeFormat('de-CH',{dateStyle:'short',timeStyle:'short'}).format(new Date(v))}catch{return String(v)}}
 function stateLabel(c){if(!c)return['Nicht verbunden','off'];if(c.last_status==='error')return['Fehler','error'];if(c.last_status==='connected'&&c.last_error)return['Verbunden · Hinweis','saved'];if(c.last_status==='connected')return['Verbunden','ok'];return['Eingerichtet','saved']}
 function modal(){
@@ -39,16 +69,40 @@ function render(){
     '<div class="fcc-intro"><b>Direkt verbunden</b><span>Passwörter werden serverseitig verschlüsselt gespeichert und nie im Browser angezeigt.</span></div>'+
     card('icloud','Apple Kalender','iCloud-Kalender mit Terminen der Familienzentrale synchronisieren.','📅')+
     card('bluewin','Bluewin E-Mail','Posteingang lesen und wichtige Mails in der Familienzentrale sichtbar machen.','✉️')+
-    (conn('bluewin')?'<section class="fcc-mail"><div class="fcc-section-head"><div><small>BLUEWIN</small><h3>Letzte E-Mails</h3></div><button type="button" data-fcc-sync="bluewin">Aktualisieren</button></div>'+
-      (mail.length?'<div class="fcc-mail-list">'+mail.map(x=>'<div class="fcc-mail-row"><div><b>'+esc(x.subject||'(Ohne Betreff)')+'</b><span>'+esc(x.sender||'Unbekannter Absender')+'</span></div><time>'+esc(x.received_at?dateTime(x.received_at):'')+'</time></div>').join('')+'</div>':'<div class="fcc-empty">Noch keine E-Mails synchronisiert.</div>')+'</section>':'')+
+    (conn('bluewin')?'<section class="fcc-mail"><div class="fcc-section-head"><div><small>BLUEWIN</small><h3>Mail-Assistent</h3></div><button type="button" data-fcc-sync="bluewin">Aktualisieren</button></div>'+
+      (mail.length?'<div class="fcc-mail-list">'+mail.map(mailCard).join('')+'</div>':'<div class="fcc-empty">Noch keine E-Mails synchronisiert.</div>')+'</section>':'')+
     '<div class="fcc-note"><b>Apple:</b> Verwende ein app-spezifisches Passwort, nicht dein normales Apple-Account-Passwort. <b>Bluewin:</b> Verwende dein E-Mail-Passwort, nicht das Swisscom-Login-Passwort.</div>';
   bind(body);
+}
+function mailCard(mail){
+  const i=mailInsight(mail),done=(mail.triage_status||'pending')!=='pending';
+  const badge=i.type==='event'?'Termin':i.type==='todo'?'Aufgabe':'Info';
+  const meta=[i.date?i.date.split('-').reverse().join('.'):null,i.time||null].filter(Boolean).join(' · ');
+  return '<article class="fcc-mail-card '+(done?'done':'')+'" data-mail="'+esc(mail.message_uid)+'"><div class="fcc-mail-main"><div class="fcc-mail-top"><span class="fcc-mail-kind '+i.type+'">'+badge+'</span><time>'+esc(mail.received_at?dateTime(mail.received_at):'')+'</time></div><b>'+esc(mail.subject||'(Ohne Betreff)')+'</b><span>'+esc(mail.sender||'Unbekannter Absender')+'</span>'+(mail.preview?'<p>'+esc(String(mail.preview).slice(0,300))+'</p>':'')+(meta?'<em>Erkannt: '+esc(meta)+'</em>':'')+'</div>'+
+    (done?'<div class="fcc-mail-done">'+(mail.triage_status==='ignored'?'Ignoriert':'Übernommen')+'</div>':'<div class="fcc-mail-actions">'+
+      (i.type==='event'&&i.date?'<button type="button" class="primary" data-mail-action="event" data-mail-uid="'+esc(mail.message_uid)+'">Termin übernehmen</button>':'')+
+      (i.type!=='info'?'<button type="button" data-mail-action="todo" data-mail-uid="'+esc(mail.message_uid)+'">Als Aufgabe</button>':'')+
+      '<button type="button" data-mail-action="ignore" data-mail-uid="'+esc(mail.message_uid)+'">Ignorieren</button></div>')+
+    '</article>';
+}
+async function takeMailAction(uid,type){
+  const mail=(snapshot.mail||[]).find(x=>String(x.message_uid)===String(uid));if(!mail)return;
+  const i=mailInsight(mail);
+  if(type==='event'&&!i.date){notice('In dieser Mail wurde kein eindeutiges Datum erkannt.','error');return}
+  const what=type==='event'?'Termin':type==='todo'?'Aufgabe':'Mail';
+  if(type!=='ignore'&&!confirm(what+' aus „'+i.title+'“ in die Familienzentrale übernehmen?'))return;
+  try{
+    const j=await api({action:'mail_action',uid,type,payload:{title:i.title,date:i.date,time:i.time}});
+    setSnapshot(j);render();notice(type==='ignore'?'Mail ignoriert.':what+' wurde übernommen.','ok');
+    try{window.__fcCloudState?.bootstrap?.()}catch{}
+  }catch(e){notice(e.message||String(e),'error')}
 }
 function bind(root){
   root.querySelectorAll('[data-fcc-setup]').forEach(b=>b.onclick=()=>setup(b.dataset.fccSetup));
   root.querySelectorAll('[data-fcc-sync]').forEach(b=>b.onclick=()=>sync(b.dataset.fccSync,b));
   root.querySelectorAll('[data-fcc-disconnect]').forEach(b=>b.onclick=()=>disconnect(b.dataset.fccDisconnect));
   const push=root.querySelector('[data-fcc-push]');if(push)push.onchange=async()=>{try{await api({action:'settings',provider:'icloud',settings:{push_family_events:push.checked}});await refresh(false)}catch(e){notice(e.message,'error')}};
+  root.querySelectorAll('[data-mail-action]').forEach(b=>b.onclick=()=>takeMailAction(b.dataset.mailUid,b.dataset.mailAction));
 }
 function notice(message,tone='info'){
   const body=document.getElementById('fccBody');if(!body)return;let n=body.querySelector('.fcc-toast');if(!n){n=document.createElement('div');n.className='fcc-toast';body.prepend(n)}n.className='fcc-toast '+tone;n.textContent=message;setTimeout(()=>n?.remove(),4500);
@@ -56,7 +110,7 @@ function notice(message,tone='info'){
 async function refresh(showLoading=true){
   if(busy)return;busy=true;
   try{if(showLoading){const b=modal().querySelector('#fccBody');b.innerHTML='<div class="fcc-loading">Verbindungen werden geladen …</div>'}
-    const j=await api();snapshot={connections:j.connections||[],mail:j.mail||[]};render();
+    const j=await api();setSnapshot(j);render();
   }catch(e){const b=modal().querySelector('#fccBody');b.innerHTML='<div class="fcc-errorbox"><b>Verbindungen konnten nicht geladen werden.</b><span>'+esc(e.message)+'</span><button type="button" data-retry>Erneut versuchen</button></div>';b.querySelector('[data-retry]').onclick=()=>refresh()}
   finally{busy=false}
 }
@@ -75,28 +129,28 @@ function setup(provider){
     try{
       await api({action:'save',provider,account:f.account.value.trim(),secret:f.secret.value,settings:icloud?{push_family_events:!!f.push.checked}:{}});
       st.textContent='Verbindung wird geprüft …';await api({action:'test',provider});
-      st.textContent='Synchronisation läuft …';const j=await api({action:'sync',provider});snapshot={connections:j.connections||[],mail:j.mail||[]};
+      st.textContent='Synchronisation läuft …';const j=await api({action:'sync',provider});setSnapshot(j);
       render();notice((icloud?'Apple Kalender':'Bluewin E-Mail')+' ist verbunden.','ok');
     }catch(err){st.className='fcc-form-status error';st.textContent=err.message||String(err);btn.disabled=false}
   };
 }
 async function sync(provider,button){
   const old=button?.textContent;if(button){button.disabled=true;button.textContent='Synchronisiert …'}
-  try{const j=await api({action:'sync',provider});snapshot={connections:j.connections||[],mail:j.mail||[]};render();const r=j.results?.[provider];if(r?.error)notice(r.error,'error');else if(r?.warning)notice('Verbunden. Hinweis: '+r.warning,'info');else notice((provider==='icloud'?'Kalender':'Bluewin')+' aktualisiert.','ok');try{window.__fcCloudState?.bootstrap?.()}catch{}}
+  try{const j=await api({action:'sync',provider});setSnapshot(j);render();const r=j.results?.[provider];if(r?.error)notice(r.error,'error');else if(r?.warning)notice('Verbunden. Hinweis: '+r.warning,'info');else notice((provider==='icloud'?'Kalender':'Bluewin')+' aktualisiert.','ok');try{window.__fcCloudState?.bootstrap?.()}catch{}}
   catch(e){notice(e.message,'error');if(button){button.disabled=false;button.textContent=old}}
 }
 async function disconnect(provider){
   if(!confirm((provider==='icloud'?'Apple Kalender':'Bluewin E-Mail')+' wirklich von der Familienzentrale trennen?'))return;
-  try{const j=await api({action:'disconnect',provider});snapshot={connections:j.connections||[],mail:j.mail||[]};render();notice('Verbindung getrennt.','ok')}catch(e){notice(e.message,'error')}
+  try{const j=await api({action:'disconnect',provider});setSnapshot(j);render();notice('Verbindung getrennt.','ok')}catch(e){notice(e.message,'error')}
 }
 async function maybeAutoSync(){
   if(Date.now()-lastAuto<20*60*1000)return;lastAuto=Date.now();
-  try{const j=await api();snapshot={connections:j.connections||[],mail:j.mail||[]};const connected=snapshot.connections.filter(x=>x.enabled&&x.last_status==='connected');if(!connected.length)return;
-    const stale=connected.some(x=>!x.last_sync_at||Date.now()-new Date(x.last_sync_at).getTime()>20*60*1000);if(stale){const s=await api({action:'sync',provider:'all'});snapshot={connections:s.connections||[],mail:s.mail||[]};if(document.getElementById('fcConnectionsModal'))render()}
+  try{const j=await api();setSnapshot(j);const connected=snapshot.connections.filter(x=>x.enabled&&x.last_status==='connected');if(!connected.length)return;
+    const stale=connected.some(x=>!x.last_sync_at||Date.now()-new Date(x.last_sync_at).getTime()>20*60*1000);if(stale){const s=await api({action:'sync',provider:'all'});setSnapshot(s);if(document.getElementById('fcConnectionsModal'))render()}
   }catch(e){console.warn('fc_connectors_autosync',e)}
 }
 window.fcOpenConnections=()=>{modal();refresh();};
-window.__fcConnections={open:window.fcOpenConnections,refresh,maybeAutoSync,status:()=>snapshot};
+window.__fcConnections={open:window.fcOpenConnections,refresh,maybeAutoSync,status:()=>snapshot,insights:mailInsights};
 document.addEventListener('fc:v11-ready',()=>setTimeout(maybeAutoSync,1800));
 document.addEventListener('visibilitychange',()=>{if(!document.hidden)maybeAutoSync()});
 })();
