@@ -25,7 +25,7 @@ const state={
     fynn:{2:[{start:'08:20',end:'11:55',depart:'08:00',label:'Schule'}]},
     eliyah:{2:[{start:'13:30',end:'15:30',depart:'13:10',label:'Kindergarten'}]}
   },
-  reminders:[{id:'school-pack',personId:'fynn',days:[1,2,3,4,5],items:['Rucksack']}],
+  reminders:[{id:'school-pack',personId:'fynn',days:[1,2,3,4,5],items:['Rucksack']},{id:'eli-pack',personId:'eliyah',days:[1,2,3,4,5],items:['Leuchtweste']}],
   events:[
     {id:'event-today',personIds:['fynn'],title:'Zahnarzt',date:'2026-09-22',time:'15:30',end:'16:00',note:'Versicherungskarte mitnehmen'},
     {id:'oli-work-conflict',personIds:['oli'],title:'Arzttermin',date:'2026-09-22',time:'09:00',end:'09:30',note:'Testkonflikt während LANDI-Arbeit'},
@@ -87,6 +87,15 @@ try{
   assert.equal(v12Computed.navRadius,'24px','V12 floating navigation radius is active');
   assert.match(v12Computed.bodyBg,/gradient/i,'V12 ambient background is active');
   assert.equal(await page.locator('.fc11-kid').count(),3,'today shows all three child rows');
+  assert.equal(await page.locator('.fc11-prep-section').count(),1,'Today shows automatic tomorrow preparation');
+  const prepText=await page.locator('.fc11-prep-section').innerText();
+  assert.match(prepText,/MORGEN VORBEREITEN[\s\S]*Um 07:00 Uhr los[\s\S]*Rucksack/,'tomorrow prep includes work departure and school reminder');
+  assert.doesNotMatch(prepText,/Leuchtweste/,'holiday child preparation is suppressed');
+  const prepRucksack=page.locator('.fc11-prep-item').filter({hasText:'Rucksack'});
+  await prepRucksack.locator('input').check({force:true});
+  assert.equal(await prepRucksack.locator('input').isChecked(),true,'tomorrow prep can be checked off');
+  await page.evaluate(()=>window.__fcV11.render());
+  assert.equal(await page.locator('.fc11-prep-item').filter({hasText:'Rucksack'}).locator('input').isChecked(),true,'prep check survives rerender');
   assert.equal(await page.locator('[data-action-center="conflicts"]').count(),1,'Today action center surfaces a detected scheduling conflict');
   const conflictHealth=await page.evaluate(()=>window.__fcConflictAssistant?.audit?.());
   assert.ok(conflictHealth?.high>=1,'conflict assistant detects work overlap');
