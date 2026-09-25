@@ -232,7 +232,7 @@ function render(){
 function renderToday(root){
   const date=today(),kids=childTodayRows(date),sharedHoliday=sharedChildHoliday(kids),nextCandidate=nextDisplay(nextAction()),work=workFor(date),events=eventsOn(date).filter(e=>!window.__fcV9?.eventIsPast?.(e)&&!kids.some(k=>k.holiday?.id===e.id)&&!duplicatesScheduledWork(e,date)),todos=todoRows('today'),hw=homeworkRows('today');
   const focus=focusForToday(date,sharedHoliday?.id===nextCandidate?.eventId?null:nextCandidate,todos,hw);
-  const mailPulse=bluewinPulse(),conflictState=conflictAudit(),conflictPulse=conflictPulseHtml(conflictState);
+  const mailPulse=bluewinPulse(),conflictState=conflictAudit(),actionState=actionCenter(),actionHtml=actionCenterHtml(actionState);
   const tomorrow=addDays(date,1),tomKids=childTodayRows(tomorrow),tomWork=workFor(tomorrow),tomEvents=eventsOn(tomorrow).filter(e=>!tomKids.some(k=>k.holiday?.id===e.id)&&!duplicatesScheduledWork(e,tomorrow)),tomTodos=todoRows('open').filter(x=>taskDate(x)===tomorrow),tomHw=homeworkRows('open').filter(x=>taskDate(x)===tomorrow),tomCount=tomWork.length+tomEvents.length+tomTodos.length+tomHw.length;
   header('Heute',fmt(date,{weekday:true,long:true}),smartSummary(work,events,todos,hw,mailPulse.count,conflictState.conflicts.filter(x=>!x.date||x.date<=addDays(date,14)).length));
   const childrenSection=`<section class="fc11-section fc11-children-section">
@@ -253,8 +253,7 @@ function renderToday(root){
       <div class="fc11-section-kicker">${esc(focus.kicker||'JETZT WICHTIG')}</div>
       <button type="button" class="fc11-next-content" data-focus-action><div><b>${esc(focus.title||'Nächster Punkt')}</b><span>${esc(focus.sub||'')}</span></div><div class="fc11-next-time"><strong>${esc(focus.time||'')}</strong><small>${esc(focus.left||'')}</small></div>${icon('chevron')}</button>
     </section>`:`<section class="fc11-next calm"><div class="fc11-section-kicker">JETZT</div><div class="fc11-next-empty"><b>Aktuell nichts Dringendes</b><span>Der Tagesablauf und morgen wichtige Punkte bleiben darunter sichtbar.</span></div></section>`}
-    ${mailPulse.html}
-    ${conflictPulse}
+    ${actionHtml}
     ${sharedHoliday?todaySection+tomorrowSection:childrenSection+todaySection+tomorrowSection}
     <button type="button" class="fc11-brain-entry" data-brain>
       <span class="fc11-brain-icon">${icon('brain')}</span>
@@ -268,6 +267,7 @@ function renderToday(root){
   root.querySelector('[data-focus-action]')?.addEventListener('click',()=>{if(focus?.eventId)openEvent(focus.eventId);else if(focus?.kind==='task'||focus?.kind==='homework')open('tasks');else open('plan')});
   root.querySelector('[data-open-bluewin]')?.addEventListener('click',()=>window.fcOpenConnections?.());
   root.querySelector('[data-open-conflicts]')?.addEventListener('click',()=>openConflictAssistant());
+  root.querySelectorAll('[data-action-center]').forEach(b=>b.onclick=()=>{const kind=b.dataset.actionCenter;if(kind==='conflicts')return openConflictAssistant();if(kind==='mail')return window.fcOpenConnections?.();if(kind==='tasks')return open('tasks')});
   root.querySelectorAll('[data-care-date]').forEach(b=>b.onclick=()=>{state.planDate=b.dataset.careDate;state.planPerson='oli';open('plan')});
   bindRows(root);
 }
