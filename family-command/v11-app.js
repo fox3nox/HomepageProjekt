@@ -765,6 +765,7 @@ function openSystemTools(){
       <button type="button" data-close aria-label="Schliessen">×</button>
     </div>
     ${systemHealth()}
+    ${systemSyncPanel()}
     <div class="fc11-system-tools fc11-tools-grid">
       ${tool('connections','link','Verbindungen','Apple Kalender & Bluewin')}
       ${tool('conflicts','bell','Konflikt-Assistent',(()=>{const a=conflictAudit();return a.conflicts.length?a.conflicts.length+' Punkte prüfen':'Keine Konflikte'})())}
@@ -779,6 +780,19 @@ function openSystemTools(){
   m.querySelector('[data-close]').onclick=close;
   m.onclick=e=>{if(e.target===m)close()};
   m.querySelectorAll('[data-tool]').forEach(b=>b.onclick=()=>{const key=b.dataset.tool;close();setTimeout(()=>openTool(key),0)});
+  m.querySelector('[data-system-connections]')?.addEventListener('click',()=>{close();setTimeout(()=>openTool('connections'),0)});
+  m.querySelector('[data-system-sync]')?.addEventListener('click',async e=>{
+    const b=e.currentTarget,old=b.textContent;b.disabled=true;b.textContent='Synchronisiert …';
+    try{
+      if(!window.__fcConnections?.syncNow)throw new Error('Verbindungen sind noch nicht bereit.');
+      await window.__fcConnections.syncNow('all');
+      close();setTimeout(openSystemTools,120);
+    }catch(err){
+      b.disabled=false;b.textContent='Erneut versuchen';
+      try{window.toast?.('Synchronisierung fehlgeschlagen: '+String(err?.message||err))}catch{}
+      setTimeout(()=>{if(document.body.contains(b))b.textContent=old},2500);
+    }
+  });
   document.body.appendChild(m);
 }
 
@@ -810,6 +824,32 @@ function systemHealth(){
     (()=>{const a=saturdayCareAudit(),ok=!a.warnings.length;return `<div class="fc11-health-row ${ok?'ok':'warn'}"><i></i><span><b>Samstagsbetreuung</b><small>${esc(ok?(a.total?a.checked.length+' kommende Schichten geprüft':'Keine kommenden Samstagsschichten'):a.warnings.length+' Problem'+(a.warnings.length===1?'':'e')+' gefunden')}</small></span></div>`})()+'</div>';
 }
 function dateTimeShort(v){if(!v)return'noch nie';try{return new Intl.DateTimeFormat('de-CH',{day:'2-digit',month:'2-digit',hour:'2-digit',minute:'2-digit'}).format(new Date(v))}catch{return''}}
+
+function systemSyncPanel(){
+  const snap=window.__fcConnections?.status?.()||{},history=rows(snap.syncHistory).slice(0,6);
+  const providerName=p=>p==='icloud'?'iCloud':'Bluewin';
+  const originName=o=>o==='cron'?'automatisch':o==='app'?'beim Öffnen':'manuell';
+  const summary=h=>{
+    const s=h?.summary||{};
+    if(h?.provider==='icloud'){
+      const parts=[];
+      if(Number(s.pushed||0))parts.push(Number(s.pushed)+' geschrieben');
+      const del=Number(s.deleted||0)+Number(s.import_deleted||0);if(del)parts.push(del+' gelöscht');
+      if(Number(s.skipped||0))parts.push(Number(s.skipped)+' unverändert');
+      if(Number(s.imported||0))parts.push(Number(s.imported)+' aus iCloud');
+      return parts.join(' · ')||'Keine Änderungen';
+    }
+    const parts=[];
+    if(Number(s.loaded||0))parts.push(Number(s.loaded)+' neu geladen');
+    if(Number(s.skipped||0))parts.push(Number(s.skipped)+' bekannt');
+    return parts.join(' · ')||'Postfach geprüft';
+  };
+  const items=history.map(h=>'<div class="fc11-sync-history-row '+(h.ok?'ok':'fail')+'"><i></i><span><b>'+esc(providerName(h.provider))+' · '+esc(originName(h.origin))+'</b><small>'+esc(dateTimeShort(h.started_at))+' · '+esc(h.ok?summary(h):(h.error||'Fehler'))+'</small></span><em>'+esc(h.duration_ms!=null?(Math.max(0,Number(h.duration_ms))/1000).toFixed(1)+' s':'')+'</em></div>').join('');
+  return '<section class="fc11-sync-panel"><div class="fc11-sync-panel-head"><div><small>AUTO-SYNC</small><b>Letzte Änderungen</b></div><button type="button" data-system-sync>Jetzt synchronisieren</button></div>'+
+    (items?'<div class="fc11-sync-history">'+items+'</div>':'<div class="fc11-sync-empty">Der Verlauf erscheint nach dem nächsten Sync-Lauf.</div>')+
+    '<button type="button" class="fc11-sync-settings" data-system-connections>Kalender & E-Mail verwalten</button></section>';
+}
+
 function systemSummaryText(){
   const s=window.__fcConnections?.status?.(),list=Array.isArray(s?.connections)?s.connections:[],fresh=x=>{const t=Date.parse(x?.last_sync_at||'');return Number.isFinite(t)&&Date.now()-t<=75*60000},ok=p=>list.some(x=>x.provider===p&&x.last_status==='connected'&&!x.last_error&&fresh(x)),bg=s?.backgroundSync||null,bgAge=Date.parse(bg?.last_start||''),bgOk=!!bg?.active&&bg?.last_status!=='failed'&&(!Number.isFinite(bgAge)||Date.now()-bgAge<=75*60000);
   if(ok('icloud')&&ok('bluewin')&&bgOk)return'Cloud, iCloud & Bluewin aktuell · Auto-Sync aktiv';
