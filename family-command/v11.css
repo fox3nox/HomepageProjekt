@@ -238,3 +238,5 @@ html[data-fc11="1"] .fc9-shell{display:none!important}
 .fc11-prep-copy{min-width:0}.fc11-prep-copy b{display:block;color:var(--fc12-text,#3d4f63);font-size:10.5px}.fc11-prep-copy small{display:block;margin-top:2px;color:var(--fc12-muted,#8492a2);font-size:9px}
 .fc11-prep-item.done{opacity:.62;background:#f4f8f6}.fc11-prep-item.done .fc11-prep-box{border-color:#88c8ad;background:#e7f5ee}.fc11-prep-item.done .fc11-prep-box svg{stroke:#2b8a65}.fc11-prep-item.done .fc11-prep-copy b{text-decoration:line-through}
 @media(max-width:540px){.fc11-prep-group{padding:9px}.fc11-prep-item{min-height:46px}}
+
+.fc11-prep-item{width:100%;font:inherit;color:inherit;text-align:left}
