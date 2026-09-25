@@ -92,7 +92,7 @@ try{
   assert.match(prepText,/MORGEN VORBEREITEN[\s\S]*Um 07:00 Uhr los[\s\S]*Rucksack/,'tomorrow prep includes work departure and school reminder');
   assert.doesNotMatch(prepText,/Leuchtweste/,'holiday child preparation is suppressed');
   const prepRucksack=page.locator('.fc11-prep-item').filter({hasText:'Rucksack'});
-  await prepRucksack.locator('input').check({force:true});
+  await prepRucksack.click();
   assert.equal(await prepRucksack.locator('input').isChecked(),true,'tomorrow prep can be checked off');
   await page.evaluate(()=>window.__fcV11.render());
   assert.equal(await page.locator('.fc11-prep-item').filter({hasText:'Rucksack'}).locator('input').isChecked(),true,'prep check survives rerender');
