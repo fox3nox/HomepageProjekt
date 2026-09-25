@@ -787,12 +787,20 @@ function personCard(p){
 }
 function systemHealth(){
   const snap=window.__fcConnections?.status?.()||{},conns=Array.isArray(snap.connections)?snap.connections:[],cloud=window.__fcCloudState?.health?.()||{},bg=snap.backgroundSync||null;
-  const by=p=>conns.find(x=>x.provider===p)||null;
+  const by=p=>conns.find(x=>x.provider===p)||null,ageMinutes=v=>{const t=Date.parse(v||'');return Number.isFinite(t)?Math.max(0,Math.round((Date.now()-t)/60000)):null};
   const row=(label,obj,kind='conn')=>{
     let ok=false,sub='Noch nicht geprüft';
     if(kind==='cloud'){ok=cloud.status==='synced'||cloud.status==='test';sub=ok?'Cloud-State gesichert':cloud.status==='offline-cache'?'Offline · lokaler Cache':cloud.status||'Verbindet …'}
-    else if(kind==='background'){ok=!!obj?.active;sub=ok?(obj.last_status?('Aktiv · letzter Lauf '+String(obj.last_status)): 'Aktiv · wartet auf ersten Lauf'):'Nicht aktiv'}
-    else if(obj){ok=obj.last_status==='connected'&&!obj.last_error;sub=ok?'Verbunden · '+dateTimeShort(obj.last_sync_at):obj.last_error||obj.last_status||'Eingerichtet'}
+    else if(kind==='background'){
+      const age=ageMinutes(obj?.last_start),stale=age!==null&&age>75;
+      ok=!!obj?.active&&obj?.last_status!=='failed'&&!stale;
+      sub=!obj?.active?'Nicht aktiv':obj?.last_status==='failed'?'Letzter Lauf fehlgeschlagen':stale?'Letzter Lauf vor '+age+' Min · veraltet':obj?.last_status?('Aktiv · '+dateTimeShort(obj.last_start)):'Aktiv · wartet auf ersten Lauf';
+    }
+    else if(obj){
+      const age=ageMinutes(obj.last_sync_at),stale=age!==null&&age>75;
+      ok=obj.last_status==='connected'&&!obj.last_error&&!stale;
+      sub=obj.last_error||obj.last_status!=='connected'?(obj.last_error||obj.last_status||'Eingerichtet'):stale?'Letzter Sync vor '+age+' Min · veraltet':'Verbunden · '+dateTimeShort(obj.last_sync_at);
+    }
     return `<div class="fc11-health-row ${ok?'ok':'warn'}"><i></i><span><b>${esc(label)}</b><small>${esc(sub)}</small></span></div>`;
   };
   return '<div class="fc11-health"><div class="fc11-health-head"><span><small>SYSTEMSTATUS</small><b>'+(conns.length?'Cloud-Dienste':'Wird geprüft')+'</b></span><em>'+(bg?.active?'Auto-Sync · 30 Min':'Auto-Sync prüfen')+'</em></div>'+
@@ -802,10 +810,9 @@ function systemHealth(){
 }
 function dateTimeShort(v){if(!v)return'noch nie';try{return new Intl.DateTimeFormat('de-CH',{day:'2-digit',month:'2-digit',hour:'2-digit',minute:'2-digit'}).format(new Date(v))}catch{return''}}
 function systemSummaryText(){
-  const s=window.__fcConnections?.status?.(),list=Array.isArray(s?.connections)?s.connections:[],ok=p=>list.some(x=>x.provider===p&&x.last_status==='connected'&&!x.last_error),bg=!!s?.backgroundSync?.active;
-  if(ok('icloud')&&ok('bluewin')&&bg)return'Cloud, iCloud & Bluewin verbunden · Auto-Sync aktiv';
-  if(ok('icloud')&&ok('bluewin'))return'iCloud & Bluewin verbunden · Auto-Sync prüfen';
-  if(ok('icloud')||ok('bluewin'))return'Verbindungen teilweise aktiv · Status prüfen';
+  const s=window.__fcConnections?.status?.(),list=Array.isArray(s?.connections)?s.connections:[],fresh=x=>{const t=Date.parse(x?.last_sync_at||'');return Number.isFinite(t)&&Date.now()-t<=75*60000},ok=p=>list.some(x=>x.provider===p&&x.last_status==='connected'&&!x.last_error&&fresh(x)),bg=s?.backgroundSync||null,bgAge=Date.parse(bg?.last_start||''),bgOk=!!bg?.active&&bg?.last_status!=='failed'&&(!Number.isFinite(bgAge)||Date.now()-bgAge<=75*60000);
+  if(ok('icloud')&&ok('bluewin')&&bgOk)return'Cloud, iCloud & Bluewin aktuell · Auto-Sync aktiv';
+  if(list.length)return'Systemstatus prüfen · mindestens ein Dienst ist veraltet oder gestört';
   return'Verbindungen, Erinnerungen, Sicherung & Geräte';
 }
 function tool(key,ico,title,sub){return `<button type="button" class="fc11-tool" data-tool="${key}"><span>${icon(ico)}</span><div><b>${title}</b><small>${sub}</small></div>${icon('chevron')}</button>`}
