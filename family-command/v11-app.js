@@ -318,6 +318,37 @@ function isCareCoverageEvent(e){
   const title=String(e?.title||''),note=String(e?.note||'');
   return /\bsrk\b/i.test(title)&&/betreuung|kinder|aufsicht/i.test(title+' '+note);
 }
+
+function conflictFingerprint(x){
+  return [x?.kind||'',x?.date||'',x?.time||'',...(rows(x?.eventIds).map(String).sort()),x?.mailUid||'',x?.title||'',x?.detail||''].join('|');
+}
+function conflictPrefs(){
+  const root=D().assistantPreferences&&typeof D().assistantPreferences==='object'?D().assistantPreferences:{};
+  const conflicts=root.conflicts&&typeof root.conflicts==='object'?root.conflicts:{};
+  const ignored=conflicts.ignored&&typeof conflicts.ignored==='object'?conflicts.ignored:{};
+  return{root,conflicts,ignored};
+}
+function conflictIsIgnored(x){
+  const key=conflictFingerprint(x),entry=conflictPrefs().ignored[key];
+  return !!entry;
+}
+function saveConflictPreference(x,ignored){
+  const data=D();if(!data||typeof data!=='object')return;
+  const pref=data.assistantPreferences&&typeof data.assistantPreferences==='object'?data.assistantPreferences:{};
+  const conflicts=pref.conflicts&&typeof pref.conflicts==='object'?pref.conflicts:{};
+  const map=conflicts.ignored&&typeof conflicts.ignored==='object'?{...conflicts.ignored}:{};
+  const key=conflictFingerprint(x);
+  if(ignored)map[key]={ignoredAt:new Date().toISOString(),title:String(x?.title||''),date:String(x?.date||''),kind:String(x?.kind||'')};
+  else delete map[key];
+  const cutoff=Date.now()-180*86400000;
+  for(const [k,v] of Object.entries(map)){
+    const t=Date.parse(v?.ignoredAt||'');if(Number.isFinite(t)&&t<cutoff)delete map[k];
+  }
+  data.assistantPreferences={...pref,conflicts:{...conflicts,ignored:map}};
+  try{window.save?.()}catch(e){console.warn('fc11_conflict_pref_save',e)}
+  setTimeout(queueRender,80);
+}
+
 function conflictAudit(){
   const start=today(),limit=addDays(start,90),events=rows(D().events).filter(active).filter(e=>{
     const d=String(e&&e.date||''),end=String(e&&e.endDate||d);return !!d&&d<=limit&&end>=start;
@@ -395,7 +426,8 @@ function conflictAudit(){
   }
   const order={high:0,medium:1,low:2};
   conflicts.sort((a,b)=>(order[a.severity]??9)-(order[b.severity]??9)||String(a.date||'').localeCompare(String(b.date||''))||String(a.time||'').localeCompare(String(b.time||'')));
-  return{conflicts,high:conflicts.filter(x=>x.severity==='high').length,medium:conflicts.filter(x=>x.severity==='medium').length,horizon:{start,limit}};
+  const ignored=conflicts.filter(conflictIsIgnored),visible=conflicts.filter(x=>!conflictIsIgnored(x));
+  return{conflicts:visible,ignored,all:conflicts,high:visible.filter(x=>x.severity==='high').length,medium:visible.filter(x=>x.severity==='medium').length,horizon:{start,limit}};
 }
 function conflictPulseHtml(audit){
   const near=rows(audit&&audit.conflicts).filter(x=>x.kind==='mail'||!x.date||x.date<=addDays(today(),14));
