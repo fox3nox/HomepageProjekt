@@ -68,6 +68,12 @@ function modal(){
   m.innerHTML='<section class="fcc-sheet" role="dialog" aria-modal="true" aria-labelledby="fccTitle"><div class="fcc-head"><div><small>SYSTEM & SICHERHEIT</small><h2 id="fccTitle">Verbindungen</h2><p>Kalender und E-Mail direkt mit der Familienzentrale verbinden.</p></div><button type="button" data-fcc-close aria-label="Schliessen">×</button></div><div class="fcc-body" id="fccBody"></div></section>';
   m.querySelector('[data-fcc-close]').onclick=()=>m.remove();m.onclick=e=>{if(e.target===m)m.remove()};document.body.appendChild(m);return m;
 }
+function calendarPicker(c){
+  const list=Array.isArray(c?.settings?.available_calendars)?c.settings.available_calendars.filter(x=>x?.href&&x?.writable!==false):[];
+  if(!list.length)return'';
+  const selected=String(c?.settings?.calendar_href||'');
+  return '<label class="fcc-calendar-picker"><span><b>Zielkalender</b><small>Hierhin schreibt die Familienzentrale.</small></span><select data-fcc-calendar>'+list.map(x=>'<option value="'+esc(x.href)+'" '+(String(x.href)===selected?'selected':'')+'>'+esc(x.name||'Kalender')+'</option>').join('')+'</select></label>';
+}
 function card(provider,title,sub,icon){
   const c=conn(provider),[label,tone]=stateLabel(c);
   return '<article class="fcc-card" data-provider="'+provider+'"><div class="fcc-card-top"><span class="fcc-provider-icon">'+icon+'</span><div><h3>'+esc(title)+'</h3><p>'+esc(sub)+'</p></div><span class="fcc-state '+tone+'">'+esc(label)+'</span></div>'+
@@ -76,7 +82,7 @@ function card(provider,title,sub,icon){
     '<div class="fcc-actions">'+
       (c?'<button type="button" data-fcc-sync="'+provider+'" class="primary">Jetzt synchronisieren</button><button type="button" data-fcc-setup="'+provider+'">'+(provider==='icloud'?'App-Passwort eintragen':'Zugang ändern')+'</button><button type="button" data-fcc-disconnect="'+provider+'" class="danger">Trennen</button>':'<button type="button" data-fcc-setup="'+provider+'" class="primary">Verbinden</button>')+
     '</div>'+
-    (provider==='icloud'&&c?'<label class="fcc-toggle"><input type="checkbox" data-fcc-push '+(c.settings?.push_family_events?'checked':'')+'><span></span><div><b>Familienzentrale → iCloud</b><small>Meine zukünftigen Termine zusätzlich in den iCloud-Kalender schreiben.</small></div></label>':'')+
+    (provider==='icloud'&&c?calendarPicker(c)+'<label class="fcc-toggle"><input type="checkbox" data-fcc-push '+(c.settings?.push_family_events?'checked':'')+'><span></span><div><b>Familienzentrale → iCloud</b><small>Meine zukünftigen Termine zusätzlich in den iCloud-Kalender schreiben.</small></div></label>':'')+
   '</article>';
 }
 function renderMailAssistant(){
@@ -96,7 +102,7 @@ function renderMailAssistant(){
 function render(){
   const m=modal(),body=m.querySelector('#fccBody');
   body.innerHTML=
-    '<div class="fcc-intro"><b>Direkt verbunden</b><span>Passwörter werden serverseitig verschlüsselt gespeichert und nie im Browser angezeigt.</span></div>'+
+    '<div class="fcc-intro"><b>Direkt verbunden</b><span>Passwörter werden serverseitig verschlüsselt gespeichert und nie im Browser angezeigt.</span><em>Automatischer Cloud-Sync · alle 30 Minuten</em></div>'+
     card('icloud','Apple Kalender','iCloud-Kalender mit Terminen der Familienzentrale synchronisieren.','📅')+
     card('bluewin','Bluewin E-Mail','Posteingang lesen und wichtige Mails in der Familienzentrale sichtbar machen.','✉️')+
     (conn('bluewin')?'<section class="fcc-mail"><div class="fcc-section-head"><div><small>BLUEWIN</small><h3>Mail-Assistent</h3></div><button type="button" data-fcc-sync="bluewin">Aktualisieren</button></div>'+renderMailAssistant()+'</section>':'')+
@@ -148,6 +154,12 @@ function bind(root){
   root.querySelectorAll('[data-fcc-sync]').forEach(b=>b.onclick=()=>sync(b.dataset.fccSync,b));
   root.querySelectorAll('[data-fcc-disconnect]').forEach(b=>b.onclick=()=>disconnect(b.dataset.fccDisconnect));
   const push=root.querySelector('[data-fcc-push]');if(push)push.onchange=async()=>{try{await api({action:'settings',provider:'icloud',settings:{push_family_events:push.checked}});await refresh(false)}catch(e){notice(e.message,'error')}};
+  const cal=root.querySelector('[data-fcc-calendar]');if(cal)cal.onchange=async()=>{try{
+    const ic=conn('icloud'),found=(ic?.settings?.available_calendars||[]).find(x=>String(x.href)===String(cal.value));
+    await api({action:'settings',provider:'icloud',settings:{calendar_href:cal.value,calendar_name:found?.name||'Kalender'}});
+    notice('Zielkalender gespeichert. Synchronisation läuft …','info');
+    const j=await api({action:'sync',provider:'icloud'});setSnapshot(j);render();notice('iCloud-Zielkalender aktualisiert.','ok');
+  }catch(e){notice(e.message||String(e),'error')}};
   root.querySelectorAll('[data-mail-action]').forEach(b=>b.onclick=()=>takeMailAction(b.dataset.mailUid,b.dataset.mailAction));
   root.querySelectorAll('[data-mail-delete]').forEach(b=>b.onclick=()=>deleteMails([b.dataset.mailDelete]));
   root.querySelector('[data-delete-unimportant]')?.addEventListener('click',()=>{
