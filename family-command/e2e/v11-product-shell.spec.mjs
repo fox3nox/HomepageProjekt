@@ -149,8 +149,11 @@ try{
   await page.click('#fc11AddSheet [data-close]');
 
   await page.click('.fc11-bottom-nav [data-fc11-screen="more"]');
-  assert.equal(await page.locator('.fc11-system').getAttribute('open'),null,'secondary system tools stay collapsed by default');
-  await page.locator('.fc11-system summary').click();
+  assert.equal(await page.locator('#fc11SystemSheet').count(),0,'system tools stay closed by default');
+  await page.locator('[data-system-security]').click();
+  await page.waitForSelector('#fc11SystemSheet',{state:'visible'});
+  assert.equal(await page.locator('#fc11SystemSheet [data-tool="connections"]').count(),1,'System & Sicherheit exposes connections directly');
+  await page.click('#fc11SystemSheet [data-close]');
   await page.evaluate(()=>{const probe=document.createElement('div');probe.dataset.scrollProbe='1';probe.style.height='420px';document.querySelector('#fc11Main')?.append(probe)});
   const scrollContract=await page.evaluate(()=>({html:getComputedStyle(document.documentElement).overflowY,body:getComputedStyle(document.body).overflowY,scrollHeight:document.documentElement.scrollHeight,viewport:innerHeight,top:scrollY}));
   assert.notEqual(scrollContract.html,'hidden','V11 must never lock html vertical scrolling');
@@ -185,8 +188,9 @@ try{
   await page.click('#fcBudgetModal .fc-budget-close');
 
   await page.evaluate(()=>{window.__v11PushCalls=0;window.enablePush=()=>{window.__v11PushCalls++}});
-  await page.locator('.fc11-system').evaluate(el=>{el.open=true});
-  await page.click('[data-tool="push"]');
+  await page.click('[data-system-security]');
+  await page.waitForSelector('#fc11SystemSheet',{state:'visible'});
+  await page.click('#fc11SystemSheet [data-tool="push"]');
   await page.waitForSelector('#fcReminderCenter',{state:'visible'});
   assert.match(await page.locator('#fcReminderCenter').innerText(),/Rucksack/);
   assert.equal(await page.evaluate(()=>window.__v11PushCalls),0,'opening reminders must not request push permission automatically');
