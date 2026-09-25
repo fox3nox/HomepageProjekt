@@ -486,6 +486,37 @@ function conflictPulseHtml(audit){
     '<span class="fc11-conflict-copy"><small>KONFLIKT-ASSISTENT · '+near.length+' PRÜFEN</small><b>'+(nearHigh?'Terminüberschneidung erkannt':'Mögliche Konflikte erkannt')+'</b>'+
     '<span>'+top.map(x=>'<em><strong>'+(x.date?esc(fmt(x.date,{weekday:true})):'Mail')+'</strong> '+esc(x.title)+'</em>').join('')+'</span></span>'+icon('chevron')+'</button>';
 }
+
+function openDataIntegrityAssistant(){
+  document.getElementById('fc11IntegritySheet')?.remove();
+  const snap=window.__fcConnections?.status?.()||{},h=snap.dataHealth||null,issues=rows(h?.issues),m=document.createElement('div');
+  m.id='fc11IntegritySheet';m.className='fc11-modal';
+  const counts=h?.counts||{};
+  const issueHtml=issues.length?issues.map((x,i)=>'<button type="button" class="fc11-integrity-item '+esc(x.severity||'medium')+'" data-integrity-index="'+i+'"><i></i><span><small>'+esc(String(x.severity||'').toUpperCase()+' · '+String(x.entityType||''))+'</small><b>'+esc(x.title||'Datenhinweis')+'</b><em>'+esc(x.detail||'')+'</em></span>'+icon('chevron')+'</button>').join(''):
+    '<div class="fc11-conflict-clear"><span>✓</span><div><b>Datenbestand sauber</b><small>Keine doppelten IDs, ungültigen Zeiten oder verwaisten Personenbezüge gefunden.</small></div></div>';
+  m.innerHTML='<section class="fc11-sheet fc11-integrity-sheet" role="dialog" aria-modal="true" aria-labelledby="fc11IntegrityTitle">'+
+    '<div class="fc11-sheet-head"><div><small>SELBSTDIAGNOSE</small><h2 id="fc11IntegrityTitle">Datenprüfung</h2><p>'+(h?.checked_at?'Geprüft '+dateTimeShort(h.checked_at):'Status wird geladen')+'</p></div><button type="button" data-close aria-label="Schliessen">×</button></div>'+
+    '<div class="fc11-integrity-stats"><span><b>'+Number(counts.people||0)+'</b><small>Personen</small></span><span><b>'+Number(counts.events||0)+'</b><small>Termine</small></span><span><b>'+Number(counts.todos||0)+'</b><small>To-dos</small></span><span><b>'+Number(counts.homework||0)+'</b><small>Schule</small></span></div>'+
+    '<div class="fc11-integrity-list">'+issueHtml+'</div>'+
+    '<div class="fc11-conflict-foot"><span>Die Prüfung verändert keine Daten.</span><button type="button" data-integrity-refresh>Neu prüfen</button></div></section>';
+  const close=()=>m.remove();m.querySelector('[data-close]').onclick=close;m.onclick=e=>{if(e.target===m)close()};
+  m.querySelector('[data-integrity-refresh]')?.addEventListener('click',async()=>{
+    const b=m.querySelector('[data-integrity-refresh]');if(b){b.disabled=true;b.textContent='Prüft …'}
+    try{await window.__fcConnections?.refresh?.(false)}catch{}
+    close();setTimeout(openDataIntegrityAssistant,120);
+  });
+  m.querySelectorAll('[data-integrity-index]').forEach(b=>b.onclick=()=>{
+    const x=issues[Number(b.dataset.integrityIndex)];if(!x)return;close();
+    if(x.entityType==='event'){
+      const e=rows(D().events).find(v=>String(v.id)===String(x.entityId));
+      if(e?.date){state.planDate=e.date;state.planPerson=pids(e)[0]||'all';open('plan');return}
+    }
+    if(x.entityType==='todo'||x.entityType==='homework'){open('tasks');return}
+    open('more');
+  });
+  document.body.appendChild(m);
+}
+
 function openConflictAssistant(){
   document.getElementById('fc11ConflictSheet')?.remove();
   const audit=conflictAudit(),m=document.createElement('div');m.id='fc11ConflictSheet';m.className='fc11-modal';
@@ -790,6 +821,7 @@ function openSystemTools(){
     ${systemSyncPanel()}
     <div class="fc11-system-tools fc11-tools-grid">
       ${tool('connections','link','Verbindungen','Apple Kalender & Bluewin')}
+      ${tool('integrity','check','Datenprüfung',(()=>{const h=window.__fcConnections?.status?.()?.dataHealth;return h?.issue_count?h.issue_count+' Hinweise':'Daten sauber'})())}
       ${tool('conflicts','bell','Konflikt-Assistent',(()=>{const a=conflictAudit();return a.conflicts.length?a.conflicts.length+' Punkte prüfen':'Keine Konflikte'})())}
       ${tool('push','bell','Erinnerungen','Push & Morgenbericht')}
       ${tool('backup','backup','Sicherung','Cloud-Backups')}
@@ -909,6 +941,7 @@ async function openTool(key){
     backup:()=>window.fcOpenBackups?.(),
     jarvis:()=>window.fcOpenJarvisConnect?.(),
     connections:()=>window.fcOpenConnections?.(),
+    integrity:()=>openDataIntegrityAssistant(),
     conflicts:()=>openConflictAssistant(),
     push:()=>typeof window.fcOpenReminderCenter==='function'?window.fcOpenReminderCenter():window.enablePush?.(),
     export:()=>{if(typeof window.exportData==='function')return window.exportData();const a=document.createElement('a'),blob=new Blob([JSON.stringify(D(),null,2)],{type:'application/json'});a.href=URL.createObjectURL(blob);a.download=`familienzentrale-${today()}.json`;a.click();setTimeout(()=>URL.revokeObjectURL(a.href),0)}
