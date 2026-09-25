@@ -4,7 +4,7 @@
 if(window.__fcConnectionsInstalled)return;window.__fcConnectionsInstalled=true;
 const BASE='https://lmrvapstojcecljjdgds.supabase.co/functions/v1/family-command-connectors';
 const STORE='fc-private-access-v1',COOKIE='fc_private_access';
-let snapshot={connections:[],mail:[],backgroundSync:null},busy=false,lastAuto=0;
+let snapshot={connections:[],mail:[],backgroundSync:null,syncHistory:[]},busy=false,lastAuto=0;
 const esc=s=>String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
 function accessKey(){try{const p=document.cookie.split(';').map(x=>x.trim()).find(x=>x.startsWith(COOKIE+'='));if(p)return decodeURIComponent(p.slice(COOKIE.length+1))}catch{}try{return localStorage.getItem(STORE)||''}catch{return''}}
 async function api(body=null){
@@ -13,7 +13,7 @@ async function api(body=null){
   const j=await r.json().catch(()=>({}));if(!r.ok||j.ok===false)throw new Error(j.error||('HTTP '+r.status));return j;
 }
 function conn(p){return(snapshot.connections||[]).find(x=>x.provider===p)||null}
-function setSnapshot(j){snapshot={connections:j.connections||[],mail:j.mail||[],backgroundSync:j.background_sync??snapshot.backgroundSync??null};document.dispatchEvent(new CustomEvent('fc:connections-updated',{detail:{mail:snapshot.mail,connections:snapshot.connections,backgroundSync:snapshot.backgroundSync}}))}
+function setSnapshot(j){snapshot={connections:j.connections||[],mail:j.mail||[],backgroundSync:j.background_sync??snapshot.backgroundSync??null,syncHistory:j.sync_history??snapshot.syncHistory??[]};document.dispatchEvent(new CustomEvent('fc:connections-updated',{detail:{mail:snapshot.mail,connections:snapshot.connections,backgroundSync:snapshot.backgroundSync,syncHistory:snapshot.syncHistory}}))}
 function pad2(n){return String(n).padStart(2,'0')}
 function isoDate(y,m,d){const dt=new Date(Number(y),Number(m)-1,Number(d),12);if(dt.getFullYear()!==Number(y)||dt.getMonth()!==Number(m)-1||dt.getDate()!==Number(d))return'';return `${y}-${pad2(m)}-${pad2(d)}`}
 function mailDate(text,received){
@@ -283,10 +283,10 @@ function setup(provider){
     }catch(err){st.className='fcc-form-status error';st.textContent=err.message||String(err);btn.disabled=false}
   };
 }
-async function sync(provider,button){
+async function sync(provider,button,origin='manual'){
   const old=button?.textContent;if(button){button.disabled=true;button.textContent='Synchronisiert …'}
-  try{const j=await api({action:'sync',provider});setSnapshot(j);render();const r=j.results?.[provider];if(r?.error)notice(r.error,'error');else if(r?.warning)notice('Verbunden. Hinweis: '+r.warning,'info');else notice((provider==='icloud'?'Kalender':'Bluewin')+' aktualisiert.','ok');try{window.__fcCloudState?.bootstrap?.()}catch{}}
-  catch(e){notice(e.message,'error');if(button){button.disabled=false;button.textContent=old}}
+  try{const j=await api({action:'sync',provider,origin});setSnapshot(j);if(document.getElementById('fcConnectionsModal'))render();const r=j.results?.[provider];if(provider!=='all'){if(r?.error)notice(r.error,'error');else if(r?.warning)notice('Verbunden. Hinweis: '+r.warning,'info');else notice((provider==='icloud'?'Kalender':'Bluewin')+' aktualisiert.','ok')}try{window.__fcCloudState?.bootstrap?.()}catch{}return j}
+  catch(e){if(button){button.disabled=false;button.textContent=old}if(document.getElementById('fcConnectionsModal'))notice(e.message,'error');throw e}
 }
 async function disconnect(provider){
   if(!confirm((provider==='icloud'?'Apple Kalender':'Bluewin E-Mail')+' wirklich von der Familienzentrale trennen?'))return;
@@ -295,11 +295,11 @@ async function disconnect(provider){
 async function maybeAutoSync(){
   if(Date.now()-lastAuto<20*60*1000)return;lastAuto=Date.now();
   try{const j=await api();setSnapshot(j);const connected=snapshot.connections.filter(x=>x.enabled&&x.last_status==='connected');if(!connected.length)return;
-    const stale=connected.some(x=>!x.last_sync_at||Date.now()-new Date(x.last_sync_at).getTime()>20*60*1000);if(stale){const s=await api({action:'sync',provider:'all'});setSnapshot(s);if(document.getElementById('fcConnectionsModal'))render()}
+    const stale=connected.some(x=>!x.last_sync_at||Date.now()-new Date(x.last_sync_at).getTime()>20*60*1000);if(stale){const s=await api({action:'sync',provider:'all',origin:'app'});setSnapshot(s);if(document.getElementById('fcConnectionsModal'))render()}
   }catch(e){console.warn('fc_connectors_autosync',e)}
 }
 window.fcOpenConnections=()=>{modal();refresh();};
-window.__fcConnections={open:window.fcOpenConnections,refresh,maybeAutoSync,status:()=>snapshot,insights:mailInsights,allInsights:mailInsightsAll};
+window.__fcConnections={open:window.fcOpenConnections,refresh,maybeAutoSync,syncNow:(provider='all')=>sync(provider,null,'manual'),status:()=>snapshot,insights:mailInsights,allInsights:mailInsightsAll};
 document.addEventListener('fc:v11-ready',()=>setTimeout(maybeAutoSync,1800));
 document.addEventListener('visibilitychange',()=>{if(!document.hidden)maybeAutoSync()});
 })();
