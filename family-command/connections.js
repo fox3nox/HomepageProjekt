@@ -36,11 +36,18 @@ function isWorkPlanMail(mail){
   const subject=String(mail.subject||''),sender=String(mail.sender||'');
   return /fredy\.straehl@landibuchsi\.ch|strähl\s+fredy|straehl\s+fredy/i.test(sender)&&/plan|pläne|plaene|arbeitsplan|schicht|kw\s*\d+/i.test(subject);
 }
+function senderKey(mail){
+  const s=String(mail?.sender||'').toLowerCase(),m=s.match(/<([^>]+@[^>]+)>/)||s.match(/([a-z0-9._%+-]+@[a-z0-9.-]+\.[a-z]{2,})/i);
+  return String(m?.[1]||'').trim().toLowerCase();
+}
+function mailRules(){const r=conn('bluewin')?.settings?.mail_rules||{};return{important:Array.isArray(r.important)?r.important:[],unimportant:Array.isArray(r.unimportant)?r.unimportant:[]}}
 function mailImportance(mail,text){
-  const subject=String(mail.subject||''),sender=String(mail.sender||''),all=(text||'').toLowerCase();
-  if(isWorkPlanMail(mail))return{importance:'important',reason:'LANDI-Arbeitsplan von Fredy erkannt'};
+  const subject=String(mail.subject||''),sender=String(mail.sender||''),all=(text||'').toLowerCase(),key=senderKey(mail),rules=mailRules();
+  if(isWorkPlanMail(mail))return{importance:'important',reason:'LANDI-Arbeitsplan von Fredy erkannt',protected:true};
   const critical=/\b(sicherheit|security|kritisch|login|anmeldung|passwort|kennwort|account|konto|rechnung|invoice|zahlung|mahnung|frist|termin|arzt|zahnarzt|schule|kindergarten|eltern|versicherung|behörde|behoerde|steuer|sozial|spital|ambulanz|reservation|reservierung|bestätigung|bestaetigung)\b/i.test(all);
-  if(critical)return{importance:'important',reason:'Wichtige Konto-, Termin- oder Verwaltungsinformation'};
+  if(critical)return{importance:'important',reason:'Wichtige Konto-, Termin- oder Verwaltungsinformation',protected:true};
+  if(key&&rules.important.includes(key))return{importance:'important',reason:'Von dir als wichtig markierter Absender'};
+  if(key&&rules.unimportant.includes(key))return{importance:'unimportant',reason:'Von dir als unwichtig markierter Absender'};
   if(/notifications@github\.com/i.test(sender)&&!/security|dependabot|vulnerability|secret scanning/i.test(subject))return{importance:'unimportant',reason:'GitHub-Workflow-/Entwicklungsbenachrichtigung'};
   if(/\b(wog\.ch|world of games|just eat|newsletter|promo|marketing)\b/i.test(sender+' '+subject))return{importance:'unimportant',reason:'Newsletter oder Werbung'};
   if(/\b(rabatt|sale|angebot|angebote|deal|gutschein|entdecke|beliebtesten|jetzt sichern|nur heute|shopping|neuheiten|news(letter)?|aktion)\b/i.test(subject))return{importance:'unimportant',reason:'Werbung oder Angebot'};
@@ -125,6 +132,7 @@ function mailCard(mail){
       (i.type!=='info'&&i.type!=='workplan'&&i.importance!=='unimportant'?'<button type="button" data-mail-action="todo" data-mail-uid="'+esc(mail.message_uid)+'">Als Aufgabe</button>':'')+
       (i.type==='workplan'?'<span class="fcc-workplan-auto">Kalenderprüfung automatisch</span>':'')+
       (i.importance!=='unimportant'?'<button type="button" data-mail-action="ignore" data-mail-uid="'+esc(mail.message_uid)+'">Ignorieren</button>':'')+
+      (!i.protected&&senderKey(mail)?'<button type="button" data-mail-rule="'+(i.importance==='unimportant'?'important':'unimportant')+'" data-mail-rule-uid="'+esc(mail.message_uid)+'">'+(i.importance==='unimportant'?'Doch wichtig':'Absender unwichtig')+'</button>':'')+
       '<button type="button" class="danger" data-mail-delete="'+esc(mail.message_uid)+'">Löschen</button></div>')+
     '</article>';
 }
@@ -149,6 +157,15 @@ async function deleteMails(uids){
     setSnapshot(j);render();notice(j.result?.count+' E-Mail'+(j.result?.count===1?'':'s')+' in den Papierkorb verschoben.','ok');
   }catch(e){notice(e.message||String(e),'error')}
 }
+async function setMailRule(uid,kind){
+  const mail=(snapshot.mail||[]).find(x=>String(x.message_uid)===String(uid)),key=senderKey(mail);if(!mail||!key)return;
+  const rules=mailRules(),important=new Set(rules.important),unimportant=new Set(rules.unimportant);
+  if(kind==='important'){important.add(key);unimportant.delete(key)}else{unimportant.add(key);important.delete(key)}
+  try{
+    const j=await api({action:'settings',provider:'bluewin',settings:{mail_rules:{important:[...important],unimportant:[...unimportant]}}});
+    setSnapshot(j);render();notice(kind==='important'?'Absender bleibt künftig im relevanten Bereich.':'Absender wird künftig als unwichtig einsortiert.','ok');
+  }catch(e){notice(e.message||String(e),'error')}
+}
 function bind(root){
   root.querySelectorAll('[data-fcc-setup]').forEach(b=>b.onclick=()=>setup(b.dataset.fccSetup));
   root.querySelectorAll('[data-fcc-sync]').forEach(b=>b.onclick=()=>sync(b.dataset.fccSync,b));
@@ -162,6 +179,7 @@ function bind(root){
   }catch(e){notice(e.message||String(e),'error')}};
   root.querySelectorAll('[data-mail-action]').forEach(b=>b.onclick=()=>takeMailAction(b.dataset.mailUid,b.dataset.mailAction));
   root.querySelectorAll('[data-mail-delete]').forEach(b=>b.onclick=()=>deleteMails([b.dataset.mailDelete]));
+  root.querySelectorAll('[data-mail-rule]').forEach(b=>b.onclick=()=>setMailRule(b.dataset.mailRuleUid,b.dataset.mailRule));
   root.querySelector('[data-delete-unimportant]')?.addEventListener('click',()=>{
     const ids=mailInsightsAll().filter(x=>x.importance==='unimportant'&&(x.triage_status||'pending')==='pending').map(x=>x.message_uid);
     deleteMails(ids);
