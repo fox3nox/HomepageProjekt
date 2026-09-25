@@ -280,6 +280,31 @@ function focusForToday(date,next,todos,hw){
   if(next)return{...next,kind:next.eventId?'event':'next',kicker:'ALS NÄCHSTES'};
   return null;
 }
+
+function actionCenter(){
+  const date=today(),items=[],conflicts=conflictAudit().conflicts.filter(x=>!x.date||x.date<=addDays(date,14));
+  let mail=[];try{mail=(window.__fcConnections?.insights?.()||[]).filter(x=>x.actionable)}catch{}
+  const overdueTodos=todoRows('open').filter(x=>!x.done&&taskDate(x)&&taskDate(x)<date);
+  const overdueHw=homeworkRows('open').filter(x=>!x.done&&taskDate(x)&&taskDate(x)<date);
+  if(conflicts.length){
+    const high=conflicts.filter(x=>x.severity==='high').length;
+    items.push({kind:'conflicts',count:conflicts.length,urgent:high>0,title:conflicts.length+' Konflikt'+(conflicts.length===1?'':'e')+' prüfen',sub:high?high+' davon wichtig':'Plan kurz prüfen'});
+  }
+  if(mail.length){
+    const bills=mail.filter(x=>x.type==='bill').length,plans=mail.filter(x=>x.type==='workplan').length;
+    items.push({kind:'mail',count:mail.length,urgent:mail.some(x=>x.type==='bill'&&typeof x.invoice?.days==='number'&&x.invoice.days<=3),title:mail.length+' relevante Mail'+(mail.length===1?'':'s'),sub:plans?plans+' Arbeitsplan'+(plans===1?'':'e')+(bills?' · '+bills+' Rechnung'+(bills===1?'':'en'):''):bills?bills+' Rechnung'+(bills===1?'':'en'):'Bluewin prüfen'});
+  }
+  const overdue=overdueTodos.length+overdueHw.length;
+  if(overdue)items.push({kind:'tasks',count:overdue,urgent:true,title:overdue+' überfällige Aufgabe'+(overdue===1?'':'n'),sub:overdueHw.length?overdueHw.length+' davon Schule':'Heute erledigen'});
+  return{items,total:items.reduce((n,x)=>n+x.count,0)};
+}
+function actionCenterHtml(center){
+  if(!center?.items?.length)return'';
+  return '<section class="fc11-action-center"><div class="fc11-action-center-head"><div><small>AKTIONSZENTRALE</small><b>Hier musst du wirklich etwas tun</b></div><span>'+center.total+'</span></div><div>'+
+    center.items.map(x=>'<button type="button" class="'+(x.urgent?'urgent':'')+'" data-action-center="'+esc(x.kind)+'"><i></i><span><b>'+esc(x.title)+'</b><small>'+esc(x.sub)+'</small></span>'+icon('chevron')+'</button>').join('')+
+    '</div></section>';
+}
+
 function bluewinPulse(){
   let list=[];try{list=(window.__fcConnections?.insights?.()||[]).filter(x=>x.actionable).slice(0,3)}catch{}
   if(!list.length)return{count:0,html:''};
