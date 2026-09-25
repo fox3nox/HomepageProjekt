@@ -472,21 +472,41 @@ function renderMore(root){
         ${tool('contacts','contacts','Kontakte','Schule, Ärzte & mehr')}
       </div>
     </section>
-    <details class="fc11-system">
-      <summary>System & Sicherheit</summary>
-      <div class="fc11-tools-grid">
-        ${tool('ai','brain','Family AI','Sprechen & erfassen')}
-        ${tool('push','bell','Erinnerungen','Push & Morgenbericht')}
-        ${tool('backup','backup','Sicherung','Cloud-Backups')}
-        ${tool('export','download','Datenexport','JSON-Sicherung')}
-        ${tool('jarvis','link','Jarvis','Gerät verbinden')}
-        ${tool('connections','link','Verbindungen','Apple Kalender & Bluewin')}
-      </div>
-    </details>
+    <section class="fc11-system">
+      <button type="button" class="fc11-system-launch" data-system-security>
+        <span><small>SYSTEM & SICHERHEIT</small><b>System & Sicherheit</b><em>Verbindungen, Erinnerungen, Sicherung & Geräte</em></span>
+        ${icon('chevron')}
+      </button>
+    </section>
   </div>`;
   root.querySelectorAll('[data-tool]').forEach(b=>b.onclick=()=>openTool(b.dataset.tool));
   root.querySelectorAll('[data-person-card]').forEach(b=>b.onclick=()=>openPerson(b.dataset.personCard));
+  root.querySelector('[data-system-security]')?.addEventListener('click',openSystemTools);
 }
+function openSystemTools(){
+  document.getElementById('fc11SystemSheet')?.remove();
+  const m=document.createElement('div');m.id='fc11SystemSheet';m.className='fc11-modal';
+  m.innerHTML=`<section class="fc11-sheet fc11-system-sheet" role="dialog" aria-modal="true" aria-labelledby="fc11SystemTitle">
+    <div class="fc11-sheet-head">
+      <div><small>SYSTEM & SICHERHEIT</small><h2 id="fc11SystemTitle">System & Sicherheit</h2></div>
+      <button type="button" data-close aria-label="Schliessen">×</button>
+    </div>
+    <div class="fc11-system-tools fc11-tools-grid">
+      ${tool('connections','link','Verbindungen','Apple Kalender & Bluewin')}
+      ${tool('push','bell','Erinnerungen','Push & Morgenbericht')}
+      ${tool('backup','backup','Sicherung','Cloud-Backups')}
+      ${tool('export','download','Datenexport','JSON-Sicherung')}
+      ${tool('jarvis','link','Jarvis','Gerät verbinden')}
+      ${tool('ai','brain','Family AI','Sprechen & erfassen')}
+    </div>
+  </section>`;
+  const close=()=>m.remove();
+  m.querySelector('[data-close]').onclick=close;
+  m.onclick=e=>{if(e.target===m)close()};
+  m.querySelectorAll('[data-tool]').forEach(b=>b.onclick=()=>{const key=b.dataset.tool;close();setTimeout(()=>openTool(key),0)});
+  document.body.appendChild(m);
+}
+
 function personCard(p){
   const week=Object.values(D().schedules?.[p.id]||{}).flat().filter(Boolean).length;
   return `<button type="button" class="fc11-person-card" style="--p:${esc(color(p.id))}" data-person-card="${esc(p.id)}"><span class="fc11-avatar large">${esc(initials(p.name))}</span><span><b>${esc(p.name)}</b><small>${esc([p.role,p.school].filter(Boolean).join(' · ')||'Familie')}</small><em>${week?week+' '+(week===1?'Zeitblock':'Zeitblöcke'):''}</em></span>${icon('chevron')}</button>`;
