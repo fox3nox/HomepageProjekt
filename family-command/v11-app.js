@@ -284,7 +284,7 @@ function focusForToday(date,next,todos,hw){
 
 
 function connectorIssueState(){
-  const snap=window.__fcConnections?.status?.()||{},list=rows(snap.connections),issues=[],backup=snap.backupStatus||null;
+  const snap=window.__fcConnections?.status?.()||{},list=rows(snap.connections),issues=[],backup=snap.backupStatus||null,dataHealth=snap.dataHealth||null;
   const age=v=>{const t=Date.parse(v||'');return Number.isFinite(t)?Math.max(0,Math.round((Date.now()-t)/60000)):null};
   for(const x of list){
     if(!x?.enabled)continue;
@@ -298,6 +298,8 @@ function connectorIssueState(){
   }
   const backupMins=age(backup?.created_at);
   if(!backup||(backupMins!==null&&backupMins>24*60))issues.push({kind:'backup',label:'Backup',urgent:false,detail:!backup?'Kein Snapshot vorhanden':'Letztes Backup vor '+Math.round(backupMins/60)+' Std'});
+  const dataIssues=Number(dataHealth?.issue_count||0),dataHigh=Number(dataHealth?.high_count||0);
+  if(dataHealth&&dataIssues)issues.push({kind:'integrity',label:'Datenprüfung',urgent:dataHigh>0,detail:dataHigh?dataHigh+' kritische · '+dataIssues+' insgesamt':dataIssues+' Hinweis'+(dataIssues===1?'':'e')});
   return{issues,count:issues.length,urgent:issues.some(x=>x.urgent)};
 }
 
