@@ -77,7 +77,7 @@ try{
 
   assert.equal(await page.locator('.fc11-bottom-nav [data-fc11-screen]').count(),5,'mobile navigation has five clear destinations');
   assert.equal(await page.locator('.fc11-kid').count(),3,'today shows all three child rows');
-  assert.equal(await page.locator('[data-open-conflicts]').count(),1,'today surfaces a detected scheduling conflict');
+  assert.equal(await page.locator('[data-action-center="conflicts"]').count(),1,'Today action center surfaces a detected scheduling conflict');
   const conflictHealth=await page.evaluate(()=>window.__fcConflictAssistant?.audit?.());
   assert.ok(conflictHealth?.high>=1,'conflict assistant detects work overlap');
   const conflictText=conflictHealth.conflicts.map(x=>x.title+' '+x.detail).join('\n');
@@ -165,6 +165,17 @@ try{
   await page.click('#fc11SystemSheet [data-tool="conflicts"]');
   await page.waitForSelector('#fc11ConflictSheet',{state:'visible'});
   assert.match(await page.locator('#fc11ConflictSheet').innerText(),/Konflikt-Assistent[\s\S]*Arbeit überschneidet sich mit Termin[\s\S]*Arzttermin/);
+  const intended=page.locator('#fc11ConflictSheet .fc11-conflict-item').filter({hasText:'Arzttermin'});
+  await intended.locator('[data-conflict-ignore]').click();
+  await page.waitForSelector('#fc11ConflictSheet',{state:'visible'});
+  const ignoredAudit=await page.evaluate(()=>window.__fcConflictAssistant.audit());
+  assert.doesNotMatch(ignoredAudit.conflicts.map(x=>x.detail).join('\n'),/Arzttermin/,'intended overlap is removed from active conflicts');
+  assert.match(ignoredAudit.ignored.map(x=>x.detail).join('\n'),/Arzttermin/,'intended overlap remains recoverable');
+  await page.locator('#fc11ConflictSheet .fc11-conflict-ignored').evaluate(el=>{el.open=true});
+  await page.locator('#fc11ConflictSheet .fc11-conflict-item').filter({hasText:'Arzttermin'}).locator('[data-conflict-restore]').click();
+  await page.waitForSelector('#fc11ConflictSheet',{state:'visible'});
+  const restoredAudit=await page.evaluate(()=>window.__fcConflictAssistant.audit());
+  assert.match(restoredAudit.conflicts.map(x=>x.detail).join('\n'),/Arzttermin/,'ignored conflict can be restored');
   await page.click('#fc11ConflictSheet [data-close]');
   await page.locator('[data-system-security]').click();
   await page.waitForSelector('#fc11SystemSheet',{state:'visible'});
