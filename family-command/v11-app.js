@@ -217,9 +217,11 @@ function render(){
 }
 
 function renderToday(root){
-  const date=today(),kids=childTodayRows(date),sharedHoliday=sharedChildHoliday(kids),nextCandidate=nextDisplay(nextAction()),next=sharedHoliday?.id===nextCandidate?.eventId?null:nextCandidate,work=workFor(date),events=eventsOn(date).filter(e=>!window.__fcV9?.eventIsPast?.(e)&&!kids.some(k=>k.holiday?.id===e.id)),todos=todoRows('today'),hw=homeworkRows('today');
+  const date=today(),kids=childTodayRows(date),sharedHoliday=sharedChildHoliday(kids),nextCandidate=nextDisplay(nextAction()),work=workFor(date),events=eventsOn(date).filter(e=>!window.__fcV9?.eventIsPast?.(e)&&!kids.some(k=>k.holiday?.id===e.id)),todos=todoRows('today'),hw=homeworkRows('today');
+  const focus=focusForToday(date,sharedHoliday?.id===nextCandidate?.eventId?null:nextCandidate,todos,hw);
+  const mailPulse=bluewinPulse();
   const tomorrow=addDays(date,1),tomKids=childTodayRows(tomorrow),tomWork=workFor(tomorrow),tomEvents=eventsOn(tomorrow).filter(e=>!tomKids.some(k=>k.holiday?.id===e.id)),tomTodos=todoRows('open').filter(x=>taskDate(x)===tomorrow),tomHw=homeworkRows('open').filter(x=>taskDate(x)===tomorrow),tomCount=tomWork.length+tomEvents.length+tomTodos.length+tomHw.length;
-  header('Heute',fmt(date,{weekday:true,long:true}),summaryText(work,events,todos,hw));
+  header('Heute',fmt(date,{weekday:true,long:true}),smartSummary(work,events,todos,hw,mailPulse.count));
   const childrenSection=`<section class="fc11-section fc11-children-section">
     <div class="fc11-section-head"><div><small>FAMILIE</small><h2>Kinder heute</h2></div><button type="button" data-go-plan>Wochenplan</button></div>
     <div class="fc11-kids">${kids.map(x=>kidRow(x.p,x.state,x.holiday,false,holidayNames(kids,x.holiday))).join('')||'<div class="fc11-empty">Keine Kinderprofile vorhanden.</div>'}</div>
@@ -229,18 +231,17 @@ function renderToday(root){
     <div class="fc11-list">${tomorrowRows(tomWork,tomEvents,tomTodos,tomHw)||'<div class="fc11-empty compact">Morgen ist nichts weiter geplant.</div>'}</div>
   </section>`;
   const todaySection=(work.length+events.length+todos.length+hw.length)?`<section class="fc11-section fc11-open-section fc11-today-section">
-    <div class="fc11-section-head"><div><small>HEUTE</small><h2>${work.length||events.length?'Heute geplant':'Noch offen'}</h2></div><button type="button" data-go-plan>Plan</button></div>
+    <div class="fc11-section-head"><div><small>TAGESABLAUF</small><h2>Heute in Reihenfolge</h2></div><button type="button" data-go-plan>Plan</button></div>
     <div class="fc11-list">${todayRows(work,events,todos,hw)}</div>
   </section>`:'';
   root.innerHTML=`<div class="fc11-page fc11-home">
     ${sharedHoliday?`<section class="fc11-shared-holiday" aria-label="Ferien für alle Kinder"><div><span>ALLE KINDER</span><h2>${esc(sharedHoliday.title||'Ferien')}</h2><p>Schulfrei${sharedHoliday.endDate?` · bis ${esc(fmt(sharedHoliday.endDate))}`:''}</p></div><div class="fc11-holiday-people" aria-label="${esc(kids.map(x=>x.p.name).join(', '))}">${kids.map(x=>`<span style="--p:${esc(color(x.p.id))}" title="${esc(x.p.name)}">${esc(initials(x.p.name))}</span>`).join('')}</div></section>`:''}
-    ${next?`<section class="fc11-next">
-      <div class="fc11-section-kicker">Als Nächstes</div>
-      <button type="button" class="fc11-next-content" data-next-action><div><b>${esc(next.title||'Nächster Punkt')}</b><span>${esc(next.sub||'')}</span></div><div class="fc11-next-time"><strong>${esc(next.time||'')}</strong><small>${esc(next.left||'')}</small></div>${icon('chevron')}</button>
-    </section>`:''}
-
+    ${focus?`<section class="fc11-next fc11-focus-${esc(focus.kind||'next')}">
+      <div class="fc11-section-kicker">${esc(focus.kicker||'JETZT WICHTIG')}</div>
+      <button type="button" class="fc11-next-content" data-focus-action><div><b>${esc(focus.title||'Nächster Punkt')}</b><span>${esc(focus.sub||'')}</span></div><div class="fc11-next-time"><strong>${esc(focus.time||'')}</strong><small>${esc(focus.left||'')}</small></div>${icon('chevron')}</button>
+    </section>`:`<section class="fc11-next calm"><div class="fc11-section-kicker">JETZT</div><div class="fc11-next-empty"><b>Aktuell nichts Dringendes</b><span>Der Tagesablauf und morgen wichtige Punkte bleiben darunter sichtbar.</span></div></section>`}
+    ${mailPulse.html}
     ${sharedHoliday?todaySection+tomorrowSection:childrenSection+todaySection+tomorrowSection}
-
     <button type="button" class="fc11-brain-entry" data-brain>
       <span class="fc11-brain-icon">${icon('brain')}</span>
       <span><b>Frag die Familienzentrale</b><small>„Was habe ich nächste Woche?“ · „Wo ist der Quartalsbrief?“</small></span>
@@ -250,8 +251,27 @@ function renderToday(root){
   root.querySelectorAll('[data-go-plan]').forEach(b=>b.onclick=()=>open('plan'));
   root.querySelectorAll('[data-kid]').forEach(b=>b.onclick=()=>{state.planPerson=b.dataset.kid;state.planDate=date;open('plan')});
   root.querySelector('[data-tomorrow-plan]')?.addEventListener('click',()=>{state.planDate=tomorrow;open('plan')});
-  root.querySelector('[data-next-action]')?.addEventListener('click',()=>{if(next?.eventId)openEvent(next.eventId);else open('plan')});
+  root.querySelector('[data-focus-action]')?.addEventListener('click',()=>{if(focus?.eventId)openEvent(focus.eventId);else if(focus?.kind==='task'||focus?.kind==='homework')open('tasks');else open('plan')});
+  root.querySelector('[data-open-bluewin]')?.addEventListener('click',()=>window.fcOpenConnections?.());
   bindRows(root);
+}
+function focusForToday(date,next,todos,hw){
+  const overdueTodos=todoRows('open').filter(x=>!x.done&&taskDate(x)&&taskDate(x)<date).sort((a,b)=>Number(!!b.priority)-Number(!!a.priority)||String(taskDate(a)).localeCompare(String(taskDate(b))));
+  const overdueHw=homeworkRows('open').filter(x=>!x.done&&taskDate(x)&&taskDate(x)<date).sort((a,b)=>String(taskDate(a)).localeCompare(String(taskDate(b))));
+  const overdue=overdueTodos[0];if(overdue)return{kind:'task',kicker:'ÜBERFÄLLIG',title:overdue.title||'Aufgabe erledigen',sub:overdue.priority?'Wichtig · war bereits fällig':'War bereits fällig',time:'OFFEN',left:'heute klären'};
+  const oldHw=overdueHw[0];if(oldHw)return{kind:'homework',kicker:'ÜBERFÄLLIG',title:[oldHw.subject,oldHw.title].filter(Boolean).join(' · ')||'Schulaufgabe',sub:personName(oldHw.personId)||'Schule',time:'OFFEN',left:'nachholen'};
+  const priority=todos.find(x=>x.priority&&!x.done);if(priority)return{kind:'task',kicker:'WICHTIG',title:priority.title||'Aufgabe',sub:'Heute als wichtig markiert',time:'HEUTE',left:'offen'};
+  if(next)return{...next,kind:next.eventId?'event':'next',kicker:'ALS NÄCHSTES'};
+  return null;
+}
+function bluewinPulse(){
+  let list=[];try{list=(window.__fcConnections?.insights?.()||[]).filter(x=>x.actionable).slice(0,3)}catch{}
+  if(!list.length)return{count:0,html:''};
+  const labels=list.map(x=>`<span><b>${esc(x.type==='event'?'Termin':'Aufgabe')}</b> ${esc(String(x.title||'').slice(0,72))}</span>`).join('');
+  return{count:list.length,html:`<button type="button" class="fc11-mail-pulse" data-open-bluewin><span class="fc11-mail-pulse-icon">✉️</span><span class="fc11-mail-pulse-copy"><small>BLUEWIN · ${list.length} RELEVANT</small><b>Neue Mail${list.length===1?'':'s'} brauchen deine Aufmerksamkeit</b><span>${labels}</span></span>${icon('chevron')}</button>`};
+}
+function smartSummary(work,events,todos,hw,mailCount=0){
+  const parts=[];if(events.length)parts.push(`${events.length} Termin${events.length===1?'':'e'}`);if(todos.length+hw.length)parts.push(`${todos.length+hw.length} Aufgabe${todos.length+hw.length===1?'':'n'}`);if(mailCount)parts.push(`${mailCount} relevante Mail${mailCount===1?'':'s'}`);if(work.length)parts.push('Arbeit geplant');return parts.length?parts.join(' · '):'Keine offenen Punkte für heute';
 }
 function summaryText(work,events,todos,hw){
   const n=work.length+events.length+todos.length+hw.length;
@@ -274,11 +294,11 @@ function kidRow(p,s,holiday=null,shared=false,names=[]){
   </button>`;
 }
 function todayRows(work,events,todos,hw){
-  const items=[];
-  work.forEach(w=>items.push({sort:`0|${timeVal(w.depart||w.slots?.[0]?.start)}`,html:workRow(w)}));
-  events.forEach(e=>items.push({sort:`1|${timeVal(e.time)}`,html:eventRow(e)}));
-  todos.forEach(t=>items.push({sort:`2|${taskDate(t)}|${t.priority?'0':'1'}`,html:todoRow(t)}));
-  hw.forEach(h=>items.push({sort:`3|${taskDate(h)}`,html:homeworkRow(h)}));
+  const items=[],date=today();
+  work.forEach(w=>items.push({sort:`1|${timeVal(w.depart||w.slots?.[0]?.start)}|0`,html:workRow(w)}));
+  events.forEach(e=>items.push({sort:e.time?`1|${timeVal(e.time)}|1`:`2|0000|0`,html:eventRow(e)}));
+  todos.forEach(t=>{const over=!t.done&&taskDate(t)&&taskDate(t)<date;items.push({sort:over?`0|0000|${t.priority?'0':'1'}`:`3|0000|${t.priority?'0':'1'}`,html:todoRow(t)})});
+  hw.forEach(h=>{const over=!h.done&&taskDate(h)&&taskDate(h)<date;items.push({sort:over?'0|0001|0':'4|0000|0',html:homeworkRow(h)})});
   return items.sort((a,b)=>a.sort.localeCompare(b.sort)).map(x=>x.html).join('');
 }
 function workFor(date){
@@ -583,6 +603,7 @@ function install(){
   document.addEventListener('visibilitychange',()=>{if(!document.hidden)queueRender()});
   window.addEventListener('focus',queueRender);
   document.addEventListener('fc:v9:render',()=>setTimeout(queueRender,120));
+  document.addEventListener('fc:connections-updated',()=>{if(state.screen==='today')setTimeout(queueRender,60)});
   setInterval(()=>{if(state.screen==='today'||state.screen==='plan')queueRender()},60000);
   document.documentElement.dataset.fc11='1';
   document.dispatchEvent(new CustomEvent('fc:v11-ready'));
