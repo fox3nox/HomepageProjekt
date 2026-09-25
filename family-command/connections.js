@@ -14,7 +14,7 @@ async function api(body=null){
 }
 function conn(p){return(snapshot.connections||[]).find(x=>x.provider===p)||null}
 function dateTime(v){if(!v)return'Noch nie';try{return new Intl.DateTimeFormat('de-CH',{dateStyle:'short',timeStyle:'short'}).format(new Date(v))}catch{return String(v)}}
-function stateLabel(c){if(!c)return['Nicht verbunden','off'];if(c.last_status==='error')return['Fehler','error'];if(c.last_status==='connected')return['Verbunden','ok'];return['Eingerichtet','saved']}
+function stateLabel(c){if(!c)return['Nicht verbunden','off'];if(c.last_status==='error')return['Fehler','error'];if(c.last_status==='connected'&&c.last_error)return['Verbunden · Hinweis','saved'];if(c.last_status==='connected')return['Verbunden','ok'];return['Eingerichtet','saved']}
 function modal(){
   let m=document.getElementById('fcConnectionsModal');if(m)return m;
   m=document.createElement('div');m.id='fcConnectionsModal';m.className='fcc-modal';
@@ -25,7 +25,7 @@ function card(provider,title,sub,icon){
   const c=conn(provider),[label,tone]=stateLabel(c);
   return '<article class="fcc-card" data-provider="'+provider+'"><div class="fcc-card-top"><span class="fcc-provider-icon">'+icon+'</span><div><h3>'+esc(title)+'</h3><p>'+esc(sub)+'</p></div><span class="fcc-state '+tone+'">'+esc(label)+'</span></div>'+
     (c?'<div class="fcc-meta"><span><b>Konto</b>'+esc(c.account_identifier||'')+'</span><span><b>Letzte Synchronisation</b>'+esc(dateTime(c.last_sync_at))+'</span></div>':'')+
-    (c?.last_error?'<div class="fcc-error">'+esc(c.last_error)+'</div>':'')+
+    (c?.last_error?'<div class="fcc-error '+(c.last_status==='connected'?'warning':'')+'">'+esc(c.last_error)+'</div>':'')+
     '<div class="fcc-actions">'+
       (c?'<button type="button" data-fcc-sync="'+provider+'" class="primary">Jetzt synchronisieren</button><button type="button" data-fcc-setup="'+provider+'">'+(provider==='icloud'?'App-Passwort eintragen':'Zugang ändern')+'</button><button type="button" data-fcc-disconnect="'+provider+'" class="danger">Trennen</button>':'<button type="button" data-fcc-setup="'+provider+'" class="primary">Verbinden</button>')+
     '</div>'+
@@ -82,7 +82,7 @@ function setup(provider){
 }
 async function sync(provider,button){
   const old=button?.textContent;if(button){button.disabled=true;button.textContent='Synchronisiert …'}
-  try{const j=await api({action:'sync',provider});snapshot={connections:j.connections||[],mail:j.mail||[]};render();const r=j.results?.[provider];if(r?.error)notice(r.error,'error');else notice((provider==='icloud'?'Kalender':'Bluewin')+' aktualisiert.','ok');try{window.__fcCloudState?.bootstrap?.()}catch{}}
+  try{const j=await api({action:'sync',provider});snapshot={connections:j.connections||[],mail:j.mail||[]};render();const r=j.results?.[provider];if(r?.error)notice(r.error,'error');else if(r?.warning)notice('Verbunden. Hinweis: '+r.warning,'info');else notice((provider==='icloud'?'Kalender':'Bluewin')+' aktualisiert.','ok');try{window.__fcCloudState?.bootstrap?.()}catch{}}
   catch(e){notice(e.message,'error');if(button){button.disabled=false;button.textContent=old}}
 }
 async function disconnect(provider){
