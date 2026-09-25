@@ -171,3 +171,15 @@ html[data-fc11="1"] .fc9-shell{display:none!important}
 .fc11-conflict-ignored>summary{cursor:pointer;list-style:none;color:#7d8a99;font-size:9.5px;font-weight:850}
 .fc11-conflict-ignored>summary::-webkit-details-marker{display:none}
 .fc11-conflict-ignored>div{display:grid;gap:7px;margin-top:8px}
+
+.fc11-action-center{padding:12px;border:1px solid #dfe7ef;border-radius:16px;background:#fbfcfe;display:grid;gap:9px}
+.fc11-action-center-head{display:flex;align-items:center;justify-content:space-between;gap:10px}
+.fc11-action-center-head small{display:block;color:#8291a2;font-size:8.5px;font-weight:900;letter-spacing:.1em}
+.fc11-action-center-head b{display:block;margin-top:2px;color:#33475e;font-size:12.5px}
+.fc11-action-center-head>span{min-width:28px;height:28px;padding:0 7px;border-radius:999px;background:#eaf2fb;color:#3d6e9f;display:grid;place-items:center;font-size:10px;font-weight:900}
+.fc11-action-center>div:last-child{display:grid;gap:6px}
+.fc11-action-center button{width:100%;min-height:50px;padding:8px 9px;border:1px solid #e2e8ef;border-radius:11px;background:#fff;color:inherit;display:grid;grid-template-columns:8px minmax(0,1fr) 18px;gap:8px;align-items:center;text-align:left}
+.fc11-action-center button>i{width:7px;height:7px;border-radius:50%;background:#5e8fbd}
+.fc11-action-center button.urgent>i{background:#c95d53}
+.fc11-action-center button>span{min-width:0}.fc11-action-center button b{display:block;color:#3c4f64;font-size:10.5px}.fc11-action-center button small{display:block;margin-top:2px;color:#8492a2;font-size:9px}
+.fc11-action-center button svg{width:16px;height:16px;fill:none;stroke:#9aa8b8;stroke-width:1.8}
