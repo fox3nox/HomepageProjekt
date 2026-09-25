@@ -78,6 +78,14 @@ try{
   assert.equal(await page.locator('.fc11-bottom-nav [data-fc11-screen]').count(),5,'mobile navigation has five clear destinations');
   assert.equal(await page.evaluate(()=>document.documentElement.dataset.fcDesign),'v12','V12 ASI design mode is active');
   assert.equal(await page.evaluate(()=>[...document.styleSheets].some(s=>String(s.href||'').includes('v12.css'))),true,'V12 design stylesheet is loaded');
+  const v12Computed=await page.evaluate(()=>({
+    nextRadius:getComputedStyle(document.querySelector('.fc11-next')).borderRadius,
+    navRadius:getComputedStyle(document.querySelector('.fc11-bottom-nav')).borderRadius,
+    bodyBg:getComputedStyle(document.body).backgroundImage
+  }));
+  assert.equal(v12Computed.nextRadius,'28px','V12 hero radius is active');
+  assert.equal(v12Computed.navRadius,'24px','V12 floating navigation radius is active');
+  assert.match(v12Computed.bodyBg,/gradient/i,'V12 ambient background is active');
   assert.equal(await page.locator('.fc11-kid').count(),3,'today shows all three child rows');
   assert.equal(await page.locator('[data-action-center="conflicts"]').count(),1,'Today action center surfaces a detected scheduling conflict');
   const conflictHealth=await page.evaluate(()=>window.__fcConflictAssistant?.audit?.());
