@@ -4,7 +4,7 @@
 if(window.__fcConnectionsInstalled)return;window.__fcConnectionsInstalled=true;
 const BASE='https://lmrvapstojcecljjdgds.supabase.co/functions/v1/family-command-connectors';
 const STORE='fc-private-access-v1',COOKIE='fc_private_access';
-let snapshot={connections:[],mail:[]},busy=false,lastAuto=0;
+let snapshot={connections:[],mail:[],backgroundSync:null},busy=false,lastAuto=0;
 const esc=s=>String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
 function accessKey(){try{const p=document.cookie.split(';').map(x=>x.trim()).find(x=>x.startsWith(COOKIE+'='));if(p)return decodeURIComponent(p.slice(COOKIE.length+1))}catch{}try{return localStorage.getItem(STORE)||''}catch{return''}}
 async function api(body=null){
@@ -13,7 +13,7 @@ async function api(body=null){
   const j=await r.json().catch(()=>({}));if(!r.ok||j.ok===false)throw new Error(j.error||('HTTP '+r.status));return j;
 }
 function conn(p){return(snapshot.connections||[]).find(x=>x.provider===p)||null}
-function setSnapshot(j){snapshot={connections:j.connections||[],mail:j.mail||[]};document.dispatchEvent(new CustomEvent('fc:connections-updated',{detail:{mail:snapshot.mail,connections:snapshot.connections}}))}
+function setSnapshot(j){snapshot={connections:j.connections||[],mail:j.mail||[],backgroundSync:j.background_sync??snapshot.backgroundSync??null};document.dispatchEvent(new CustomEvent('fc:connections-updated',{detail:{mail:snapshot.mail,connections:snapshot.connections,backgroundSync:snapshot.backgroundSync}}))}
 function pad2(n){return String(n).padStart(2,'0')}
 function isoDate(y,m,d){const dt=new Date(Number(y),Number(m)-1,Number(d),12);if(dt.getFullYear()!==Number(y)||dt.getMonth()!==Number(m)-1||dt.getDate()!==Number(d))return'';return `${y}-${pad2(m)}-${pad2(d)}`}
 function mailDate(text,received){
@@ -109,7 +109,7 @@ function renderMailAssistant(){
 function render(){
   const m=modal(),body=m.querySelector('#fccBody');
   body.innerHTML=
-    '<div class="fcc-intro"><b>Direkt verbunden</b><span>Passwörter werden serverseitig verschlüsselt gespeichert und nie im Browser angezeigt.</span><em>Automatischer Cloud-Sync · alle 30 Minuten</em></div>'+
+    '<div class="fcc-intro"><b>Direkt verbunden</b><span>Passwörter werden serverseitig verschlüsselt gespeichert und nie im Browser angezeigt.</span><em>'+esc(snapshot.backgroundSync?.active?'Auto-Sync aktiv · alle 30 Minuten':'Auto-Sync wird geprüft')+'</em></div>'+
     card('icloud','Apple Kalender','iCloud-Kalender mit Terminen der Familienzentrale synchronisieren.','📅')+
     card('bluewin','Bluewin E-Mail','Posteingang lesen und wichtige Mails in der Familienzentrale sichtbar machen.','✉️')+
     (conn('bluewin')?'<section class="fcc-mail"><div class="fcc-section-head"><div><small>BLUEWIN</small><h3>Mail-Assistent</h3></div><button type="button" data-fcc-sync="bluewin">Aktualisieren</button></div>'+renderMailAssistant()+'</section>':'')+
