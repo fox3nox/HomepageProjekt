@@ -441,21 +441,38 @@ function conflictPulseHtml(audit){
 function openConflictAssistant(){
   document.getElementById('fc11ConflictSheet')?.remove();
   const audit=conflictAudit(),m=document.createElement('div');m.id='fc11ConflictSheet';m.className='fc11-modal';
-  const rowsHtml=audit.conflicts.length?audit.conflicts.map((x,i)=>'<button type="button" class="fc11-conflict-item '+esc(x.severity)+'" data-conflict-index="'+i+'">'+
-    '<span class="fc11-conflict-dot"></span><span><small>'+esc([x.date?fmt(x.date,{weekday:true}):'',x.time||'',x.severity==='high'?'WICHTIG':'PRÜFEN'].filter(Boolean).join(' · '))+'</small><b>'+esc(x.title)+'</b><em>'+esc(x.detail||'')+'</em></span>'+icon('chevron')+'</button>').join(''):
-    '<div class="fc11-conflict-clear"><span>✓</span><div><b>Keine Konflikte erkannt</b><small>Die nächsten 90 Tage wurden geprüft.</small></div></div>';
+  const item=(x,i,ignored=false)=>'<article class="fc11-conflict-item '+esc(x.severity)+(ignored?' ignored':'')+'" data-conflict-card="'+i+'">'+
+    '<span class="fc11-conflict-dot"></span><button type="button" class="fc11-conflict-main" data-conflict-open="'+i+'" data-conflict-source="'+(ignored?'ignored':'active')+'"><small>'+esc([x.date?fmt(x.date,{weekday:true}):'',x.time||'',ignored?'SO GEWOLLT':x.severity==='high'?'WICHTIG':'PRÜFEN'].filter(Boolean).join(' · '))+'</small><b>'+esc(x.title)+'</b><em>'+esc(x.detail||'')+'</em></button>'+
+    '<div class="fc11-conflict-actions">'+(ignored?
+      '<button type="button" data-conflict-restore="'+i+'">Wieder anzeigen</button>':
+      '<button type="button" data-conflict-ignore="'+i+'">So gewollt</button>')+'</div></article>';
+  const rowsHtml=audit.conflicts.length?audit.conflicts.map((x,i)=>item(x,i,false)).join(''):
+    '<div class="fc11-conflict-clear"><span>✓</span><div><b>Keine offenen Konflikte</b><small>Die nächsten 90 Tage wurden geprüft.</small></div></div>';
+  const ignoredHtml=audit.ignored.length?'<details class="fc11-conflict-ignored"><summary>Als „so gewollt“ ausgeblendet · '+audit.ignored.length+'</summary><div>'+audit.ignored.map((x,i)=>item(x,i,true)).join('')+'</div></details>':'';
   m.innerHTML='<section class="fc11-sheet fc11-conflict-sheet" role="dialog" aria-modal="true" aria-labelledby="fc11ConflictTitle">'+
     '<div class="fc11-sheet-head"><div><small>PLAN-PRÜFUNG</small><h2 id="fc11ConflictTitle">Konflikt-Assistent</h2><p>'+(audit.conflicts.length?(audit.high+' wichtig · '+audit.medium+' prüfen'):'Alles konsistent')+'</p></div><button type="button" data-close aria-label="Schliessen">×</button></div>'+
-    '<div class="fc11-conflict-summary"><span><b>'+audit.conflicts.length+'</b><small>Konflikte</small></span><span><b>'+audit.high+'</b><small>wichtig</small></span><span><b>90</b><small>Tage geprüft</small></span></div>'+
-    '<div class="fc11-conflict-list">'+rowsHtml+'</div>'+
-    '<div class="fc11-conflict-foot"><span>Es wird nichts automatisch verschoben oder gelöscht.</span><button type="button" data-conflict-refresh>Neu prüfen</button></div></section>';
+    '<div class="fc11-conflict-summary"><span><b>'+audit.conflicts.length+'</b><small>offen</small></span><span><b>'+audit.high+'</b><small>wichtig</small></span><span><b>'+audit.ignored.length+'</b><small>so gewollt</small></span></div>'+
+    '<div class="fc11-conflict-list">'+rowsHtml+ignoredHtml+'</div>'+
+    '<div class="fc11-conflict-foot"><span>„So gewollt“ blendet nur exakt diesen unveränderten Fall aus. Ändern sich Zeit oder Termin, erscheint er wieder.</span><button type="button" data-conflict-refresh>Neu prüfen</button></div></section>';
   const close=()=>m.remove();m.querySelector('[data-close]').onclick=close;m.onclick=e=>{if(e.target===m)close()};
   m.querySelector('[data-conflict-refresh]')?.addEventListener('click',()=>{close();openConflictAssistant()});
-  m.querySelectorAll('[data-conflict-index]').forEach(b=>b.onclick=()=>{
-    const x=audit.conflicts[Number(b.dataset.conflictIndex)];if(!x)return;close();
+  const navigate=x=>{
+    close();
     if(x.mailUid){window.fcOpenConnections?.();return}
     if(x.date){state.planDate=x.date;state.planPerson=(x.personIds&&x.personIds[0])||'all';open('plan');return}
     open('plan');
+  };
+  m.querySelectorAll('[data-conflict-open]').forEach(b=>b.onclick=()=>{
+    const source=b.dataset.conflictSource==='ignored'?audit.ignored:audit.conflicts;
+    const x=source[Number(b.dataset.conflictOpen)];if(x)navigate(x);
+  });
+  m.querySelectorAll('[data-conflict-ignore]').forEach(b=>b.onclick=e=>{
+    e.stopPropagation();const x=audit.conflicts[Number(b.dataset.conflictIgnore)];if(!x)return;
+    saveConflictPreference(x,true);close();setTimeout(openConflictAssistant,120);
+  });
+  m.querySelectorAll('[data-conflict-restore]').forEach(b=>b.onclick=e=>{
+    e.stopPropagation();const x=audit.ignored[Number(b.dataset.conflictRestore)];if(!x)return;
+    saveConflictPreference(x,false);close();setTimeout(openConflictAssistant,120);
   });
   document.body.appendChild(m);
 }
