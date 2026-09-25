@@ -866,6 +866,7 @@ function systemSyncPanel(){
     }
     const parts=[];
     if(Number(s.loaded||0))parts.push(Number(s.loaded)+' neu geladen');
+    if(Number(s.removed||0))parts.push(Number(s.removed)+' entfernt');
     if(Number(s.skipped||0))parts.push(Number(s.skipped)+' bekannt');
     return parts.join(' · ')||'Postfach geprüft';
   };
