@@ -287,6 +287,141 @@ function bluewinPulse(){
   const labels=list.map(x=>`<span><b>${esc(kind(x))}</b> ${esc(String(x.title||'').slice(0,68))}${esc(extra(x))}</span>`).join('');
   return{count:list.length,html:`<button type="button" class="fc11-mail-pulse" data-open-bluewin><span class="fc11-mail-pulse-icon">✉️</span><span class="fc11-mail-pulse-copy"><small>BLUEWIN · ${list.length} RELEVANT</small><b>Neue Mail${list.length===1?'':'s'} brauchen deine Aufmerksamkeit</b><span>${labels}</span></span>${icon('chevron')}</button>`};
 }
+
+function conflictMinutes(v){
+  const m=String(v||'').match(/^(\d{1,2}):(\d{2})$/);if(!m)return null;
+  const n=Number(m[1])*60+Number(m[2]);return n>=0&&n<1440?n:null;
+}
+function conflictIntervalsForEvent(e){
+  const start=conflictMinutes(e&&e.time);if(start===null)return[];
+  let end=conflictMinutes(e&&e.end);if(end===null||end<=start)end=Math.min(1440,start+60);
+  const note=String(e&&e.note||''),pm=note.match(/Pause\s+(\d{1,2}:\d{2})\s*[–-]\s*(\d{1,2}:\d{2})/i);
+  if(pm){
+    const ps=conflictMinutes(pm[1]),pe=conflictMinutes(pm[2]);
+    if(ps!==null&&pe!==null&&ps>start&&pe<end&&pe>ps)return[[start,ps],[pe,end]];
+  }
+  return[[start,end]];
+}
+function conflictOverlap(a,b){return Math.max(a[0],b[0])<Math.min(a[1],b[1])}
+function conflictTimeLabel(v){return pad2(Math.floor(v/60))+':'+pad2(v%60)}
+function conflictTokens(v){
+  const stop=new Set(['termin','einladung','bestaetigung','bestätigung','information','infos','hallo','freundliche','gruesse','grüsse','herzogenbuchsee','deine','ihre','einen','einer','einem','eines','wegen','bitte','neue','neuer','neuen','mail','email']);
+  return [...new Set(String(v||'').toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g,'').replace(/[^a-z0-9äöüß]+/g,' ').split(/\s+/).filter(x=>x.length>=5&&!stop.has(x)))];
+}
+function conflictTopicScore(a,b){
+  const aa=conflictTokens(a),bb=conflictTokens(b);if(!aa.length||!bb.length)return 0;
+  return aa.filter(x=>bb.includes(x)).reduce((n,x)=>n+(x.length>=8?2:1),0);
+}
+function conflictAudit(){
+  const start=today(),limit=addDays(start,90),events=rows(D().events).filter(active).filter(e=>{
+    const d=String(e&&e.date||'');return d>=start&&d<=limit;
+  }),conflicts=[],seen=new Set();
+  const add=x=>{
+    const key=[x.kind,x.date||'',x.title||'',...(x.eventIds||[]),x.mailUid||''].join('|');
+    if(seen.has(key))return;seen.add(key);conflicts.push(Object.assign({severity:'medium'},x));
+  };
+  const care=saturdayCareAudit();
+  care.warnings.filter(x=>x.date>=start&&x.date<=limit).forEach(x=>add({
+    kind:'care',severity:'high',date:x.date,time:'',title:x.title,detail:x.detail,personIds:['oli']
+  }));
+  const workRx=/arbeit|landi|dienst|schicht/i;
+  for(let d=start;d<=limit;d=addDays(d,1)){
+    const dayEvents=events.filter(e=>String(e.date||'')===d);
+    const explicit=dayEvents.filter(e=>workRx.test(String(e.title||''))&&pids(e).includes('oli')&&conflictIntervalsForEvent(e).length);
+    const workBlocks=[];
+    if(explicit.length){
+      explicit.forEach(e=>conflictIntervalsForEvent(e).forEach(iv=>workBlocks.push({iv,label:e.title||'Arbeit',eventId:e.id})));
+    }else{
+      schedule('oli',dateObj(d).getDay()).filter(s=>workRx.test(String(s.label||''))).forEach(s=>{
+        const a=conflictMinutes(s.start),b=conflictMinutes(s.end);
+        if(a!==null&&b!==null&&b>a)workBlocks.push({iv:[a,b],label:s.label||'Arbeit',eventId:''});
+      });
+    }
+    if(workBlocks.length){
+      const other=dayEvents.filter(e=>!workRx.test(String(e.title||''))&&pids(e).includes('oli')&&conflictIntervalsForEvent(e).length);
+      for(const e of other){
+        for(const ei of conflictIntervalsForEvent(e)){
+          const hit=workBlocks.find(w=>conflictOverlap(ei,w.iv));if(!hit)continue;
+          add({
+            kind:'work',severity:'high',date:d,time:e.time||'',title:'Arbeit überschneidet sich mit Termin',
+            detail:String(hit.label)+' '+conflictTimeLabel(hit.iv[0])+'–'+conflictTimeLabel(hit.iv[1])+' · '+String(e.title||'Termin')+' '+String(e.time||'')+(e.end?'–'+e.end:''),
+            eventIds:[hit.eventId,e.id].filter(Boolean),personIds:['oli']
+          });
+        }
+      }
+    }
+    const timed=dayEvents.filter(e=>!workRx.test(String(e.title||''))&&conflictIntervalsForEvent(e).length);
+    for(let i=0;i<timed.length;i++)for(let j=i+1;j<timed.length;j++){
+      const a=timed[i],b=timed[j],shared=pids(a).filter(pid=>pids(b).includes(pid));
+      if(!shared.length)continue;
+      if(!conflictIntervalsForEvent(a).some(ai=>conflictIntervalsForEvent(b).some(bi=>conflictOverlap(ai,bi))))continue;
+      const duplicate=String(a.title||'').trim().toLowerCase()===String(b.title||'').trim().toLowerCase()&&String(a.time||'')===String(b.time||'');
+      add({
+        kind:duplicate?'duplicate':'event',severity:duplicate?'medium':'high',date:d,time:a.time||b.time||'',
+        title:duplicate?'Möglicher doppelter Termin':'Zwei Termine überschneiden sich',
+        detail:String(a.title||'Termin')+' '+String(a.time||'')+(a.end?'–'+a.end:'')+' · '+String(b.title||'Termin')+' '+String(b.time||'')+(b.end?'–'+b.end:''),
+        eventIds:[a.id,b.id].filter(Boolean),personIds:shared
+      });
+    }
+  }
+  const schoolRx=/schule|unterricht|kindergarten|tagesschule|bibliothek|schulzahnarzt|zahnarzt|sport|schwimmen|elternabend|klasse/i;
+  const holidayRx=/ferien|schulfrei/i;
+  for(const p of dependents()){
+    const pid=String(p.id),holidays=events.filter(e=>pids(e).includes(pid)&&holidayRx.test(String(e.title||'')));
+    const schoolEvents=events.filter(e=>pids(e).includes(pid)&&!holidayRx.test(String(e.title||''))&&schoolRx.test(String(e.title||'')+' '+String(e.note||'')));
+    for(const e of schoolEvents){
+      const h=holidays.find(x=>String(e.date||'')>=String(x.date||'')&&String(e.date||'')<=String(x.endDate||x.date||''));
+      if(!h)continue;
+      add({kind:'holiday',severity:'medium',date:e.date,time:e.time||'',title:'Schultermin liegt in Ferien',detail:String(p.name)+': '+String(e.title||'Schultermin')+' · '+String(h.title||'Ferien'),eventIds:[e.id,h.id].filter(Boolean),personIds:[pid]});
+    }
+  }
+  let mail=[];try{mail=window.__fcConnections&&window.__fcConnections.allInsights?window.__fcConnections.allInsights():[]}catch{}
+  const candidates=events.filter(e=>pids(e).includes('oli')&&!workRx.test(String(e.title||'')));
+  for(const m of mail.filter(x=>(x.triage_status||'pending')==='pending'&&x.type==='event'&&x.date&&!x.alreadyHandled)){
+    let best=null,bestScore=0;
+    for(const e of candidates){
+      if(String(e.date||'')===String(m.date||''))continue;
+      const score=conflictTopicScore(m.title||'',e.title||'');
+      if(score>bestScore){best=e;bestScore=score}
+    }
+    if(!best||bestScore<2)continue;
+    add({kind:'mail',severity:'medium',date:m.date,time:m.time||'',title:'Mail könnte bestehenden Termin verschieben',detail:String(best.title||'Termin')+': '+fmt(best.date)+(best.time?' · '+best.time:'')+' → Mail nennt '+fmt(m.date)+(m.time?' · '+m.time:''),eventIds:[best.id].filter(Boolean),mailUid:m.message_uid||'',personIds:['oli']});
+  }
+  const order={high:0,medium:1,low:2};
+  conflicts.sort((a,b)=>(order[a.severity]??9)-(order[b.severity]??9)||String(a.date||'').localeCompare(String(b.date||''))||String(a.time||'').localeCompare(String(b.time||'')));
+  return{conflicts,high:conflicts.filter(x=>x.severity==='high').length,medium:conflicts.filter(x=>x.severity==='medium').length,horizon:{start,limit}};
+}
+function conflictPulseHtml(audit){
+  const near=rows(audit&&audit.conflicts).filter(x=>x.kind==='mail'||!x.date||x.date<=addDays(today(),14));
+  if(!near.length)return'';
+  const top=near.slice(0,3);
+  return '<button type="button" class="fc11-conflict-pulse '+(audit.high?'urgent':'')+'" data-open-conflicts>'+
+    '<span class="fc11-conflict-icon">⚠️</span>'+
+    '<span class="fc11-conflict-copy"><small>KONFLIKT-ASSISTENT · '+near.length+' PRÜFEN</small><b>'+(audit.high?'Terminüberschneidung erkannt':'Mögliche Konflikte erkannt')+'</b>'+
+    '<span>'+top.map(x=>'<em><strong>'+(x.date?esc(fmt(x.date,{weekday:true})):'Mail')+'</strong> '+esc(x.title)+'</em>').join('')+'</span></span>'+icon('chevron')+'</button>';
+}
+function openConflictAssistant(){
+  document.getElementById('fc11ConflictSheet')?.remove();
+  const audit=conflictAudit(),m=document.createElement('div');m.id='fc11ConflictSheet';m.className='fc11-modal';
+  const rowsHtml=audit.conflicts.length?audit.conflicts.map((x,i)=>'<button type="button" class="fc11-conflict-item '+esc(x.severity)+'" data-conflict-index="'+i+'">'+
+    '<span class="fc11-conflict-dot"></span><span><small>'+esc([x.date?fmt(x.date,{weekday:true}):'',x.time||'',x.severity==='high'?'WICHTIG':'PRÜFEN'].filter(Boolean).join(' · '))+'</small><b>'+esc(x.title)+'</b><em>'+esc(x.detail||'')+'</em></span>'+icon('chevron')+'</button>').join(''):
+    '<div class="fc11-conflict-clear"><span>✓</span><div><b>Keine Konflikte erkannt</b><small>Die nächsten 90 Tage wurden geprüft.</small></div></div>';
+  m.innerHTML='<section class="fc11-sheet fc11-conflict-sheet" role="dialog" aria-modal="true" aria-labelledby="fc11ConflictTitle">'+
+    '<div class="fc11-sheet-head"><div><small>PLAN-PRÜFUNG</small><h2 id="fc11ConflictTitle">Konflikt-Assistent</h2><p>'+(audit.conflicts.length?(audit.high+' wichtig · '+audit.medium+' prüfen'):'Alles konsistent')+'</p></div><button type="button" data-close aria-label="Schliessen">×</button></div>'+
+    '<div class="fc11-conflict-summary"><span><b>'+audit.conflicts.length+'</b><small>Konflikte</small></span><span><b>'+audit.high+'</b><small>wichtig</small></span><span><b>90</b><small>Tage geprüft</small></span></div>'+
+    '<div class="fc11-conflict-list">'+rowsHtml+'</div>'+
+    '<div class="fc11-conflict-foot"><span>Es wird nichts automatisch verschoben oder gelöscht.</span><button type="button" data-conflict-refresh>Neu prüfen</button></div></section>';
+  const close=()=>m.remove();m.querySelector('[data-close]').onclick=close;m.onclick=e=>{if(e.target===m)close()};
+  m.querySelector('[data-conflict-refresh]')?.addEventListener('click',()=>{close();openConflictAssistant()});
+  m.querySelectorAll('[data-conflict-index]').forEach(b=>b.onclick=()=>{
+    const x=audit.conflicts[Number(b.dataset.conflictIndex)];if(!x)return;close();
+    if(x.mailUid){window.fcOpenConnections?.();return}
+    if(x.date){state.planDate=x.date;state.planPerson=(x.personIds&&x.personIds[0])||'all';open('plan');return}
+    open('plan');
+  });
+  document.body.appendChild(m);
+}
+
 function saturdayCareAudit(){
   const start=today(),limit=addDays(start,70),events=rows(D().events).filter(active);
   const work=events.filter(e=>String(e.date||'')>=start&&String(e.date||'')<=limit&&dateObj(e.date).getDay()===6&&/arbeit\s*landi|landi.*arbeit/i.test(String(e.title||''))&&pids(e).includes('oli'));
