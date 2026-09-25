@@ -13,7 +13,7 @@ async function api(body=null){
   const j=await r.json().catch(()=>({}));if(!r.ok||j.ok===false)throw new Error(j.error||('HTTP '+r.status));return j;
 }
 function conn(p){return(snapshot.connections||[]).find(x=>x.provider===p)||null}
-function setSnapshot(j){setSnapshot(j);document.dispatchEvent(new CustomEvent('fc:connections-updated',{detail:{mail:snapshot.mail,connections:snapshot.connections}}))}
+function setSnapshot(j){snapshot={connections:j.connections||[],mail:j.mail||[]};document.dispatchEvent(new CustomEvent('fc:connections-updated',{detail:{mail:snapshot.mail,connections:snapshot.connections}}))}
 function pad2(n){return String(n).padStart(2,'0')}
 function isoDate(y,m,d){const dt=new Date(Number(y),Number(m)-1,Number(d),12);if(dt.getFullYear()!==Number(y)||dt.getMonth()!==Number(m)-1||dt.getDate()!==Number(d))return'';return `${y}-${pad2(m)}-${pad2(d)}`}
 function mailDate(text,received){
