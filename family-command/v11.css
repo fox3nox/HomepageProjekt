@@ -183,3 +183,18 @@ html[data-fc11="1"] .fc9-shell{display:none!important}
 .fc11-action-center button.urgent>i{background:#c95d53}
 .fc11-action-center button>span{min-width:0}.fc11-action-center button b{display:block;color:#3c4f64;font-size:10.5px}.fc11-action-center button small{display:block;margin-top:2px;color:#8492a2;font-size:9px}
 .fc11-action-center button svg{width:16px;height:16px;fill:none;stroke:#9aa8b8;stroke-width:1.8}
+
+.fc11-sync-panel{margin:0 0 14px;padding:12px;border:1px solid #e2e8ef;border-radius:15px;background:#fff;display:grid;gap:9px}
+.fc11-sync-panel-head{display:flex;align-items:center;justify-content:space-between;gap:10px}
+.fc11-sync-panel-head small{display:block;color:#8795a5;font-size:8.5px;font-weight:900;letter-spacing:.1em}
+.fc11-sync-panel-head b{display:block;margin-top:1px;color:#334961;font-size:12.5px}
+.fc11-sync-panel-head button,.fc11-sync-settings{min-height:34px;padding:6px 9px;border:1px solid #d9e3ed;border-radius:9px;background:#f7fafe;color:#46627f;font:inherit;font-size:9px;font-weight:850}
+.fc11-sync-panel-head button:disabled{opacity:.6}
+.fc11-sync-history{display:grid;gap:5px}
+.fc11-sync-history-row{display:grid;grid-template-columns:8px minmax(0,1fr) auto;gap:8px;align-items:center;padding:7px 8px;border-radius:9px;background:#f8fafc}
+.fc11-sync-history-row>i{width:7px;height:7px;border-radius:50%;background:#2b9a72}.fc11-sync-history-row.fail>i{background:#c85e54}
+.fc11-sync-history-row span{min-width:0}.fc11-sync-history-row b{display:block;color:#42566d;font-size:9.5px}.fc11-sync-history-row small{display:block;margin-top:1px;color:#8996a5;font-size:8.6px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.fc11-sync-history-row em{color:#9aa5b2;font-size:8px;font-style:normal;white-space:nowrap}
+.fc11-sync-empty{padding:9px;border-radius:9px;background:#f8fafc;color:#8492a2;font-size:9px}
+.fc11-sync-settings{width:100%;background:#fff}
+@media(max-width:540px){.fc11-sync-panel-head{align-items:stretch;flex-direction:column}.fc11-sync-panel-head button{width:100%}}
