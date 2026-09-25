@@ -268,7 +268,7 @@ function renderToday(root){
   root.querySelector('[data-focus-action]')?.addEventListener('click',()=>{if(focus?.eventId)openEvent(focus.eventId);else if(focus?.kind==='task'||focus?.kind==='homework')open('tasks');else open('plan')});
   root.querySelector('[data-open-bluewin]')?.addEventListener('click',()=>window.fcOpenConnections?.());
   root.querySelector('[data-open-conflicts]')?.addEventListener('click',()=>openConflictAssistant());
-  root.querySelectorAll('[data-action-center]').forEach(b=>b.onclick=()=>{const kind=b.dataset.actionCenter;if(kind==='conflicts')return openConflictAssistant();if(kind==='mail')return window.fcOpenConnections?.();if(kind==='tasks')return open('tasks')});
+  root.querySelectorAll('[data-action-center]').forEach(b=>b.onclick=()=>{const kind=b.dataset.actionCenter;if(kind==='conflicts')return openConflictAssistant();if(kind==='mail')return window.fcOpenConnections?.();if(kind==='tasks')return open('tasks');if(kind==='system')return openSystemTools()});
   root.querySelectorAll('[data-care-date]').forEach(b=>b.onclick=()=>{state.planDate=b.dataset.careDate;state.planPerson='oli';open('plan')});
   bindRows(root);
 }
@@ -282,8 +282,25 @@ function focusForToday(date,next,todos,hw){
   return null;
 }
 
+
+function connectorIssueState(){
+  const snap=window.__fcConnections?.status?.()||{},list=rows(snap.connections),issues=[];
+  const age=v=>{const t=Date.parse(v||'');return Number.isFinite(t)?Math.max(0,Math.round((Date.now()-t)/60000)):null};
+  for(const x of list){
+    if(!x?.enabled)continue;
+    const label=x.provider==='icloud'?'iCloud':'Bluewin',mins=age(x.last_sync_at);
+    if(x.last_status==='error'||x.last_error)issues.push({kind:x.provider,label,urgent:true,detail:x.last_error||'Verbindungsfehler'});
+    else if(x.last_status==='connected'&&mins!==null&&mins>75)issues.push({kind:x.provider,label,urgent:false,detail:'Letzter Sync vor '+mins+' Min'});
+  }
+  const bg=snap.backgroundSync||null,bgMins=age(bg?.last_start);
+  if(bg&&(!bg.active||bg.last_status==='failed'||(bgMins!==null&&bgMins>75))){
+    issues.push({kind:'background',label:'Auto-Sync',urgent:bg.last_status==='failed'||!bg.active,detail:!bg.active?'Nicht aktiv':bg.last_status==='failed'?'Letzter Lauf fehlgeschlagen':'Letzter Lauf vor '+bgMins+' Min'});
+  }
+  return{issues,count:issues.length,urgent:issues.some(x=>x.urgent)};
+}
+
 function actionCenter(conflictState,mail,todos,hw){
-  const date=today(),items=[],conflicts=rows(conflictState?.conflicts).filter(x=>!x.date||x.date<=addDays(date,14));
+  const date=today(),items=[],conflicts=rows(conflictState?.conflicts).filter(x=>!x.date||x.date<=addDays(date,14)),system=connectorIssueState();
   const mailItems=rows(mail).filter(x=>x.actionable);
   const overdueTodos=rows(todos).filter(x=>!x.done&&taskDate(x)&&taskDate(x)<date);
   const overdueHw=rows(hw).filter(x=>!x.done&&taskDate(x)&&taskDate(x)<date);
@@ -297,7 +314,8 @@ function actionCenter(conflictState,mail,todos,hw){
   }
   const overdue=overdueTodos.length+overdueHw.length;
   if(overdue)items.push({kind:'tasks',count:overdue,urgent:true,title:overdue+' überfällige Aufgabe'+(overdue===1?'':'n'),sub:overdueHw.length?overdueHw.length+' davon Schule':'Heute erledigen'});
-  return{items,total:items.reduce((n,x)=>n+x.count,0),conflictCount:conflicts.length,mailCount:mailItems.length,overdueCount:overdue};
+  if(system.count)items.push({kind:'system',count:system.count,urgent:system.urgent,title:system.count+' Systemhinweis'+(system.count===1?'':'e'),sub:system.issues.slice(0,2).map(x=>x.label+': '+x.detail).join(' · ')});
+  return{items,total:items.reduce((n,x)=>n+x.count,0),conflictCount:conflicts.length,mailCount:mailItems.length,overdueCount:overdue,systemCount:system.count};
 }
 function actionCenterHtml(center){
   if(!center?.items?.length)return'';
