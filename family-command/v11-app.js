@@ -370,9 +370,10 @@ function tomorrowRows(work,events,todos,hw){
 }
 function eventRow(e){
   const prep=typeof window.eventPackText==='function'?String(window.eventPackText(e)||'').trim():'';
+  const cloudSource=String(e?.source||'')==='icloud'&&e?.externalCalendarName?`<span class="fc11-source-chip">iCloud · ${esc(e.externalCalendarName)}</span>`:'';
   return `<button type="button" class="fc11-row event" data-event="${esc(e.id)}" style="--p:${esc(color(pids(e)[0]))}">
     <span class="fc11-row-time"><b>${esc(e.time||'Ganztägig')}</b>${e.end?`<small>bis ${esc(e.end)}</small>`:''}</span>
-    <span class="fc11-row-copy">${sourcePersonBadges(e)}<b>${esc(e.title||'Termin')}</b>${e.note?`<small>${esc(String(e.note).slice(0,120))}</small>`:''}${prep?`<em>Mitnehmen: ${esc(prep)}</em>`:''}</span>
+    <span class="fc11-row-copy">${cloudSource}${sourcePersonBadges(e)}<b>${esc(e.title||'Termin')}</b>${e.note?`<small>${esc(String(e.note).slice(0,120))}</small>`:''}${prep?`<em>Mitnehmen: ${esc(prep)}</em>`:''}</span>
     ${icon('chevron')}
   </button>`;
 }
