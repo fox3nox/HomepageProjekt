@@ -139,3 +139,5 @@ html[data-fc11="1"] .fc9-shell{display:none!important}
 .fc11-care-warning{padding:12px;border:1px solid #f0d8b8;border-radius:16px;background:#fff9f0;display:grid;gap:9px}
 .fc11-care-warning-head{display:flex;align-items:center;gap:9px}.fc11-care-warning-head>span{font-size:18px}.fc11-care-warning-head small{display:block;color:#a26b26;font-size:8.5px;font-weight:900;letter-spacing:.1em}.fc11-care-warning-head b{display:block;margin-top:1px;color:#714719;font-size:13px}
 .fc11-care-warning>div:last-child{display:grid;gap:6px}.fc11-care-warning button{width:100%;padding:8px 9px;border:1px solid #f1dfc5;border-radius:10px;background:#fff;color:inherit;text-align:left}.fc11-care-warning button b{display:block;color:#704c24;font-size:10.5px}.fc11-care-warning button span{display:block;margin-top:2px;color:#8a7359;font-size:9.5px;line-height:1.35}
+
+.fc11-source-chip{display:inline-flex;align-items:center;width:max-content;max-width:100%;margin-bottom:3px;padding:2px 6px;border-radius:999px;background:#eef4fb;color:#587493;font-size:8px;font-weight:850;letter-spacing:.03em}
