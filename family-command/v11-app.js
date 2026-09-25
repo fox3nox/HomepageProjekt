@@ -638,6 +638,68 @@ function workRow(work){
     <span class="fc11-row-copy">${badgeFor(work.personId)}<b>${esc(work.label)}</b><small>${esc(span+pause)}</small></span>
   </div>`;
 }
+
+const PREP_STORE='fc-tomorrow-prep-v1';
+function prepCheckMap(){
+  try{
+    const raw=JSON.parse(localStorage.getItem(PREP_STORE)||'{}'),out={},cutoff=addDays(today(),-2);
+    for(const [k,v] of Object.entries(raw||{})){const d=String(k).slice(0,10);if(d>=cutoff)out[k]=!!v}
+    return out;
+  }catch{return{}}
+}
+function setPrepCheck(key,on){
+  try{
+    const map=prepCheckMap();
+    if(on)map[key]=true;else delete map[key];
+    localStorage.setItem(PREP_STORE,JSON.stringify(map));
+  }catch{}
+}
+function prepKey(date,personId,kind,text){
+  return [date,personId||'all',kind||'prep',String(text||'').toLowerCase().replace(/\s+/g,' ').trim()].join('|');
+}
+function tomorrowPrep(date){
+  const day=dateObj(date).getDay(),items=[],seen=new Set(),events=eventsOn(date).filter(active);
+  const add=(personId,text,sub='',kind='prep',sort='50')=>{
+    text=String(text||'').trim();if(!text)return;
+    const key=prepKey(date,personId,kind,text),dedupe=[personId||'all',kind,text.toLowerCase()].join('|');
+    if(seen.has(dedupe))return;seen.add(dedupe);
+    items.push({key,date,personId:String(personId||'all'),text,sub:String(sub||''),kind,sort:String(sort)});
+  };
+  for(const p of dependents()){
+    if(childHoliday(p,date))continue;
+    for(const r of rows(D().reminders)){
+      if(String(r?.personId||'')!==String(p.id))continue;
+      const days=rows(r?.days).map(Number);
+      if(!days.includes(day))continue;
+      for(const item of rows(r?.items))add(p.id,item,'Für morgen','pack','20');
+    }
+  }
+  for(const e of events){
+    let prep='';try{prep=typeof window.eventPackText==='function'?String(window.eventPackText(e)||'').trim():''}catch{}
+    if(!prep)continue;
+    const ids=pids(e).length?pids(e):['all'];
+    for(const pid of ids)add(pid,prep,e.title||'Termin','event','30');
+  }
+  for(const w of workFor(date)){
+    const first=w.slots?.[0],depart=String(w.depart||'').trim();
+    if(depart)add(w.personId,'Um '+depart+' Uhr los',w.label||'Arbeit','time','10');
+    else if(first?.start)add(w.personId,'Arbeitsbeginn '+first.start+' Uhr',w.label||'Arbeit','time','10');
+  }
+  const srk=events.filter(e=>isCareCoverageEvent(e)&&/\bsrk\b/i.test(String(e.title||'')));
+  for(const e of srk)add('oli','SRK Betreuung '+(e.time?e.time+' Uhr':''),'Kinderbetreuung während der Arbeit','care','15');
+  return items.sort((a,b)=>a.sort.localeCompare(b.sort)||personName(a.personId).localeCompare(personName(b.personId))||a.text.localeCompare(b.text));
+}
+function tomorrowPrepHtml(date){
+  const items=tomorrowPrep(date);if(!items.length)return'';
+  const checks=prepCheckMap(),groups=new Map();
+  for(const item of items){const key=item.personId||'all';if(!groups.has(key))groups.set(key,[]);groups.get(key).push(item)}
+  const done=items.filter(x=>checks[x.key]).length;
+  return '<section class="fc11-section fc11-prep-section"><div class="fc11-section-head"><div><small>MORGEN VORBEREITEN</small><h2>'+done+'/'+items.length+' bereit</h2></div><button type="button" data-prep-plan>Plan morgen</button></div>'+
+    '<div class="fc11-prep-groups">'+[...groups].map(([pid,list])=>'<div class="fc11-prep-group"><div class="fc11-prep-person">'+(pid==='all'?'<span class="fc11-avatar">•</span><b>Allgemein</b>':badgeFor(pid))+'</div><div>'+
+      list.map(x=>'<label class="fc11-prep-item '+(checks[x.key]?'done':'')+'"><input type="checkbox" data-prep-check="'+esc(x.key)+'" '+(checks[x.key]?'checked':'')+'><span class="fc11-prep-box">'+icon('check')+'</span><span class="fc11-prep-copy"><b>'+esc(x.text)+'</b>'+(x.sub?'<small>'+esc(x.sub)+'</small>':'')+'</span></label>').join('')+
+    '</div></div>').join('')+'</div></section>';
+}
+
 function tomorrowRows(work,events,todos,hw){
   const list=[
     ...work.map(workRow),
