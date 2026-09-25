@@ -304,7 +304,7 @@ function conflictIntervalsForEvent(e){
   return[[start,end]];
 }
 function conflictOverlap(a,b){return Math.max(a[0],b[0])<Math.min(a[1],b[1])}
-function conflictTimeLabel(v){return pad2(Math.floor(v/60))+':'+pad2(v%60)}
+function conflictTimeLabel(v){return String(Math.floor(v/60)).padStart(2,'0')+':'+String(v%60).padStart(2,'0')}
 function conflictTokens(v){
   const stop=new Set(['termin','einladung','bestaetigung','bestätigung','information','infos','hallo','freundliche','gruesse','grüsse','herzogenbuchsee','deine','ihre','einen','einer','einem','eines','wegen','bitte','neue','neuer','neuen','mail','email']);
   return [...new Set(String(v||'').toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g,'').replace(/[^a-z0-9äöüß]+/g,' ').split(/\s+/).filter(x=>x.length>=5&&!stop.has(x)))];
