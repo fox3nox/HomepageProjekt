@@ -14,3 +14,15 @@
 @media(max-width:540px){.fcc-modal{padding:0;align-items:flex-end}.fcc-sheet{max-height:94vh;border-radius:24px 24px 0 0}.fcc-head{padding:18px 16px 14px}.fcc-body{padding:13px}.fcc-card-top{grid-template-columns:40px minmax(0,1fr);}.fcc-provider-icon{width:40px;height:40px}.fcc-state{grid-column:2;justify-self:start}.fcc-meta{grid-template-columns:1fr}.fcc-actions{display:grid;grid-template-columns:1fr 1fr}.fcc-actions .primary{grid-column:1/-1}.fcc-form-actions{display:grid}.fcc-form-actions button{width:100%}}
 
 .fcc-error.warning{background:#fff8e8;color:#8a6718;border:1px solid #f0dfad}
+
+.fcc-mail-list{display:grid;gap:9px}
+.fcc-mail-card{padding:12px;border:1px solid #e3e8ef;border-radius:14px;background:#fff;display:grid;gap:10px}
+.fcc-mail-card.done{opacity:.62}
+.fcc-mail-main{min-width:0}.fcc-mail-top{display:flex;align-items:center;justify-content:space-between;gap:8px;margin-bottom:5px}
+.fcc-mail-kind{display:inline-flex;align-items:center;min-height:22px;padding:3px 7px;border-radius:999px;background:#f0f3f7;color:#65758a;font-size:9px;font-weight:900;letter-spacing:.04em;text-transform:uppercase}
+.fcc-mail-kind.event{background:#eaf3ff;color:#2568bd}.fcc-mail-kind.todo{background:#fff5df;color:#946610}.fcc-mail-kind.info{background:#eef1f5;color:#69788b}
+.fcc-mail-card time{color:#9aa5b3;font-size:9px}.fcc-mail-card b{display:block;color:#2b3d55;font-size:12px;line-height:1.35}.fcc-mail-card>div>span{display:block;margin-top:3px;color:#8491a1;font-size:10px}
+.fcc-mail-card p{margin:8px 0 0;color:#607187;font-size:10.5px;line-height:1.45}.fcc-mail-card em{display:block;margin-top:7px;color:#496684;font-size:9.5px;font-style:normal;font-weight:800}
+.fcc-mail-actions{display:flex;flex-wrap:wrap;gap:7px}.fcc-mail-actions button{min-height:36px;padding:7px 10px;border:1px solid #dce4ec;border-radius:10px;background:#f7f9fc;color:#42566f;font:inherit;font-size:10px;font-weight:850}.fcc-mail-actions button.primary{background:#1d6fdc;border-color:#1d6fdc;color:#fff}
+.fcc-mail-done{padding:7px 9px;border-radius:9px;background:#f1f5f8;color:#718094;font-size:10px;font-weight:800}
+@media(max-width:540px){.fcc-mail-actions{display:grid;grid-template-columns:1fr 1fr}.fcc-mail-actions .primary{grid-column:1/-1}}
