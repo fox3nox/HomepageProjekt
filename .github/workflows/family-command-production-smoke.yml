@@ -35,7 +35,7 @@ jobs:
           grep -q 'fc-wordmark-2x.png' family-command/header-crisp-v9654.css
           grep -q 'fc-wordmark-3x.png' family-command/header-crisp-v9654.css
           grep -q 'font-size:0!important' family-command/header-crisp-v9654.css
-          grep -q "const CACHE='family-command-v134-action-center'" family-command/sw.js
+          grep -q "const CACHE='family-command-v135-sync-history'" family-command/sw.js
           grep -q 'asi-command-center-v100.css' family-command/sw.js
           grep -q 'zero-miss-v978.js' family-command/sw.js
           grep -q 'zero-miss-v978.css' family-command/sw.js
