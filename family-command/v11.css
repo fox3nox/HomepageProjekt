@@ -125,3 +125,9 @@ html[data-fc11="1"] .fc9-shell{display:none!important}
   .fc11-plan-person{padding:8px 9px;border-radius:14px}.fc11-slot-list{margin-top:6px;padding-left:45px}.fc11-week-strip button{min-height:52px}.fc11-filter-row button{min-height:33px}
   .fc11-doc-actions{gap:7px}.fc11-doc-actions button{min-height:62px;padding:8px 9px;grid-template-columns:25px minmax(0,1fr);border-radius:14px}.fc11-doc-actions svg{width:21px;height:21px}.fc11-doc-actions small{display:none}
 }
+
+.fc11-focus-task,.fc11-focus-homework{border-left-color:#c26a35!important;background:#fff7f1!important}
+.fc11-focus-task .fc11-section-kicker,.fc11-focus-homework .fc11-section-kicker{color:#a65b2d!important}
+.fc11-mail-pulse{width:100%;min-height:78px;padding:11px 12px;border:1px solid #dce8f7;border-radius:16px;background:#f7fbff;color:inherit;display:grid;grid-template-columns:40px minmax(0,1fr) 18px;gap:10px;align-items:center;text-align:left}
+.fc11-mail-pulse-icon{width:40px;height:40px;border-radius:12px;background:#e9f2ff;display:grid;place-items:center;font-size:18px}
+.fc11-mail-pulse-copy{min-width:0}.fc11-mail-pulse-copy>small{display:block;color:#4b78aa;font-size:9px;font-weight:900;letter-spacing:.08em}.fc11-mail-pulse-copy>b{display:block;margin-top:2px;color:#2b3d54;font-size:13px;line-height:1.3}.fc11-mail-pulse-copy>span{display:grid;gap:2px;margin-top:5px;color:#6e7f93;font-size:9.5px;line-height:1.3}.fc11-mail-pulse-copy>span span{white-space:nowrap;overflow:hidden;text-overflow:ellipsis}.fc11-mail-pulse-copy>span b{display:inline;color:#4b6583;font-size:9px}.fc11-mail-pulse>svg{width:18px;height:18px;fill:none;stroke:#9aa8b8;stroke-width:1.8}
