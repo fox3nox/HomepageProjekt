@@ -19,8 +19,8 @@ try {
   await page.goto(base+'/?access=test');
   await page.waitForFunction(()=>document.documentElement.dataset.fcReady==='1'&&!!navigator.serviceWorker.controller);
   await page.evaluate(()=>window.__fcLoadExtrasNow());
-  assert.ok((await page.evaluate(()=>caches.keys())).includes('family-command-v140-activity-journal'));
-  const offlineAssets=await page.evaluate(async()=>{const cache=await caches.open('family-command-v140-activity-journal');return Promise.all(['v11-app.js','v11.css'].map(async name=>({name,cached:!!await cache.match('/'+name)})))});
+  assert.ok((await page.evaluate(()=>caches.keys())).includes('family-command-v141-provenance'));
+  const offlineAssets=await page.evaluate(async()=>{const cache=await caches.open('family-command-v141-provenance');return Promise.all(['v11-app.js','v11.css'].map(async name=>({name,cached:!!await cache.match('/'+name)})))});
   assert.ok(offlineAssets.every(x=>x.cached),`V11 hotfix assets must be precached: ${JSON.stringify(offlineAssets)}`);
   assert.ok(!(await page.evaluate(()=>caches.keys())).includes('family-command-v116'),'activating the new worker removes the previous release cache');
   await context.setOffline(true);
