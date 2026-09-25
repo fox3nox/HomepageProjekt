@@ -232,9 +232,9 @@ function render(){
 function renderToday(root){
   const date=today(),kids=childTodayRows(date),sharedHoliday=sharedChildHoliday(kids),nextCandidate=nextDisplay(nextAction()),work=workFor(date),events=eventsOn(date).filter(e=>!window.__fcV9?.eventIsPast?.(e)&&!kids.some(k=>k.holiday?.id===e.id)&&!duplicatesScheduledWork(e,date)),todos=todoRows('today'),hw=homeworkRows('today');
   const focus=focusForToday(date,sharedHoliday?.id===nextCandidate?.eventId?null:nextCandidate,todos,hw);
-  const mailPulse=bluewinPulse(),careAudit=saturdayCareAudit();
+  const mailPulse=bluewinPulse(),careAudit=saturdayCareAudit(),conflictState=conflictAudit(),conflictPulse=conflictPulseHtml(conflictState);
   const tomorrow=addDays(date,1),tomKids=childTodayRows(tomorrow),tomWork=workFor(tomorrow),tomEvents=eventsOn(tomorrow).filter(e=>!tomKids.some(k=>k.holiday?.id===e.id)&&!duplicatesScheduledWork(e,tomorrow)),tomTodos=todoRows('open').filter(x=>taskDate(x)===tomorrow),tomHw=homeworkRows('open').filter(x=>taskDate(x)===tomorrow),tomCount=tomWork.length+tomEvents.length+tomTodos.length+tomHw.length;
-  header('Heute',fmt(date,{weekday:true,long:true}),smartSummary(work,events,todos,hw,mailPulse.count,careAudit.warnings.length));
+  header('Heute',fmt(date,{weekday:true,long:true}),smartSummary(work,events,todos,hw,mailPulse.count,conflictState.conflicts.filter(x=>!x.date||x.date<=addDays(date,14)).length));
   const childrenSection=`<section class="fc11-section fc11-children-section">
     <div class="fc11-section-head"><div><small>FAMILIE</small><h2>Kinder heute</h2></div><button type="button" data-go-plan>Wochenplan</button></div>
     <div class="fc11-kids">${kids.map(x=>kidRow(x.p,x.state,x.holiday,false,holidayNames(kids,x.holiday))).join('')||'<div class="fc11-empty">Keine Kinderprofile vorhanden.</div>'}</div>
@@ -254,7 +254,7 @@ function renderToday(root){
       <button type="button" class="fc11-next-content" data-focus-action><div><b>${esc(focus.title||'Nächster Punkt')}</b><span>${esc(focus.sub||'')}</span></div><div class="fc11-next-time"><strong>${esc(focus.time||'')}</strong><small>${esc(focus.left||'')}</small></div>${icon('chevron')}</button>
     </section>`:`<section class="fc11-next calm"><div class="fc11-section-kicker">JETZT</div><div class="fc11-next-empty"><b>Aktuell nichts Dringendes</b><span>Der Tagesablauf und morgen wichtige Punkte bleiben darunter sichtbar.</span></div></section>`}
     ${mailPulse.html}
-    ${saturdayCareWarningHtml(careAudit)}
+    ${conflictPulse}
     ${sharedHoliday?todaySection+tomorrowSection:childrenSection+todaySection+tomorrowSection}
     <button type="button" class="fc11-brain-entry" data-brain>
       <span class="fc11-brain-icon">${icon('brain')}</span>
@@ -267,6 +267,7 @@ function renderToday(root){
   root.querySelector('[data-tomorrow-plan]')?.addEventListener('click',()=>{state.planDate=tomorrow;open('plan')});
   root.querySelector('[data-focus-action]')?.addEventListener('click',()=>{if(focus?.eventId)openEvent(focus.eventId);else if(focus?.kind==='task'||focus?.kind==='homework')open('tasks');else open('plan')});
   root.querySelector('[data-open-bluewin]')?.addEventListener('click',()=>window.fcOpenConnections?.());
+  root.querySelector('[data-open-conflicts]')?.addEventListener('click',()=>openConflictAssistant());
   root.querySelectorAll('[data-care-date]').forEach(b=>b.onclick=()=>{state.planDate=b.dataset.careDate;state.planPerson='oli';open('plan')});
   bindRows(root);
 }
@@ -686,6 +687,7 @@ function openSystemTools(){
     ${systemHealth()}
     <div class="fc11-system-tools fc11-tools-grid">
       ${tool('connections','link','Verbindungen','Apple Kalender & Bluewin')}
+      ${tool('conflicts','bell','Konflikt-Assistent',(()=>{const a=conflictAudit();return a.conflicts.length?a.conflicts.length+' Punkte prüfen':'Keine Konflikte'})())}
       ${tool('push','bell','Erinnerungen','Push & Morgenbericht')}
       ${tool('backup','backup','Sicherung','Cloud-Backups')}
       ${tool('export','download','Datenexport','JSON-Sicherung')}
@@ -716,6 +718,7 @@ function systemHealth(){
   };
   return '<div class="fc11-health"><div class="fc11-health-head"><span><small>SYSTEMSTATUS</small><b>'+(conns.length?'Cloud-Dienste':'Wird geprüft')+'</b></span><em>'+(bg?.active?'Auto-Sync · 30 Min':'Auto-Sync prüfen')+'</em></div>'+
     row('Familienzentrale Cloud',null,'cloud')+row('Apple Kalender',by('icloud'))+row('Bluewin E-Mail',by('bluewin'))+row('Hintergrund-Sync',bg,'background')+
+    (()=>{const a=conflictAudit(),ok=!a.conflicts.length;return `<div class="fc11-health-row ${ok?'ok':'warn'}"><i></i><span><b>Konflikt-Assistent</b><small>${esc(ok?'Keine Konflikte in 90 Tagen':a.conflicts.length+' Punkt'+(a.conflicts.length===1?'':'e')+' prüfen')}</small></span></div>`})()+
     (()=>{const a=saturdayCareAudit(),ok=!a.warnings.length;return `<div class="fc11-health-row ${ok?'ok':'warn'}"><i></i><span><b>Samstagsbetreuung</b><small>${esc(ok?(a.total?a.checked.length+' kommende Schichten geprüft':'Keine kommenden Samstagsschichten'):a.warnings.length+' Problem'+(a.warnings.length===1?'':'e')+' gefunden')}</small></span></div>`})()+'</div>';
 }
 function dateTimeShort(v){if(!v)return'noch nie';try{return new Intl.DateTimeFormat('de-CH',{day:'2-digit',month:'2-digit',hour:'2-digit',minute:'2-digit'}).format(new Date(v))}catch{return''}}
@@ -746,6 +749,7 @@ async function openTool(key){
     backup:()=>window.fcOpenBackups?.(),
     jarvis:()=>window.fcOpenJarvisConnect?.(),
     connections:()=>window.fcOpenConnections?.(),
+    conflicts:()=>openConflictAssistant(),
     push:()=>typeof window.fcOpenReminderCenter==='function'?window.fcOpenReminderCenter():window.enablePush?.(),
     export:()=>{if(typeof window.exportData==='function')return window.exportData();const a=document.createElement('a'),blob=new Blob([JSON.stringify(D(),null,2)],{type:'application/json'});a.href=URL.createObjectURL(blob);a.download=`familienzentrale-${today()}.json`;a.click();setTimeout(()=>URL.revokeObjectURL(a.href),0)}
   };
@@ -803,6 +807,8 @@ function install(){
   document.documentElement.dataset.fc11='1';
   document.dispatchEvent(new CustomEvent('fc:v11-ready'));
 }
+window.fcOpenConflictAssistant=openConflictAssistant;
+window.__fcConflictAssistant={open:openConflictAssistant,audit:conflictAudit};
 window.__fcV11={version:VERSION,state,open,render,health:()=>({version:VERSION,screen:state.screen,overflow:document.documentElement.scrollWidth>document.documentElement.clientWidth+1,nav:[...document.querySelectorAll('.fc11-bottom-nav [data-fc11-screen]')].map(x=>x.dataset.fc11Screen),docs:state.docs.length})};
 install();
 })();
