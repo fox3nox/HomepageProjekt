@@ -161,6 +161,8 @@ try{
   await page.locator('[data-system-security]').click();
   await page.waitForSelector('#fc11SystemSheet',{state:'visible'});
   assert.equal(await page.locator('#fc11SystemSheet [data-tool="connections"]').count(),1,'System & Sicherheit exposes connections directly');
+  assert.equal(await page.locator('#fc11SystemSheet [data-system-sync]').count(),1,'System & Sicherheit exposes one-tap connector sync');
+  assert.equal(await page.locator('#fc11SystemSheet .fc11-sync-panel').count(),1,'System & Sicherheit shows connector history panel');
   assert.equal(await page.locator('#fc11SystemSheet [data-tool="conflicts"]').count(),1,'System & Sicherheit exposes conflict assistant directly');
   await page.click('#fc11SystemSheet [data-tool="conflicts"]');
   await page.waitForSelector('#fc11ConflictSheet',{state:'visible'});
