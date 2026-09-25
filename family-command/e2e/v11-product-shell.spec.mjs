@@ -29,6 +29,7 @@ const state={
   events:[
     {id:'event-today',personIds:['fynn'],title:'Zahnarzt',date:'2026-09-22',time:'15:30',end:'16:00',note:'Versicherungskarte mitnehmen'},
     {id:'oli-work-conflict',personIds:['oli'],title:'Arzttermin',date:'2026-09-22',time:'09:00',end:'09:30',note:'Testkonflikt während LANDI-Arbeit'},
+    {id:'oli-srk-coverage',personIds:['oli'],title:'SRK Betreuung',date:'2026-09-22',time:'07:00',end:'08:00',note:'Betreuung während der Arbeit',eventRole:'care-coverage',requiresPresence:false},
     {id:'event-tomorrow',personIds:['jayden'],title:'Elternabend',date:'2026-09-23',time:'19:00',end:'20:00',note:''},
     {id:'holiday-elia',personIds:['eliyah'],title:'Herbstferien',date:'2026-09-21',endDate:'2026-09-25',note:''}
   ],
@@ -79,7 +80,9 @@ try{
   assert.equal(await page.locator('[data-open-conflicts]').count(),1,'today surfaces a detected scheduling conflict');
   const conflictHealth=await page.evaluate(()=>window.__fcConflictAssistant?.audit?.());
   assert.ok(conflictHealth?.high>=1,'conflict assistant detects work overlap');
-  assert.match(conflictHealth.conflicts.map(x=>x.title+' '+x.detail).join('\n'),/Arbeit überschneidet sich mit Termin[\s\S]*Arzttermin/);
+  const conflictText=conflictHealth.conflicts.map(x=>x.title+' '+x.detail).join('\n');
+  assert.match(conflictText,/Arbeit überschneidet sich mit Termin[\s\S]*Arzttermin/);
+  assert.doesNotMatch(conflictText,/SRK Betreuung/,'care coverage must never be treated as Oli being double-booked');
   assert.equal(await page.locator('.fc11-kid[data-holiday="1"]').count(),1,'a holiday remains scoped to the affected child');
   for(const id of ['jayden','fynn'])assert.doesNotMatch(await page.locator(`.fc11-kid[data-kid="${id}"]`).innerText(),/Heute frei/,'a completed school day must not look like a free day');
   assert.match(await page.locator('.fc11-kid[data-holiday="1"]').innerText(),/Elia[\s\S]*Herbstferien[\s\S]*Nur Elia · schulfrei/i);
