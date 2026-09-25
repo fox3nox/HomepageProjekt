@@ -35,3 +35,6 @@
 @media(max-width:540px){.fcc-unimportant-tools{align-items:stretch;flex-direction:column}.fcc-unimportant-tools button{width:100%}}
 
 .fcc-mail-done-row{display:flex;align-items:center;justify-content:space-between;gap:8px}.fcc-mail-delete-done{min-height:32px;padding:6px 9px;border:1px solid #ecd2cf;border-radius:9px;background:#fff7f6;color:#a04c45;font:inherit;font-size:9.5px;font-weight:850}
+
+.fcc-mail-kind.workplan{background:#eee9ff;color:#6750a4}
+.fcc-workplan-auto{display:inline-flex;align-items:center;min-height:34px;padding:7px 9px;border-radius:9px;background:#f2efff;color:#6750a4;font-size:9.5px;font-weight:850}
