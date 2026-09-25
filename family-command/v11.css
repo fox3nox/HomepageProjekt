@@ -208,3 +208,17 @@ html[data-fc11="1"] .fc9-shell{display:none!important}
 .fc11-integrity-item>i{width:7px;height:7px;border-radius:50%;background:#c58f47}.fc11-integrity-item.high>i{background:#c85e54}
 .fc11-integrity-item span{min-width:0}.fc11-integrity-item small{display:block;color:#8a98a8;font-size:8.3px;font-weight:850;letter-spacing:.04em}.fc11-integrity-item b{display:block;margin-top:2px;color:#3e4e60;font-size:10.5px}.fc11-integrity-item em{display:block;margin-top:2px;color:#758393;font-size:9.2px;font-style:normal;line-height:1.35}
 @media(max-width:390px){.fc11-integrity-stats{grid-template-columns:repeat(2,1fr)}}
+
+.fc11-activity-panel{margin:0 0 14px;padding:12px;border:1px solid #e2e8ef;border-radius:15px;background:#fff;display:grid;gap:9px}
+.fc11-activity-head{display:flex;align-items:center;justify-content:space-between;gap:10px}
+.fc11-activity-head small{display:block;color:#8795a5;font-size:8.5px;font-weight:900;letter-spacing:.1em}
+.fc11-activity-head b{display:block;margin-top:1px;color:#334961;font-size:12.5px}
+.fc11-activity-head button{min-height:32px;padding:5px 8px;border:1px solid #d9e3ed;border-radius:8px;background:#f7fafe;color:#46627f;font:inherit;font-size:8.7px;font-weight:850}
+.fc11-activity-list{display:grid;gap:6px}.fc11-activity-list.full{overflow:auto;-webkit-overflow-scrolling:touch;padding-right:2px}
+.fc11-activity-row{display:grid;grid-template-columns:8px minmax(0,1fr) auto;gap:8px;align-items:center;padding:8px 9px;border-radius:10px;background:#f8fafc}
+.fc11-activity-row>i{width:7px;height:7px;border-radius:50%;background:#5d8fbd}.fc11-activity-row span{min-width:0}
+.fc11-activity-row b{display:block;color:#40556d;font-size:9.5px}.fc11-activity-row small{display:block;margin-top:1px;color:#8996a5;font-size:8.6px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.fc11-activity-row em{display:block;margin-top:2px;color:#66788c;font-size:8.5px;font-style:normal;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.fc11-activity-row strong{color:#a0aab5;font-size:8px;font-weight:800}
+.fc11-activity-sheet{max-height:min(86vh,760px);overflow:hidden;display:flex;flex-direction:column}
+@media(max-width:540px){.fc11-activity-head{align-items:stretch;flex-direction:column}.fc11-activity-head button{width:100%}}
