@@ -314,6 +314,7 @@ function conflictTopicScore(a,b){
   return aa.filter(x=>bb.includes(x)).reduce((n,x)=>n+(x.length>=8?2:1),0);
 }
 function isCareCoverageEvent(e){
+  if(e?.eventRole==='care-coverage'||e?.requiresPresence===false)return true;
   const title=String(e?.title||''),note=String(e?.note||'');
   return /\bsrk\b/i.test(title)&&/betreuung|kinder|aufsicht/i.test(title+' '+note);
 }
