@@ -240,3 +240,17 @@ html[data-fc11="1"] .fc9-shell{display:none!important}
 @media(max-width:540px){.fc11-prep-group{padding:9px}.fc11-prep-item{min-height:46px}}
 
 .fc11-prep-item{width:100%;font:inherit;color:inherit;text-align:left}
+
+/* Accessibility: overdue focus card must stay readable on iPhone even when legacy button rules leak through. */
+.fc11-home .fc11-focus-task .fc11-next-content,
+.fc11-home .fc11-focus-homework .fc11-next-content{color:#26384d!important}
+.fc11-home .fc11-focus-task .fc11-next-content b,
+.fc11-home .fc11-focus-homework .fc11-next-content b,
+.fc11-home .fc11-focus-task .fc11-next-time strong,
+.fc11-home .fc11-focus-homework .fc11-next-time strong{color:#26384d!important}
+.fc11-home .fc11-focus-task .fc11-next-content>div:first-child>span,
+.fc11-home .fc11-focus-homework .fc11-next-content>div:first-child>span{color:#765f52!important}
+.fc11-home .fc11-focus-task .fc11-next-time small,
+.fc11-home .fc11-focus-homework .fc11-next-time small{color:#9b572f!important}
+.fc11-home .fc11-focus-task .fc11-next-content>svg,
+.fc11-home .fc11-focus-homework .fc11-next-content>svg{stroke:#a96d4d!important}
