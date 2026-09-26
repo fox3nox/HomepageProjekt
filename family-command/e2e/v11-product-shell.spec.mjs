@@ -86,6 +86,17 @@ try{
   assert.equal(v12Computed.nextRadius,'28px','V12 hero radius is active');
   assert.equal(v12Computed.navRadius,'24px','V12 floating navigation radius is active');
   assert.match(v12Computed.bodyBg,/gradient/i,'V12 ambient background is active');
+  const focusContrast=await page.evaluate(()=>{
+    window.data.todos.push({id:'contrast-overdue',personId:'oli',title:'Kontrast-Test',date:'2026-09-21',section:'day',priority:true,done:false,archived:false});
+    window.__fcV11.render();
+    const card=document.querySelector('.fc11-focus-task'),title=card?.querySelector('.fc11-next-content b'),time=card?.querySelector('.fc11-next-time strong');
+    const out={exists:!!card,title:title?getComputedStyle(title).color:'',time:time?getComputedStyle(time).color:''};
+    window.data.todos=window.data.todos.filter(x=>x.id!=='contrast-overdue');window.__fcV11.render();
+    return out;
+  });
+  assert.equal(focusContrast.exists,true,'overdue focus card renders');
+  assert.equal(focusContrast.title,'rgb(38, 56, 77)','overdue focus title remains dark and readable on light card');
+  assert.equal(focusContrast.time,'rgb(38, 56, 77)','overdue focus status remains dark and readable on light card');
   assert.equal(await page.locator('.fc11-kid').count(),3,'today shows all three child rows');
   assert.equal(await page.locator('.fc11-prep-section').count(),1,'Today shows automatic tomorrow preparation');
   const prepText=await page.locator('.fc11-prep-section').innerText();
