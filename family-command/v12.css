@@ -1226,3 +1226,23 @@ html[data-fc12="1"] .fc-doc-center .fc-doc-proposal{
     border-radius:24px!important;
   }
 }
+
+/* Focus cards on light task/homework backgrounds need dark text even though the default V12 hero is dark. */
+html[data-fc12="1"] .fc11-next.fc11-focus-task,
+html[data-fc12="1"] .fc11-next.fc11-focus-homework{
+  background:linear-gradient(145deg,#fff9f4,#fff2e8)!important;
+  color:#26384d!important;
+  box-shadow:0 12px 34px rgba(126,83,48,.08);
+}
+html[data-fc12="1"] .fc11-next.fc11-focus-task .fc11-section-kicker,
+html[data-fc12="1"] .fc11-next.fc11-focus-homework .fc11-section-kicker{color:#a65b2d!important}
+html[data-fc12="1"] .fc11-next.fc11-focus-task .fc11-next-content b,
+html[data-fc12="1"] .fc11-next.fc11-focus-homework .fc11-next-content b,
+html[data-fc12="1"] .fc11-next.fc11-focus-task .fc11-next-time strong,
+html[data-fc12="1"] .fc11-next.fc11-focus-homework .fc11-next-time strong{color:#26384d!important}
+html[data-fc12="1"] .fc11-next.fc11-focus-task .fc11-next-content>div:first-child>span,
+html[data-fc12="1"] .fc11-next.fc11-focus-homework .fc11-next-content>div:first-child>span{color:#765f52!important}
+html[data-fc12="1"] .fc11-next.fc11-focus-task .fc11-next-time small,
+html[data-fc12="1"] .fc11-next.fc11-focus-homework .fc11-next-time small{color:#9b572f!important}
+html[data-fc12="1"] .fc11-next.fc11-focus-task .fc11-next-content>svg,
+html[data-fc12="1"] .fc11-next.fc11-focus-homework .fc11-next-content>svg{stroke:#a96d4d!important}
